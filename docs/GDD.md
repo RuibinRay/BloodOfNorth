@@ -14,7 +14,7 @@ Numbers for unbuilt systems are starting points for tuning, not measured values.
 
 | Act | Fantasy | New systems |
 |---|---|---|
-| I | A child who survives | Movement, dialogue, hunting, fire, stealth, cold **[built]**; hunger, shelter **[planned]** |
+| I | A child who survives | Movement, dialogue, hunting, fire, stealth, cold, hunger, shelter, thin ice **[built]**; snares, fever **[planned]** |
 | II | A farmer who fights | Melee combat, weapons, crafting, trading, farming |
 | III | An outlaw who gathers friends | Companions, bounties, horse, first ship |
 | IV | A captain abroad | Sailing, naval combat, sieges, ports, diplomacy |
@@ -69,7 +69,11 @@ orders nearby allies to lock shields). Experience comes from quests and from doi
 | Sparring | Four drills taught by doing: strike, block, parry, dodge |
 | Stealth | Raiders have a vision cone, hearing radius and awareness meter; low cover blocks sight when crouched; being caught reloads the checkpoint |
 | Cold | Warmth drains in the blizzard, slowing Eirik; at zero, health drains |
-| Traits | Wisdom, Compassion, Ferocity, Pride, raised by dialogue choices and saved |
+| Hunger | Drains through Chapter 2; an empty belly slows Eirik and then hurts him; cooked venison restores it |
+| Shelter | Cut boughs with the axe and thatch the lean-to; the camp fire restores warmth |
+| The wolf | Circles and lunges (dodge to avoid); resolved by an arrow or by throwing it meat |
+| Thin ice | Strain rises when running or standing still, falls when creeping; at full strain the ice breaks and costs warmth |
+| Traits | Wisdom, Compassion, Ferocity, Pride, raised by choices and actions, and saved |
 
 ## World
 

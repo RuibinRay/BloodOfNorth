@@ -40,8 +40,13 @@ kbd { font: 600 0.82em/1 ui-monospace, Menlo, monospace; background: rgba(20, 16
 #bar-health { height: 12px; }
 #bar-health i { background: linear-gradient(#b3443a, #7d251d); }
 #bar-stamina i { background: linear-gradient(#d6b55e, #9a7a2c); }
-#bar-warmth { display: none; height: 12px; margin-bottom: 4px; }
-#bar-warmth.on { display: block; }
+.bar.lab { display: none; height: 12px; margin: 22px 0 4px; }
+.bar.lab.on { display: block; }
+.bar.lab span { position: absolute; left: 0; top: -17px; font-size: 11.5px; letter-spacing: 0.14em; text-transform: uppercase; text-shadow: 0 1px 2px #000; }
+#bar-hunger i { background: linear-gradient(#b9a15a, #7d6a2e); }
+#bar-hunger.low i { background: linear-gradient(#c0584a, #86302a); }
+#bar-ice i { background: linear-gradient(#cfe6f4, #7fb0cc); }
+#bar-ice.low i { background: linear-gradient(#f0b070, #c8452a); }
 #bar-warmth i { background: linear-gradient(#f0a257, #c8571f); }
 #bar-warmth.low i { background: linear-gradient(#9ec7e2, #5f8fb0); }
 #bar-warmth span { position: absolute; left: 0; top: -17px; font-size: 11.5px; letter-spacing: 0.14em; text-transform: uppercase; text-shadow: 0 1px 2px #000; }

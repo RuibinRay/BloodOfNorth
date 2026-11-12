@@ -38,6 +38,7 @@ export const FLATS = [
   { x: POI.camp.x, z: POI.camp.z, r: 15, dh: 0.3 },
   { x: POI.deer.x, z: POI.deer.z, r: 22, dh: 0 },
   { x: POI.runestone.x, z: POI.runestone.z, r: 10, dh: 2.4 },
+  { x: 118, z: -122, r: 16, dh: 0 }, // clearing east of the river where Chapter 2 ends
 ];
 
 /** Trodden paths: used for ground colour and to keep trees off the trail. */

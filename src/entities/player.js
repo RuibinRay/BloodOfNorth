@@ -17,7 +17,7 @@ export class Player {
     this.h = new Humanoid(EIRIK_CHILD);
     this.root = this.h.root; this.pos = this.root.position;
     this.yaw = Math.PI; this.speed = 0; this.moving = false;
-    this.health = 100; this.stamina = 100; this.warmth = 100;
+    this.health = 100; this.stamina = 100; this.warmth = 100; this.hunger = 100;
     this.crouch = false; this.equipped = 'none'; this.aiming = false; this.draw = 0;
     this.blocking = false; this.blockT = 0; this.combo = 0; this.comboT = 0;
     this.dodgeT = 0; this.dodgeDir = new THREE.Vector3(); this.iframes = 0; this.staminaDelay = 0;
@@ -63,7 +63,7 @@ export class Player {
       pt.copy(o).addScaledVector(dir, d);
       if (pt.y < g.world.groundAt(pt.x, pt.z) + 0.05) return pt;
       for (const a of g.wildlife.animals) {
-        const r = a.kind === 'deer' ? 1.0 : 0.55, cy = a.pos.y + (a.kind === 'deer' ? 1.1 : 0.2);
+        const r = a.kind === 'deer' ? 1.0 : 0.55, cy = a.pos.y + (a.kind === 'deer' ? 1.1 : a.kind === 'wolf' ? 0.6 : 0.2);
         if (Math.abs(pt.x - a.pos.x) < r && Math.abs(pt.z - a.pos.z) < r && Math.abs(pt.y - cy) < r) return pt;
       }
     }

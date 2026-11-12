@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { clamp } from '../core/util.js';
 import { M, Builder, at, box, cyl, sphere, tint } from './geo.js';
-import { buildHeights, buildTerrain, heightAt, riverX } from './terrain.js';
+import { buildHeights, buildTerrain, heightAt, riverX, riverSurfaceY } from './terrain.js';
 import { scatterVegetation } from './vegetation.js';
 import * as P from './props.js';
 import { HOUSES, POI, FIELDS, BOUNDS } from './layout.js';
@@ -93,8 +93,12 @@ export class World {
   groundAt(x, z) {
     let h = heightAt(x, z);
     for (const p of this.platforms) if (Math.abs(x - p.x) < p.hw && z > p.z0 && z < p.z1 && p.y > h) h = p.y;
+    if (this.ice && z < 170 && Math.abs(x - riverX(z)) < 9.5) { const s = riverSurfaceY(z) + 0.04; if (s > h) h = s; }
     return h;
   }
+  setIce(on) { this.ice = on; this.terrain.setIce(on); }
+  /** True when (x, z) is over frozen river rather than ground. */
+  onIce(x, z) { return !!this.ice && z < 170 && Math.abs(x - riverX(z)) < 9.5 && heightAt(x, z) < riverSurfaceY(z); }
   /** Can something stand here? (not in deep water unless on a platform) */
   walkable(x, z) { return this.groundAt(x, z) > -0.75; }
 

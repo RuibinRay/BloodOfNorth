@@ -191,9 +191,16 @@ export function buildTerrain(scene) {
 
   return {
     mesh, sea, river, albedoCanvas: albedo.canvas,
+    iced: false,
+    /** Freeze or thaw the river surface (Chapter 2). */
+    setIce(on) {
+      this.iced = on;
+      riverMat.color.set(on ? 0xdbe8f0 : 0x2c5062); riverMat.opacity = on ? 0.96 : 0.82;
+      riverMat.roughness = on ? 0.42 : 0.08; riverMat.metalness = on ? 0.05 : 0.55; riverMat.normalScale.setScalar(on ? 0.12 : 0.55);
+    },
     update(t) {
       TEX.waterN.offset.set(t * 0.004, t * 0.0026);
-      riverN.offset.set(0, -t * 0.22); // flows south, toward the fjord
+      if (!this.iced) riverN.offset.set(0, -t * 0.22); // flows south, toward the fjord
     },
   };
 }

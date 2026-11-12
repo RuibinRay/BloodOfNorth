@@ -8,6 +8,7 @@ import { makeShip, toWorld } from '../world/props.js';
 import { CAST, RAIDER_LOOKS, HINTS } from '../data/act1.js';
 import { Woodcutting, FireMaking, Fishing, Sparring } from '../systems/activities.js';
 import { clamp, damp, lerp } from '../core/util.js';
+import { Chapter2 } from './act1_ch2.js';
 
 const PATH_TO_MEADOW = [[-38, 71.6], [-27, 70.5], [-17, 64.5], [-3, 57], [0, 46], [-7, 14], [-20, -12], [-22, -18], [-24, -22], [-43, -27], [-59, -34]];
 const TRACKS = [[-80, -48], [-98, -54], [-118, -62], [-136, -78], [-146, -100], [-150, -116]];
@@ -16,6 +17,7 @@ const FLEE_PATH = [[-23, 66], [-21, 56], [-21, 50], [-10, 43], [-7, 30], [-8, 12
 const CAMP_SEAT = [POI.camp.x - 1.75, POI.camp.z + 1.0];
 const DUEL = { ragnar: [-15, 70], hakon: [-10.5, 70.4], g1: [-6, 73.2], g2: [-6.5, 67.4] };
 const GATE_PATROL = [[[-13, -9], [-19.5, -13.5]], [[-9, 2], [-14, -7]]];
+const QUESTS_MAIN = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice'];
 const WEATHER = {
   day: { snow: 0, fog: 0, overcast: 0.08, wind: 1 },
   dusk: { snow: 0.12, fog: 0.02, overcast: 0.3, wind: 1.1 },
@@ -29,7 +31,9 @@ export class Act1 {
     this.deerBody = null; this.nightBuilt = false; this.wTarget = { ...WEATHER.day }; this.snowTarget = 0; this.glowTarget = 0;
     this.failing = false; this.t = 0; this.arrowT = 0; this.ships = []; this.shipK = 1; this.cold = false; this.ending = false;
     this.houseFires = {}; this.schedT = 0;
+    this.ch2 = new Chapter2(game, this);
   }
+  hideFactor(p) { return this.st.stage === 'ch2' ? this.ch2.hideFactor(p) : 1; }
   npc(id) { return this.g.npcs.get(id); }
   /** Ragnar as he is out in the forest: bow in hand, no chopping animation. */
   fieldRagnar(n) { n.setLoop(null); n.crouch = false; n.h.hold('R', null); n.h.hold('L', 'bow_big'); }
@@ -99,11 +103,14 @@ export class Act1 {
   /** Rebuild the scripted world from a loaded save. */
   restore() {
     const g = this.g, st = this.st;
-    if (st.stage === 'day') g.sky.time = st.time ?? 8;
+    if (st.stage === 'day' || st.stage === 'ch2') g.sky.time = st.time ?? 8;
+    if (st.vitals) Object.assign(g.player, st.vitals);
     if (st.player) g.player.teleport(st.player.x, st.player.z, st.player.yaw);
     if (g.inventory.has('father_axe')) g.player.showBackAxe(true);
     for (const id of Object.keys(st.quests)) if (st.quests[id].status === 'active') g.quests.enter(id, true);
-    if (st.stage === 'complete' || g.quests.isDone('q_alone')) { st.stage = 'complete'; this.showChapterEnd(); }
+    // between chapters, or at the end of what is built: show the chapter summary
+    const active = Object.values(st.quests).some((q) => q.status === 'active' && QUESTS_MAIN.includes(Object.keys(st.quests).find((k) => st.quests[k] === q)));
+    if (!active && g.quests.isDone('q_alone')) { st.stage = g.quests.isDone('q_ice') ? 'complete' : 'ch1done'; this.showChapterEnd(); }
   }
 
   // =====================================================================================
@@ -202,6 +209,7 @@ export class Act1 {
 
   onKill(kind, a, vital) {
     const g = this.g;
+    if (kind === 'wolf') return this.ch2.onWolfKilled(a);
     if (kind === 'deer') { this.st.flags.cleanKill = !!vital || !a.wounded; this.deerBody = a; }
     const id = 'body' + Math.random().toString(36).slice(2, 7);
     g.world.addInteractable({ id, pos: () => a.pos, r: kind === 'deer' ? 2.6 : 1.9, label: kind === 'deer' ? 'Harvest the deer' : 'Pick up the hare', priority: 2, use: () => {
@@ -229,11 +237,13 @@ export class Act1 {
   // Quest step handlers
   // =====================================================================================
   onStep(qid, sid, r) {
-    const f = this.steps[qid + '.' + sid];
-    if (f) f.call(this, r);
+    const key = qid + '.' + sid;
+    if (this.steps[key]) this.steps[key].call(this, r);
+    else if (this.ch2.steps[key]) this.ch2.steps[key].call(this.ch2, r);
   }
   onQuestDone(id) {
     if (id === 'q_alone') this.playEnding();
+    if (id === 'q_ice') this.ch2.playEnding();
   }
   steps = {
     'q_morning.ylva'() { this.hint('move'); this.g.after(9, () => { if (this.g.quests.at('q_morning', 'ylva')) this.hint('talk'); }); },
@@ -621,9 +631,17 @@ export class Act1 {
       { dur: 9, from: [cx - 3.5, cy + 1.6, cz + 5.5], to: [cx - 5.5, cy + 2.6, cz + 8], look: [cx, cy + 0.7, cz + 0.6], fov: 40, sub: ['', "He had his father's axe, his mother's last words, and a fire he had made himself.", 7.5] },
       { dur: 11, from: [cx - 10, cy + 6, cz - 12], to: [cx - 20, cy + 22, cz - 26], look: [cx + 20, cy + 3, cz + 30], lookTo: [cx + 70, cy + 8, cz + 90], fov: 46, sub: ['', 'It was enough to see the dawn.', 7],
         onUpdate: (k) => { g.sky.time = lerp(4.2, 7.25, k); } },
-    ], { skippable: false, onEnd: () => { g.ui.fade(true, 2.5).then(() => { this.st.stage = 'complete'; g.autosave(); this.showChapterEnd(); }); } }));
+    ], { skippable: false, onEnd: () => { g.ui.fade(true, 2.5).then(() => { this.st.stage = 'ch1done'; g.autosave(); this.showChapterEnd(); }); } }));
   }
   showChapterEnd() { this.g.setMode('ui'); this.g.ui.showChapterEnd(); }
+  /** Start Chapter 2 from a clean world: write the opening checkpoint, then reload into it. */
+  beginChapter2() {
+    const g = this.g, st = this.st;
+    for (const id of Object.keys(st.quests)) if (st.quests[id].status === 'active') delete st.quests[id]; // unfinished village errands burned with the village
+    st.stage = 'ch2'; st.quests.q_white = { status: 'active', step: 0, count: 0 };
+    Object.assign(g.player, { health: 100, warmth: 70, hunger: 38 }); g.sky.time = 7.5;
+    g.saveGame('auto'); g.reloadCheckpoint();
+  }
 
   // =====================================================================================
   // Per-frame
@@ -645,6 +663,7 @@ export class Act1 {
       this.updateDay(dt);
     } else if (st.stage === 'night') this.updateNight(dt);
     else if (st.stage === 'wilderness') this.updateWilderness(dt);
+    else if (st.stage === 'ch2') this.ch2.update(dt);
     if (this.shipMove) { this.shipK = Math.min(1, this.shipK + dt / 15); this.placeShips(); }
     if (this.spar) this.spar.update(dt);
 
@@ -667,7 +686,7 @@ export class Act1 {
     g.audio.setAmbience({
       river: clamp(1 - dRiver / 34, 0, 1) * 0.5, fire: g.fx.fireLoud,
       birds: st.stage === 'day' && sky.time < 16.4 ? 0.7 : 0,
-      wind: st.stage === 'wilderness' ? 1 : st.stage === 'night' ? 0.5 : 0.2 + clamp((p.pos.y - 6) / 30, 0, 0.5),
+      wind: st.stage === 'wilderness' ? 1 : st.stage === 'ch2' ? 0.4 + g.sky.weather.wind * 0.2 : st.stage === 'night' ? 0.5 : 0.2 + clamp((p.pos.y - 6) / 30, 0, 0.5),
     });
     if (st.stage === 'day' && g.mode !== 'menu') g.audio.setMusic('day');
   }
@@ -757,6 +776,13 @@ export class Act1 {
     if (!m) return null;
     if (m.npc) { const n = this.npc(m.npc); return n && n.visible ? { x: n.pos.x, z: n.pos.z, y: n.pos.y + n.h.headHeight() + 0.45 } : null; }
     if (m.dyn === 'deerBody') return this.deerBody && !this.deerBody.harvested ? { x: this.deerBody.pos.x, z: this.deerBody.pos.z, y: this.deerBody.pos.y + 1.2 } : null;
+    if (m.dyn === 'wolf') { const w = this.ch2.wolf; return w && !w.dead ? { x: w.pos.x, z: w.pos.z, y: w.pos.y + 1.3 } : null; }
+    if (m.pos) {
+      const pl = this.g.player.pos, k = m.pos.join();
+      if (m.until && Math.hypot(pl.x - m.pos[0], pl.z - m.pos[1]) < m.until) this.markerSeen = k;
+      if (m.until && this.markerSeen === k) return null;
+      return { x: m.pos[0], z: m.pos[1], y: this.g.world.groundAt(m.pos[0], m.pos[1]) + 1.6 };
+    }
     if (m.poi) {
       const p = POI[m.poi], pl = this.g.player.pos;
       if (m.until && Math.hypot(pl.x - p.x, pl.z - p.z) < m.until) this.markerSeen = m.poi;

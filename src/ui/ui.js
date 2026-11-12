@@ -20,7 +20,7 @@ export class UI {
     for (const id of ['hud', 'compass', 'tracker', 'hint', 'toasts', 'prompt', 'crosshair', 'marker', 'detect', 'alert', 'meter', 'banner', 'sense', 'subtitle', 'skip', 'dialogue', 'fade', 'card', 'menu', 'pause', 'panel', 'tabs', 'loading', 'equip'])
       this.e[id] = document.getElementById(id);
     this.e.lb = [document.getElementById('lb-top'), document.getElementById('lb-bot')];
-    this.bars = { health: $('#bar-health i'), stamina: $('#bar-stamina i'), warmth: $('#bar-warmth i'), warmthWrap: $('#bar-warmth') };
+    this.bars = { health: $('#bar-health i'), stamina: $('#bar-stamina i'), warmth: $('#bar-warmth i'), warmthWrap: $('#bar-warmth'), hunger: $('#bar-hunger i'), hungerWrap: $('#bar-hunger'), ice: $('#bar-ice i'), iceWrap: $('#bar-ice') };
     this.subT = 0; this.fadeS = null; this.fadeV = 0; this.cardS = null; this.tab = 'journal'; this.returnTo = null; this.sel = {};
     this.compass = CARD.map(([t, b]) => { const s = document.createElement('span'); s.textContent = t; if (t.length > 1) s.className = 'minor'; this.e.compass.appendChild(s); return { s, b }; });
     this.objSpan = document.createElement('span'); this.objSpan.className = 'obj'; this.objSpan.textContent = '◆'; this.e.compass.appendChild(this.objSpan);
@@ -68,6 +68,8 @@ export class UI {
     d.style.setProperty('--aware', Math.min(100, v * 100) + '%');
     d.querySelector('span').textContent = v >= 1 ? 'Spotted!' : v > 0.45 ? 'Suspicious' : 'Hidden';
   }
+  /** Hold the screen partly dark (exhaustion). Ignored while a real fade is running. */
+  dim(k) { if (!this.fadeS) { this.fadeV = k; this.e.fade.style.opacity = k; } }
   letterbox(on) { this.e.lb.forEach((l) => l.classList.toggle('on', on)); this.e.hud.classList.toggle('hidden', on); }
   skipHint(k) { this.e.skip.classList.toggle('on', k > 0.02); this.e.skip.style.setProperty('--k', Math.min(1, k)); }
   setHUD(on) { this.e.hud.classList.toggle('hidden', !on); }
@@ -123,9 +125,13 @@ export class UI {
     if (g.mode === 'menu' || !p) return;
     this.bars.health.style.width = p.health + '%';
     this.bars.stamina.style.width = p.stamina + '%';
-    const cold = g.state.stage === 'wilderness';
+    const ch2 = g.state.stage === 'ch2', cold = g.state.stage === 'wilderness' || ch2, ice = ch2 && g.story.ch2.iceShown;
     this.bars.warmthWrap.classList.toggle('on', cold);
     if (cold) { this.bars.warmth.style.width = p.warmth + '%'; this.bars.warmthWrap.classList.toggle('low', p.warmth < 30); }
+    this.bars.hungerWrap.classList.toggle('on', ch2);
+    if (ch2) { this.bars.hunger.style.width = p.hunger + '%'; this.bars.hungerWrap.classList.toggle('low', p.hunger < 20); }
+    this.bars.iceWrap.classList.toggle('on', ice);
+    if (ice) { const k = Math.min(1, g.story.ch2.strain); this.bars.ice.style.width = k * 100 + '%'; this.bars.iceWrap.classList.toggle('low', k > 0.6); }
     this.e.sense.style.opacity = g.sense * 0.9;
 
     // compass
@@ -229,7 +235,7 @@ export class UI {
   }
   get panelOpen() { return this.e.panel.classList.contains('on'); }
   closePanel() {
-    if (this.g.state.stage === 'complete' && this.g.mode === 'ui') return;
+    if (this.locked) return;
     this.e.panel.classList.remove('on'); this.g.input.captureNext = null;
     this.g.panelClosed();
   }
@@ -351,25 +357,32 @@ export class UI {
     body.querySelectorAll('[data-del]').forEach((b) => (b.onclick = () => { deleteSave(b.dataset.del); this.openPanel('saves', this.tabs); }));
   }
   render_status(body) {
-    body.innerHTML = `<h3>Build status — vertical slice 0.1</h3>
+    body.innerHTML = `<h3>Build status — vertical slice 0.2</h3>
       <p>This is the first playable chapter of a long project, not the finished game. Everything on screen is generated in code; characters, props and sound are placeholders awaiting real assets.</p>
       <div class="status-grid">
-      <div><h4><span class="tag ok">playable</span></h4><ul><li>Act I, Chapter 1: a full day in Hrafnvik and the night raid (about 30–45 minutes)</li><li>Third-person movement, camera, stamina, crouch, dodge</li><li>Dialogue with choices, traits and bonds</li><li>Quests, journal, objective tracker, map with waypoint</li><li>Woodcutting, bow hunting, tracking, fishing, fire-making</li><li>Sparring tutorial: strike, block, parry, dodge</li><li>Stealth escape with raider sight and hearing</li><li>Cold and warmth survival</li><li>Day/night sky, snow, fire, in-engine cutscenes</li><li>Save / load, autosave, settings, key rebinding, gamepad</li></ul></div>
+      <div><h4><span class="tag ok">playable</span></h4><ul><li>Act I, Chapter 1: a full day in Hrafnvik and the night raid</li><li>Act I, Chapter 2: winter survival, a wolf, trackers and the river ice</li><li>Hunger and warmth, shelter, cooking, thin-ice crossing</li><li>Third-person movement, camera, stamina, crouch, dodge</li><li>Dialogue with choices, traits and bonds</li><li>Quests, journal, objective tracker, map with waypoint</li><li>Woodcutting, bow hunting, tracking, fishing, fire-making</li><li>Sparring tutorial: strike, block, parry, dodge</li><li>Stealth escape with raider sight and hearing</li><li>Cold and warmth survival</li><li>Day/night sky, snow, fire, in-engine cutscenes</li><li>Save / load, autosave, settings, key rebinding, gamepad</li></ul></div>
       <div><h4><span class="tag proto">prototype</span></h4><ul><li>Procedural characters and animation (to be replaced by rigged models)</li><li>Procedural audio and score</li><li>Villager routines (posts and an evening change, not full schedules)</li><li>Wildlife AI: hares, deer, sheep, ravens</li><li>Melee combat core (used only for sparring so far)</li><li>Higgsfield asset client (built, waiting on a valid key ID and secret)</li></ul></div>
-      <div><h4><span class="tag plan">planned</span></h4><ul><li>Acts I ch.2 – VII (see docs/ROADMAP.md and data/missions.json)</li><li>Adult Eirik, nine weapon classes, five skill trees</li><li>Enemy combat AI, bosses, mounted and naval combat</li><li>Sailing, settlement, factions, trading, crafting</li><li>50 side missions and tavern games</li><li>Building interiors, voiced dialogue, real music</li><li>Unreal Engine 5 port for photoreal fidelity</li></ul></div></div>`;
+      <div><h4><span class="tag plan">planned</span></h4><ul><li>Act I ch.3 and Acts II – VII (see docs/ROADMAP.md and data/missions.json)</li><li>Adult Eirik, nine weapon classes, five skill trees</li><li>Enemy combat AI, bosses, mounted and naval combat</li><li>Sailing, settlement, factions, trading, crafting</li><li>50 side missions and tavern games</li><li>Building interiors, voiced dialogue, real music</li><li>Unreal Engine 5 port for photoreal fidelity</li></ul></div></div>`;
   }
   showChapterEnd() {
-    const st = this.g.state, body = $('#panel-body');
-    this.e.hud.classList.add('hidden'); this.e.panel.classList.add('on'); this.e.tabs.innerHTML = '<button class="on">Chapter One Complete</button>';
+    const g = this.g, st = g.state, body = $('#panel-body'), two = g.quests.isDone('q_ice');
+    this.locked = true;
+    this.e.hud.classList.add('hidden'); this.e.panel.classList.add('on');
+    this.e.tabs.innerHTML = `<button class="on">${two ? 'Chapter Two Complete' : 'Chapter One Complete'}</button>`;
     $('#panel-close').style.display = 'none';
-    const top = Object.keys(TRAITS).sort((a, b) => st.traits[b] - st.traits[a])[0];
-    body.innerHTML = `<h3>The Night of Ashes</h3><p>Eirik Ravensson, nine winters old, is alone in the frozen forest with his father's axe.</p>
+    const top = Object.keys(TRAITS).sort((a, b) => st.traits[b] - st.traits[a])[0], max = Math.max(4, ...Object.values(st.traits));
+    const wolf = st.flags.wolfFed ? 'He shared his kill with the wolf.' : st.flags.wolfKilled ? 'He killed the wolf that came for his kill.' : '';
+    body.innerHTML = `<h3>${two ? 'The Long White' : 'The Night of Ashes'}</h3>
+      <p>${two ? `A farmer named Bjorn found a boy in the snow beyond the river, half frozen, his hand locked around an axe. ${wolf}` : "Eirik Ravensson, nine winters old, is alone in the frozen forest with his father's axe."}</p>
       <h4>Your Eirik</h4><p>Time played: ${fmtTime(st.playtime)} · Renown: ${st.xp} · Strongest trait: <b>${TRAITS[top]}</b></p>
-      ${Object.keys(TRAITS).map((k) => `<div class="trait"><span>${TRAITS[k]}</span><div class="tb"><i style="width:${(st.traits[k] / Math.max(4, ...Object.values(st.traits))) * 100}%"></i></div><span>${st.traits[k]}</span></div>`).join('')}
+      ${Object.keys(TRAITS).map((k) => `<div class="trait"><span>${TRAITS[k]}</span><div class="tb"><i style="width:${(st.traits[k] / max) * 100}%"></i></div><span>${st.traits[k]}</span></div>`).join('')}
       <ul class="steps">${st.choices.map((c) => `<li class="done" style="text-decoration:none">${esc(c.pick)}</li>`).join('')}</ul>
-      <h4>Next <span class="tag plan">planned</span></h4><p>Chapter Two, “The Long White”: survive the wilderness alone with what your father taught you, until a farming family finds you near death. Then ten years pass.</p>
-      <p class="muted">These choices are saved. They are designed to carry into Act II, where Eirik's traits begin to shape how others treat him.</p>
-      <p><button class="btn" id="tomenu">Return to main menu</button></p>`;
-    body.querySelector('#tomenu').onclick = () => this.g.quitToMenu();
+      ${two
+    ? `<h4>Next <span class="tag plan">planned</span></h4><p>Chapter Three, “A Stranger's Hearth”: fever, a farmhouse, and a family who ask his name. Then ten years pass.</p>
+       <p class="muted">Everything recorded here is saved, and is designed to carry into Act II.</p><p><button class="btn" id="tomenu">Return to main menu</button></p>`
+    : `<h4>Next</h4><p>Chapter Two, “The Long White”: keep the fire, find food, and stay ahead of the men who are still looking for you.</p>
+       <p><button class="btn" id="next">Continue to Chapter Two</button> <button class="btn" id="tomenu">Return to main menu</button></p>`}`;
+    body.querySelector('#tomenu').onclick = () => g.quitToMenu();
+    const nx = body.querySelector('#next'); if (nx) nx.onclick = () => g.story.beginChapter2();
   }
 }

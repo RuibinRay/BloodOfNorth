@@ -35,9 +35,9 @@ So "what the old king gave you" is not a treasure. It is Eirik's mother. Eirik l
 
 **Act I — The Night of Ashes** (4 h)
 - Ch.1 *The Night of Ashes* **[built]** — the last day, the raid, the escape, the first fire alone.
-- Ch.2 *The Long White* **[written]** — three days alone: snares, a wolf at the carcass, crossing river ice,
-  hiding from Håkon's trackers, fever. Mechanics: hunger, shelter, cold. Ends when Bjorn finds him in the snow.
-- Ch.3 *A Stranger's Hearth* **[outline]** — recovery with the farm family; the choice to tell them his name, or not.
+- Ch.2 *The Long White* **[built]** — alone at the old birch: shelter, hunger, a deer, a wolf at the kill;
+  then Håkon's trackers, the river ice, and Bjorn finding him in the snow. The wolf is fed or killed (`wolfFed` / `wolfKilled`).
+- Ch.3 *A Stranger's Hearth* **[outline]** (next) — recovery with the farm family; the choice to tell them his name, or not.
 
 **Act II — The Farmer's Axe** (5 h) **[outline]** — ten years on. Farming, smithing, trade, a rival's
 feud, a harvest feast. Håkon's raiders come; Eirik takes the axe from under the floor. First real combat:
@@ -78,4 +78,5 @@ The epilogue visits the adoptive family, each living companion, and the old birc
 - Eirik's first fire is called back in Acts II, V and VII.
 - No horned helmets, no plate armour, no stone castles in Norway. England has burhs and minsters.
 - Traits and flags recorded in Chapter 1 (`cleanKill`, `askedWhy`, `heardRumor`, `readStone`,
-  `dreamFarmer` / `dreamWarrior` / `dreamWayfarer`) are referenced by later dialogue.
+  `dreamFarmer` / `dreamWarrior` / `dreamWayfarer`, and Chapter 2's `wolfFed` / `wolfKilled`) are referenced by later dialogue.
+- A fed wolf returns in Act III; a killed one leaves a pelt Freydis notices.

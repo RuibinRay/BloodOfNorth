@@ -26,7 +26,7 @@ scale to a seamless open world; those need the engine port below.
 | Player, NPCs, wildlife | `src/entities/*` | Controller and camera; behaviours (go, lead, follow, fight, patrol, chase, search); perception |
 | RPG systems | `src/systems/systems.js` | Quests, inventory, dialogue, cinematic camera |
 | Activities | `src/systems/activities.js` | Woodcutting, fire-making, fishing, sparring |
-| Content | `src/data/act1.js`, `src/story/act1.js` | Data, and the director that reacts to quest steps |
+| Content | `src/data/act1*.js`, `src/story/act1*.js` | Data, and one director per chapter that reacts to quest steps |
 | Interface | `src/ui/*` | DOM overlay |
 
 Performance on the test machine: 60 fps at 1536×1152 with about 1.5 million triangles and under 60
@@ -51,7 +51,8 @@ draw calls by day. This is one measurement on one machine, not a guarantee.
 `window.__game.debug` exposes a playtest harness: `manual()` takes the loop off the display's frame
 callback, `run(seconds)` steps deterministically, and helpers press keys, talk through dialogue, aim
 and shoot. Chapter 1 was driven through every quest step this way. `debug.jump(quest, step)` starts
-anywhere. In development, `debug.save(name)` writes a canvas capture to `.playtest/`.
+anywhere. In development, `debug.save(name)` writes a canvas capture to `.playtest/`. Chapter 2 was
+tested the same way, including loading every step cold and the chapter-to-chapter hand-off.
 
 Not covered: human play feel, real pointer-lock mouse aiming, gamepad on hardware, browsers other
 than the embedded Chromium, and long-session memory.

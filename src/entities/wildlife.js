@@ -41,6 +41,24 @@ function deerModel(stag) {
   }
   return g;
 }
+function wolfModel() {
+  const g = new THREE.Group(), fur = 0x6e6e72;
+  g.add(mesh([
+    tint(at(capsule(0.19, 0.6, 8), 0, 0.6, 0, Math.PI / 2, 0, 0, 1, 1, 1.02), fur, 0.14, 1),
+    tint(at(sphere(0.15, 7, 6), 0, 0.78, 0.5, 0, 0, 0, 0.9, 0.95, 1.2), 0x7a7a7e, 0.1, 2),
+    tint(at(cone(0.07, 0.24, 5), 0, 0.74, 0.74, Math.PI / 2, 0, 0), 0x55555a, 0.08, 3),
+    tint(at(cone(0.045, 0.13, 4), 0.08, 0.95, 0.46), fur, 0.05, 4), tint(at(cone(0.045, 0.13, 4), -0.08, 0.95, 0.46), fur, 0.05, 5),
+    tint(at(capsule(0.05, 0.4, 5), 0, 0.5, -0.62, -0.9, 0, 0), 0x5c5c60, 0.1, 6),
+    tint(at(sphere(0.016, 4, 3), 0.07, 0.83, 0.62), 0xd8b040, 0, 7), tint(at(sphere(0.016, 4, 3), -0.07, 0.83, 0.62), 0xd8b040, 0, 8),
+  ]));
+  g.userData.legs = [];
+  for (const [x, z] of [[0.11, 0.32], [-0.11, 0.32], [0.11, -0.34], [-0.11, -0.34]]) {
+    const leg = new THREE.Group(); leg.position.set(x, 0.52, z);
+    leg.add(mesh([tint(at(capsule(0.04, 0.42, 5), 0, -0.25, 0), 0x5c5c60, 0.1, 9)]));
+    g.add(leg); g.userData.legs.push(leg);
+  }
+  return g;
+}
 function sheepModel() {
   const g = new THREE.Group();
   const parts = [tint(at(sphere(0.34, 8, 6), 0, 0.55, 0, 0, 0, 0, 0.9, 0.85, 1.3), 0xd8d2c2, 0.14, 1), tint(at(sphere(0.12, 6, 5), 0, 0.68, 0.45, 0, 0, 0, 0.8, 0.9, 1.3), 0x3a3028, 0.1, 2)];
@@ -70,7 +88,7 @@ export class Wildlife {
     ]);
   }
   spawn(kind, x, z, opts = {}) {
-    const model = kind === 'hare' ? hareModel() : kind === 'deer' ? deerModel(opts.stag) : sheepModel();
+    const model = kind === 'hare' ? hareModel() : kind === 'deer' ? deerModel(opts.stag) : kind === 'wolf' ? wolfModel() : sheepModel();
     const a = {
       kind, model, pos: model.position, yaw: Math.random() * 6.28, state: 'graze', t: Math.random() * 4, speed: 0,
       home: opts.home || { x, z, r: kind === 'deer' ? 16 : kind === 'hare' ? 14 : 3.2 }, dest: null, hp: kind === 'deer' ? 2 : 1, dead: false, harvested: false,
@@ -118,6 +136,15 @@ export class Wildlife {
       if (a.dead) {
         a.model.rotation.z = damp(a.model.rotation.z, Math.PI / 2, 6, dt);
         a.pos.y = damp(a.pos.y, heightAt(a.pos.x, a.pos.z) + (a.kind === 'deer' ? 0.28 : 0.1), 6, dt);
+        continue;
+      }
+      if (a.ai) { // scripted animals (the wolf) drive themselves
+        a.ai(a, dt);
+        a.hop += dt * (4 + a.speed * 2.2);
+        a.pos.y = heightAt(a.pos.x, a.pos.z);
+        const lg = a.model.userData.legs;
+        if (lg) { const s = Math.sin(a.hop) * clamp(a.speed / 5, 0, 0.9); lg[0].rotation.x = s; lg[1].rotation.x = -s; lg[2].rotation.x = -s; lg[3].rotation.x = s; }
+        a.model.rotation.y = a.yaw;
         continue;
       }
       const dx = a.pos.x - p.pos.x, dz = a.pos.z - p.pos.z, d = Math.hypot(dx, dz);
@@ -193,7 +220,8 @@ export class Wildlife {
         for (const a of this.animals) {
           if (a.dead) continue;
           const big = a.kind === 'deer';
-          const cy = a.pos.y + (big ? 1.0 : a.kind === 'sheep' ? 0.55 : 0.2), rad = big ? 0.62 : a.kind === 'sheep' ? 0.5 : 0.33;
+          const mid = a.kind === 'sheep' || a.kind === 'wolf';
+          const cy = a.pos.y + (big ? 1.0 : mid ? 0.6 : 0.2), rad = big ? 0.62 : mid ? 0.5 : 0.33;
           let hit = Math.hypot(pos.x - a.pos.x, pos.y - cy, pos.z - a.pos.z) < rad, vital = false;
           if (big && !hit) { // head / neck: a clean kill
             const hx = a.pos.x + Math.sin(a.yaw) * 0.7, hz = a.pos.z + Math.cos(a.yaw) * 0.7;

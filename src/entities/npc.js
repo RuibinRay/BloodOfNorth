@@ -143,7 +143,7 @@ export class NPC {
   canSee(p) {
     const g = this.game, dx = p.pos.x - this.pos.x, dz = p.pos.z - this.pos.z, d = Math.hypot(dx, dz);
     const diff = g.settings.difficulty === 'easy' ? 0.75 : g.settings.difficulty === 'hard' ? 1.2 : 1;
-    const range = (p.crouch ? 8.5 : 17) * diff;
+    const range = (p.crouch ? 8.5 : 17) * diff * (g.story.hideFactor ? g.story.hideFactor(p) : 1);
     if (d > range) return 0;
     const ang = Math.abs(angleDiff(this.yaw, Math.atan2(dx, dz)));
     if (ang > 1.0 && d > 2.2) return 0;

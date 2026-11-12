@@ -150,8 +150,9 @@ class Game {
     if (!this.started) return false;
     const st = this.state, p = this.player, tr = this.quests.tracked()[0];
     st.player = { x: p.pos.x, z: p.pos.z, yaw: p.yaw };
-    if (st.stage === 'day') st.time = this.sky.time;
-    return writeSave(slot, st, { quest: tr ? tr.def.title : 'Chapter One complete', step: tr ? tr.step.text : 'The Night of Ashes', playtime: st.playtime });
+    if (st.stage === 'day' || st.stage === 'ch2') st.time = this.sky.time;
+    st.vitals = { health: p.health, warmth: p.warmth, hunger: p.hunger };
+    return writeSave(slot, st, { quest: tr ? tr.def.title : this.quests.isDone('q_ice') ? 'Chapter Two complete' : 'Chapter One complete', step: tr ? tr.step.text : this.quests.isDone('q_ice') ? 'The Long White' : 'The Night of Ashes', playtime: st.playtime });
   }
   autosave() { this.saveGame('auto'); }
   reloadCheckpoint() { try { sessionStorage.setItem('botn.boot', 'load:auto'); } catch { /* ignore */ } location.reload(); }
@@ -241,7 +242,7 @@ class Game {
       time: (h) => { g.sky.time = h; },
       /** Jump straight to a quest step (marks earlier main quests done). */
       jump: (qid, sid) => {
-        const order = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone'];
+        const order = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice'];
         if (!g.started) { g.started = true; g.ui.hideMain(); g.setMode('play'); }
         for (const id of order) {
           if (id === qid) break;
@@ -252,6 +253,7 @@ class Game {
         const oi = order.indexOf(qid);
         if (oi >= 2) for (const [k, n] of [['bow', 1], ['arrow', 12], ['flint', 1]]) if (!g.inventory.has(k)) g.inventory.add(k, n, true);
         if (oi >= 4) if (!g.inventory.has('woodsword')) g.inventory.add('woodsword', 1, true);
+        if (oi >= 8) { g.state.stage = 'ch2'; if (!g.inventory.has('father_axe')) g.inventory.add('father_axe', 1, true); if (qid === 'q_ice' || i >= 6) if (!g.inventory.has('venison')) g.inventory.add('venison', 3, true); }
         g.quests.enter(qid, true); g.ui.refreshTracker();
       },
       info: () => ({

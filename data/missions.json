@@ -6,7 +6,7 @@
    "act": 1,
    "title": "The Night of Ashes",
    "target_minutes": 240,
-   "built_minutes_estimate": 80,
+   "built_minutes_estimate": 108,
    "missions": [
     {
      "id": "a1m01",
@@ -76,25 +76,25 @@
      "id": "a1m09",
      "title": "The Long White",
      "type": "survival",
-     "minutes": 45,
-     "summary": "Three days alone: snares, shelter, hunger.",
-     "status": "planned"
+     "minutes": 14,
+     "summary": "Cut boughs, mend the lean-to, follow deer tracks in the snow, cook, sleep. Hunger and warmth.",
+     "status": "built"
     },
     {
      "id": "a1m10",
      "title": "Teeth in the Dark",
-     "type": "stealth/combat",
-     "minutes": 25,
-     "summary": "A wolf contests the carcass; drive it off with fire or lose the meat.",
-     "status": "planned"
+     "type": "encounter",
+     "minutes": 4,
+     "summary": "A wolf wants the kill: shoot it or throw it a share.",
+     "status": "built"
     },
     {
      "id": "a1m11",
      "title": "Thin Ice",
-     "type": "traversal",
-     "minutes": 20,
-     "summary": "Cross the frozen river while Håkon's trackers search the bank.",
-     "status": "planned"
+     "type": "stealth/traversal",
+     "minutes": 10,
+     "summary": "Trackers in the forest, a river of thin ice, and Bjorn finding a boy in the snow.",
+     "status": "built"
     },
     {
      "id": "a1m12",
