@@ -31,6 +31,16 @@ Object.assign(QUESTS, {
   },
 });
 const PRICE = { hare: 4, fish: 3, venison: 6, hide: 10 };
+/** What the traders sell. `once`: only while he does not own one. */
+const WARES = {
+  arrows: { t: 'Ten arrows', cost: 8, give: ['arrow', 10], line: 'Ash shafts, goose feather. They fly true.' },
+  shield: { t: 'A linden shield', cost: 20, give: ['shield', 1], once: true, line: 'Linden boards, a rawhide rim and an iron boss. It will turn an arrow, and it hits harder than it looks.' },
+  spear: { t: 'An ash spear', cost: 25, give: ['spear', 1], once: true, line: 'Eight feet of ash and a hand of iron. Nobody gets close who you do not want close.' },
+  sword: { t: 'A sword', cost: 45, give: ['sword', 1], once: true, line: 'Frankish steel, or the man who sold it to me said so. It is quick, whatever it is.' },
+  longaxe: { t: 'A long axe', cost: 60, give: ['longaxe', 1], once: true, line: 'Two hands and no shield. Men who carry these do not expect to need one.' },
+  throwaxe: { t: 'Four throwing axes', cost: 10, give: ['throwaxe', 4], line: 'They turn once in ten paces. Count your paces.' },
+};
+const STOCK = { merchant: ['arrows', 'shield', 'spear', 'throwaxe'], trader: ['arrows', 'shield', 'sword', 'longaxe', 'throwaxe'] };
 /** The kinds of fighter beyond the ordinary: what they are called and how they are armed (see systems/combat.js). */
 export const KINDS = {
   archer: { tag: ' archer', opts: { hp: 60, dmg: 9, skill: 0.2, kind: 'archer' } },
@@ -176,22 +186,29 @@ export class OpenProto {
   merchantTalk(n) {
     const g = this.g, inv = g.inventory, M = n.name, silver = inv.count('silver');
     const worth = Object.keys(PRICE).reduce((a, k) => a + inv.count(k) * PRICE[k], 0);
+    const gear = (STOCK[n.id] || STOCK.merchant).filter((k) => !WARES[k].once || !inv.has(k)); // what this trader keeps, less what he already owns
     this.say([
       { s: M, t: `${M}. I buy what the land gives and sell what it cannot. What have you?` },
       { s: 'Eirik', t: '', choices: [
         { t: `Sell game and hides (${worth} silver)`, to: worth > 0 ? 'sold' : 'none', fx: worth > 0 ? { do: () => { for (const k in PRICE) if (inv.count(k)) inv.remove(k, 999, true); inv.add('silver', worth); if (!this.traded[this.law.id]) { this.traded[this.law.id] = true; this.law.addStanding(5, 'Fair trade'); } } } : null },
-        { t: 'Buy ten arrows (8 silver)', to: silver >= 8 ? 'bought' : 'poor', fx: silver >= 8 ? { do: () => { inv.remove('silver', 8, true); inv.add('arrow', 10); } } : null },
-        ...(inv.has('shield') ? [] : [{ t: 'Buy a linden shield (20 silver)', to: silver >= 20 ? 'shield' : 'poor', fx: silver >= 20 ? { do: () => { inv.remove('silver', 20, true); inv.add('shield', 1); g.after(0.5, () => g.ui.hint('With the axe drawn, hold {block} to raise the shield: it stops arrows and blocking costs less. {attack} while blocking shoves with the boss. {weapon3} swaps shield and second axe.')); } } : null }]),
+        { t: 'Arrows and war-gear', to: 'gear' },
         { t: "Give 20 silver to the hall's winter stores", to: silver >= 20 ? 'gift' : 'poor', fx: silver >= 20 ? { do: () => { inv.remove('silver', 20, true); this.law.addStanding(12, 'A gift to the hall'); } } : null },
         { t: '"Nothing today."', to: 'end' },
       ] },
       { id: 'sold', s: M, t: 'Fair weight. Come again.', to: 'end' },
       { id: 'none', s: M, t: 'You carry nothing I can sell. Hunt, fish, come back.', to: 'end' },
-      { id: 'bought', s: M, t: 'Ash shafts, goose feather. They fly true.', to: 'end' },
-      { id: 'shield', s: M, t: 'Linden boards, a rawhide rim and an iron boss. It will turn an arrow, and it hits harder than it looks.', to: 'end' },
+      { id: 'gear', s: 'Eirik', t: '', choices: [...gear.map((k) => ({ t: `${WARES[k].t} (${WARES[k].cost} silver)`, to: silver >= WARES[k].cost ? 'w_' + k : 'poor', fx: silver >= WARES[k].cost ? { do: () => this.buyWare(k) } : null })), { t: '"Nothing from that pile."', to: 'end' }] },
+      ...gear.map((k) => ({ id: 'w_' + k, s: M, t: WARES[k].line, to: 'end' })),
       { id: 'gift', s: M, t: 'That will be remembered, {n}. People here remember.', to: 'end' },
       { id: 'poor', s: M, t: 'Your purse says otherwise.' },
     ], n);
+  }
+  buyWare(k) {
+    const g = this.g, inv = g.inventory, w = WARES[k];
+    inv.remove('silver', w.cost, true); inv.add(w.give[0], w.give[1]);
+    if (k === 'shield') g.after(0.5, () => g.ui.hint('With a weapon drawn, hold {block} to raise the shield: it stops arrows and blocking costs less. {attack} while blocking shoves with the boss. {weapon3} swaps shield and second axe.'));
+    else if (k === 'throwaxe') g.after(0.5, () => g.ui.hint('{throw} throws an axe at the man you are facing. It stops a swing and shakes a guard. One that misses can be picked up.'));
+    else if (k !== 'arrows') g.after(0.5, () => g.ui.hint('{weapon1} draws your weapon; press it again to step through the ones you carry. Each fights differently: the inventory says how.'));
   }
   taskTalk(n) {
     this.say([

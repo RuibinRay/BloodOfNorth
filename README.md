@@ -1,6 +1,6 @@
 # Blood of the North — Rise of the Raven King
 
-A third-person Viking action RPG. This repository holds **vertical slice 0.9**: all three chapters of
+A third-person Viking action RPG. This repository holds **vertical slice 0.10**: all three chapters of
 Act I (Eirik's childhood), the opening chapter of Act II (Eirik at nineteen, with real combat), and an
 open-world sandbox that runs from the home valley out to a sea chart of islands, with a ship of your own, a
 crew to row her and enemies to fight at sea, plus the design foundation for the full campaign.
@@ -37,7 +37,9 @@ Then open http://localhost:5184. A production build is `npm run build` (output i
 | Set or lower the sail (in the boat or ship) | `Shift` | L3 |
 | Sound the horn: crew ashore, or back aboard | `G` | — |
 | At the ship's helm: loose a volley; raise shields | left mouse; hold right mouse | X or RT; LT |
-| Axe or practice sword, bow, put away | `1`, `2`, `X` | d-pad |
+| Draw a melee weapon; again to step to the next you carry | `1` | d-pad |
+| Bow, put away | `2`, `X` | d-pad |
+| Throw an axe | `F` | — |
 | Off hand: shield or second axe | `3` | — |
 | Shove with the shield (while blocking) | left mouse | X or RT |
 | Journal, inventory, map, pause | `J`, `I`, `M`, `Esc` | Back, Start |
@@ -123,6 +125,17 @@ All keyboard and mouse bindings can be changed in Settings.
   until their guard breaks, and berserkers who do not wait their turn. The traders sell a linden shield (20 silver):
   it stops arrows, halves the cost of blocking, and shoves. Crew can now be wounded: they go down in a fight they
   are losing and get up, weak, when it is over.
+- **More weapons (0.10):** four melee weapons that fight differently, and throwing axes. Traders sell them
+  (Asgerd on Gulen: spear, throwing axes; Thora on Kinn: sword, long axe, throwing axes), and a taken ship
+  gives up her captain's weapon. Ragnar's axe stays on his back whatever is in his hand.
+
+  | Weapon | Light blow | Heavy blow | What it is for |
+  |---|---|---|---|
+  | Ragnar's axe | 14 in 0.5 s | 32, two men | The baseline. Off hand takes a shield or the Left Brother |
+  | Sword | 12 in 0.4 s | 27, two men | Speed and little breath; the widest parry and the hardest riposte; wears a guard slowly |
+  | Ash spear | 13 in 0.5 s, at 3.5 m | 29, one man | Reach; a light thrust stops an attack that is winding up |
+  | Long axe | 21 in 0.7 s, three men | 48, four men | Two hands, no shield, half again the breath; a heavy blow breaks a shield-bearer's guard outright |
+  | Throwing axe | 30 at range | | Stops a swing and shakes a guard; a miss can be picked up |
 - **Traders:** two merchant ships work the sea lanes and hail you by what the district thinks of you.
 - **Two laws:** marks and standing are kept separately in the Vestland and the Skerries. Cross the water and you
   are a stranger again, unless you carried three marks or more, in which case word arrives before you do.

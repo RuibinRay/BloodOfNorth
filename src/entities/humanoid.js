@@ -43,6 +43,7 @@ const ACTIONS = {
   stagger: [[0, { crx: -0.4, nrx: -0.3, slx: -0.6, srx: -0.6, slz: 0.7, srz: -0.7, hy: -0.06, knL: 0.3, knR: 0.3 }], [0.6, { crx: -0.1 }]],
   dodge: [[0, { hy: -0.42, crx: 0.95, nrx: 0.4, llx: -1.3, lrx: -1.3, knL: 2.0, knR: 2.0, slx: -0.9, srx: -0.9, elL: -1.6, elR: -1.6 }], [0.7, { hy: -0.2, crx: 0.4, llx: -0.6, lrx: -0.6, knL: 1.0, knR: 1.0 }]],
   parry: [[0, { srx: -1.9, sry: 0.75, elR: -0.7, cry: 0.25 }], [0.5, { srx: -1.5, sry: 0.5, elR: -1.3 }]],
+  thrust: [[0, { srx: 0.55, elR: -1.25, cry: -0.6, crx: -0.05 }], [0.4, { srx: -0.5, elR: -0.08, cry: 0.5, crx: 0.26, hy: -0.06, knL: 0.3 }], [0.66, { srx: -0.2, elR: -0.7, cry: 0.15 }]],
   shoot: [[0, { cry: -0.45, slx: -1.5, sly: 0.45, elL: -0.05, srx: -1.3, sry: -1.3, elR: -0.5 }], [0.6, {}]],
   pickup: [[0, { hy: -0.4, crx: 0.95, llx: -1.0, lrx: -1.0, knL: 1.8, knR: 1.8, srx: -0.9, elR: -0.2, nrx: 0.2 }], [0.65, { hy: -0.15, crx: 0.4 }]],
   strike: [[0, { srx: -1.0, sry: 0.3, elR: -1.2, slx: -0.8, sly: -0.3, elL: -1.0 }], [0.3, { srx: -0.7, sry: 0.45, elR: -0.7, slx: -0.8, sly: -0.3, elL: -1.0 }], [0.6, { srx: -0.9, sry: 0.3, elR: -1.1, slx: -0.8, sly: -0.3, elL: -1.0 }]],
@@ -219,7 +220,8 @@ function itemGeo(name) {
       if (name === 'father_axe') g.push(tint(at(box(0.026, 0.03, 0.03), 0, 0, 0.2), 0x8a2f25, 0, 4), tint(at(box(0.026, 0.03, 0.03), 0, 0, 0.3), 0x8a2f25, 0, 5));
       break;
     case 'woodaxe': g.push(tint(at(cyl(0.02, 0.024, 0.85, 5), 0, 0, 0.3, Math.PI / 2, 0, 0), WD, 0.08, 1), tint(at(box(0.03, 0.2, 0.13), 0, -0.06, 0.68), IR, 0.06, 2)); break;
-    case 'smallaxe': g.push(tint(at(cyl(0.014, 0.017, 0.5, 5), 0, 0, 0.17, Math.PI / 2, 0, 0), WD, 0.08, 1), tint(at(box(0.02, 0.13, 0.08), 0, -0.04, 0.38), IR, 0.06, 2)); break;
+    case 'longaxe': g.push(tint(at(cyl(0.02, 0.025, 1.4, 5), 0, 0, 0.5, Math.PI / 2, 0, 0), WD, 0.08, 1), tint(at(box(0.03, 0.32, 0.2), 0, -0.11, 1.08), IR, 0.06, 2), tint(at(box(0.034, 0.07, 0.08), 0, 0.0, 1.08), 0x70747a, 0, 3)); break;
+    case 'smallaxe': case 'throwaxe': g.push(tint(at(cyl(0.014, 0.017, 0.5, 5), 0, 0, 0.17, Math.PI / 2, 0, 0), WD, 0.08, 1), tint(at(box(0.02, 0.13, 0.08), 0, -0.04, 0.38), IR, 0.06, 2)); break;
     case 'spear': g.push(tint(at(cyl(0.015, 0.017, 2.0, 5), 0, 0, 0.35, Math.PI / 2, 0, 0), WD, 0.08, 1), tint(at(cone(0.035, 0.26, 4), 0, 0, 1.47, Math.PI / 2, 0, 0), IR, 0, 2)); break;
     case 'hammer': g.push(tint(at(cyl(0.014, 0.016, 0.36, 5), 0, 0, 0.14, Math.PI / 2, 0, 0), WD, 0, 1), tint(at(box(0.05, 0.11, 0.05), 0, 0, 0.32), 0x5a5e64, 0, 2)); break;
     case 'hoe': g.push(tint(at(cyl(0.015, 0.017, 1.4, 5), 0, 0, 0.5, Math.PI / 2, 0, 0), WD, 0, 1), tint(at(box(0.11, 0.02, 0.14), 0, -0.08, 1.18, 1.1, 0, 0), 0x5a5e64, 0, 2)); break;

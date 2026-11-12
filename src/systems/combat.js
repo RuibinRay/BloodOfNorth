@@ -56,24 +56,25 @@ export class Combat {
   playerSwing(n, heavy) {
     const g = this.g, p = g.player;
     if (!this.active) return;
-    const real = p.equipped === 'father_axe';
-    const near = this.alive().map((e) => ({ e, d: e.dist(p) })).filter((x) => x.d < 2.45).sort((a, b) => a.d - b.d);
+    const W = p.weaponDef(), real = W.real;
+    const near = this.alive().map((e) => ({ e, d: e.dist(p) })).filter((x) => x.d < W.reach).sort((a, b) => a.d - b.d);
     const riposte = p.riposteT > 0; // straight after a parry: this one cannot be guarded
     if (riposte) p.riposteT = 0;
     let hits = 0;
     for (const { e } of near) {
-      if (Math.abs(angleDiff(p.yaw, Math.atan2(e.pos.x - p.pos.x, e.pos.z - p.pos.z))) > 1.05) continue;
+      if (Math.abs(angleDiff(p.yaw, Math.atan2(e.pos.x - p.pos.x, e.pos.z - p.pos.z))) > W.arc) continue;
       const c = e.cb, open = ['stagger', 'harried', 'windup', 'strike', 'duel'].includes(c.state);
       // a shield-bearer facing him turns every blow until his guard is broken or he is caught mid-swing
       const wall = c.kind === 'shield' && !open && !riposte && Math.abs(angleDiff(e.yaw, Math.atan2(p.pos.x - e.pos.x, p.pos.z - e.pos.z))) < 1.2;
       if (!riposte && !open && (heavy ? wall : wall || Math.random() < c.skill * 0.62)) { // guarded: no damage, but it wears the guard down
         e.h.play('parry', 0.3); g.audio.play(real ? 'steel' : 'clack'); p.cam.shake = heavy ? 0.16 : 0.08;
         e.h.handWorld(wall ? 'L' : 'R', _v); g.fx.burst(real ? 'spark' : 'chips', _v.x, _v.y + 0.2, _v.z, 6);
-        c.posture = Math.min(100, c.posture + (heavy ? 42 : wall ? 10 : 16)); this.checkPosture(e);
+        c.posture = Math.min(100, c.posture + (heavy && W.breaker ? 100 : (heavy ? 42 : wall ? 10 : 16) * W.posture)); this.checkPosture(e); // a long axe goes through a shield
       } else {
-        let dmg = (real ? 1 : 0.5) * (heavy ? 32 : 12 + n * 2);
-        if (real && p.dual()) dmg *= 1.25; // the Left Brother in the off hand
-        if (riposte) dmg *= 1.6;
+        let dmg = W.dmg * (heavy ? 32 : 12 + n * 2);
+        if (p.dual()) dmg *= 1.25; // the Left Brother in the off hand
+        if (riposte) dmg *= W.riposte;
+        if (W.stop && !heavy && c.state === 'windup' && !c.boss) { c.state = 'recover'; c.t = 0.8; e.h.action = null; } // a spear point stops a swing that has started
         const finish = heavy && c.state === 'stagger'; // a heavy blow on a broken guard ends it
         if (finish) { dmg = c.boss ? dmg * 3 : c.hp + 1; g.slowT = 0.5; g.audio.play('split'); g.events.emit('finisher', e); }
         else if (c.state === 'stagger') dmg *= 1.8;
@@ -82,9 +83,9 @@ export class Combat {
         const a = Math.atan2(e.pos.x - p.pos.x, e.pos.z - p.pos.z), k = heavy ? 0.7 : 0.3;
         if (!c.keepDry || g.world.walkable(e.pos.x + Math.sin(a) * k, e.pos.z + Math.cos(a) * k)) { e.pos.x += Math.sin(a) * k; e.pos.z += Math.cos(a) * k; }
         g.events.emit('enemyHit', e, heavy);
-        this.hurt(e, dmg, heavy ? (c.boss ? 26 : 38) : c.boss ? 4 : 9);
+        this.hurt(e, dmg, (heavy ? (c.boss ? 26 : 38) : c.boss ? 4 : 9) * W.posture);
       }
-      if (++hits >= (heavy ? 2 : 1)) break;
+      if (++hits >= W.sweep[heavy ? 1 : 0]) break;
     }
   }
   enemyStrike(e) {

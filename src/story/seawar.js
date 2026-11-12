@@ -215,6 +215,8 @@ export class SeaWar {
     if (!g.combat.alive().length) { g.combat.clear(); g.audio.setMusic('day'); }
     g.inventory.add('silver', f.def.loot); g.ui.questBanner('Taken at sea', cap(f.name));
     g.ui.toast(`${f.def.loot} in silver from her sea-chests.`);
+    const prize = { hound: ['sword', "Gorm's sword"], tooth: ['longaxe', "Hrut's long axe"] }[f.kind]; // a captain's weapon goes to whoever took his deck
+    if (prize && !g.inventory.has(prize[0])) { g.inventory.add(prize[0], 1); g.ui.toast(`${prize[1]} is yours. {weapon1} steps through your weapons.`.replace('{weapon1}', g.input.label('weapon1'))); }
     this.defeat(f);
     g.ui.hint('Her deck is yours. Go back to your own steering oar with {interact} to cut her loose.');
   }

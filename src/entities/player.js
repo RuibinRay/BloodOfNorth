@@ -3,6 +3,8 @@ import * as THREE from 'three';
 import { clamp, damp, dampAngle, lerp, angleDiff } from '../core/util.js';
 import { Humanoid, makeItem } from './humanoid.js';
 import { shared } from '../world/geo.js';
+import { WEAPONS, MELEE_ORDER } from '../data/weapons.js';
+import { ITEMS } from '../data/act1.js';
 
 export const EIRIK_ADULT = {
   scale: 1.0, build: 1.08, skin: 0xdcae8e, hair: 0xa87e45, hairStyle: 'long', beard: 'short',
@@ -45,19 +47,21 @@ export class Player {
     if (name !== 'none' && !this.game.inventory.has(name)) return false;
     if (this.equipped === name) return true;
     this.equipped = name; this.aiming = false; this.blocking = false; this.draw = 0;
-    this.h.hold('R', name === 'woodsword' ? (this.adult ? 'woodsword_big' : 'woodsword') : name === 'father_axe' ? 'father_axe' : null);
+    this.h.hold('R', name === 'woodsword' ? (this.adult ? 'woodsword_big' : 'woodsword') : WEAPONS[name] ? name : null);
     if (this.adult) this.showBackAxe(name !== 'father_axe' && this.game.inventory.has('father_axe') && !this.game.state.flags.axeHidden);
     this.h.hold('L', name === 'bow' ? 'bow' : this.offItem(name));
     this.game.audio.play('page');
     this.game.events.emit('equip', name);
     return true;
   }
-  isMelee() { return this.equipped === 'woodsword' || this.equipped === 'father_axe'; }
+  isMelee() { return !!WEAPONS[this.equipped]; }
+  /** The numbers for what is in his hand (see data/weapons.js). */
+  weaponDef() { return WEAPONS[this.equipped] || WEAPONS.woodsword; }
   /** What rides in the off hand beside the axe: a shield if he owns one, else the Left Brother; weapon3 swaps them. */
   offItem(name = this.equipped) {
-    const inv = this.game.inventory, fl = this.game.state.flags;
-    if (name !== 'father_axe') return null;
-    const sh = inv.has('shield'), ax = inv.has('brother_axe');
+    const inv = this.game.inventory, fl = this.game.state.flags, W = WEAPONS[name];
+    if (!W || !W.off) return null;
+    const sh = inv.has('shield'), ax = W.off === 'any' && inv.has('brother_axe');
     return sh && !(ax && fl.offAxe) ? 'shield' : ax ? 'brother_axe' : null;
   }
   hasShield() { return this.offItem() === 'shield'; }
@@ -67,7 +71,7 @@ export class Player {
     const g = this.game, inv = g.inventory, fl = g.state.flags;
     if (!inv.has('shield') || !inv.has('brother_axe')) return;
     fl.offAxe = !fl.offAxe; g.audio.play('page');
-    if (this.equipped === 'father_axe') this.h.hold('L', this.offItem());
+    if (this.isMelee()) this.h.hold('L', this.offItem());
     g.ui.toast(fl.offAxe ? 'Off hand: the Left Brother. Harder blows, no shield.' : 'Off hand: shield.');
   }
   /** A shove with the shield boss: no wound to speak of, but it breaks a man's rhythm and wears his guard. */
@@ -90,20 +94,42 @@ export class Player {
     return 'hit';
   }
   /** The melee weapon slot 1 draws: Ragnar's axe once he has taken it up, otherwise the practice blade. */
-  melee() {
-    const g = this.game;
-    if ((g.state.stage === 'act2' || g.state.stage === 'open') && g.inventory.has('father_axe') && !g.state.flags.axeHidden) return 'father_axe';
-    return g.inventory.has('woodsword') ? 'woodsword' : null;
+  melee() { const own = this.meleeOwned(), last = this.game.state.flags.melee; return own.includes(last) ? last : own[0] || null; }
+  /** The melee weapons he can draw now, in the order the weapon key steps through them. A child has only the practice blade. */
+  meleeOwned() {
+    const g = this.game, inv = g.inventory, grown = g.state.stage === 'act2' || g.state.stage === 'open';
+    const real = grown ? MELEE_ORDER.filter((k) => inv.has(k) && !(k === 'father_axe' && g.state.flags.axeHidden)) : [];
+    return real.length ? real : inv.has('woodsword') ? ['woodsword'] : [];
+  }
+  /** A thrown axe: at the man he is facing if there is one, else where the camera looks. */
+  throwAxe() {
+    const g = this.game, h = this.h, inv = g.inventory;
+    if (h.busy || !this.adult || this.throwT > 0 || this.blocking || this.aiming) return;
+    if (inv.count('throwaxe') <= 0) { if (inv.has('father_axe')) g.ui.toast('No throwing axes'); return; }
+    const tg = this.target && !this.target.dead && this.target.dist(this) < 24 ? this.target : null;
+    if (tg) this.yaw = Math.atan2(tg.pos.x - this.pos.x, tg.pos.z - this.pos.z);
+    this.throwT = 0.9; this.stamina = Math.max(0, this.stamina - 6); this.staminaDelay = 0.5;
+    h.play('atk1', 0.42, { hitAt: 0.36, onHit: () => {
+      if (inv.count('throwaxe') <= 0) return;
+      inv.remove('throwaxe', 1, true);
+      h.handWorld('R', _v);
+      let dir;
+      if (tg && !tg.dead) { const d = tg.dist(this), t = d / 19; dir = new THREE.Vector3(tg.pos.x - _v.x, tg.pos.y + 1.15 * tg.h.scale + 3.25 * t * t - _v.y, tg.pos.z - _v.z).normalize(); } // lift for the drop
+      else { g.camera.getWorldDirection(_d); dir = this.aimPoint(_d).sub(_v).normalize(); dir.y += 0.06; dir.normalize(); }
+      g.wildlife.shoot(_v, dir, 19, this, { kind: 'axe', dmg: 30, posture: 32 });
+      g.audio.play('whoosh'); g.events.emit('throw');
+    } });
   }
   swing(heavy) {
     const g = this.game, h = this.h;
-    if (h.busy || this.blocking || this.stamina < (heavy ? 14 : 6)) return;
+    const W = this.weaponDef();
+    if (h.busy || this.blocking || this.stamina < (heavy ? 14 : 6) * W.stam) return;
     const n = heavy ? 3 : (this.combo % 3) + 1;
-    this.stamina -= heavy ? 16 : 7; this.staminaDelay = 0.6; this.combo = heavy ? 0 : this.combo + 1; this.comboT = 1.0; this.crouch = false;
+    this.stamina -= (heavy ? 16 : 7) * W.stam; this.staminaDelay = 0.6; this.combo = heavy ? 0 : this.combo + 1; this.comboT = 1.0; this.crouch = false;
     g.audio.play('whoosh');
     const tg = this.target; // soft lock: turn to face a nearby opponent
     if (tg && Math.hypot(tg.pos.x - this.pos.x, tg.pos.z - this.pos.z) < 3.4) this.yaw = Math.atan2(tg.pos.x - this.pos.x, tg.pos.z - this.pos.z);
-    h.play('atk' + n, heavy ? 0.85 : n === 3 ? 0.62 : 0.5, { hitAt: heavy ? 0.45 : 0.4, onHit: () => g.events.emit('playerSwing', n, heavy) });
+    h.play(W.anim || (heavy && W.animHeavy) || 'atk' + n, (heavy ? 0.85 : n === 3 ? 0.62 : 0.5) / W.speed, { hitAt: heavy ? 0.45 : 0.4, onHit: () => g.events.emit('playerSwing', n, heavy) });
   }
   /** Swap the body (child to grown man) while keeping position, camera and everything that points at the player. */
   setLook(look, adult) {
@@ -142,13 +168,13 @@ export class Player {
     if (this.iframes > 0) return 'dodged';
     const facing = Math.abs(angleDiff(this.yaw, Math.atan2(attacker.pos.x - this.pos.x, attacker.pos.z - this.pos.z))) < 1.2;
     if (this.blocking && facing) {
-      if (this.blockT < 0.26) {
+      if (this.blockT < this.weaponDef().parry) {
         g.audio.play('parry'); this.h.play('parry', 0.3);
         this.h.handWorld('R', _v); g.fx.burst('chips', _v.x, _v.y + 0.2, _v.z, 6);
         this.riposteT = 1.0; g.hitStop = 0.07; // the next blow inside a second cannot be guarded
         return 'parried';
       }
-      this.stamina -= this.hasShield() ? 7 : 14; this.staminaDelay = 0.8; g.audio.play('clack');
+      this.stamina -= this.hasShield() ? 7 : this.weaponDef().block; this.staminaDelay = 0.8; g.audio.play('clack');
       if (this.stamina <= 0) { this.stamina = 0; this.h.play('stagger', 0.6); return 'hit'; }
       return 'blocked';
     }
@@ -169,7 +195,11 @@ export class Player {
 
     if (ctrl) {
       if (inp.hit('crouch')) this.crouch = !this.crouch;
-      if (inp.hit('weapon1')) { const m = this.melee(); if (m) this.equip(this.equipped === m ? 'none' : m); }
+      if (inp.hit('weapon1')) { // draw the last one used; again steps to the next he carries; after the last, put away
+        const own = this.meleeOwned(), i = own.indexOf(this.equipped), next = i < 0 ? this.melee() : own[i + 1] || 'none';
+        if (next) { this.equip(next); if (next !== 'none') { g.state.flags.melee = next; if (own.length > 1) g.ui.toast(ITEMS[next] ? ITEMS[next].name : next); } }
+      }
+      if (inp.hit('throw')) this.throwAxe();
       if (inp.hit('weapon2')) this.equip(this.equipped === 'bow' ? 'none' : 'bow');
       if (inp.hit('holster')) this.equip('none');
       if (inp.hit('weapon3')) this.swapOffHand();
@@ -183,7 +213,7 @@ export class Player {
 
     // --- actions ---
     this.comboT -= dt; if (this.comboT <= 0) this.combo = 0;
-    this.riposteT = (this.riposteT || 0) - dt; this.bashT = (this.bashT || 0) - dt;
+    this.riposteT = (this.riposteT || 0) - dt; this.bashT = (this.bashT || 0) - dt; this.throwT = (this.throwT || 0) - dt;
     if (ctrl && this.blocking && this.hasShield() && inp.hit('attack')) this.bash();
     this.iframes -= dt;
     if (ctrl && inp.hit('dodge') && this.dodgeT <= 0 && this.stamina >= 16 && !this.aiming) {

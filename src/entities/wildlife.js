@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { clamp, damp, dampAngle, angleDiff } from '../core/util.js';
 import { M, at, box, cyl, cone, sphere, capsule, tint, merge } from '../world/geo.js';
 import { heightAt } from '../world/terrain.js';
+import { makeItem } from './humanoid.js';
 
 const _v = new THREE.Vector3();
 const mesh = (geos) => { const m = new THREE.Mesh(merge(geos), M.vcPlain); m.castShadow = true; return m; };
@@ -129,11 +130,12 @@ export class Wildlife {
     }
   }
 
-  shoot(origin, dir, speed, owner) {
-    const m = new THREE.Mesh(this.arrowGeo, M.vcPlain);
+  /** An arrow, or with opts.kind 'axe' a thrown axe (opts.dmg, opts.posture: what it does to a man). */
+  shoot(origin, dir, speed, owner, opts = {}) {
+    const m = opts.kind === 'axe' ? makeItem('throwaxe') : new THREE.Mesh(this.arrowGeo, M.vcPlain);
     m.position.copy(origin).addScaledVector(dir, 0.3);
     this.game.scene.add(m);
-    this.arrows.push({ m, v: dir.clone().multiplyScalar(speed), stuck: false, life: 0, owner, in: null, off: null });
+    this.arrows.push({ m, v: dir.clone().multiplyScalar(speed), stuck: false, life: 0, owner, in: null, off: null, kind: opts.kind || 'arrow', dmg: opts.dmg, posture: opts.posture, spin: 0 });
   }
 
   hitAnimal(a, vital) {
@@ -225,7 +227,7 @@ export class Wildlife {
         if (ar.in && !ar.in.harvested) { ar.m.position.copy(ar.in.pos).add(ar.off); }
         const d = ar.m.position.distanceTo(p.pos);
         if ((d < 1.3 && ar.life > 0.8 && !ar.in) || ar.life > 90 || (ar.in && ar.in.harvested)) {
-          if (d < 1.3 && !ar.in) { g.inventory.add('arrow', 1, true); g.audio.play('pickup', { vol: 0.5 }); }
+          if (d < 1.3 && !ar.in) { g.inventory.add(ar.kind === 'axe' ? 'throwaxe' : 'arrow', 1, true); g.audio.play('pickup', { vol: 0.5 }); }
           g.scene.remove(ar.m); this.arrows.splice(i, 1);
         }
         continue;
@@ -236,6 +238,7 @@ export class Wildlife {
         ar.m.position.addScaledVector(ar.v, sdt);
         const pos = ar.m.position;
         _v.copy(pos).add(ar.v); ar.m.lookAt(_v);
+        if (ar.kind === 'axe') ar.m.rotateX((ar.spin += sdt * 17)); // it turns in the air
         for (const a of this.animals) {
           if (a.dead) continue;
           const big = a.kind === 'deer';
@@ -257,7 +260,8 @@ export class Wildlife {
           const top = 1.9 * e.h.scale;
           if (Math.hypot(pos.x - e.pos.x, pos.z - e.pos.z) < 0.45 && pos.y > e.pos.y && pos.y < e.pos.y + top) {
             ar.stuck = true; ar.life = 89; ar.m.visible = false; g.audio.play('arrowHit');
-            g.combat.hurt(e, pos.y > e.pos.y + top * 0.8 ? 60 : 28, 20); break;
+            if (ar.kind === 'axe') { if ((e.cb.state === 'windup' || e.cb.state === 'strike') && !e.cb.boss) { e.cb.state = 'recover'; e.cb.t = 0.9; e.h.action = null; } g.audio.play('thud', { vol: 0.6 }); g.hitStop = 0.05; }
+            g.combat.hurt(e, ar.dmg ?? (pos.y > e.pos.y + top * 0.8 ? 60 : 28), ar.posture ?? 20); break;
           }
         }
         if (ar.stuck) break;
