@@ -63,6 +63,7 @@ export class NPC {
     const px = this.pos.x, pz = this.pos.z, st = Math.min(d, speed * dt);
     this.pos.x += dx * st; this.pos.z += dz * st;
     this.game.world.resolve(this.pos, 0.32);
+    if (this.keepDry && !this.game.world.walkable(this.pos.x, this.pos.z)) { this.pos.x = px; this.pos.z = pz; }
     const moved = Math.hypot(this.pos.x - px, this.pos.z - pz);
     if (moved < st * 0.35) { this.stuck += dt; if (this.stuck > 0.35) { this.stuck = 0; this.sidestep = 0.7; this.sideDir = -this.sideDir; } }
     else this.stuck = Math.max(0, this.stuck - dt);

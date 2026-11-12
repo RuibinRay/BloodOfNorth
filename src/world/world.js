@@ -12,7 +12,7 @@ const key = (ix, iz) => (ix + 64) * 256 + (iz + 64);
 
 export class World {
   constructor() {
-    this.boxes = []; this.grid = new Map(); this.platforms = [];
+    this.boxes = []; this.grid = new Map(); this.platforms = []; this.decks = [];
     this.interactables = []; this.smoke = []; this.houses = {};
   }
 
@@ -94,9 +94,15 @@ export class World {
   groundAt(x, z) {
     let h = heightAt(x, z);
     for (const p of this.platforms) if (Math.abs(x - p.x) < p.hw && z > p.z0 && z < p.z1 && p.y > h) h = p.y;
+    for (const d of this.decks) { // a ship's deck: { x, z, yaw, hw, hl, y }
+      const dx = x - d.x, dz = z - d.z, s = Math.sin(d.yaw), c = Math.cos(d.yaw);
+      if (Math.abs(dx * c - dz * s) < d.hw && Math.abs(dx * s + dz * c) < d.hl && d.y > h) h = d.y;
+    }
     if (this.ice && z < 170 && Math.abs(x - riverX(z)) < 9.5) { const s = riverSurfaceY(z) + 0.04; if (s > h) h = s; }
     return h;
   }
+  addDeck(d) { this.decks.push(d); return d; }
+  removeDeck(d) { this.decks = this.decks.filter((x) => x !== d); }
   setIce(on) { this.ice = on; this.terrain.setIce(on); }
   /** True when (x, z) is over frozen river rather than ground. */
   onIce(x, z) { return !!this.ice && z < 170 && Math.abs(x - riverX(z)) < 9.5 && heightAt(x, z) < riverSurfaceY(z); }

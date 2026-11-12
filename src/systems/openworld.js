@@ -65,7 +65,7 @@ export class Law {
       d.cool = (d.cool || 0) + dt;
       if (d.cool > 150) { d.cool = 0; const b = d.marks; d.marks--; if (d === s) { g.ui.toast('Talk dies down. A wolf-mark fades.'); if (this.onChange) this.onChange(d.marks, b); } }
     }
-    g.ui.setLaw({ district: this.district, tier: this.tier().name, marks: s.marks, name: MARK_NAMES[s.marks] });
+    g.ui.setLaw({ district: this.district, tier: this.tier().name, marks: s.marks, name: MARK_NAMES[s.marks], extra: this.extra || '' });
   }
 }
 
@@ -102,7 +102,8 @@ export class Mounts {
     const g = this.g, model = makeShip({ L: 12.5, B: 3.0, D: 1.0, rise: 1.5, sail: false, shields: true, mast: 6.8, seed: 11 });
     g.scene.add(model);
     const s = (this.ship = { type: 'ship', name: 'Sea-Raven', model, pos: model.position, yaw, speed: 0, sailUp: false, sailK: 0, owned: false, hands: 0,
-      y0: -0.3, seat: -4.6, lift: 0.2, sailSpeed: 15.5, turn: 0.6, sailTurn: 0.45, draught: -0.85, cam: 13, camSail: 17, reach: 13, wake: 5.6 });
+      y0: -0.3, seat: -4.6, lift: 0.2, sailSpeed: 15.5, turn: 0.6, sailTurn: 0.45, draught: -0.85, cam: 13, camSail: 17, reach: 13, wake: 5.6,
+      hull: 100, hl: 5.25, hw: 1.5 }); // hull: 0..100, what arrows and rams take away; hl, hw: half length and beam
     const sg = new THREE.PlaneGeometry(5.4, 4.6, 8, 5), sp = sg.attributes.position;
     for (let i = 0; i < sp.count; i++) sp.setZ(i, Math.cos((sp.getX(i) / 2.7) * 1.4) * 0.62 * (0.4 + 0.6 * (0.5 - sp.getY(i) / 4.6)));
     sg.computeVertexNormals(); sg.translate(0, -2.3, 0);
@@ -138,6 +139,13 @@ export class Mounts {
     const h = this.horse;
     if (m.type === 'ship' && h && h.aboard === m) { h.aboard = null; h.pos.set(x + 1.8, g.world.groundAt(x + 1.8, z + 1.2), z + 1.2); g.ui.toast('The mare comes ashore.'); }
     g.events.emit('dismounted', m.type);
+  }
+  /** Stand up from the steering oar onto the deck (a boarding fight): no landing, and the horse stays where she is. */
+  leaveHelm() {
+    const g = this.g, p = g.player, m = this.on;
+    if (!m) return;
+    this.on = null; p.frozen = false; p.riding = false; p.loopOverride = null; p.h.lift = 0; p.cam.maxDist = p.adult ? 4.9 : 4.1;
+    m.speed = 0; m.sailUp = false; m.sailK = 0; m.sail.scale.y = 0.07; g.ui.hint(null);
   }
   whistle() {
     const g = this.g, h = this.horse;
@@ -212,7 +220,7 @@ export class Mounts {
       const onChart = Math.abs(nx) < (nz > 322 ? BOUNDS.seaX - 6 : 300) && nz < BOUNDS.maxZ - 6;
       const other = ship ? this.boat : this.ship, od = other ? Math.hypot(nx - other.pos.x, nz - other.pos.z) : 99; // do not run down your own other hull
       const clash = od < 6.5 && od < Math.hypot(m.pos.x - other.pos.x, m.pos.z - other.pos.z);
-      if (heightAt(nx, nz) < m.draught && onChart && !clash) { m.pos.x = nx; m.pos.z = nz; }
+      if (heightAt(nx, nz) < m.draught && onChart && !clash && !(this.blocked && this.blocked(nx, nz, m))) { m.pos.x = nx; m.pos.z = nz; }
       else {
         m.speed *= 0.2;
         if (!onChart && this.t - (this.edgeT || -99) > 12) { this.edgeT = this.t; g.ui.toast('The chart ends here. Past this the Whale Road has no names yet.'); }

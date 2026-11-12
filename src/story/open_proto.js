@@ -10,6 +10,7 @@ import { EIRIK_ADULT } from '../entities/player.js';
 import { Law, Mounts, MARK_NAMES } from '../systems/openworld.js';
 import { SeaChart } from './sea_chart.js';
 import { Fleet } from './fleet.js';
+import { SeaWar } from './seawar.js';
 import { angleDiff } from '../core/util.js';
 
 Object.assign(ITEMS, { silver: { name: 'Hacksilver', desc: "Cut silver, weighed, not counted. It buys arrows, passage, and a dead man's blood-price.", cat: 'Coin' } });
@@ -37,6 +38,8 @@ export class OpenProto {
     for (const k in this.sea.steps) this.steps[k] = (r) => this.sea.steps[k].call(this.sea, r);
     this.fleet = new Fleet(game, this);
     for (const k in this.fleet.steps) this.steps[k] = (r) => this.fleet.steps[k].call(this.fleet, r);
+    this.war = new SeaWar(game, this);
+    for (const k in this.war.steps) this.steps[k] = (r) => this.war.steps[k].call(this.war, r);
   }
   get st() { return this.g.state; }
   npc(id) { return this.g.npcs.get(id); }
@@ -85,7 +88,7 @@ export class OpenProto {
     g.events.on('playerSwing', (n, heavy) => this.swingAtFolk(heavy));
     g.events.on('playerDied', () => this.fail());
     g.events.on('mounted', (type) => g.quests.notify('event', 'mounted_' + type));
-    this.sea.build(); this.fleet.build();
+    this.sea.build(); this.fleet.build(); this.war.build();
   }
   /** One of the people of the open world. o2: role, loop, hold, weapon, line, port; law:false keeps them out of the law. */
   person(id, name, look, x, z, yaw, o2 = {}) {
@@ -103,7 +106,10 @@ export class OpenProto {
     o.horse = [m.horse.pos.x, m.horse.pos.z]; o.boat = [m.boat.pos.x, m.boat.pos.z, m.boat.yaw]; o.on = m.on ? m.on.type : null;
     this.fleet.onSave();
   }
-  dyn(k) { const m = this.mounts && this.mounts[k]; return m ? { x: m.pos.x, z: m.pos.z, y: m.pos.y + 2.4 } : null; }
+  dyn(k) {
+    if (k === 'hound' || k === 'tooth') { const f = this.war.foe(k); return f ? { x: f.pos.x, z: f.pos.z, y: 5 } : null; } // a hostile ship
+    const m = this.mounts && this.mounts[k]; return m ? { x: m.pos.x, z: m.pos.z, y: m.pos.y + 2.4 } : null;
+  }
   /** Start a dialogue built at runtime. */
   say(tree, npc, onEnd) { this.g.dialogue.trees.__open = tree; this.g.dialogue.start('__open', { npc, onEnd }); }
 
@@ -273,7 +279,7 @@ export class OpenProto {
     this.t += dt;
     if (g.mode === 'play') g.sky.time = Math.min(16.4, g.sky.time + dt / 420);
     this.st.time = g.sky.time; p.warmth = 100; p.hunger = 100;
-    this.law.update(dt); this.mounts.update(dt); this.sea.update(dt); this.fleet.update(dt);
+    this.law.update(dt); this.mounts.update(dt); this.sea.update(dt); this.fleet.update(dt); this.war.update(dt);
     const s = this.law.s; // the law of whichever district he is standing in
     if (q.at('q_open', 'shore') && dist(p.pos, POI.dock.x, POI.dock.z) < 28) q.notify('reach', 'shore');
     if (q.at('q_open', 'gulen') && dist(p.pos, POI.gulen.x, POI.gulen.z) < 44) q.notify('reach', 'gulen');

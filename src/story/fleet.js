@@ -101,7 +101,7 @@ export class Fleet {
   onSave() {
     const rec = this.rec, s = this.ship;
     if (!rec || !s) return;
-    rec.pos = [s.pos.x, s.pos.z, s.yaw]; rec.horse = this.open.mounts.horse.aboard === s;
+    rec.pos = [s.pos.x, s.pos.z, s.yaw]; rec.horse = this.open.mounts.horse.aboard === s; rec.hull = s.hull;
   }
 
   // ---- the ship --------------------------------------------------------------------------------
@@ -121,7 +121,7 @@ export class Fleet {
         { id: 'shippoor', s: R, t: 'Come back heavier.', to: 'end' },
       ] };
     }
-    if (q.st.s_tithe) return { choices: [], nodes: [] };
+    if (q.st.s_tithe) return this.open.war.reeveOffer(); // after the tithe: what a ship can do at sea
     const ask = '"I have a keel now. What would you have me do with her?"';
     if (this.crew.length < 3) return { choices: [{ t: ask, to: 'ship' }], nodes: [{ id: 'ship', s: R, t: 'Fill her benches. Three hands at the least. Then come and ask me that again, because I have something that wants a crew.', to: 'end' }] };
     return { choices: [{ t: ask, to: 'ship' }], nodes: [
@@ -166,23 +166,23 @@ export class Fleet {
     let n = g.npcs.get(id);
     if (!n) { const d = HIRED[id]; n = o.person(id, d.name, d.look, s.pos.x, s.pos.z, 0, { law: false }); }
     o.folk = o.folk.filter((f) => f !== n); // crew stand outside the law of the islands
-    n.role = 'crew'; n.baseLoop = null; n.setLoop(null); n.weapon = n.weapon || (this.crew.length % 2 ? 'spear' : 'axe'); n.h.hold('R', null);
-    n.talk = () => n.say(g.fmt(CREW_LINES[(Math.random() * CREW_LINES.length) | 0]), 3.5);
+    n.role = 'crew'; n.keepDry = true; n.baseLoop = null; n.setLoop(null); n.weapon = n.weapon || (this.crew.length % 2 ? 'spear' : 'axe'); n.h.hold('R', null);
+    n.chat = () => n.say(g.fmt(CREW_LINES[(Math.random() * CREW_LINES.length) | 0]), 3.5); n.talk = n.chat;
     this.crew.push(n);
     if (restoring) { this.board(n); return; }
     this.rec.crew.push(id);
     g.ui.toast(`${n.name} joins the crew of the Sea-Raven (${this.crew.length} of ${SEATS.length}).`); g.audio.play('chime');
     g.quests.notify('event', 'crew');
     const land = o.mounts.shore(s);
-    if (this.ashore) { n.h.hold('R', n.weapon); n.follow(g.player, { dist: 2.8 + this.crew.length * 0.9 }); }
+    if (this.ashore) { n.talk = null; n.h.hold('R', n.weapon); n.follow(g.player, { dist: 2.8 + this.crew.length * 0.9 }); }
     else if (!HIRED[id] && land && n.dist(land) < 170 && n.dist(land) > 3) n.goTo(land.x, land.z, { run: true, onArrive: () => this.board(n) }); // he walks down to her
     else this.board(n);
   }
-  board(n) { n.aboard = true; n.mode = 'crew'; n.path = []; n.h.hold('R', null); }
+  board(n) { n.aboard = true; n.mode = 'crew'; n.path = []; n.h.hold('R', null); n.talk = n.chat; }
   /** The horn: crew ashore to follow and fight, or back aboard. */
   horn() {
     const g = this.g, p = g.player, s = this.ship;
-    if (!this.owned || !this.crew.length || this.open.mounts.on || g.mode !== 'play') return;
+    if (!this.owned || !this.crew.length || this.open.mounts.on || g.mode !== 'play' || this.open.war.lash) return;
     g.audio.play('horn', { freq: 196, vol: 0.5 });
     if (this.ashore) { this.recall(false); g.ui.toast('The horn: back to the ship.'); return; }
     const land = this.open.mounts.shore(s);
@@ -190,10 +190,16 @@ export class Fleet {
     if (!land) { g.ui.toast('The Sea-Raven lies too far out for the crew to wade ashore.'); return; }
     this.ashore = true;
     this.crew.forEach((n, i) => {
-      n.aboard = false; n.teleport(land.x + Math.cos(i * 1.1) * 1.3, land.z + Math.sin(i * 1.1) * 1.3, 0);
+      n.aboard = false; n.talk = null; n.teleport(land.x + Math.cos(i * 1.1) * 1.3, land.z + Math.sin(i * 1.1) * 1.3, 0); // at his heels they do not offer talk: it would steal the prompt for a chest or the helm
       n.h.hold('R', n.weapon); n.follow(p, { dist: 2.8 + i * 0.9 });
     });
     g.ui.toast('The horn: the crew come ashore.');
+  }
+  /** Up from the benches, weapons out, onto the deck (the ships are lashed together). */
+  standTo() {
+    const p = this.g.player;
+    this.ashore = true;
+    this.crew.forEach((n, i) => { if (!n.aboard) return; n.aboard = false; n.talk = null; n.mode = 'idle'; n.h.hold('R', n.weapon); n.follow(p, { dist: 2.2 + i * 0.5 }); });
   }
   recall(now) {
     const s = this.ship, land = this.open.mounts.shore(s);

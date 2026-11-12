@@ -69,7 +69,7 @@ export class Combat {
         if (c.state === 'stagger') dmg *= 1.8;
         g.audio.play('arrowHit'); g.audio.play('thud', { vol: 0.5 }); p.cam.shake = heavy ? 0.22 : 0.1;
         const a = Math.atan2(e.pos.x - p.pos.x, e.pos.z - p.pos.z), k = heavy ? 0.7 : 0.3;
-        e.pos.x += Math.sin(a) * k; e.pos.z += Math.cos(a) * k;
+        if (!c.keepDry || g.world.walkable(e.pos.x + Math.sin(a) * k, e.pos.z + Math.cos(a) * k)) { e.pos.x += Math.sin(a) * k; e.pos.z += Math.cos(a) * k; }
         g.events.emit('enemyHit', e, heavy);
         this.hurt(e, dmg, heavy ? (c.boss ? 26 : 38) : c.boss ? 4 : 9);
       }
@@ -101,6 +101,7 @@ export class Combat {
     const dx = p.pos.x - e.pos.x, dz = p.pos.z - e.pos.z, d = Math.hypot(dx, dz) || 1;
     const diff = g.settings.difficulty === 'easy' ? 0.8 : g.settings.difficulty === 'hard' ? 1.25 : 1;
     let mx = 0, mz = 0, speed = 0, face = Math.atan2(dx, dz);
+    const x0 = e.pos.x, z0 = e.pos.z;
     c.t -= dt;
     if (c.state !== 'stagger') c.posture = Math.max(0, c.posture - 6 * dt);
 
@@ -158,6 +159,7 @@ export class Combat {
       if (od < 0.9 && od > 1e-3) { e.pos.x += (ox / od) * (0.9 - od) * 0.5; e.pos.z += (oz / od) * (0.9 - od) * 0.5; }
     }
     if (d < 0.75) { e.pos.x -= (dx / d) * (0.75 - d); e.pos.z -= (dz / d) * (0.75 - d); }
+    if (c.keepDry && !g.world.walkable(e.pos.x, e.pos.z)) { e.pos.x = x0; e.pos.z = z0; } // on a deck: the rail is the edge of the world
     e.yaw = dampAngle(e.yaw, face, c.state === 'strike' ? 5 : 9, dt);
     e.pos.y = damp(e.pos.y, g.world.groundAt(e.pos.x, e.pos.z), 18, dt);
     e.root.rotation.y = e.yaw;

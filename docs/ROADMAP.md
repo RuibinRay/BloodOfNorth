@@ -12,13 +12,15 @@ playtests; none are claimed until then.
 | 0.5 | **The world opens (sandbox)** | Horse, rowing boat, two islands, wolf-mark outlawry, district standing up to "my king", trade | Automated playtest: ride to the shore, row to an island, reach King, earn four wolf-marks and clear them, save and load in the boat | **Done** |
 | 0.6 | **The sea chart (sandbox)** | The world grows from one valley to 1.3 km of open water: twelve more islands, a sail, a second law-district, discovery by boat or raven, paid passage between harbours, two hostile camps, the reeve's work, and the first omen paid off (the Left Brother on Vængr) | Automated playtest: sail out of the fjord, land on Kinn, every island found, both side quests, the cairn, passage, outlawry carried and not carried across the district line, save and load under sail, regression on all earlier chapters | **Done** |
 | 0.7 | **Ship and crew (sandbox)** | A karve to buy from the reeve of Kinn; six crew to recruit (standing, favours or silver); rowing speed by hands aboard; crew on the benches; a horn to bring them ashore, where each takes on one enemy; the horse carried by ship; the first crew job (the tithe-ship off Utvær); two trader ships on the sea lanes | Automated playtest: buy, refuse and accept recruits, hire rowers, row and sail, horn out and back, the raid won with crew, chest and reward, horse aboard and ashore, save and load aboard, regression on all earlier content | **Done** |
-| 0.8 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: combat difficulty above all, then riding, rowing and sailing feel, aim, stealth, camera | Three people finish everything built without help | Next |
-| 0.9 | **Real assets in** | Working Higgsfield credentials; key art; GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
-| 0.10 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or keep growing the web build, which now holds a 1.3 × 2 km world at 60 fps in the test window | A written decision | Planned |
-| 0.11 | **The Hunted Wolf** | Companions, bounties, the ship in the story, Grave-Song, Act III | Act III plays through | Planned |
-| 0.12 | **Across the Sea** | Longship, naval combat, ports, sieges, the outer skerries, Act IV | — | Planned |
-| 0.13 | **The Broken Raven** | Settlement, recruiting, supply, territory, Act V | — | Planned |
-| 0.14 | **War of the Jarls** | Faction politics, duels, large battles, "my king", Acts VI and VII, four endings | — | Planned |
+| 0.8 | **Sea battles (sandbox)** | Hostile ships that patrol, sight, chase and shoot; volleys and shields from the helm; ramming; grappling and deck-to-deck boarding with the crew; hull damage, foundering and repair; two sea quests (the Skerry-Hound, the Iron Tooth); roaming sea-wolves afterwards | Automated playtest: sighting and chase, volleys both ways, shields, two rams to sink, boarding won and cut loose, loot, repair, foundering, save and load with hull damage, regression on all earlier content | **Done** |
+| 0.9 | **Better battles** | Requested direction: improve fighting on land and at sea before any more story acts | — | Next |
+| 0.10 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: combat difficulty above all, then riding, rowing and sailing feel, aim, stealth, camera | Three people finish everything built without help | Next |
+| 0.11 | **Real assets in** | Working Higgsfield credentials; key art; GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
+| 0.12 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or keep growing the web build, which now holds a 1.3 × 2 km world at 60 fps in the test window | A written decision | Planned |
+| 0.13 | **The Hunted Wolf** | Companions, bounties, the ship in the story, Grave-Song, Act III | Act III plays through | Planned |
+| 0.14 | **Across the Sea** | Longship, naval combat, ports, sieges, the outer skerries, Act IV | — | Planned |
+| 0.15 | **The Broken Raven** | Settlement, recruiting, supply, territory, Act V | — | Planned |
+| 0.16 | **War of the Jarls** | Faction politics, duels, large battles, "my king", Acts VI and VII, four endings | — | Planned |
 | 1.0 | **Polish** | Side missions, minigames, voiced dialogue, recorded music, performance targets (60 fps at 1440p on suitable hardware as an objective), accessibility pass | Full playthrough signed off | Planned |
 
 ## Immediate next steps
@@ -27,11 +29,13 @@ playtests; none are claimed until then.
 2. Play everything by hand, the raid especially, and note every moment that feels unfair, unclear or slow.
 3. Decide where the project lives: a PC that can run UE5, or continue in the browser for another chapter.
 
-## Known gaps in 0.7
+## Known gaps in 0.8
 
 - Crew cannot be hurt, cannot die and never leave. They are help in a fight, not yet people: no wages, no morale, no names of their own beyond the six.
-- There is no fighting at sea. Enemy ships do not move; the tithe-ship is scenery and the fight is on the beach.
-- Hulls do not collide with anything except your own other boat, so you can sail through a trader.
+- Sea battles are one ship against one. No fleets, no wind, no fire arrows, no enemy ramming; hostile ships ignore the rowing boat and do not land.
+- Hostile ships only block the Sea-Raven; traders can still be sailed through.
+- In a boarding fight both decks are flat rectangles: benches and the mast do not block anyone.
+- Sea battles were validated by script, with stand-in blows for the player. How hard they are for a person is unknown.
 - Crew ashore have no path-finding and can snag on rocks; boarding the ship brings them back at once.
 - The ship, the horn and the raid were validated by script, not by hand. Crew strength in particular is a guess.
 

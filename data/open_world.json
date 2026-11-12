@@ -452,5 +452,5 @@
     }
   ],
   "standing_status": "built (sandbox): six tiers in each of two districts (Vestland, the Skerries), greetings, kneeling, oath",
-  "fleet_status": "built (sandbox 0.7): one karve (the Sea-Raven), six recruitable crew, horn, crew as allies ashore, horse aboard, one crew raid, two trader ships. Not built: sea combat, crew who can be hurt, longship."
+  "fleet_status": "built (sandbox 0.7-0.8): one karve (the Sea-Raven), six recruitable crew, horn, crew as allies ashore and on deck, horse aboard, one crew raid, two trader ships; sea battles with volleys, shields, ramming, grappling and boarding; hull damage and repair; two sea quests. Not built: fleets, crew who can be hurt, a longship of your own."
 }

@@ -127,19 +127,19 @@ export class SeaChart {
   ferryTalk(n) {
     const g = this.g, inv = g.inventory, silver = inv.count('silver'), N = n.name;
     const dests = Object.keys(this.ports).filter((k) => k !== n.port && (k === 'gulen' || this.seen[k]));
-    if (!dests.length) { n.say('I carry folk to harbours they have seen with their own eyes. Sail out past the mouth: Fedje is the first smoke, on the left hand.', 5); return; }
+    const hire = this.open.fleet.hireOffer(n), mend = this.open.war.mendOffer(n), own = this.open.fleet.owned;
+    if (!dests.length && !hire.choices.length && !mend.choices.length) { n.say('I carry folk to harbours they have seen with their own eyes. Sail out past the mouth: Fedje is the first smoke, on the left hand.', 5); return; }
     this.pending = null;
-    const hire = this.open.fleet.hireOffer(n), own = this.open.fleet.owned;
     this.open.say([
       { s: N, t: own ? 'Passage? Six silver, and I tow your rowing boat for nothing. Your karve stays where she lies; I am not that soft.' : 'Passage? Six silver, and I tow your boat for nothing, because I am soft.' },
       { s: 'Eirik', t: '', choices: [
         ...dests.map((k) => ({ t: `To ${this.ports[k].name} (6 silver, you carry ${silver})`, to: silver >= 6 ? 'go' : 'poor', fx: silver >= 6 ? { do: () => { this.pending = k; } } : null })),
-        ...hire.choices,
+        ...hire.choices, ...mend.choices,
         { t: '"Not today."', to: 'end' },
       ] },
       { id: 'go', s: N, t: 'Sit amidships and keep those birds off my catch.', to: 'end' },
       { id: 'poor', s: N, t: 'Six. Not five and a story.', to: 'end' },
-      ...hire.nodes,
+      ...hire.nodes, ...mend.nodes,
     ], n, () => { if (hire.after) hire.after(); if (this.pending) { const k = this.pending; this.pending = null; this.passage(k); } });
   }
   /** Paid passage: the game's first fast travel. The player's own boat is towed along. */

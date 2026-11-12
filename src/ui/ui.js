@@ -86,10 +86,10 @@ export class UI {
   }
   /** District, standing and wolf-marks (open world). */
   setLaw(l) {
-    const e = document.getElementById('law'), key = l ? `${l.district}|${l.tier}|${l.marks}` : '';
+    const e = document.getElementById('law'), key = l ? `${l.district}|${l.tier}|${l.marks}|${l.extra || ''}` : '';
     if (this._law === key) return;
     this._law = key; e.classList.toggle('on', !!l);
-    if (l) e.innerHTML = `<span>${esc(l.district)} · <b>${esc(l.tier)}</b></span><div class="wm">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= l.marks ? 'on' : ''}"></i>`).join('')}</div>${l.marks ? `<em>${esc(l.name)}</em>` : ''}`;
+    if (l) e.innerHTML = `<span>${esc(l.district)} · <b>${esc(l.tier)}</b></span><div class="wm">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= l.marks ? 'on' : ''}"></i>`).join('')}</div>${l.marks ? `<em>${esc(l.name)}</em>` : ''}${l.extra ? `<small>${esc(l.extra)}</small>` : ''}`;
   }
   /** The opponent Eirik is facing: name, health, and guard. */
   setTarget(t) {
@@ -366,6 +366,10 @@ export class UI {
         x.fillStyle = '#3a1c14'; x.beginPath(); x.moveTo(cx, cy - 26); x.lineTo(cx + 7, cy); x.lineTo(cx, cy + 26); x.lineTo(cx - 7, cy); x.closePath(); x.globalAlpha = 0.55; x.fill(); x.globalAlpha = 1;
         x.font = '600 14px Georgia'; x.fillText('N', cx, cy - 31);
       }
+      if (open && sea) for (const f of open.war.foes) { // a hostile sail, once it is after him or close enough to make out
+        if (f.state === 'gone' || f.state === 'sinking' || (f.state === 'patrol' && Math.hypot(f.pos.x - g.player.pos.x, f.pos.z - g.player.pos.z) > 320)) continue;
+        x.fillStyle = '#8f2f24'; x.strokeStyle = '#2a1c12'; x.lineWidth = 1.5; x.beginPath(); x.ellipse(X(f.pos.x), Z(f.pos.z), 9, 4.5, 0, 0, 6.3); x.fill(); x.stroke();
+      }
       if (open && sea) for (const t of open.fleet.traders) { x.fillStyle = 'rgba(42,28,18,0.6)'; x.beginPath(); x.ellipse(X(t.pos.x), Z(t.pos.z), 6, 3, 0, 0, 6.3); x.fill(); } // traders on the sea lanes
       if (open) for (const [m, col] of [[open.mounts.horse, '#6a4426'], [open.mounts.boat, '#f4efe2'], [open.fleet.owned ? open.mounts.ship : null, '#c9a24a']]) {
         if (!m || open.mounts.on === m || m.aboard) continue;
@@ -449,8 +453,8 @@ export class UI {
       <p>This is the first playable chapter of a long project, not the finished game. Everything on screen is generated in code; characters, props and sound are placeholders awaiting real assets.</p>
       <div class="status-grid">
       <div><h4><span class="tag ok">playable</span></h4><ul><li>Act I, Chapter 1: a full day in Hrafnvik and the night raid</li><li>Act I, Chapter 2: winter survival, a wolf, trackers and the river ice</li><li>Act I, Chapter 3: Bjornstead, the raven chicks, the axe under the hearthstone, first flight</li><li>Raven's Eye: fly the white raven, mark what she sees</li><li>Five hidden omens that seed later secret weapons</li><li>Act II, Chapter 1: Eirik at nineteen, the drill with Bjorn, the raid on Bjornstead</li><li>Melee combat: light and heavy blows, block, parry, dodge, guard-breaking, enemies that take turns and flank, a two-phase captain</li><li>The black raven harries your target; arrows work on men</li><li>Hunger and warmth, shelter, cooking, thin-ice crossing</li><li>Third-person movement, camera, stamina, crouch, dodge</li><li>Dialogue with choices, traits and bonds</li><li>Quests, journal, objective tracker, map with waypoint</li><li>Woodcutting, bow hunting, tracking, fishing, fire-making</li><li>Sparring tutorial: strike, block, parry, dodge</li><li>Stealth escape with raider sight and hearing</li><li>Cold and warmth survival</li><li>Day/night sky, snow, fire, in-engine cutscenes</li><li>Save / load, autosave, settings, key rebinding, gamepad</li></ul></div>
-      <div><h4><span class="tag proto">prototype</span></h4><ul><li>Procedural characters and animation (to be replaced by rigged models)</li><li>Procedural audio and score</li><li>Villager routines (posts and an evening change, not full schedules)</li><li>Wildlife AI: hares, deer, sheep, ravens</li><li>Adult Eirik is the same placeholder rig, scaled up</li><li>Open world sandbox: horse, boat with a sail, a ship to buy and six crew to recruit, a horn that brings them ashore to fight, fourteen islands on a sea chart, two law-districts, wolf-mark outlawry (witnesses, hue and cry, bounty-hunters, blood-price, hide-duel), standing up to “my king”, trade, paid passage between harbours, the first secret weapon</li><li>Higgsfield asset client (built, waiting on a valid key ID and secret)</li></ul></div>
-      <div><h4><span class="tag plan">planned</span></h4><ul><li>Acts II – VII (see docs/ROADMAP.md and data/missions.json)</li><li>The rest of the sea map (about forty islands; fourteen are built), the longship, sea battles, more districts (docs/OPEN_WORLD.md)</li><li>Adult Eirik, nine weapon classes, five skill trees</li><li>Enemy combat AI, bosses, mounted and naval combat</li><li>Sailing, settlement, factions, trading, crafting</li><li>50 side missions and tavern games</li><li>Building interiors, voiced dialogue, real music</li><li>Unreal Engine 5 port for photoreal fidelity</li></ul></div></div>`;
+      <div><h4><span class="tag proto">prototype</span></h4><ul><li>Procedural characters and animation (to be replaced by rigged models)</li><li>Procedural audio and score</li><li>Villager routines (posts and an evening change, not full schedules)</li><li>Wildlife AI: hares, deer, sheep, ravens</li><li>Adult Eirik is the same placeholder rig, scaled up</li><li>Open world sandbox: horse, boat with a sail, a ship to buy and six crew to recruit, a horn that brings them ashore to fight, sea battles (volleys, shields, ramming, boarding across two decks), fourteen islands on a sea chart, two law-districts, wolf-mark outlawry (witnesses, hue and cry, bounty-hunters, blood-price, hide-duel), standing up to “my king”, trade, paid passage between harbours, the first secret weapon</li><li>Higgsfield asset client (built, waiting on a valid key ID and secret)</li></ul></div>
+      <div><h4><span class="tag plan">planned</span></h4><ul><li>Acts II – VII (see docs/ROADMAP.md and data/missions.json)</li><li>The rest of the sea map (about forty islands; fourteen are built), a longship of your own, fleets, more districts (docs/OPEN_WORLD.md)</li><li>Adult Eirik, nine weapon classes, five skill trees</li><li>Enemy combat AI, bosses, mounted and naval combat</li><li>Sailing, settlement, factions, trading, crafting</li><li>50 side missions and tavern games</li><li>Building interiors, voiced dialogue, real music</li><li>Unreal Engine 5 port for photoreal fidelity</li></ul></div></div>`;
   }
   showChapterEnd() {
     const g = this.g, st = g.state, q = g.quests, body = $('#panel-body');
