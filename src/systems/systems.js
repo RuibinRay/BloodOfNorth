@@ -124,6 +124,7 @@ export class Dialogue {
     const n = this.nodes[i];
     this.text = this.game.fmt(n.t || '');
     this.choices = n.choices || null;
+    if (this.text) this.game.ui.mouth(n.s, this.text);
     if (this.npc) this.npc.h.setLoop && (this.npc.talking = n.s === this.npc.name);
     this.game.ui.showDialogue(n.s, '', this.text.length ? null : this.choices, this.sel);
     this.game.audio.play('page', { vol: 0.5 });

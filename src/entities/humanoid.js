@@ -1,15 +1,35 @@
 // Procedural articulated character: a jointed figure built from primitives with a pose-blending
-// animator. PLACEHOLDER art — the rig interface (joints, play/setLoop/hold) is what the game codes
+// animator, a face (eyes that look and blink, brows, a mouth that moves with speech, expressions),
+// breathing, cloth and hair that lag behind the body, feet that find sloping ground, and a second hand
+// that finds the haft of a two-handed weapon. PLACEHOLDER art — the rig interface (joints, play/setLoop/hold) is what the game codes
 // against, so rigged GLB characters can replace the meshes later without touching gameplay.
 import * as THREE from 'three';
-import { clamp, smoothstep } from '../core/util.js';
+import { clamp, smoothstep, damp, angleDiff } from '../core/util.js';
 import { M, at, box, cyl, cone, sphere, capsule, tint, merge } from '../world/geo.js';
 
 const D = { hip: 0.94, thigh: 0.44, shin: 0.44, chestY: 0.2, shoulderY: 0.3, shoulderX: 0.2, neckY: 0.42, upper: 0.29, fore: 0.27 };
 const DEFAULT_LOOK = {
   scale: 1, child: false, female: false, build: 1, skin: 0xd8a888, hair: 0x6b4a2b, hairStyle: 'short', beard: null,
   tunic: 0x6f6048, trim: 0x8a2f25, legs: 0x4b4034, boots: 0x33261a, cloak: null, fur: false, helmet: false, apron: null,
+  eyes: 0x5a4632, face: 'even', scar: null, scar2: null, // eye colour; face shape: even | lean | broad | long; scar: 'lightning' (over the left eye) | 'cheek' | 'brow'
 };
+/** Head proportions by face shape: [width, height, depth] of the skull. */
+const FACES = { even: [0.95, 1.13, 1.02], lean: [0.89, 1.17, 1.0], broad: [1.03, 1.08, 1.05], long: [0.92, 1.22, 1.0] };
+/** Expressions. tilt: brows (+ inner ends down, - inner ends up); by: brow height; lid: 0 wide .. 1 shut; open: jaw; curve: mouth corners; wide: mouth width. */
+const MOODS = {
+  neutral: { tilt: 0, by: 0, lid: 0.1, open: 0, curve: 0, wide: 1 },
+  anger: { tilt: 0.42, by: -0.004, lid: 0.28, open: 0.12, curve: -0.35, wide: 1.05 },
+  pain: { tilt: -0.35, by: 0.001, lid: 0.7, open: 0.5, curve: -0.6, wide: 1.1 },
+  fear: { tilt: -0.4, by: 0.006, lid: 0, open: 0.42, curve: -0.45, wide: 0.9 },
+  sad: { tilt: -0.34, by: -0.001, lid: 0.4, open: 0, curve: -0.85, wide: 0.92 },
+  laugh: { tilt: 0, by: 0.004, lid: 0.6, open: 0.75, curve: 1, wide: 1.2 },
+  smile: { tilt: 0, by: 0.002, lid: 0.22, open: 0.05, curve: 0.75, wide: 1.12 },
+  tired: { tilt: -0.16, by: 0, lid: 0.42, open: 0.5, curve: -0.2, wide: 0.95 },
+  dead: { tilt: 0, by: 0, lid: 1, open: 0.22, curve: -0.1, wide: 0.95 },
+};
+/** How far the jaw opens for a letter (speech follows the words as they are spoken). */
+const VISEME = { a: 0.95, o: 0.8, e: 0.55, i: 0.4, u: 0.45, y: 0.4, m: 0, b: 0, p: 0, f: 0.12, v: 0.12, w: 0.3, l: 0.35, r: 0.3, s: 0.2, t: 0.25, d: 0.28, n: 0.22, k: 0.3, g: 0.3, h: 0.45 };
+const _t = new THREE.Vector3(), _u = new THREE.Vector3(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), DOWN = new THREE.Vector3(0, -1, 0), XAX = new THREE.Vector3(1, 0, 0);
 const POSE_KEYS = ['hy', 'hrx', 'hry', 'crx', 'cry', 'crz', 'nrx', 'nry', 'slx', 'sly', 'slz', 'srx', 'sry', 'srz', 'elL', 'elR', 'llx', 'llz', 'lrx', 'lrz', 'knL', 'knR', 'pitch', 'by'];
 const REST = { slz: 0.09, srz: -0.09, elL: -0.12, elR: -0.12 };
 
@@ -43,6 +63,11 @@ const ACTIONS = {
   stagger: [[0, { crx: -0.4, nrx: -0.3, slx: -0.6, srx: -0.6, slz: 0.7, srz: -0.7, hy: -0.06, knL: 0.3, knR: 0.3 }], [0.6, { crx: -0.1 }]],
   dodge: [[0, { hy: -0.42, crx: 0.95, nrx: 0.4, llx: -1.3, lrx: -1.3, knL: 2.0, knR: 2.0, slx: -0.9, srx: -0.9, elL: -1.6, elR: -1.6 }], [0.7, { hy: -0.2, crx: 0.4, llx: -0.6, lrx: -0.6, knL: 1.0, knR: 1.0 }]],
   parry: [[0, { srx: -1.9, sry: 0.75, elR: -0.7, cry: 0.25 }], [0.5, { srx: -1.5, sry: 0.5, elR: -1.3 }]],
+  sidestep: [[0, { hy: -0.13, crx: 0.16, knL: 0.55, knR: 0.55, llz: 0.22, lrz: -0.22, slx: -0.3, srx: -0.3 }], [0.7, { hy: -0.05, knL: 0.2, knR: 0.2 }]],
+  blockhit: [[0, { srx: -1.25, sry: 0.7, elR: -1.8, slx: -0.7, elL: -1.5, crx: -0.14, hy: -0.07, knL: 0.35, knR: 0.35 }], [0.6, { srx: -1.4, sry: 0.55, elR: -1.5, crx: 0.05 }]],
+  twinL: [[0, { slx: -2.5, sly: 0.55, elL: -1.0, cry: 0.5, crx: -0.05 }], [0.38, { slx: -0.55, sly: -0.55, elL: -0.1, cry: -0.5, crx: 0.28, hy: -0.05 }], [0.64, { slx: -0.5, sly: -0.4, elL: -0.5, cry: -0.2 }]],
+  slam: [[0, { srx: -3.05, slx: -3.05, sry: 0.2, sly: -0.2, elR: -0.7, elL: -0.7, crx: -0.35, hy: 0.02 }], [0.5, { srx: -0.55, slx: -0.55, sry: 0.25, sly: -0.25, elR: -0.1, elL: -0.1, crx: 0.8, hy: -0.2, knL: 0.7, knR: 0.7 }], [0.78, { srx: -0.6, slx: -0.6, elR: -0.3, elL: -0.3, crx: 0.5, hy: -0.12, knL: 0.4, knR: 0.4 }]],
+  ward: [[0, { srx: -1.7, sry: 0.2, elR: -1.9, slx: -1.7, sly: -0.2, elL: -1.9, crx: -0.08, hy: -0.03 }], [0.7, { srx: -1.3, elR: -1.5, slx: -1.3, elL: -1.5 }]],
   thrust: [[0, { srx: 0.55, elR: -1.25, cry: -0.6, crx: -0.05 }], [0.4, { srx: -0.5, elR: -0.08, cry: 0.5, crx: 0.26, hy: -0.06, knL: 0.3 }], [0.66, { srx: -0.2, elR: -0.7, cry: 0.15 }]],
   shoot: [[0, { cry: -0.45, slx: -1.5, sly: 0.45, elL: -0.05, srx: -1.3, sry: -1.3, elR: -0.5 }], [0.6, {}]],
   pickup: [[0, { hy: -0.4, crx: 0.95, llx: -1.0, lrx: -1.0, knL: 1.8, knR: 1.8, srx: -0.9, elR: -0.2, nrx: 0.2 }], [0.65, { hy: -0.15, crx: 0.4 }]],
@@ -87,16 +112,16 @@ export class Humanoid {
       tint(at(cyl(0.085, 0.1, 0.045, 10), 0, 0.322, 0, 0, 0, 0, 1, 1, 0.8), L.trim, 0.05, 9),
     ];
     if (L.apron) ch.push(tint(at(box(0.24, 0.3, 0.02), 0, 0.05, 0.135), L.apron, 0.05, 10));
-    if (L.cloak) ch.push(tint(at(new THREE.CylinderGeometry(0.23 * b, 0.37, 1.02, 10, 1, true, Math.PI * 0.5, Math.PI), 0, -0.2, -0.02), L.cloak, 0.1, 11));
+    if (L.cloak) { j.cloak = grp(j.chest, 0, 0.31, -0.02); part(j.cloak, [tint(at(new THREE.CylinderGeometry(0.23 * b, 0.37, 1.02, 10, 1, true, Math.PI * 0.5, Math.PI), 0, -0.51, 0), L.cloak, 0.1, 11)]); } // hangs from the shoulders
     if (L.fur) for (const [x, y, z, s] of [[0.17, 0.33, -0.02, 0.13], [-0.17, 0.33, -0.02, 0.13], [0, 0.31, -0.1, 0.15], [0, 0.2, -0.13, 0.13]])
       ch.push(tint(at(new THREE.IcosahedronGeometry(1, 1), x * b, y, z, 0, 0, 0, s * 1.25, s * 0.8, s), 0x6c6a66, 0.3, 12 + x * 10));
-    part(j.chest, ch);
+    this.chestMesh = part(j.chest, ch);
 
     // head
     const hd = [
-      tint(at(sphere(0.112, 10, 8), 0, 0.15, 0, 0, 0, 0, 0.95, 1.13, 1.02), L.skin, 0.03, 20),
-      tint(at(sphere(0.013, 5, 4), 0.04, 0.165, 0.103), 0x1a1410, 0, 21), tint(at(sphere(0.013, 5, 4), -0.04, 0.165, 0.103), 0x1a1410, 0, 22),
+      tint(at(sphere(0.112, 12, 9), 0, 0.15, 0, 0, 0, 0, ...(FACES[L.face] || FACES.even)), L.skin, 0.03, 20),
       tint(at(box(0.022, 0.042, 0.03), 0, 0.138, 0.112), L.skin, 0.02, 23),
+      tint(at(sphere(0.024, 6, 5), 0.108, 0.15, 0.0, 0, 0, 0, 0.5, 1.2, 0.8), L.skin, 0.03, 24), tint(at(sphere(0.024, 6, 5), -0.108, 0.15, 0.0, 0, 0, 0, 0.5, 1.2, 0.8), L.skin, 0.03, 25), // ears
     ];
     const cap = () => at(new THREE.SphereGeometry(0.122, 10, 6, 0, Math.PI * 2, 0, Math.PI * 0.54), 0, 0.16, -0.012, -0.18, 0, 0, 1, 1.1, 1.06);
     if (L.helmet) {
@@ -104,14 +129,21 @@ export class Humanoid {
       hd.push(tint(at(cyl(0.131, 0.131, 0.028, 10), 0, 0.166, 0, 0, 0, 0, 1, 1, 1.05), 0x4c4f54, 0.05, 25));
       hd.push(tint(at(box(0.024, 0.1, 0.02), 0, 0.125, 0.128), 0x4c4f54, 0.05, 26));
     } else if (L.hairStyle !== 'bald') hd.push(tint(cap(), L.hair, 0.12, 27));
+    const back = []; // hair that hangs: its own piece, so it swings
     if (L.hairStyle === 'long' || L.hairStyle === 'braid' || L.hairStyle === 'braids')
-      hd.push(tint(at(new THREE.CylinderGeometry(0.118, 0.128, 0.24, 9, 1, true, Math.PI * 0.5, Math.PI), 0, 0.05, -0.01), L.hair, 0.12, 28));
-    if (L.hairStyle === 'braid') hd.push(tint(at(capsule(0.032, 0.3, 5), 0, -0.14, -0.12, 0.12, 0, 0), L.hair, 0.15, 29));
+      back.push(tint(at(new THREE.CylinderGeometry(0.118, 0.128, 0.24, 9, 1, true, Math.PI * 0.5, Math.PI), 0, -0.12, 0), L.hair, 0.12, 28));
+    if (L.hairStyle === 'braid') back.push(tint(at(capsule(0.032, 0.3, 5), 0, -0.31, -0.11, 0.12, 0, 0), L.hair, 0.15, 29));
+    if (L.hairStyle === 'tail') back.push(tint(at(capsule(0.036, 0.26, 5), 0, -0.2, -0.13, 0.35, 0, 0), L.hair, 0.15, 29), tint(at(sphere(0.045, 6, 5), 0, -0.02, -0.11), L.hair, 0.1, 35));
+    if (L.hairStyle === 'topknot') hd.push(tint(at(sphere(0.05, 7, 5), 0, 0.275, -0.03), L.hair, 0.1, 36), tint(at(cyl(0.02, 0.03, 0.05, 6), 0, 0.245, -0.03), L.hair, 0.1, 37));
+    if (back.length) { j.hair = grp(j.head, 0, 0.17, -0.01); part(j.hair, back); }
     if (L.hairStyle === 'braids') for (const s of [-1, 1]) hd.push(tint(at(capsule(0.028, 0.26, 5), s * 0.1, -0.1, 0.05, -0.1, 0, 0), L.hair, 0.15, 30 + s));
     if (L.hairStyle === 'bun') hd.push(tint(at(sphere(0.055, 7, 5), 0, 0.24, -0.09), L.hair, 0.1, 32));
     if (L.beard === 'short') hd.push(tint(at(sphere(0.098, 8, 6), 0, 0.085, 0.03, 0, 0, 0, 0.95, 0.85, 0.9), L.hair, 0.12, 33));
+    if (L.beard === 'braided') { hd.push(tint(at(sphere(0.098, 8, 6), 0, 0.085, 0.03, 0, 0, 0, 0.95, 0.85, 0.9), L.hair, 0.12, 33)); for (const s of [-1, 1]) hd.push(tint(at(capsule(0.02, 0.2, 5), s * 0.035, -0.06, 0.085, -0.05, 0, 0), L.hair, 0.15, 38 + s)); }
+    if (L.beard === 'stubble') hd.push(tint(at(sphere(0.108, 8, 6), 0, 0.105, 0.012, 0, 0, 0, 0.93, 0.62, 0.98), L.hair, 0.3, 33));
     if (L.beard === 'long') { hd.push(tint(at(sphere(0.1, 8, 6), 0, 0.08, 0.03, 0, 0, 0, 0.95, 0.9, 0.9), L.hair, 0.12, 33)); hd.push(tint(at(cone(0.075, 0.26, 7), 0, -0.05, 0.06, Math.PI, 0, 0), L.hair, 0.12, 34)); }
     part(j.head, hd);
+    this.buildFace(L);
 
     // limbs
     for (const [side, sx] of [['L', 1], ['R', -1]]) {
@@ -130,7 +162,146 @@ export class Humanoid {
     for (const k of POSE_KEYS) { this.cur[k] = REST[k] || 0; this.tgt[k] = 0; }
     this.t = Math.random() * 10; this.phase = 0; this.speed = 0; this.crouch = false; this.param = 0;
     this.loop = null; this.action = null; this.items = { L: null, R: null }; this.onStep = null; this._ls = 0;
+    this.fc = { ...MOODS.neutral }; this.mood = null; this.moodT = 0; this.baseMood = 'neutral'; this.blinkT = 1 + Math.random() * 4; this.blink = 0;
+    this.gaze = { yaw: 0, pitch: 0 }; this.lookTarget = null; this.speech = null; this.jaw = 0; this.jawT = 0; this.breath = 1;
+    this.ik = { l: 0, r: 0 }; this.sway = 0;
     this.applyPose();
+  }
+
+  // ---- the face -------------------------------------------------------------------------------
+  buildFace(L) {
+    const j = this.j, f = (this.face = grp(j.head, 0, 0, 0)), ex = 0.04, ey = 0.166, ez = 0.1;
+    const soft = (geos) => { const m = part(f, geos); m.castShadow = false; return m; };
+    const dark = (hex, k) => { const c = new THREE.Color(hex).multiplyScalar(k); return c.getHex(); };
+    // what does not move: the whites of the eyes, and any scar
+    const still = [];
+    for (const s of [1, -1]) still.push(tint(at(sphere(0.02, 8, 6), s * ex, ey, ez - 0.004, 0, 0, 0, 1, 0.74, 0.5), 0xece6da, 0, 60 + s));
+    const scarLine = (pts, hex) => { for (let i = 0; i < pts.length - 1; i++) { const [ax, ay] = pts[i], [bx, by] = pts[i + 1], mx = (ax + bx) / 2, my = (ay + by) / 2;
+      const zs = 0.114 * Math.sqrt(Math.max(0.05, 1 - (mx / 0.106) ** 2 - ((my - 0.15) / 0.127) ** 2)) + 0.004; // on the curve of the face
+      still.push(tint(at(box(Math.hypot(bx - ax, by - ay) + 0.003, 0.0048, 0.003), mx, my, zs - 0.002, 0, 0, Math.atan2(by - ay, bx - ax)), hex, 0, 64 + i)); } };
+    if (L.scar === 'lightning') { // a fork of lightning down through the left eye: forehead to brow, then cheek, with a small branch
+      scarLine([[0.064, 0.226], [0.046, 0.211], [0.056, 0.199], [0.042, 0.186]], 0xf0cfc6);
+      scarLine([[0.05, 0.147], [0.036, 0.133], [0.049, 0.121], [0.037, 0.104]], 0xf0cfc6);
+      scarLine([[0.036, 0.133], [0.024, 0.126]], 0xf0cfc6);
+    }
+    for (const sc of [L.scar, L.scar2]) { // ordinary scars, on the right side so they never hide the lightning
+      if (sc === 'cheek') scarLine([[-0.074, 0.142], [-0.03, 0.118]], 0xe9c8be);
+      if (sc === 'brow') scarLine([[-0.052, 0.208], [-0.036, 0.18]], 0xe9c8be);
+      if (sc === 'lip') scarLine([[-0.012, 0.118], [-0.02, 0.088]], 0xe9c8be);
+    }
+    soft(still);
+    // the eyes themselves: iris, pupil and a point of light, moving together to look
+    const iris = [];
+    for (const s of [1, -1]) iris.push(
+      tint(at(cyl(0.0098, 0.0098, 0.002, 10), s * ex, ey, ez + 0.0072, Math.PI / 2, 0, 0), L.eyes, 0.04, 70 + s),
+      tint(at(cyl(0.0046, 0.0046, 0.002, 8), s * ex, ey, ez + 0.0084, Math.PI / 2, 0, 0), 0x0c0a08, 0, 72 + s),
+      tint(at(sphere(0.0022, 4, 3), s * ex + 0.0034, ey + 0.0036, ez + 0.0092), 0xffffff, 0, 74 + s));
+    this.fIris = soft(iris);
+    // lids hinge at the top of the eye
+    this.fLid = grp(f, 0, ey + 0.0165, 0);
+    const lids = []; for (const s of [1, -1]) lids.push(
+      tint(at(sphere(0.0222, 8, 5), s * ex, -0.0165, ez - 0.0035, 0, 0, 0, 1.03, 0.8, 0.8), dark(L.skin, 0.88), 0.02, 76 + s), // closes over the whole eye
+      tint(at(box(0.034, 0.0042, 0.004), s * ex, -0.031, ez + 0.0125), dark(L.hair, 0.45), 0, 90 + s));                       // the lash line at its edge
+    const lm = part(this.fLid, lids); lm.castShadow = false;
+    // brows
+    this.fBrow = {}; const bc = dark(L.hair, 0.72);
+    for (const [k, s] of [['L', 1], ['R', -1]]) { const g = (this.fBrow[k] = grp(f, s * ex, ey + 0.0255, ez + 0.007)); const m = part(g, [tint(box(0.038, 0.0085, 0.008), bc, 0.1, 78 + s)]); m.castShadow = false; }
+    // mouth: a slit that opens, and corners that rise or fall
+    this.mouthY = 0.101; const mz = L.beard && L.beard !== 'stubble' ? 0.1235 : 0.1095, lip = L.female ? 0x7a3a36 : 0x3a1e1a;
+    this.fMouth = soft([tint(at(sphere(0.021, 10, 6), 0, 0, -0.004, 0, 0, 0, 1, 0.19, 0.42), lip, 0, 80)]); this.fMouth.position.set(0, this.mouthY, mz); // a line when shut, an oval when open
+    this.fCorn = soft([tint(at(sphere(0.0034, 5, 4), 0.0215, 0, 0), lip, 0, 81), tint(at(sphere(0.0034, 5, 4), -0.0215, 0, 0), lip, 0, 82)]); this.fCorn.position.set(0, this.mouthY, mz);
+  }
+  /** Hold an expression for a while (otherwise the face follows what the body is doing). */
+  setMood(name, secs = 1.5) { this.mood = name; this.moodT = secs; }
+  /** Speak a line: the mouth follows the letters at speaking pace. */
+  say(text, cps = 15) { this.speech = { text: String(text), i: 0, t: 0, cps }; }
+  /** One letter spoken now (dialogue feeds these as the words appear). */
+  mouthChar(ch) { const c = (ch || '').toLowerCase(); this.jaw = VISEME[c] ?? (/[a-z]/.test(c) ? 0.3 : 0); this.jawT = /[,.;:!?]/.test(c) ? 0 : 0.12; }
+  /** Look at a point in the world (null: look ahead). */
+  lookAt(v) { this.lookTarget = v; }
+  moodNow() {
+    if (this.mood) return this.mood;
+    const a = this.action && this.action.name, l = this.loop;
+    if (l === 'dead' || a === 'fall') return 'dead';
+    if (a === 'stagger') return 'pain';
+    if (l === 'cower') return 'fear';
+    if (l === 'mourn') return 'sad';
+    if (a === 'cheer') return 'laugh';
+    if ((a && /^(atk|chop|thrust|shove|parry|cleave|slam)/.test(a)) || l === 'guard' || l === 'block' || l === 'aim') return 'anger';
+    return this.baseMood;
+  }
+  updateFace(dt) {
+    const f = this.face, cam = Humanoid.cam;
+    const near = !cam || cam.distanceToSquared(this.root.position) < 26 * 26; // beyond that a face is a few pixels: do not draw it
+    f.visible = near;
+    if (!near) return;
+    if (this.moodT > 0 && (this.moodT -= dt) <= 0) this.mood = null;
+    const m = MOODS[this.moodNow()] || MOODS.neutral, c = this.fc, k = 1 - Math.exp(-9 * dt);
+    for (const key in m) c[key] += (m[key] - c[key]) * k;
+    // blinking
+    if ((this.blinkT -= dt) < 0) { this.blink = 0.13; this.blinkT = 2 + Math.random() * 4.5; }
+    if (this.blink > 0) this.blink -= dt;
+    const lid = this.blink > 0 ? 1 : c.lid;
+    this.fLid.scale.y += ((0.1 + 0.9 * lid) - this.fLid.scale.y) * (1 - Math.exp(-38 * dt));
+    // speech: letters at speaking pace, or fed one by one
+    const sp = this.speech;
+    if (sp) { sp.t += dt; const i = Math.floor(sp.t * sp.cps); if (i !== sp.i) { sp.i = i; this.mouthChar(sp.text[i]); } if (i >= sp.text.length) this.speech = null; }
+    if (this.jawT > 0) this.jawT -= dt; else this.jaw = 0;
+    const pant = c === this.fc && this.moodNow() === 'tired' ? Math.sin(this.t * 7) * 0.18 : 0;
+    const open = Math.max(c.open + pant, this.jaw);
+    this.jawNow = (this.jawNow || 0) + (open - (this.jawNow || 0)) * (1 - Math.exp(-26 * dt));
+    this.fMouth.scale.set(c.wide * (1 - this.jawNow * 0.22), 1 + this.jawNow * 4.6, 1); this.fMouth.position.y = this.mouthY - this.jawNow * 0.006;
+    this.fCorn.scale.x = c.wide * (1 - this.jawNow * 0.22); this.fCorn.position.y = this.mouthY - this.jawNow * 0.006 + c.curve * 0.0085; // corners ride with the mouth and lift or fall
+    this.fBrow.L.rotation.z = c.tilt; this.fBrow.R.rotation.z = -c.tilt;
+    this.fBrow.L.position.y = this.fBrow.R.position.y = 0.1915 + c.by;
+    // the eyes go where the head has not yet reached
+    this.fIris.position.set(clamp(this.gaze.yaw * 0.012, -0.0075, 0.0075), clamp(-this.gaze.pitch * 0.012, -0.005, 0.005), 0);
+  }
+  /** Head and eyes toward what he is looking at; cloth and hair; breath. */
+  updateSecondary(dt) {
+    const j = this.j, g = this.gaze;
+    let wy = 0, wp = 0;
+    if (this.lookTarget && this.loop !== 'dead') {
+      j.head.getWorldPosition(_t); _u.copy(this.lookTarget).sub(_t);
+      wy = clamp(angleDiff(this.root.rotation.y + this.cur.cry + this.cur.hry, Math.atan2(_u.x, _u.z)), -1.0, 1.0);
+      wp = clamp(-Math.atan2(_u.y, Math.hypot(_u.x, _u.z)), -0.45, 0.5);
+      if (Math.abs(wy) >= 1.0) wy = wp = 0; // behind him: he does not wring his neck
+    }
+    g.yaw = damp(g.yaw, wy, 7, dt); g.pitch = damp(g.pitch, wp, 7, dt);
+    // cloth and hair swing back when he moves and settle when he stops
+    const sp = this.speed / this.scale, want = -clamp(sp * 0.085, 0, 0.5) + Math.sin(this.t * 1.7) * 0.025 - Math.max(0, -this.cur.crx) * 0.5 + this.cur.crx * 0.6;
+    this.sway = damp(this.sway, want, 5, dt);
+    if (j.cloak) j.cloak.rotation.x = this.sway - this.cur.crx * 0.55 + Math.sin(this.phase * 2) * 0.03 * Math.min(1, sp / 3);
+    if (j.hair) j.hair.rotation.x = this.sway * 0.8 - this.cur.nrx * 0.7 - g.pitch * 0.5;
+    // breath
+    const b = Math.sin(this.t * (1.5 + this.breath * 1.1)) * 0.012 * this.breath;
+    this.chestMesh.scale.set(1 + b * 0.6, 1 + b * 0.25, 1 + b * 1.6);
+  }
+  /** Feet find the ground on a slope: the hips sink until the lower foot lands, the other leg folds. */
+  plantFeet(p, dt) {
+    const gnd = Humanoid.ground, l = this.loop;
+    let dl = 0, dr = 0;
+    if (gnd && this.face.visible && !this.lift && Math.abs(this.cur.pitch) < 0.2 && !(l === 'sit' || l === 'warm' || l === 'kneel' || l === 'cook' || l === 'mourn' || l === 'dead')) {
+      const rp = this.root.position, yaw = this.root.rotation.y, cx = Math.cos(yaw) * 0.1 * this.scale, sx = Math.sin(yaw) * 0.1 * this.scale;
+      dl = clamp(gnd(rp.x + cx, rp.z - sx) - rp.y, -0.28, 0.28) / this.scale; dr = clamp(gnd(rp.x - cx, rp.z + sx) - rp.y, -0.28, 0.28) / this.scale;
+    }
+    const ik = this.ik; ik.l = damp(ik.l, dl, 10, dt); ik.r = damp(ik.r, dr, 10, dt);
+    const drop = Math.max(0, -Math.min(ik.l, ik.r)), ll = ik.l + drop, lr = ik.r + drop;
+    if (drop < 0.004 && ll < 0.004 && lr < 0.004) return;
+    p.hy -= drop; p.llx -= ll * 1.5; p.knL += ll * 3.1; p.lrx -= lr * 1.5; p.knR += lr * 3.1;
+  }
+  /** The left hand goes to the haft of a two-handed weapon (two-bone reach from the shoulder). */
+  gripHaft() {
+    const j = this.j, it = this.items.R, a = this.action && this.action.name, l = this.loop;
+    if (!this.grip2 || !it || this.items.L || !this.face.visible) return;
+    if ((l && l !== 'guard' && l !== 'block' && l !== 'talk') || (a && !/^(atk|chop|thrust|parry|cleave|slam)/.test(a))) return;
+    j.chest.updateWorldMatrix(true, true);
+    _t.set(0, 0, this.grip2).applyMatrix4(j.haR.matrixWorld); j.chest.worldToLocal(_t); // a point up the haft, seen from the chest
+    _t.x -= D.shoulderX * this.look.build; _t.y -= D.shoulderY;
+    const u = D.upper, fo = D.fore, len = clamp(_t.length(), 0.14, u + fo - 0.012);
+    const E = Math.acos(clamp((u * u + fo * fo - len * len) / (2 * u * fo), -1, 1)), al = Math.acos(clamp((u * u + len * len - fo * fo) / (2 * u * len), -1, 1));
+    _q.setFromUnitVectors(DOWN, _t.normalize()); _q2.setFromAxisAngle(XAX, al);
+    j.shL.quaternion.copy(_q).multiply(_q2); j.elL.rotation.x = -(Math.PI - E);
   }
 
   setLocomotion(speed, crouch = false) { this.speed = speed; this.crouch = crouch; }
@@ -143,6 +314,7 @@ export class Humanoid {
     const h = this.j['ha' + side];
     if (this.items[side]) { h.remove(this.items[side]); this.items[side] = null; }
     if (name) { const it = makeItem(name); it.position.set(0, -0.03, 0.02); h.add(it); this.items[side] = it; it.userData.name = name; }
+    if (side === 'R') this.grip2 = { longaxe: 0.4, maul: 0.36, spear: 0.46 }[name] || 0; // where the second hand goes on a long haft
   }
   held(side) { return this.items[side] ? this.items[side].userData.name : null; }
 
@@ -171,6 +343,7 @@ export class Humanoid {
       p.crx = 0.02 + Math.sin(this.t * 1.5) * 0.014; p.nry = Math.sin(this.t * 0.37) * 0.13; p.nrx = Math.sin(this.t * 0.23) * 0.04;
     }
     if (this.loop && LOOPS[this.loop]) LOOPS[this.loop](p, this.t, this);
+    this.plantFeet(p, dt);
     let lambda = 11;
     const a = this.action;
     if (a) {
@@ -183,17 +356,20 @@ export class Humanoid {
     }
     const k = 1 - Math.exp(-lambda * dt), cu = this.cur;
     for (const key of POSE_KEYS) cu[key] += (p[key] - cu[key]) * k;
+    this.updateSecondary(dt);
     this.applyPose();
+    this.updateFace(dt);
   }
   applyPose() {
     const c = this.cur, j = this.j;
     j.hips.position.y = D.hip + c.hy; j.hips.rotation.set(c.hrx, c.hry, 0);
-    j.chest.rotation.set(c.crx, c.cry, c.crz); j.head.rotation.set(c.nrx, c.nry, 0);
+    j.chest.rotation.set(c.crx, c.cry, c.crz); j.head.rotation.set(c.nrx + this.gaze.pitch * 0.62, c.nry + this.gaze.yaw * 0.62, 0);
     j.shL.rotation.set(c.slx, c.sly, c.slz); j.shR.rotation.set(c.srx, c.sry, c.srz);
     j.elL.rotation.x = c.elL; j.elR.rotation.x = c.elR;
     j.lgL.rotation.set(c.llx, 0, c.llz); j.lgR.rotation.set(c.lrx, 0, c.lrz);
     j.knL.rotation.x = c.knL; j.knR.rotation.x = c.knR;
     this.body.rotation.x = c.pitch; this.body.position.y = c.by + (this.lift || 0);
+    this.gripHaft();
   }
   /** Snap straight to the current target pose (used when teleporting / restoring). */
   snap() { this.update(0.0001); for (const k of POSE_KEYS) this.cur[k] = this.tgt[k]; this.applyPose(); }
@@ -221,6 +397,8 @@ function itemGeo(name) {
       break;
     case 'woodaxe': g.push(tint(at(cyl(0.02, 0.024, 0.85, 5), 0, 0, 0.3, Math.PI / 2, 0, 0), WD, 0.08, 1), tint(at(box(0.03, 0.2, 0.13), 0, -0.06, 0.68), IR, 0.06, 2)); break;
     case 'longaxe': g.push(tint(at(cyl(0.02, 0.025, 1.4, 5), 0, 0, 0.5, Math.PI / 2, 0, 0), WD, 0.08, 1), tint(at(box(0.03, 0.32, 0.2), 0, -0.11, 1.08), IR, 0.06, 2), tint(at(box(0.034, 0.07, 0.08), 0, 0.0, 1.08), 0x70747a, 0, 3)); break;
+    case 'seax': g.push(bladeZ(0.46, 0.05, IR, 1), tint(at(box(0.11, 0.03, 0.03), 0, 0, 0.07), 0x6e5a36, 0, 2), tint(at(cyl(0.018, 0.018, 0.14, 5), 0, 0, 0, Math.PI / 2, 0, 0), WD, 0, 3)); break;
+    case 'maul': g.push(tint(at(cyl(0.022, 0.028, 1.3, 6), 0, 0, 0.46, Math.PI / 2, 0, 0), WD, 0.08, 1), tint(at(box(0.17, 0.17, 0.3), 0, 0, 1.08), 0x5a5e64, 0.08, 2), tint(at(box(0.19, 0.05, 0.05), 0, 0, 1.08), 0x3a3d43, 0, 3), tint(at(box(0.05, 0.19, 0.05), 0, 0, 1.08), 0x3a3d43, 0, 4)); break;
     case 'smallaxe': case 'throwaxe': g.push(tint(at(cyl(0.014, 0.017, 0.5, 5), 0, 0, 0.17, Math.PI / 2, 0, 0), WD, 0.08, 1), tint(at(box(0.02, 0.13, 0.08), 0, -0.04, 0.38), IR, 0.06, 2)); break;
     case 'spear': g.push(tint(at(cyl(0.015, 0.017, 2.0, 5), 0, 0, 0.35, Math.PI / 2, 0, 0), WD, 0.08, 1), tint(at(cone(0.035, 0.26, 4), 0, 0, 1.47, Math.PI / 2, 0, 0), IR, 0, 2)); break;
     case 'hammer': g.push(tint(at(cyl(0.014, 0.016, 0.36, 5), 0, 0, 0.14, Math.PI / 2, 0, 0), WD, 0, 1), tint(at(box(0.05, 0.11, 0.05), 0, 0, 0.32), 0x5a5e64, 0, 2)); break;

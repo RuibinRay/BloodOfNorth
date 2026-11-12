@@ -125,6 +125,7 @@ export class NPC {
       } else { this.mode = 'idle'; h.setLoop(null); if (this.opts.onWin) this.opts.onWin(this); }
     } else if (this.raider) wantSpeed = this.updateRaider(dt);
 
+    h.lookAt(!this.dead && (this.mode === 'idle' || this.talking) && this.dist(p) < 7 ? p.headPos : null); // people look at him when he is near
     if (this.mode === 'idle' && !this.dead && this.faceT) this.yaw = dampAngle(this.yaw, Math.atan2(this.faceT.x - this.pos.x, this.faceT.z - this.pos.z), 6, dt);
     if (wantSpeed === 0) this.speed = damp(this.speed, 0, 12, dt);
     this.pos.y = damp(this.pos.y, g.world.groundAt(this.pos.x, this.pos.z), 18, dt);

@@ -18,13 +18,19 @@ export const WEAPONS = {
   sword: { real: true, dmg: 0.85, reach: 2.5, arc: 1.05, speed: 1.3, stam: 0.8, posture: 0.7, sweep: [1, 2], parry: 0.36, block: 12, riposte: 2.1, off: 'shield' },
   spear: { real: true, dmg: 0.9, reach: 3.5, arc: 0.55, speed: 0.95, stam: 0.9, posture: 0.85, sweep: [1, 1], parry: 0.22, block: 16, riposte: 1.6, off: 'shield', stop: true, anim: 'thrust' },
   longaxe: { real: true, dmg: 1.5, reach: 2.95, arc: 1.45, speed: 0.72, stam: 1.5, posture: 1.6, sweep: [3, 4], parry: 0.2, block: 18, riposte: 1.6, off: null, breaker: true, animHeavy: 'chop' },
+  // twin seaxes: the quickest; each light blow lands twice (the second at `double` of the first). No shield.
+  twin: { real: true, dmg: 0.62, reach: 2.35, arc: 1.2, speed: 1.5, stam: 0.7, posture: 0.6, sweep: [1, 2], parry: 0.3, block: 15, riposte: 1.9, off: null, hold: 'seax', offHold: 'seax', double: 0.6 },
+  // war maul: the slowest; nearly twice the harm, ruins a guard, and a heavy blow is a ground slam that catches everyone within `slam` metres.
+  maul: { real: true, dmg: 1.8, reach: 2.9, arc: 1.1, speed: 0.6, stam: 1.8, posture: 2.2, sweep: [2, 4], parry: 0.18, block: 20, riposte: 1.5, off: null, breaker: true, anim: 'chop', animHeavy: 'slam', slam: 2.7 },
 };
 /** The order the weapon key steps through. */
-export const MELEE_ORDER = ['father_axe', 'sword', 'spear', 'longaxe'];
+export const MELEE_ORDER = ['father_axe', 'sword', 'twin', 'spear', 'longaxe', 'maul'];
 
 Object.assign(ITEMS, {
   sword: { name: 'Sword', desc: 'The quickest blade: fast blows that cost little breath, the widest moment to parry in, and the hardest riposte. It wears a guard down slowly. Takes a shield.', cat: 'Weapon' },
   spear: { name: 'Ash spear', desc: 'Reach. It lands before a man can step into his own swing, and a quick thrust stops an attack that has started. A narrow point: one man at a time. Takes a shield.', cat: 'Weapon' },
   longaxe: { name: 'Long axe', desc: 'Two hands, no shield. Slow and hungry for breath, but each blow hits half again as hard, sweeps three or four men, and a heavy one breaks a shield-bearer\'s guard outright.', cat: 'Weapon' },
+  twin: { name: 'Twin seaxes', desc: 'A long knife in each hand. The quickest weapon there is: every light blow lands twice and costs little breath. Each cut is small and wears a guard slowly. No shield.', cat: 'Weapon' },
+  maul: { name: 'War maul', desc: 'A hammer for two hands. The slowest weapon and the hungriest for breath, but it hits nearly twice as hard, ruins a guard, breaks a shield wall, and a heavy blow slams the ground and catches every man near it.', cat: 'Weapon' },
   throwaxe: { name: 'Throwing axe', desc: 'A small axe balanced to turn once in ten paces. It hits hard, shakes a guard and stops a swing. One that misses can be picked up again.', cat: 'Weapon' },
 });

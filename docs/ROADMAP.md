@@ -16,13 +16,14 @@ playtests; none are claimed until then.
 | 0.9 | **Better battles** | Requested direction: improve fighting before any more story acts. Hit-stop, riposte after a parry, finishing blows on a broken guard, a wider fight camera; archers, shield-bearers and berserkers in the island camps and boarding crews; a shield for the player (blocks arrows, cheaper block, shove); crew who can be wounded and recover | Automated playtest: each new mechanic exercised directly, the Utvær raid and a boarding with the new kinds, crew going down and getting up, regression on every chapter and the Act II raid | **Done** |
 | 0.10 | **More weapons** | Weapon classes with their own numbers (data/weapons.js): sword, ash spear, two-handed long axe beside Ragnar's axe; throwing axes; a weapon key that steps through what is carried; traders' war-gear and captains' weapons as loot | Automated playtest: damage, time, breath, reach and sweep measured for every weapon; stop-thrust, shield-breaking, riposte and parry windows; thrown axes hit, interrupt and are picked up; story chapters still use the baseline numbers | **Done** |
 | 0.11 | **Skill trees** | Renown becomes skill points (one per 150); the five designed trees (Berserker, Shieldmaster, Hunter, Warlord, Wayfarer), five skills each, learned in order from adulthood; a Skills panel; renown for fallen enemies; Raven's Eye from the helm and the saddle | Automated playtest: all 25 skills measured with and without, order and cost enforced, closed for the child chapters, regression on every chapter and the Act II raid | **Done** |
-| 0.12 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: combat difficulty above all, then riding, rowing and sailing feel, aim, stealth, camera | Three people finish everything built without help | Next |
-| 0.13 | **Real assets in** | Working Higgsfield credentials; key art; GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
-| 0.14 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or keep growing the web build, which now holds a 1.3 × 2 km world at 60 fps in the test window | A written decision | Planned |
-| 0.15 | **The Hunted Wolf** | Companions, bounties, the ship in the story, Grave-Song, Act III | Act III plays through | Planned |
-| 0.16 | **Across the Sea** | Longship, naval combat, ports, sieges, the outer skerries, Act IV | — | Planned |
-| 0.17 | **The Broken Raven** | Settlement, recruiting, supply, territory, Act V | — | Planned |
-| 0.18 | **War of the Jarls** | Faction politics, duels, large battles, "my king", Acts VI and VII, four endings | — | Planned |
+| 0.12 | **Faces, motion and combat depth** | From the owner's brief. Animated faces (eyes, blinking, brows, speech-driven mouths, eight expressions, look-at), breathing, cloth and hair sway, foot planting, two-handed grip; Eirik's lightning scar; an Appearance screen. Directional strikes, combo heavy, lunges, sidestep and roll, block impacts, execution camera, bow arc and shoulder swap; the Storm-Ward; raven warnings; twin seaxes and a war maul; enemy move sets, strings, unblockable and area blows, phases, dodging and adapting; the seven elites | Automated playtest: every expression and speech captured in close-up, every new strike, dodge, block, ward and weapon measured, all seven elites fought through their phases by proxy, regression on every chapter and the Act II raid | **Done** |
+| 0.13 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: combat difficulty above all, then riding, rowing and sailing feel, aim, stealth, camera | Three people finish everything built without help | Next |
+| 0.14 | **Real assets in** | Working Higgsfield credentials; key art; GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
+| 0.15 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or keep growing the web build, which now holds a 1.3 × 2 km world at 60 fps in the test window | A written decision | Planned |
+| 0.16 | **The Hunted Wolf** | Companions, bounties, the ship in the story, Grave-Song, Act III | Act III plays through | Planned |
+| 0.17 | **Across the Sea** | Longship, naval combat, ports, sieges, the outer skerries, Act IV | — | Planned |
+| 0.18 | **The Broken Raven** | Settlement, recruiting, supply, territory, Act V | — | Planned |
+| 0.19 | **War of the Jarls** | Faction politics, duels, large battles, "my king", Acts VI and VII, four endings | — | Planned |
 | 1.0 | **Polish** | Side missions, minigames, voiced dialogue, recorded music, performance targets (60 fps at 1440p on suitable hardware as an objective), accessibility pass | Full playthrough signed off | Planned |
 
 ## Immediate next steps
@@ -31,7 +32,15 @@ playtests; none are claimed until then.
 2. Play everything by hand, the raid especially, and note every moment that feels unfair, unclear or slow.
 3. Decide where the project lives: a PC that can run UE5, or continue in the browser for another chapter.
 
-## Known gaps in 0.11
+## Known gaps in 0.12
+
+- This is still a procedural, low-polygon build in a browser. There are no skin textures, hair strands, motion capture or recorded voices, and it does not look like the games the brief names. Faces are built from simple shapes; mouths follow the letters of a line, not a voice.
+- Cloth and hair swing as single stiff pieces. Foot planting bends the legs on slopes; it does not stop feet sliding at every speed.
+- Blocking is still a facing check with an impact reaction, not weapon-against-weapon collision.
+- Mud, rain, destructible objects and breakable shields from the brief are not built. Lighting and materials are unchanged.
+- The scar is on Eirik from the first scene, the ward is called the Storm-Ward, and the Seven have invented names and a place: all three are placeholders waiting for the story.
+- None of it has been played by hand; elite difficulty is unknown.
+
 
 - Skills are rules and numbers, not new moves: none adds an animation or a new button except Rally. There is no way to unlearn one.
 - The point rate (one per 150 renown) is a guess: a full run of what is built gives roughly twenty points against forty-five to buy everything.

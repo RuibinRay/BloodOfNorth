@@ -9,6 +9,7 @@ import { World } from './world/world.js';
 import { Sky } from './world/sky.js';
 import { FX } from './world/fx.js';
 import { Player } from './entities/player.js';
+import { Humanoid } from './entities/humanoid.js';
 import { NPC } from './entities/npc.js';
 import { Wildlife } from './entities/wildlife.js';
 import { Ravens } from './entities/ravens.js';
@@ -23,7 +24,7 @@ const RUNNING = new Set(['play', 'dialogue', 'cutscene', 'activity']);
 const freshState = () => ({
   stage: 'day', time: 8.7, flags: {}, traits: { wisdom: 0, compassion: 0, ferocity: 0, pride: 0 }, rel: { ragnar: 0, ylva: 0 },
   inventory: {}, quests: {}, xp: 0, choices: [], playtime: 0, player: null, waypoint: null,
-  secrets: {}, marks: {}, ravenNames: null, alias: null, open: null, skills: {},
+  secrets: {}, marks: {}, ravenNames: null, alias: null, open: null, skills: {}, look: {},
 });
 const TRAIT_NAMES = { wisdom: 'Wisdom', compassion: 'Compassion', ferocity: 'Ferocity', pride: 'Pride' };
 
@@ -56,6 +57,8 @@ class Game {
     this.fx = new FX(this.scene, renderer);
     this.wildlife = new Wildlife(this);
     this.player = new Player(this);
+    Humanoid.cam = this.camera.position;                       // faces are only drawn near the camera
+    Humanoid.ground = (x, z) => this.world.groundAt(x, z);     // feet find the ground
     this.scene.add(this.player.root);
     this.ravens = new Ravens(this);
     this.combat = new Combat(this);

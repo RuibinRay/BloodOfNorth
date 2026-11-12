@@ -24,7 +24,7 @@ export class UI {
     for (const id of ['hud', 'compass', 'tracker', 'hint', 'toasts', 'prompt', 'crosshair', 'marker', 'detect', 'alert', 'meter', 'banner', 'sense', 'subtitle', 'skip', 'dialogue', 'fade', 'card', 'menu', 'pause', 'panel', 'tabs', 'loading', 'equip'])
       this.e[id] = document.getElementById(id);
     this.e.lb = [document.getElementById('lb-top'), document.getElementById('lb-bot')];
-    this.bars = { health: $('#bar-health i'), stamina: $('#bar-stamina i'), warmth: $('#bar-warmth i'), warmthWrap: $('#bar-warmth'), hunger: $('#bar-hunger i'), hungerWrap: $('#bar-hunger'), ice: $('#bar-ice i'), iceWrap: $('#bar-ice') };
+    this.bars = { health: $('#bar-health i'), stamina: $('#bar-stamina i'), warmth: $('#bar-warmth i'), warmthWrap: $('#bar-warmth'), hunger: $('#bar-hunger i'), hungerWrap: $('#bar-hunger'), ice: $('#bar-ice i'), iceWrap: $('#bar-ice'), ward: $('#bar-ward i'), wardWrap: $('#bar-ward') };
     this.subT = 0; this.fadeS = null; this.fadeV = 0; this.cardS = null; this.tab = 'journal'; this.returnTo = null; this.sel = {};
     this.compass = CARD.map(([t, b]) => { const s = document.createElement('span'); s.textContent = t; if (t.length > 1) s.className = 'minor'; this.e.compass.appendChild(s); return { s, b }; });
     this.objSpan = document.createElement('span'); this.objSpan.className = 'obj'; this.objSpan.textContent = '◆'; this.e.compass.appendChild(this.objSpan);
@@ -54,7 +54,15 @@ export class UI {
     while (this.e.toasts.children.length > 5) this.e.toasts.firstChild.remove();
     setTimeout(() => d.remove(), 3500);
   }
+  /** Find the speaker by name and have their mouth follow the words. */
+  mouth(speaker, text) {
+    const g = this.g;
+    if (!speaker || !g.player) return;
+    const who = speaker === 'Eirik' ? g.player : [...g.npcs.values()].find((n) => n.visible && !n.dead && n.name === speaker);
+    if (who && who.h) who.h.say(text);
+  }
   subtitle(speaker, text, dur = 3) {
+    this.mouth(speaker, text); // whoever says it, says it with their mouth
     if (!this.g.settings.subtitles) return;
     const s = this.e.subtitle;
     s.innerHTML = speaker ? `<b>${esc(speaker)}:</b> ${esc(text)}` : esc(text);
@@ -64,7 +72,10 @@ export class UI {
     const b = this.e.banner; b.querySelector('small').textContent = small; b.querySelector('b').textContent = title;
     b.classList.remove('on'); void b.offsetWidth; b.classList.add('on');
   }
-  alert() { const a = this.e.alert; a.classList.remove('on'); void a.offsetWidth; a.classList.add('on'); this.g.audio.play('ui', { vol: 0.8 }); }
+  /** A blow is coming. red: it cannot be blocked (dodge it, or turn it with the ward). */
+  alert(red = false) { const a = this.e.alert; a.classList.remove('on'); a.classList.toggle('red', red); void a.offsetWidth; a.classList.add('on'); this.g.audio.play('ui', { vol: 0.8 }); }
+  /** The white raven calls: something is coming from where he is not looking. side: 'l' | 'r' | 'b' */
+  warn(side) { const w = document.getElementById('warn'); w.className = side; void w.offsetWidth; w.classList.add('on'); }
   setDetection(v) {
     const d = this.e.detect;
     if (v < 0) { d.classList.remove('on'); return; }
@@ -164,6 +175,9 @@ export class UI {
     if (ch2) { this.bars.hunger.style.width = p.hunger + '%'; this.bars.hungerWrap.classList.toggle('low', p.hunger < 20); }
     this.bars.iceWrap.classList.toggle('on', ice);
     if (ice) { const k = Math.min(1, g.story.ch2.strain); this.bars.ice.style.width = k * 100 + '%'; this.bars.iceWrap.classList.toggle('low', k > 0.6); }
+    const wardOn = !!p.adult && (p.ward > 0 || g.combat.active);
+    this.bars.wardWrap.classList.toggle('on', wardOn);
+    if (wardOn) { this.bars.ward.style.width = p.ward + '%'; this.bars.wardWrap.classList.toggle('ready', p.ward >= 50); }
     this.e.sense.style.opacity = g.sense * 0.9;
 
     // compass
@@ -238,7 +252,7 @@ export class UI {
   }
   hideMain() { this.e.menu.classList.remove('on'); this.e.hud.classList.remove('hidden'); }
   showPause() {
-    const g = this.g, all = ['journal', 'inventory', 'map', 'saga', 'skills', 'settings', 'saves', 'status'];
+    const g = this.g, all = ['journal', 'inventory', 'map', 'saga', 'skills', 'looks', 'settings', 'saves', 'status'];
     this.e.pause.classList.add('on');
     this.buttons($('#pause-buttons'), [
       { label: 'Resume', act: () => g.resume() },
@@ -247,6 +261,7 @@ export class UI {
       { label: 'Map', act: () => this.openPanel('map', all) },
       { label: 'Saga', act: () => this.openPanel('saga', all) },
       { label: 'Skills', act: () => this.openPanel('skills', all) },
+      { label: 'Appearance', act: () => this.openPanel('looks', all) },
       { label: 'Settings', act: () => this.openPanel('settings', all) },
       { label: 'Save / Load', act: () => this.openPanel('saves', all) },
       { label: 'Quit to Main Menu', act: () => g.quitToMenu() },
@@ -254,8 +269,8 @@ export class UI {
   }
   hidePause() { this.e.pause.classList.remove('on'); }
 
-  openPanel(tab, tabs = ['journal', 'inventory', 'map', 'saga', 'skills', 'settings', 'saves', 'status']) {
-    const names = { journal: 'Journal', inventory: 'Inventory', map: 'Map', saga: 'Saga', skills: 'Skills', settings: 'Settings', saves: 'Saves', status: 'Build Status' };
+  openPanel(tab, tabs = ['journal', 'inventory', 'map', 'saga', 'skills', 'looks', 'settings', 'saves', 'status']) {
+    const names = { journal: 'Journal', inventory: 'Inventory', map: 'Map', saga: 'Saga', skills: 'Skills', looks: 'Appearance', settings: 'Settings', saves: 'Saves', status: 'Build Status' };
     this.tabs = tabs; this.tab = tab;
     this.e.panel.classList.add('on'); this.e.pause.classList.remove('on');
     this.e.tabs.innerHTML = '';
@@ -393,6 +408,50 @@ export class UI {
       g.audio.play('ui'); draw();
     };
   }
+  /** Appearance: how the grown Eirik looks. Choices live in state.look and lie over the look the story gives him. */
+  render_looks(body) {
+    const g = this.g, p = g.player;
+    if (!p.adult) { body.innerHTML = '<h3>Appearance</h3><p class="muted">The boy looks as his mother made him. You choose how Eirik looks as a man when he is grown; the lightning scar over his left eye is his from the start.</p>'; return; }
+    const own = g.state.look || (g.state.look = {}), base = p.baseLook || {};
+    const cur = (k) => (own[k] !== undefined ? own[k] : base[k] !== undefined ? base[k] : null);
+    const hex = (n) => '#' + n.toString(16).padStart(6, '0');
+    const chips = (k, opts) => opts.map(([v, t]) => `<button class="chip ${cur(k) === v ? 'on' : ''}" data-k="${k}" data-v="${v === null ? '' : v}" data-t="${typeof v}">${esc(t)}</button>`).join('');
+    const dots = (k, cols) => cols.map((c) => `<button class="dot ${cur(k) === c ? 'on' : ''}" data-k="${k}" data-v="${c}" data-t="number" style="background:${hex(c)}" aria-label="${hex(c)}"></button>`).join('');
+    const row = (name, html) => `<div class="lrow"><span>${name}</span><div>${html}</div></div>`;
+    body.innerHTML = `<h3>Appearance</h3><p class="muted">How Eirik looks as a man. The lightning scar over his left eye stays in every version.</p>
+      <div class="looks"><canvas id="mirror" width="340" height="430"></canvas><div class="opts">
+      ${row('Hair', chips('hairStyle', [['short', 'Short'], ['long', 'Long'], ['tail', 'Tied back'], ['braid', 'One braid'], ['braids', 'Two braids'], ['topknot', 'Topknot'], ['bald', 'Shaved']]))}
+      ${row('Hair colour', dots('hair', [0xd9c27a, 0xa87e45, 0x8a5a2e, 0x5c4028, 0x2c241e, 0x9a4420, 0x9a968e, 0xe6e2da]))}
+      ${row('Beard', chips('beard', [[null, 'None'], ['stubble', 'Stubble'], ['short', 'Short'], ['long', 'Long'], ['braided', 'Braided']]))}
+      ${row('Eyes', dots('eyes', [0x86aec6, 0x8e979c, 0x6f8f5a, 0x8a6a3a, 0x5a4632, 0xb07a2e]))}
+      ${row('Face', chips('face', [['even', 'Even'], ['lean', 'Lean'], ['broad', 'Broad'], ['long', 'Long']]))}
+      ${row('Skin', dots('skin', [0xe8c0a2, 0xdcae8e, 0xc8946e, 0xa87550, 0x7a5236]))}
+      ${row('Build', chips('build', [[0.96, 'Lean'], [1.08, 'Strong'], [1.2, 'Heavy']]))}
+      ${row('Height', chips('scale', [[0.96, 'Short'], [1.0, 'Middling'], [1.05, 'Tall']]))}
+      ${row('Another scar', chips('scar2', [[null, 'None'], ['cheek', 'Cheek'], ['brow', 'Brow'], ['lip', 'Lip']]))}
+      ${row('Tunic', dots('tunic', [0x55664a, 0x6a3a2e, 0x2f4a5c, 0x6a5a40, 0x4a4a52, 0x8a7a5a]))}
+      ${row('Cloak', chips('cloak', [[null, 'None'], [0x3a3e44, 'Grey'], [0x4a2e22, 'Brown'], [0x2e3e52, 'Blue'], [0x5a2a24, 'Red']]))}
+      <div class="lrow"><span></span><div><button class="btn" id="look-reset">As the story has him</button></div></div></div></div>`;
+    const apply = () => {
+      const eq = p.equipped; p.setLook(p.baseLook, true); p.showBackAxe(g.inventory.has('father_axe') && !g.state.flags.axeHidden && eq !== 'father_axe');
+      if (eq && eq !== 'none') { p.equipped = 'none'; p.equip(eq); }
+      p.h.snap(); this.render_looks(body);
+    };
+    body.querySelectorAll('.chip, .dot').forEach((b) => (b.onclick = () => { const k = b.dataset.k, v = b.dataset.v; own[k] = v === '' ? null : b.dataset.t === 'number' ? Number(v) : v; g.audio.play('ui'); apply(); }));
+    body.querySelector('#look-reset').onclick = () => { for (const k in own) delete own[k]; g.audio.play('uiBack'); apply(); };
+    this.drawMirror(body.querySelector('#mirror'));
+  }
+  /** A portrait of Eirik as he stands: one frame rendered from in front of him and copied into the panel. */
+  drawMirror(cv) {
+    const g = this.g, p = g.player, c = g.camera, pos = c.position.clone(), q = c.quaternion.clone(), fov = c.fov, fog = g.scene.fog.density;
+    const y = p.pos.y + p.h.headHeight() - 0.16, fx = Math.sin(p.yaw), fz = Math.cos(p.yaw);
+    p.h.lookAt(null); p.h.update(0.2); p.h.update(0.2);
+    c.position.set(p.pos.x + fx * 1.5 + fz * 0.32, y + 0.08, p.pos.z + fz * 1.5 - fx * 0.32); c.lookAt(p.pos.x, y, p.pos.z); c.fov = 30; c.updateProjectionMatrix(); c.updateMatrixWorld();
+    g.scene.fog.density = 0.0004; g.sky.dome.position.copy(c.position); g.renderer.render(g.scene, c);
+    const src = g.renderer.domElement, sw = Math.min(src.width, (src.height * cv.width) / cv.height), sh = (sw * cv.height) / cv.width;
+    cv.getContext('2d').drawImage(src, (src.width - sw) / 2, (src.height - sh) / 2, sw, sh, 0, 0, cv.width, cv.height);
+    c.position.copy(pos); c.quaternion.copy(q); c.fov = fov; c.updateProjectionMatrix(); g.scene.fog.density = fog;
+  }
   render_skills(body) {
     const g = this.g, sk = g.skills, xp = g.state.xp, pts = sk.points();
     if (!sk.open()) { body.innerHTML = `<h3>Skills</h3><p class="muted">A boy learns by doing. The five paths open when Eirik is grown, and the renown he earns now (${xp} so far) will count then.</p>`; return; }
@@ -466,7 +525,7 @@ export class UI {
       <p>This is the first playable chapter of a long project, not the finished game. Everything on screen is generated in code; characters, props and sound are placeholders awaiting real assets.</p>
       <div class="status-grid">
       <div><h4><span class="tag ok">playable</span></h4><ul><li>Act I, Chapter 1: a full day in Hrafnvik and the night raid</li><li>Act I, Chapter 2: winter survival, a wolf, trackers and the river ice</li><li>Act I, Chapter 3: Bjornstead, the raven chicks, the axe under the hearthstone, first flight</li><li>Raven's Eye: fly the white raven, mark what she sees</li><li>Five hidden omens that seed later secret weapons</li><li>Act II, Chapter 1: Eirik at nineteen, the drill with Bjorn, the raid on Bjornstead</li><li>Melee combat: light and heavy blows, block, parry and riposte, dodge, guard-breaking and finishing blows, enemies that take turns and flank, a two-phase captain</li><li>The black raven harries your target; arrows work on men</li><li>Hunger and warmth, shelter, cooking, thin-ice crossing</li><li>Third-person movement, camera, stamina, crouch, dodge</li><li>Dialogue with choices, traits and bonds</li><li>Quests, journal, objective tracker, map with waypoint</li><li>Woodcutting, bow hunting, tracking, fishing, fire-making</li><li>Sparring tutorial: strike, block, parry, dodge</li><li>Stealth escape with raider sight and hearing</li><li>Cold and warmth survival</li><li>Day/night sky, snow, fire, in-engine cutscenes</li><li>Save / load, autosave, settings, key rebinding, gamepad</li></ul></div>
-      <div><h4><span class="tag proto">prototype</span></h4><ul><li>Procedural characters and animation (to be replaced by rigged models)</li><li>Procedural audio and score</li><li>Villager routines (posts and an evening change, not full schedules)</li><li>Wildlife AI: hares, deer, sheep, ravens</li><li>Adult Eirik is the same placeholder rig, scaled up</li><li>Open world sandbox: horse, boat with a sail, a ship to buy and six crew to recruit, a horn that brings them ashore to fight, sea battles (volleys, shields, ramming, boarding across two decks), archers, shield-bearers and berserkers, a shield with a shove, four melee weapons and throwing axes, five skill trees bought with renown, crew who can be wounded, fourteen islands on a sea chart, two law-districts, wolf-mark outlawry (witnesses, hue and cry, bounty-hunters, blood-price, hide-duel), standing up to “my king”, trade, paid passage between harbours, the first secret weapon</li><li>Higgsfield asset client (built, waiting on a valid key ID and secret)</li></ul></div>
+      <div><h4><span class="tag proto">prototype</span></h4><ul><li>Procedural characters and animation (to be replaced by rigged models), now with animated faces, expressions, speech mouths, breathing, cloth and hair sway, foot planting</li><li>Appearance screen for the grown Eirik; the lightning scar</li><li>Directional strikes, sidestep and roll, the Storm-Ward, raven warnings, twin seaxes and war maul, the seven elites with move sets and phases</li><li>Procedural audio and score</li><li>Villager routines (posts and an evening change, not full schedules)</li><li>Wildlife AI: hares, deer, sheep, ravens</li><li>Adult Eirik is the same placeholder rig, scaled up</li><li>Open world sandbox: horse, boat with a sail, a ship to buy and six crew to recruit, a horn that brings them ashore to fight, sea battles (volleys, shields, ramming, boarding across two decks), archers, shield-bearers and berserkers, a shield with a shove, four melee weapons and throwing axes, five skill trees bought with renown, crew who can be wounded, fourteen islands on a sea chart, two law-districts, wolf-mark outlawry (witnesses, hue and cry, bounty-hunters, blood-price, hide-duel), standing up to “my king”, trade, paid passage between harbours, the first secret weapon</li><li>Higgsfield asset client (built, waiting on a valid key ID and secret)</li></ul></div>
       <div><h4><span class="tag plan">planned</span></h4><ul><li>Acts II – VII (see docs/ROADMAP.md and data/missions.json)</li><li>The rest of the sea map (about forty islands; fourteen are built), a longship of your own, fleets, more districts (docs/OPEN_WORLD.md)</li><li>The rest of nine weapon classes (four are built)</li><li>Enemy combat AI, bosses, mounted and naval combat</li><li>Sailing, settlement, factions, trading, crafting</li><li>50 side missions and tavern games</li><li>Building interiors, voiced dialogue, real music</li><li>Unreal Engine 5 port for photoreal fidelity</li></ul></div></div>`;
   }
   showChapterEnd() {

@@ -11,6 +11,7 @@ import { Law, Mounts, MARK_NAMES } from '../systems/openworld.js';
 import { SeaChart } from './sea_chart.js';
 import { Fleet } from './fleet.js';
 import { SeaWar } from './seawar.js';
+import { Seven } from './seven.js';
 import { angleDiff } from '../core/util.js';
 
 Object.assign(ITEMS, {
@@ -38,9 +39,11 @@ const WARES = {
   spear: { t: 'An ash spear', cost: 25, give: ['spear', 1], once: true, line: 'Eight feet of ash and a hand of iron. Nobody gets close who you do not want close.' },
   sword: { t: 'A sword', cost: 45, give: ['sword', 1], once: true, line: 'Frankish steel, or the man who sold it to me said so. It is quick, whatever it is.' },
   longaxe: { t: 'A long axe', cost: 60, give: ['longaxe', 1], once: true, line: 'Two hands and no shield. Men who carry these do not expect to need one.' },
+  twin: { t: 'Twin seaxes', cost: 50, give: ['twin', 1], once: true, line: 'One for each hand. You will not block much, but you will not need to stand still either.' },
+  maul: { t: 'A war maul', cost: 70, give: ['maul', 1], once: true, line: 'It was a smith\'s before it was a soldier\'s. It does not care which.' },
   throwaxe: { t: 'Four throwing axes', cost: 10, give: ['throwaxe', 4], line: 'They turn once in ten paces. Count your paces.' },
 };
-const STOCK = { merchant: ['arrows', 'shield', 'spear', 'throwaxe'], trader: ['arrows', 'shield', 'sword', 'longaxe', 'throwaxe'] };
+const STOCK = { merchant: ['arrows', 'shield', 'spear', 'maul', 'throwaxe'], trader: ['arrows', 'shield', 'sword', 'twin', 'longaxe', 'throwaxe'] };
 /** The kinds of fighter beyond the ordinary: what they are called and how they are armed (see systems/combat.js). */
 export const KINDS = {
   archer: { tag: ' archer', opts: { hp: 60, dmg: 9, skill: 0.2, kind: 'archer' } },
@@ -56,6 +59,8 @@ export class OpenProto {
     for (const k in this.sea.steps) this.steps[k] = (r) => this.sea.steps[k].call(this.sea, r);
     this.fleet = new Fleet(game, this);
     for (const k in this.fleet.steps) this.steps[k] = (r) => this.fleet.steps[k].call(this.fleet, r);
+    this.seven = new Seven(game, this);
+    for (const k in this.seven.steps) this.steps[k] = (r) => this.seven.steps[k].call(this.seven, r);
     this.war = new SeaWar(game, this);
     for (const k in this.war.steps) this.steps[k] = (r) => this.war.steps[k].call(this.war, r);
   }
@@ -148,7 +153,7 @@ export class OpenProto {
   /** The keeper of the law in whichever district this is: Thorgeir on Gulen, Ragnhild on Kinn. */
   lawTalk(n) {
     const g = this.g, s = this.law.s, D = this.law.def, inv = g.inventory, L = n.name, E = 'Eirik', silver = inv.count('silver'), cost = s.marks * 25;
-    const kin = n.id === 'reeve', work = kin ? this.sea.reeveWork() : {}, flag = kin ? 'metReeve' : 'metLaw', king = kin ? 'kingOfSkerries' : 'kingOfGulen';
+    const kin = n.id === 'reeve', work = kin ? this.sea.reeveWork() : this.seven.offer(), flag = kin ? 'metReeve' : 'metLaw', king = kin ? 'kingOfSkerries' : 'kingOfGulen';
     let tree;
     if (s.marks > 0) tree = [
       { s: L, t: `You carry ${s.marks} wolf-mark${s.marks > 1 ? 's' : ''} in ${D.local}, {n}: ${MARK_NAMES[s.marks].toLowerCase()}. The law offers two roads. Silver, or the hide.` },
@@ -181,7 +186,7 @@ export class OpenProto {
       { id: 'swear', s: L, t: `Then hear it, ${D.seat}! This is Eirik Ravensson. By rock and by ring, he is our king, and we are his folk.`, to: 'end' },
       ...(work.nodes || []),
     ];
-    this.say(tree, n, () => { g.quests.notify('talk', n.id); if (this.pendingHolm) { const at = this.pendingHolm; this.pendingHolm = null; this.holmgang(at); } });
+    this.say(tree, n, () => { g.quests.notify('talk', n.id); if (work.after) work.after(); if (this.pendingHolm) { const at = this.pendingHolm; this.pendingHolm = null; this.holmgang(at); } });
   }
   merchantTalk(n) {
     const g = this.g, inv = g.inventory, M = n.name, silver = inv.count('silver');
@@ -228,7 +233,7 @@ export class OpenProto {
     n.revive(); n.visible = true; n.teleport(x, z, 0);
     n.h.hold('R', kind === 'archer' ? 'smallaxe' : weapon); n.h.hold('L', kind === 'archer' ? 'bow' : kind === 'berserk' ? null : 'shield');
     g.player.mortal = true;
-    return g.combat.add(n, opts);
+    return g.combat.add(n, { smart: true, ...opts }); // everyone out here has fought before: they adapt
   }
   startTask() {
     const c = POI.bulandet;

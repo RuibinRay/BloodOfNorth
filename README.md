@@ -1,6 +1,6 @@
 # Blood of the North — Rise of the Raven King
 
-A third-person Viking action RPG. This repository holds **vertical slice 0.11**: all three chapters of
+A third-person Viking action RPG. This repository holds **vertical slice 0.12**: all three chapters of
 Act I (Eirik's childhood), the opening chapter of Act II (Eirik at nineteen, with real combat), and an
 open-world sandbox that runs from the home valley out to a sea chart of islands, with a ship of your own, a
 crew to row her and enemies to fight at sea, plus the design foundation for the full campaign.
@@ -27,8 +27,11 @@ Then open http://localhost:5184. A production build is `npm run build` (output i
 |---|---|---|
 | Move / look | `W A S D` / mouse (arrow keys also turn the camera) | left stick / right stick |
 | Sprint, crouch | `Shift`, `C` | L3, R3 |
-| Interact, dodge | `E`, `Space` | A, B |
-| Attack or loose arrow (hold and release for a heavy blow) | left mouse | X or RT |
+| Interact | `E` | A |
+| Dodge: a sidestep; a roll when going forward or sprinting | `Space` | B |
+| Storm-Ward: turn any blow, even a red one (needs half a bar) | `Z` | — |
+| Bow: swap shoulder | `T` | — |
+| Attack or loose arrow (hold and release for a heavy blow). Push sideways for a wide cut, back for an overhead blow, forward with a heavy for a lunging thrust | left mouse | X or RT |
 | Block / parry, or aim bow | right mouse | LT |
 | Hunter's Sense | hold `Q` | Y |
 | Raven's Eye (from Chapter 3's spring) | `V` | d-pad up |
@@ -135,6 +138,8 @@ All keyboard and mouse bindings can be changed in Settings.
   | Sword | 12 in 0.4 s | 27, two men | Speed and little breath; the widest parry and the hardest riposte; wears a guard slowly |
   | Ash spear | 13 in 0.5 s, at 3.5 m | 29, one man | Reach; a light thrust stops an attack that is winding up |
   | Long axe | 21 in 0.7 s, three men | 48, four men | Two hands, no shield, half again the breath; a heavy blow breaks a shield-bearer's guard outright |
+  | Twin seaxes | 9 then 5, in 0.3 s | 20, two men | The fastest; little breath; small cuts that wear a guard slowly; no shield |
+  | War maul | 25 in 0.8 s, two men | 58 to everyone within 2.7 m | The slowest and hungriest; ruins guards and shield walls |
   | Throwing axe | 30 at range | | Stops a swing and shakes a guard; a miss can be picked up |
 - **Skill trees (0.11):** renown (from quests, islands found, ships taken and enemies felled) earns a skill point
   every 150. Five trees of five skills each, learned in order, from when Eirik is grown. `K` opens them.
@@ -147,6 +152,26 @@ All keyboard and mouse bindings can be changed in Settings.
   | Warlord | More standing from every deed, tougher crew, harder-hitting crew, helping a wounded crewman up mid-fight, and a black raven that harries longer and more often |
   | Wayfarer | Cheaper sprinting, faster boats, a hull that shrugs off arrows, a harder ram, and crew who can patch the hull most of the way |
 - **The raven from the helm:** `V` now works at the steering oar and in the saddle; the ship holds her course under sail while you look ahead.
+- **Faces and bodies (0.12):** every character has eyes that look at who they are talking to or fighting, lids that
+  blink, brows, and a mouth that follows the words of a line as it is spoken. Expressions change with what is
+  happening: anger in a fight, pain when hurt, fear, grief, laughter, exhaustion. Chests breathe, cloaks and long hair
+  swing, feet find sloping ground, and the second hand finds the haft of a two-handed weapon. Eirik has the lightning
+  scar over his left eye, as a boy and as a man.
+- **Appearance:** in the pause menu, choose the grown Eirik's hair and its colour, beard, eye colour, face shape, skin,
+  build, height, a second scar, tunic and cloak, with a portrait that updates. The lightning scar cannot be removed.
+- **Deeper combat:** the direction you push chooses the blow; two light blows then a heavy one is faster and harder;
+  blocked blows ring on the guard and push you back; a finishing blow pulls the camera in. Dodge is a sidestep or a
+  roll. The bow shows the arrow's path and can be aimed over either shoulder. Enemies in the open world step out of
+  heavy blows, shove through the guard of someone who only blocks, and hold their swing against someone who only rolls.
+- **The Storm-Ward:** Eirik's supernatural guard (a placeholder name). Landed blows and parries fill a bar; at half,
+  `Z` turns whatever lands in the next half-second, including blows that cannot be blocked, and throws it back.
+- **The white raven warns** with a call and an arrow at the edge of the screen when a blow is coming from behind.
+- **Two more weapons:** twin seaxes (the fastest; every light blow lands twice) and a war maul (the slowest; its
+  heavy blow slams the ground and catches everyone near it).
+- **The Seven:** seven elite warriors on Gulen, called out one at a time through the lawspeaker. Each has a weapon,
+  a set of moves and at least one change of phase: a shield duelist who answers every guarded blow, a two-axe
+  berserker, a spearman who will not be reached, a hammer-man whose slams cannot be blocked, an archer who rolls
+  away, a captain who calls shield-bearers, and a champion with three phases. Their names are placeholders.
 - **Traders:** two merchant ships work the sea lanes and hail you by what the district thinks of you.
 - **Two laws:** marks and standing are kept separately in the Vestland and the Skerries. Cross the water and you
   are a stranger again, unless you carried three marks or more, in which case word arrives before you do.
