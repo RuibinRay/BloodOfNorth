@@ -65,6 +65,8 @@ Sources are listed at the end.
 
 Built in 0.13: Stormguard by the story's rules, five Stormborn skills, ten champions with named skills and phases, Raven-Feeder's reforgings. See [WEAPONS.md](WEAPONS.md).
 
+Built in 0.18: two champion fights that turn on one act the story names rather than on damage (Eydis: send the black raven; Bersi: stand on the ledge and drop flat), each with a hint and a marker; and a fight that moves place part-way. Neither has been played by a person, so whether the turn is clear enough is unknown.
+
 Built in 0.17: a night infiltration (Håkon's hunting camp: guards who walk and guards who sit, a detection meter, dogs on a round, and pits to hide in until they pass); the skirmish again with companions in it (Leif at the tannery door, ten men and Svanhild on Vængr, Astrid's arrows in both); and a duel with a scripted fall and recovery (Skarde: the lie, the mud, the wait). Stealth is still one meter and a restart; there are no distractions, takedowns or bodies to hide.
 
 Built in 0.16: the same skirmish on a ship's deck (the rail is the edge of the world), and a duel with scripted turns (Rurik: he knows the axe, he waits when Eirik is down). The ships themselves do not move in story fights yet.
@@ -85,7 +87,7 @@ Planned, in order: Act I's last chapters moved to the new Bjornstead; the five s
 
 ## How the work is ordered
 
-The owner's story is 59 chapters and a three-part epilogue. By this plan's own targets they come to roughly 17 hours of main missions; side work, travel and battles are what would carry it toward 40. It is being built one chapter at a time in story order, each one checked against the text before it is called done: Act II was done this way in 0.14, Act III in 0.15, Act IV in 0.16 and Act V in 0.17; Act VI is next. Two standards from the game-studio kit the owner pointed to are adopted: gameplay numbers live in data files, and every story fact carries a canon level.
+The owner's story is 59 chapters and a three-part epilogue. By this plan's own targets they come to roughly 17 hours of main missions; side work, travel and battles are what would carry it toward 40. It is being built one chapter at a time in story order, each one checked against the text before it is called done: Act II was done this way in 0.14, Act III in 0.15, Act IV in 0.16, Act V in 0.17 and Act VI in 0.18; Act VII and the epilogue are what is left. Two standards from the game-studio kit the owner pointed to are adopted: gameplay numbers live in data files, and every story fact carries a canon level.
 
 ## Sources
 

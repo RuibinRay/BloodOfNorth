@@ -1,7 +1,7 @@
 {
  "about": "Mission breakdown of the owner's story (docs/story/THE_RISE_OF_THE_RAVEN_KING.md), chapter by chapter. status: built (playable; tested by script) | partial (something of it is playable; read the note) | fight_only (the champion fight is playable in its place, without the chapter round it) | planned. Minutes are design targets, not measured playtime: nothing here has been timed with a person playing.",
  "source": "docs/story/THE_RISE_OF_THE_RAVEN_KING.md",
- "updated": "2026-11-12 (0.17)",
+ "updated": "2026-11-12 (0.18)",
  "acts": [
   {
    "act": 1,
@@ -852,8 +852,8 @@
        "type": "investigation",
        "target_minutes": 20,
        "summary": "Gest; Astrid arrested; Mjöll over the marsh; surety.",
-       "status": "planned",
-       "note": "Myrholm is on the map: hall, stilt villages, causeways, the peat cutting."
+       "status": "built",
+       "note": "Arrive by the causeway; Thora's refusal; Gest in the channel and the arrest at the cage; three things found from the air (a trail, a hidden boat, a camp); the surety. Finding them is flying over a mark and pressing a key. The council is seven townspeople standing; the feud is told."
       },
       {
        "id": "a6c1m2",
@@ -861,7 +861,8 @@
        "type": "tracking",
        "target_minutes": 15,
        "summary": "Eyvind's channels; the bog body.",
-       "status": "planned"
+       "status": "built",
+       "note": "Eyvind on the causeway; the hunt is cut to three places by fades (the story's 'slow and miserable'); burning leeches off is a short timed task; the man the bog kept. Nobody wades waist-deep: the marsh is shallows and dry ground."
       },
       {
        "id": "a6c1m3",
@@ -869,8 +870,8 @@
        "type": "boss",
        "target_minutes": 10,
        "summary": "Eydis the Mire; Sót.",
-       "status": "fight_only",
-       "note": "The fight is built in the drowned ground, with stake pits, javelins, poison and mud."
+       "status": "built",
+       "note": "The approach is three small steps (Astrid's tripwire, Eyvind's solid ground, two archers marked from the air), then a real fight in knee-deep water with stake pits. She cannot be worn below about half her health until the black raven is sent at her; then the next blow breaks the spear and her guard. The proof in her camp and Thora's oath follow."
       }
      ]
     },
@@ -884,8 +885,8 @@
        "type": "story",
        "target_minutes": 10,
        "summary": "Brokk and Halvar; the sky-iron; the true story of the hand.",
-       "status": "planned",
-       "note": "Skalløy is on the map; Halvar and Jarl Gudmund stand there."
+       "status": "built",
+       "note": "The meeting across the harbor, Halvar's workshop, Jarl Gudmund, Raven-Feeder's second reforging (watched, not worked), the night by the dying forge, Gudmund's answer. The three days are a fade."
       }
      ]
     },
@@ -899,7 +900,8 @@
        "type": "battle",
        "target_minutes": 12,
        "summary": "Eighty men with pitch; getting the smiths out.",
-       "status": "planned"
+       "status": "built",
+       "note": "Three short fights with seven allies, falling back along the harbor street; four of Håkon's men to a lane stand for eighty. Astrid and Svanhild leading the smiths out is seen at the start, not played."
       },
       {
        "id": "a6c3m2",
@@ -907,7 +909,8 @@
        "type": "story",
        "target_minutes": 4,
        "summary": "Brokk holds it.",
-       "status": "planned"
+       "status": "built",
+       "note": "A cutscene of about a minute and a half in the story's words: the two warriors, the hammer, 'Don't stop for me', the Stormguard that is useless. It can be skipped."
       },
       {
        "id": "a6c3m3",
@@ -915,8 +918,8 @@
        "type": "boss",
        "target_minutes": 12,
        "summary": "Bersi Black-Anvil; it will not guard anyone else.",
-       "status": "fight_only",
-       "note": "The fight is built at the forge gate: make the hammer land on nothing."
+       "status": "built",
+       "note": "A real fight that starts at the forge and is carried to the quarry by a fade at a little under half his health. There he cannot be cut down: Eirik has to stand on the marked ledge and drop flat as the hammer comes up. The streets between are not fought through, and the ledge does not break."
       }
      ]
     },
@@ -930,8 +933,8 @@
        "type": "story",
        "target_minutes": 10,
        "summary": "The boat on the beach; the last reforging; Star-Fall.",
-       "status": "partial",
-       "note": "Only the reforgings are in (Halvar, once Bersi has fallen)."
+       "status": "built",
+       "note": "The forge before dawn (Brokk's last words, in full), then the boat on the beach nine days later: Eirik speaks, and lights it. Halvar finishes the last reforging and Star-Fall. The dividing of the tools is told. Star-Fall is in Halvar's hand; Eirik does not carry it."
       }
      ]
     },
@@ -945,7 +948,8 @@
        "type": "choice",
        "target_minutes": 10,
        "summary": "The oath; the pens.",
-       "status": "planned"
+       "status": "built",
+       "note": "The alliance at the Thing stones; Torvald's confession; then the oath on Halfdan's ring. There is no choice to make, because the story makes it."
       }
      ]
     },
@@ -959,7 +963,8 @@
        "type": "cutscene",
        "target_minutes": 5,
        "summary": "Sigurd and Håkon.",
-       "status": "planned"
+       "status": "built",
+       "note": "Sigurd's messenger at the gate, Eirik's one line, then a cutscene in the Hall of Wolves. Three stand-ins are the Circle's other envoys."
       }
      ]
     },
@@ -973,7 +978,8 @@
        "type": "story",
        "target_minutes": 10,
        "summary": "Nine hands on the ring, and Bjorn's on top.",
-       "status": "planned"
+       "status": "built",
+       "note": "A field under a red-and-white sail-cloth roof; what each island brings is told; then a cutscene as nine rulers and Bjorn come to the ring. The 'three hundred listening at the edges' are about twenty."
       }
      ]
     },
@@ -987,7 +993,8 @@
        "type": "activity",
        "target_minutes": 10,
        "summary": "Leif against a king; the Twins; the medical kit.",
-       "status": "planned"
+       "status": "built",
+       "note": "Leif goes into King Hroald's tent and comes out again (the hour is a line); the wedding and the harbor wall the next morning are cutscenes of about two minutes together. The bride's crown and the pendant are told, not modelled."
       }
      ]
     },
@@ -1001,7 +1008,8 @@
        "type": "story",
        "target_minutes": 12,
        "summary": "Every companion; Bjorn, Signe, the stolen cloth.",
-       "status": "planned"
+       "status": "built",
+       "note": "Svartøy from the sky is a fly-over cutscene of the real island; then three companions to talk to, the last night with Bjorn, Signe and Freydis, and the walk to the harbor before dawn. Choosing commanders and ships is told. Ends the act."
       }
      ]
     }
@@ -1645,10 +1653,10 @@
   "missions": 89,
   "target_minutes": 1015,
   "by_status": {
-   "built": 55,
-   "partial": 5,
-   "fight_only": 7,
-   "planned": 22
+   "built": 68,
+   "partial": 4,
+   "fight_only": 5,
+   "planned": 12
   }
  }
 }
