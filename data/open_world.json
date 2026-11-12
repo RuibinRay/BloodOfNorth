@@ -1,5 +1,5 @@
 {
-  "about": "Open-world design for Act II onward. Design only: nothing here is built except entries marked built. A sandbox of fourteen islands exists (0.6); see docs/OPEN_WORLD.md.",
+  "about": "Open-world design for Act II onward. Design only: nothing here is built except entries marked built. A sandbox of fourteen islands (0.6) and a crewed ship (0.7) exists; see docs/OPEN_WORLD.md.",
   "grows_up": {
     "after": "Act I (end of Chapter 3)",
     "jump_years": 10,
@@ -451,5 +451,6 @@
       "note": "Ragnar's axe, reforged three times, never replaced"
     }
   ],
-  "standing_status": "built (sandbox): six tiers in each of two districts (Vestland, the Skerries), greetings, kneeling, oath"
+  "standing_status": "built (sandbox): six tiers in each of two districts (Vestland, the Skerries), greetings, kneeling, oath",
+  "fleet_status": "built (sandbox 0.7): one karve (the Sea-Raven), six recruitable crew, horn, crew as allies ashore, horse aboard, one crew raid, two trader ships. Not built: sea combat, crew who can be hurt, longship."
 }

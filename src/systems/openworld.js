@@ -84,7 +84,8 @@ export class Mounts {
   spawnBoat(x, z, yaw = 0) {
     const g = this.g, model = makeShip({ L: 6.4, B: 1.7, D: 0.62, rise: 0.75, seed: 7 });
     g.scene.add(model);
-    const b = (this.boat = { type: 'boat', model, pos: model.position, yaw, speed: 0, sailUp: false, sailK: 0 });
+    const b = (this.boat = { type: 'boat', model, pos: model.position, yaw, speed: 0, sailUp: false, sailK: 0,
+      y0: -0.14, seat: 0, lift: 0.05, sailSpeed: 11.5, turn: 0.95, sailTurn: 0.62, draught: -0.45, cam: 8.5, camSail: 12, reach: 9, wake: 2.6 });
     const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.07, 3.7, 6), M.timber); mast.position.set(0, 2.1, 0.3);
     const yard = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 2.8, 5), M.timber); yard.rotation.z = Math.PI / 2; yard.position.set(0, 3.74, 0.37);
     const sg = new THREE.PlaneGeometry(2.6, 2.6, 6, 4), sp = sg.attributes.position;
@@ -96,14 +97,33 @@ export class Mounts {
     g.world.addInteractable({ id: 'boat', pos: () => b.pos, r: 6, priority: 1, label: 'Board the boat', enabled: () => !this.on, use: () => this.mount(b) });
     return b;
   }
+  /** The karve: a twelve-pace ship that wants a crew. Until `owned` she is scenery. `hands` is set by the fleet. */
+  spawnShip(x, z, yaw = 0) {
+    const g = this.g, model = makeShip({ L: 12.5, B: 3.0, D: 1.0, rise: 1.5, sail: false, shields: true, mast: 6.8, seed: 11 });
+    g.scene.add(model);
+    const s = (this.ship = { type: 'ship', name: 'Sea-Raven', model, pos: model.position, yaw, speed: 0, sailUp: false, sailK: 0, owned: false, hands: 0,
+      y0: -0.3, seat: -4.6, lift: 0.2, sailSpeed: 15.5, turn: 0.6, sailTurn: 0.45, draught: -0.85, cam: 13, camSail: 17, reach: 13, wake: 5.6 });
+    const sg = new THREE.PlaneGeometry(5.4, 4.6, 8, 5), sp = sg.attributes.position;
+    for (let i = 0; i < sp.count; i++) sp.setZ(i, Math.cos((sp.getX(i) / 2.7) * 1.4) * 0.62 * (0.4 + 0.6 * (0.5 - sp.getY(i) / 4.6)));
+    sg.computeVertexNormals(); sg.translate(0, -2.3, 0);
+    s.sail = new THREE.Mesh(sg, M.sail); s.sail.position.set(0, model.userData.yardY - 0.05, 0.24); s.sail.scale.y = 0.05;
+    model.add(s.sail);
+    s.pos.set(x, s.y0, z); model.rotation.y = yaw;
+    g.world.addInteractable({ id: 'ship', pos: () => s.pos, r: 15, priority: 1, label: 'Board the Sea-Raven', enabled: () => s.owned && !this.on, use: () => this.mount(s) });
+    g.world.addInteractable({ id: 'shiplook', pos: () => s.pos, r: 15, priority: 1, label: 'Look over the karve', enabled: () => !s.owned && !this.on,
+      use: () => g.ui.toast('A karve, twelve paces long, tarred and sound, with benches for six. Somebody on Kinn will know whose she is.') });
+    return s;
+  }
   /** First deep water on a line (for mooring the boat off a beach). */
   static deepWater(x, z0, z1, depth = -0.9) { for (let z = z0; z <= z1; z += 1) if (heightAt(x, z) < depth) return z; return z1; }
 
   mount(m) {
     const g = this.g, p = g.player;
     if (g.combat.active) { g.ui.toast('Not in the middle of a fight'); return; }
-    this.on = m; p.frozen = true; p.riding = true; p.crouch = false; p.equip('none'); p.loopOverride = 'sit';
-    p.h.lift = m.type === 'horse' ? 1.0 : 0.05; p.cam.maxDist = m.type === 'horse' ? 6.6 : 8.5;
+    const h = this.horse;
+    if (m.type === 'ship' && h && !h.aboard && Math.hypot(h.pos.x - p.pos.x, h.pos.z - p.pos.z) < 18) { h.aboard = m; h.called = false; g.ui.toast('The mare is led aboard.'); }
+    this.on = m; p.frozen = true; p.riding = true; p.crouch = false; p.equip('none'); p.loopOverride = m.type === 'ship' ? null : 'sit'; // he stands at the steering oar
+    p.h.lift = m.type === 'horse' ? 1.0 : m.lift; p.cam.maxDist = m.type === 'horse' ? 6.6 : m.cam;
     if (m.type === 'horse') m.yaw = p.yaw; else m.speed = 0;
     g.audio.play('page'); this.hintKey = ''; this.fresh = true; // the same key press must not dismount again
     g.events.emit('mounted', m.type);
@@ -115,18 +135,20 @@ export class Mounts {
     const x = to ? to.x : m.pos.x + Math.cos(m.yaw) * 1.3, z = to ? to.z : m.pos.z - Math.sin(m.yaw) * 1.3;
     p.pos.set(x, g.world.groundAt(x, z), z); p.speed = 0;
     m.speed = 0; m.sailUp = false; g.ui.hint(null); g.audio.play('uiBack');
+    const h = this.horse;
+    if (m.type === 'ship' && h && h.aboard === m) { h.aboard = null; h.pos.set(x + 1.8, g.world.groundAt(x + 1.8, z + 1.2), z + 1.2); g.ui.toast('The mare comes ashore.'); }
     g.events.emit('dismounted', m.type);
   }
   whistle() {
     const g = this.g, h = this.horse;
-    if (!h || this.on) return;
+    if (!h || this.on || h.aboard) return;
     if (Math.hypot(h.pos.x - g.player.pos.x, h.pos.z - g.player.pos.z) > 170) { g.audio.play('bird'); g.ui.toast('You whistle. She is too far to hear.'); return; }
     h.called = true; g.audio.play('bird'); g.after(0.12, () => g.audio.play('bird')); g.ui.toast('You whistle. Hooves answer.');
   }
-  /** Nearest dry ground within reach of the boat. */
-  shore() {
-    const b = this.boat, w = this.g.world; let best = null, bd = Infinity;
-    for (let r = 2.5; r <= 9; r += 1.3) for (let a = 0; a < 6.28; a += 0.4) {
+  /** Nearest dry ground within reach of a vessel (the one he is in, unless another is given). */
+  shore(v) {
+    const b = v || (this.on && this.on.type !== 'horse' ? this.on : this.boat), w = this.g.world; let best = null, bd = Infinity;
+    for (let r = 2.5; r <= b.reach; r += 1.3) for (let a = 0; a < 6.28; a += 0.4) {
       const x = b.pos.x + Math.cos(a) * r, z = b.pos.z + Math.sin(a) * r;
       if (heightAt(x, z) > 0.2 && r < bd) { bd = r; best = { x, z }; }
       else if (w.groundAt(x, z) > 0.9 && r < bd) { bd = r; best = { x, z }; } // the dock
@@ -139,7 +161,8 @@ export class Mounts {
     const g = this.g, p = g.player, inp = g.input, live = g.mode === 'play', h = this.horse, m = this.on;
     this.t += dt;
     if (live && inp.hit('whistle')) this.whistle();
-    if (h && m !== h) { // loose horse: stand, or come when called
+    if (h && h.aboard) { const v = h.aboard; h.pos.set(v.pos.x - Math.sin(v.yaw) * 2.1, v.pos.y + v.model.userData.deckY, v.pos.z - Math.cos(v.yaw) * 2.1); h.yaw = v.yaw; h.speed = 0; } // stands abaft the mast
+    else if (h && m !== h) { // loose horse: stand, or come when called
       let want = 0;
       if (h.called) {
         const dx = p.pos.x - h.pos.x, dz = p.pos.z - h.pos.z, d = Math.hypot(dx, dz);
@@ -175,26 +198,34 @@ export class Mounts {
       this.hint('horse', 'Ride with {forward}{left}{back}{right}. Hold {sprint} to gallop. {interact} to dismount, {whistle} to call the horse.');
       if (act) this.dismount();
     } else {
-      if (live && inp.hit('sprint')) { m.sailUp = !m.sailUp; g.audio.play('page'); g.ui.toast(m.sailUp ? 'The sail is set.' : 'Sail down. Oars out.'); }
+      // a ship answers to her crew: two hands to move her at all, six to row her well
+      const ship = m.type === 'ship', manned = !ship || m.hands >= 2, row = ship ? (manned ? 2.2 + 0.75 * Math.min(6, m.hands) : 0) : 4.8;
+      if (live && inp.hit('sprint')) {
+        if (!manned) g.ui.toast('She needs two at the oars before she will answer.');
+        else { m.sailUp = !m.sailUp; g.audio.play('page'); g.ui.toast(m.sailUp ? 'The sail is set.' : 'Sail down. Oars out.'); }
+      }
       // under sail she runs on her own; the oars are slower but will go anywhere
-      const want = m.sailUp ? (mv.y < -0.1 ? 3.2 : 11.5) : mv.y > 0.1 ? 4.8 : mv.y < -0.1 ? -1.6 : 0;
+      const want = m.sailUp ? (mv.y < -0.1 ? 3.2 : m.sailSpeed) : mv.y > 0.1 ? row : mv.y < -0.1 ? -row / 3 : 0;
       m.speed = damp(m.speed, want, m.sailUp ? 0.55 : 0.9, dt);
-      m.yaw -= mv.x * (m.sailUp ? 0.62 : 0.95) * dt * clamp(Math.abs(m.speed) / 2 + 0.35, 0.35, 1);
+      m.yaw -= mv.x * (m.sailUp ? m.sailTurn : m.turn) * dt * clamp(Math.abs(m.speed) / 2 + 0.35, 0.35, 1);
       const nx = m.pos.x + Math.sin(m.yaw) * m.speed * dt, nz = m.pos.z + Math.cos(m.yaw) * m.speed * dt;
       const onChart = Math.abs(nx) < (nz > 322 ? BOUNDS.seaX - 6 : 300) && nz < BOUNDS.maxZ - 6;
-      if (heightAt(nx, nz) < -0.45 && onChart) { m.pos.x = nx; m.pos.z = nz; }
+      const other = ship ? this.boat : this.ship, od = other ? Math.hypot(nx - other.pos.x, nz - other.pos.z) : 99; // do not run down your own other hull
+      const clash = od < 6.5 && od < Math.hypot(m.pos.x - other.pos.x, m.pos.z - other.pos.z);
+      if (heightAt(nx, nz) < m.draught && onChart && !clash) { m.pos.x = nx; m.pos.z = nz; }
       else {
         m.speed *= 0.2;
         if (!onChart && this.t - (this.edgeT || -99) > 12) { this.edgeT = this.t; g.ui.toast('The chart ends here. Past this the Whale Road has no names yet.'); }
         if (m.sailUp) { m.sailUp = false; if (onChart) g.ui.toast('She grounds. The sail comes down.'); }
       }
-      m.sailK = damp(m.sailK, m.sailUp ? 1 : 0, 3.5, dt); m.sail.scale.y = 0.07 + 0.93 * m.sailK; p.cam.maxDist = 8.5 + 3.5 * m.sailK;
-      m.pos.y = -0.14 + Math.sin(this.t * 1.3) * 0.04;
+      m.sailK = damp(m.sailK, m.sailUp ? 1 : 0, 3.5, dt); m.sail.scale.y = 0.07 + 0.93 * m.sailK; p.cam.maxDist = m.cam + (m.camSail - m.cam) * m.sailK;
+      m.pos.y = m.y0 + Math.sin(this.t * 1.3) * 0.04;
       m.model.rotation.set(Math.sin(this.t * 0.9) * 0.03, m.yaw, Math.sin(this.t * 1.1) * 0.04 + m.sailK * 0.07);
-      p.pos.set(m.pos.x, 0.0, m.pos.z); p.yaw = m.yaw; p.root.rotation.y = m.yaw;
-      if (Math.abs(m.speed) > 1 && this.t % (m.speed > 7 ? 0.5 : 1.4) < dt) { g.audio.play('splash', { vol: 0.25 }); g.fx.burst('splash', m.pos.x - Math.sin(m.yaw) * 2.6, 0.05, m.pos.z - Math.cos(m.yaw) * 2.6, 3); }
+      p.pos.set(m.pos.x + Math.sin(m.yaw) * m.seat, 0.0, m.pos.z + Math.cos(m.yaw) * m.seat); p.yaw = m.yaw; p.root.rotation.y = m.yaw;
+      if (Math.abs(m.speed) > 1 && this.t % (m.speed > 7 ? 0.5 : 1.4) < dt) { g.audio.play('splash', { vol: 0.25 }); g.fx.burst('splash', m.pos.x - Math.sin(m.yaw) * m.wake, 0.05, m.pos.z - Math.cos(m.yaw) * m.wake, ship ? 6 : 3); }
       const land = this.shore();
-      if (land) this.hint('land', 'Press {interact} to step ashore.');
+      if (land) this.hint(ship ? 'landS' : 'land', ship ? 'Press {interact} to step ashore. Once ashore, {horn} calls the crew after you.' : 'Press {interact} to step ashore.');
+      else if (!manned) this.hint('unmanned', 'The Sea-Raven will not move without two at the oars. Find crew on the islands.');
       else if (m.sailUp) this.hint('sail', 'Under sail. Steer with {left}{right}, hold {back} to spill the wind, {sprint} lowers the sail.');
       else this.hint('row', 'Row with {forward}, back water with {back}, steer with {left}{right}. {sprint} sets the sail.');
       if (land && act) this.dismount(land);

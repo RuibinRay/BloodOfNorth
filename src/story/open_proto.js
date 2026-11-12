@@ -9,6 +9,7 @@ import { CAST2 } from '../data/act2.js';
 import { EIRIK_ADULT } from '../entities/player.js';
 import { Law, Mounts, MARK_NAMES } from '../systems/openworld.js';
 import { SeaChart } from './sea_chart.js';
+import { Fleet } from './fleet.js';
 import { angleDiff } from '../core/util.js';
 
 Object.assign(ITEMS, { silver: { name: 'Hacksilver', desc: "Cut silver, weighed, not counted. It buys arrows, passage, and a dead man's blood-price.", cat: 'Coin' } });
@@ -34,6 +35,8 @@ export class OpenProto {
     this.g = game; this.act = act; this.built = false; this.folk = []; this.t = 0; this.saveT = 0; this.huntT = 0; this.hunters = null; this.task = null; this.traded = {};
     this.sea = new SeaChart(game, this);
     for (const k in this.sea.steps) this.steps[k] = (r) => this.sea.steps[k].call(this.sea, r);
+    this.fleet = new Fleet(game, this);
+    for (const k in this.fleet.steps) this.steps[k] = (r) => this.fleet.steps[k].call(this.fleet, r);
   }
   get st() { return this.g.state; }
   npc(id) { return this.g.npcs.get(id); }
@@ -82,7 +85,7 @@ export class OpenProto {
     g.events.on('playerSwing', (n, heavy) => this.swingAtFolk(heavy));
     g.events.on('playerDied', () => this.fail());
     g.events.on('mounted', (type) => g.quests.notify('event', 'mounted_' + type));
-    this.sea.build();
+    this.sea.build(); this.fleet.build();
   }
   /** One of the people of the open world. o2: role, loop, hold, weapon, line, port; law:false keeps them out of the law. */
   person(id, name, look, x, z, yaw, o2 = {}) {
@@ -98,6 +101,7 @@ export class OpenProto {
     const m = this.mounts, o = this.st.open;
     if (!this.built || !o) return;
     o.horse = [m.horse.pos.x, m.horse.pos.z]; o.boat = [m.boat.pos.x, m.boat.pos.z, m.boat.yaw]; o.on = m.on ? m.on.type : null;
+    this.fleet.onSave();
   }
   dyn(k) { const m = this.mounts && this.mounts[k]; return m ? { x: m.pos.x, z: m.pos.z, y: m.pos.y + 2.4 } : null; }
   /** Start a dialogue built at runtime. */
@@ -113,6 +117,7 @@ export class OpenProto {
     if (n.role === 'ferry') return this.sea.ferryTalk(n);
     if (n.role === 'merchant') return this.merchantTalk(n);
     if (n.role === 'task' && !this.st.flags.bulandetDone && !this.task) return this.taskTalk(n);
+    if (this.fleet.recruitable(n)) return this.fleet.recruitTalk(n);
     if (n.role === 'kin') { n.say(g.fmt({ bjorn: 'Take the bay mare. And come back with all your fingers, {n}.', signe: 'Eat before you go. The sea is hungry enough for both of you.', freydis: 'If {b} steals from the islanders, you are paying for it.' }[n.id]), 4); return; }
     n.say(g.fmt(n.line && tier.min >= 15 && Math.random() < 0.6 ? n.line : tier.hail), n.line ? 5 : 3.5);
   }
@@ -138,7 +143,7 @@ export class OpenProto {
         : 'So you are the one with the white raven. I am Thorgeir. I keep the law on Gulen: what is sworn, what is owed, and who is a wolf.'), fx: { flag } },
       { s: E, t: '', choices: [
         { t: '"What is the law here?"', to: 'law' },
-        ...(work.choice ? [work.choice] : []),
+        ...(work.choices || []),
         { t: `"Would the folk of ${D.seat} swear to me?" (standing ${Math.round(s.standing)} of 80)`, to: s.standing >= 100 ? 'king' : s.standing >= 80 ? 'swear' : 'notyet', fx: s.standing >= 80 && s.standing < 100 ? { do: () => { this.st.flags[king] = true; this.law.addStanding(100, `The folk of ${D.seat} swear to you`); } } : null },
         { t: '"Nothing. Keep well."', to: 'end' },
       ] },
@@ -268,7 +273,7 @@ export class OpenProto {
     this.t += dt;
     if (g.mode === 'play') g.sky.time = Math.min(16.4, g.sky.time + dt / 420);
     this.st.time = g.sky.time; p.warmth = 100; p.hunger = 100;
-    this.law.update(dt); this.mounts.update(dt); this.sea.update(dt);
+    this.law.update(dt); this.mounts.update(dt); this.sea.update(dt); this.fleet.update(dt);
     const s = this.law.s; // the law of whichever district he is standing in
     if (q.at('q_open', 'shore') && dist(p.pos, POI.dock.x, POI.dock.z) < 28) q.notify('reach', 'shore');
     if (q.at('q_open', 'gulen') && dist(p.pos, POI.gulen.x, POI.gulen.z) < 44) q.notify('reach', 'gulen');

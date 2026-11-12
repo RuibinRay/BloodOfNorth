@@ -131,7 +131,7 @@ class Game {
     const p = this.player.pos;
     let best = null, bd = Infinity;
     for (const n of this.npcs.values()) {
-      if (!n.visible || n.dead || !n.talk || n.mode === 'spar') continue;
+      if (!n.visible || n.dead || !n.talk || n.mode === 'spar' || n.mode === 'crew') continue;
       const d = n.dist(this.player);
       if (d < 2.5 && d < bd) { bd = d; best = { label: n.talkLabel || `Talk to ${n.name}`, use: n.talk }; }
     }

@@ -238,7 +238,7 @@ function hullGeo(L, B, D, rise) {
   return g;
 }
 let hullMat = null;
-export function makeShip({ L = 21, B = 4.4, D = 1.55, rise = 2.5, sail = true, shields = true, seed = 1 } = {}) {
+export function makeShip({ L = 21, B = 4.4, D = 1.55, rise = 2.5, sail = true, shields = true, seed = 1, mast = 9.5 } = {}) {
   if (!hullMat) { hullMat = M.plank.clone(); hullMat.side = THREE.DoubleSide; hullMat.color.set(0x8f7a66); }
   const b = new Builder(), r = rng(seed);
   b.add(hullGeo(L, B, D, rise), hullMat);
@@ -259,13 +259,14 @@ export function makeShip({ L = 21, B = 4.4, D = 1.55, rise = 2.5, sail = true, s
     }
   }
   if (L > 10) {
-    b.add(at(cyl(0.13, 0.17, 9.5, 7), 0, D * 0.42 + 4.75, 0), M.timber);
-    b.add(at(cyl(0.08, 0.08, 7.4, 6), 0, D * 0.42 + 8.6, 0.15, 0, 0, Math.PI / 2), M.timber);
+    const k = mast / 9.5; // everything aloft scales with the mast
+    b.add(at(cyl(0.13 * Math.sqrt(k), 0.17 * Math.sqrt(k), mast, 7), 0, D * 0.42 + mast / 2, 0), M.timber);
+    b.add(at(cyl(0.08, 0.08, 7.4 * k, 6), 0, D * 0.42 + mast - 0.9, 0.15, 0, 0, Math.PI / 2), M.timber);
     if (sail) {
-      const sg = new THREE.PlaneGeometry(6.8, 5.6, 8, 6), p = sg.attributes.position;
-      for (let i = 0; i < p.count; i++) p.setZ(i, Math.cos((p.getX(i) / 3.4) * 1.4) * 0.7 * (0.4 + 0.6 * (0.5 - p.getY(i) / 5.6)));
+      const sg = new THREE.PlaneGeometry(6.8 * k, 5.6 * k, 8, 6), p = sg.attributes.position;
+      for (let i = 0; i < p.count; i++) p.setZ(i, Math.cos((p.getX(i) / (3.4 * k)) * 1.4) * 0.7 * k * (0.4 + 0.6 * (0.5 - p.getY(i) / (5.6 * k))));
       sg.computeVertexNormals();
-      b.add(at(sg, 0, D * 0.42 + 5.7, 0.2), M.sail);
+      b.add(at(sg, 0, D * 0.42 + mast - 0.9 - 2.9 * k, 0.2), M.sail);
     }
     if (shields) {
       const cols = [0x8a2a22, 0xc9b27a, 0x2f4a5c, 0x1e1e1e, 0xb8b0a0];
@@ -277,6 +278,6 @@ export function makeShip({ L = 21, B = 4.4, D = 1.55, rise = 2.5, sail = true, s
     }
   }
   const grp = b.build();
-  grp.userData.deckY = D * 0.42 + 0.06;
+  grp.userData.deckY = D * 0.42 + 0.06; grp.userData.yardY = D * 0.42 + mast - 0.9;
   return grp;
 }

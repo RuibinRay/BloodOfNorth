@@ -1,6 +1,6 @@
 # The open world (Act II onward)
 
-**Status: design, with a sandbox built** (horse, boat with a sail, fourteen islands, wolf-marks and standing in two law-districts, paid passage; see the README). Otherwise nothing in this document is built except where marked **[built]**. The data version
+**Status: design, with a sandbox built** (horse, boat with a sail, a ship with a crew of six, fourteen islands, wolf-marks and standing in two law-districts, paid passage; see the README). Otherwise nothing in this document is built except where marked **[built]**. The data version
 is `data/open_world.json`. It is written so each system can be built and tested on its own.
 
 ## When Eirik grows up
@@ -66,7 +66,7 @@ screen's sea chart names them as they are found.
 | Skis and sledge | Act II | Winter only; skis are fast downhill, a sledge carries a kill or a wounded friend |
 | Horse | Act II **[built: one horse]** | Fjord horses. Whistle to call, saddlebags for trade goods, mounted spear and bow. Horses refuse ice and steep scree |
 | Rowing boat (færing) | Act II **[built, with a small sail]** | Two oars, any beach, one passenger. Reaches the inner skerries in calm weather. In the sandbox the sail is a speed toggle; wind is not modelled |
-| Small ship (karve) | Act III | Crew of eight, sail and oars, carries a horse. The first vessel that is yours |
+| Small ship (karve) | Act III **[built in the sandbox, ahead of its act]** | Crew of eight, sail and oars, carries a horse. The first vessel that is yours. Built: the *Sea-Raven*, bought from the reeve of Kinn; six benches; needs two hands to move and rows faster with each; carries the mare; a horn brings the crew ashore to fight. Not built: crew who can be hurt or leave, wages, upgrades, any fighting at sea |
 | Longship | Act IV | Crew of thirty, raids, sea battles, storms. Upgradable hull, sail, prow and crew |
 | Passage on a trader (knarr) | Act II **[built as ferrymen]** | Pay to be carried between ports. This is the game's fast travel, and it can be boarded by pirates. Built: three harbours, six silver, harbours you have found only, your boat towed along. No pirates yet |
 | Ferrymen | Act II | Short crossings for a coin or a favour; some are informers |

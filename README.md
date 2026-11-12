@@ -1,9 +1,9 @@
 # Blood of the North — Rise of the Raven King
 
-A third-person Viking action RPG. This repository holds **vertical slice 0.6**: all three chapters of
+A third-person Viking action RPG. This repository holds **vertical slice 0.7**: all three chapters of
 Act I (Eirik's childhood), the opening chapter of Act II (Eirik at nineteen, with real combat), and an
-open-world sandbox that now runs from the home valley out to a sea chart of islands, plus the design
-foundation for the full campaign.
+open-world sandbox that runs from the home valley out to a sea chart of islands, with a ship of your own and a
+crew to row her, plus the design foundation for the full campaign.
 
 > **What this is, plainly.** Four real, playable 3D chapters (well over an hour; untimed) that run in a browser.
 > It is not the 40-hour game, it is not Unreal Engine 5, and it is not photorealistic: every character,
@@ -34,7 +34,8 @@ Then open http://localhost:5184. A production build is `npm run build` (output i
 | Raven's Eye (from Chapter 3's spring) | `V` | d-pad up |
 | Send the black raven at your target (Act II) | `R` | RB |
 | Whistle for your horse (open world) | `H` | — |
-| Set or lower the sail (in the boat) | `Shift` | L3 |
+| Set or lower the sail (in the boat or ship) | `Shift` | L3 |
+| Sound the horn: crew ashore, or back aboard | `G` | — |
 | Wooden sword, bow, put away | `1`, `2`, `X` | d-pad |
 | Journal, inventory, map, pause | `J`, `I`, `M`, `Esc` | Back, Start |
 
@@ -95,6 +96,17 @@ All keyboard and mouse bindings can be changed in Settings.
 - **Wolf-marks (the wanted level):** hurt or kill someone where a living witness can see and you earn up to five
   marks. Two brings the hue and cry; three brings bounty-hunters. Clear them by paying the blood-price, winning
   the hide-duel, or lying low until talk dies.
+- **A ship of your own:** a karve lies at anchor off Kinn. The reeve sells her (100 silver; 60 to a guest of the
+  Skerries). She is faster under sail than the rowing boat, but will not move without two hands at the oars, and
+  rows faster with each one up to six.
+- **Crew:** four islanders will join, each for a reason (standing in their district, a favour done, or silver), and
+  Bard Skipper hires out two rowers. They sit the benches, face aft to row, and wait with the ship.
+- **The horn:** ashore, `G` calls the crew after you. In a fight each takes one man off your back; a captain is
+  left for you. `G` again sends them back aboard.
+- **The mare sails too:** board the ship with the horse beside you and she is led aboard; she comes ashore when you do.
+- **The Tithe-Ship:** with three hands or more the reeve gives the first job that needs a crew: six of the
+  Ironwolf's men on Utvær.
+- **Traders:** two merchant ships work the sea lanes and hail you by what the district thinks of you.
 - **Two laws:** marks and standing are kept separately in the Vestland and the Skerries. Cross the water and you
   are a stranger again, unless you carried three marks or more, in which case word arrives before you do.
 - **Standing:** each district rates Eirik from Wolf through Stranger, Guest, Kinsman and Jarl to King. Help
@@ -109,9 +121,9 @@ the ravens' names and the omens found are saved for later acts.
 | | |
 |---|---|
 | **Playable and tested** | All of Act I (chapters 1–3) and Act II chapter 1 start to finish; melee combat against enemies that guard, take turns and flank, with a two-phase captain; an ally who fights; the black raven harrying a target; raven companions and Raven's Eye; five hidden omens; hunger and warmth, shelter, cooking, a wolf encounter with two outcomes, thin-ice crossing; movement, camera, stamina; dialogue with choices; quests, journal, tracker, map with waypoint; woodcutting, archery, tracking, fishing, fire-making; sparring; stealth with raider sight and hearing; cold survival; day/night, snow, fire; in-engine cutscenes; save/load with autosave; settings, key rebinding, gamepad |
-| **Prototype** | The open-world sandbox (two law-districts, fourteen islands, one horse, one boat with a sail, paid passage, one secret weapon); procedural characters and animation; procedural audio and score; villager routines; wildlife AI; combat balance (tuned against scripted players only) |
+| **Prototype** | The open-world sandbox (two law-districts, fourteen islands, one horse, a rowing boat and a crewed ship, paid passage, one secret weapon, one crew raid); procedural characters and animation; procedural audio and score; villager routines; wildlife AI; combat balance (tuned against scripted players only) |
 | **Blocked** | Higgsfield asset generation — the API needs a key ID *and* a secret; only one value was supplied. See [docs/HIGGSFIELD.md](docs/HIGGSFIELD.md) |
-| **Planned** | Everything else in the brief: the rest of Act II and Acts III through VII; the rest of the sea map (about forty islands of which fourteen exist as a sandbox; ships and crews; wind and weather at sea; more districts — designed in [docs/OPEN_WORLD.md](docs/OPEN_WORLD.md)); adult combat and nine weapons, skill trees, companions, sailing, settlement, factions, 50 side missions, UE5 port. See [docs/ROADMAP.md](docs/ROADMAP.md) |
+| **Planned** | Everything else in the brief: the rest of Act II and Acts III through VII; the rest of the sea map (about forty islands of which fourteen exist as a sandbox; the longship, sea battles and crew who can be hurt; wind and weather at sea; more districts — designed in [docs/OPEN_WORLD.md](docs/OPEN_WORLD.md)); adult combat and nine weapons, skill trees, companions, sailing, settlement, factions, 50 side missions, UE5 port. See [docs/ROADMAP.md](docs/ROADMAP.md) |
 
 How it was tested: an automated playtest drives the real game loop through every quest step (see
 `debug` in [src/main.js](src/main.js)). It was verified on an Apple M2 at 60 fps. It has **not** been

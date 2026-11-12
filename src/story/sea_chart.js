@@ -120,7 +120,7 @@ export class SeaChart {
       { id: 'batalden', x: -415, z: 806, n: 3, name: 'Wrecker', key: 'wrecker', cry: 'A boat! One man. Take him, and take the boat.', loot: 0, fire: this.falseFire },
       { id: 'horns', x: -456, z: 1296, n: 2, name: "Wolf's-head", key: 'outlaw', cry: 'No law comes out this far. Only us.', loot: 0, fire: this.hornFire },
     ];
-    g.events.on('dismounted', (type) => { if (type === 'boat' && !g.combat.active && this.st.stage === 'open') g.after(0.3, () => g.autosave()); });
+    g.events.on('dismounted', (type) => { if (type !== 'horse' && !g.combat.active && this.st.stage === 'open') g.after(0.3, () => g.autosave()); });
   }
 
   // ---- conversations ---------------------------------------------------------------------
@@ -129,20 +129,24 @@ export class SeaChart {
     const dests = Object.keys(this.ports).filter((k) => k !== n.port && (k === 'gulen' || this.seen[k]));
     if (!dests.length) { n.say('I carry folk to harbours they have seen with their own eyes. Sail out past the mouth: Fedje is the first smoke, on the left hand.', 5); return; }
     this.pending = null;
+    const hire = this.open.fleet.hireOffer(n), own = this.open.fleet.owned;
     this.open.say([
-      { s: N, t: 'Passage? Six silver, and I tow your boat for nothing, because I am soft.' },
+      { s: N, t: own ? 'Passage? Six silver, and I tow your rowing boat for nothing. Your karve stays where she lies; I am not that soft.' : 'Passage? Six silver, and I tow your boat for nothing, because I am soft.' },
       { s: 'Eirik', t: '', choices: [
         ...dests.map((k) => ({ t: `To ${this.ports[k].name} (6 silver, you carry ${silver})`, to: silver >= 6 ? 'go' : 'poor', fx: silver >= 6 ? { do: () => { this.pending = k; } } : null })),
+        ...hire.choices,
         { t: '"Not today."', to: 'end' },
       ] },
       { id: 'go', s: N, t: 'Sit amidships and keep those birds off my catch.', to: 'end' },
       { id: 'poor', s: N, t: 'Six. Not five and a story.', to: 'end' },
-    ], n, () => { if (this.pending) { const k = this.pending; this.pending = null; this.passage(k); } });
+      ...hire.nodes,
+    ], n, () => { if (hire.after) hire.after(); if (this.pending) { const k = this.pending; this.pending = null; this.passage(k); } });
   }
   /** Paid passage: the game's first fast travel. The player's own boat is towed along. */
   passage(k) {
     const g = this.g, p = g.player, port = this.ports[k], b = this.open.mounts.boat;
     g.inventory.remove('silver', 6, true); p.frozen = true; this.busy = true;
+    if (this.open.fleet.ashore) this.open.fleet.recall(true);
     g.ui.fade(true, 0.9).then(() => {
       b.pos.set(port.moor[0], -0.14, port.moor[1]); b.yaw = port.yaw; b.speed = 0; b.sailUp = false; b.model.rotation.y = b.yaw;
       p.teleport(port.land[0], port.land[1], port.face);
@@ -151,7 +155,12 @@ export class SeaChart {
     }).then(() => g.ui.fade(false, 0.9)).then(() => { p.frozen = false; this.busy = false; g.autosave(); });
   }
   /** Extra choices and lines the reeve of Kinn adds to the ordinary law-talk. */
+  /** Everything the reeve can offer beyond the law itself: her own tasks, then whatever a ship makes possible. */
   reeveWork() {
+    const w = this.reeveTasks(), f = this.open.fleet.reeveOffer();
+    return { intro: w.intro, choices: [...(w.choice ? [w.choice] : []), ...f.choices], nodes: [...(w.nodes || []), ...f.nodes] };
+  }
+  reeveTasks() {
     const g = this.g, q = g.quests, fl = this.st.flags, o = this.open, R = 'Ragnhild Reeve';
     const pay = (silver, standing, why) => ({ do: () => { g.inventory.add('silver', silver); o.law.addStanding(standing, why); } });
     if (q.at('s_wreckers', 'back')) return { intro: 'The fire on Batalden is out. I watched it go from here. Thirty in silver, and the thanks of every keel that passes that point.' };
@@ -258,7 +267,7 @@ export class SeaChart {
   };
 
   update(dt) {
-    const g = this.g, p = g.player, q = g.quests, o = this.open, fl = this.st.flags, afloat = o.mounts.on && o.mounts.on.type === 'boat';
+    const g = this.g, p = g.player, q = g.quests, o = this.open, fl = this.st.flags, afloat = o.mounts.on && o.mounts.on.type !== 'horse';
     this.t += dt;
     g.sky.farSight = Math.min(1, Math.max(0, (p.pos.z - 200) / 200));
     const id = p.pos.z > DISTRICT_LINE ? 'skerries' : 'vestland';
@@ -277,11 +286,14 @@ export class SeaChart {
       }
     }
     for (const c of this.camps) { // men who fight whoever lands
-      if (fl['cleared_' + c.id]) continue;
+      if (fl['cleared_' + c.id] || (c.when && !c.when())) continue;
       if (!c.men) {
         if (g.mode !== 'play' || o.mounts.on || dist(p.pos, c.x, c.z) > 40) continue;
         c.men = []; c.counted = 0;
-        for (let i = 0; i < c.n; i++) c.men.push(o.fighter(c.id + i, c.name, RAIDER_LOOKS[(i + 1) % 4], c.x + Math.cos(i * 2.1 + 0.4) * 3.2, c.z + Math.sin(i * 2.1 + 0.4) * 3.2, ['axe', 'spear', 'sword'][i % 3], { hp: 100 }));
+        for (let i = 0; i < c.n; i++) {
+          const w = c.who && c.who(i), r = 3.2 + ((i / 3) | 0) * 2.3; // a named man, if the camp has one; a second ring for a big camp
+          c.men.push(o.fighter(c.id + i, w ? w.name : c.name, RAIDER_LOOKS[(i + 1) % 4], c.x + Math.cos(i * 2.1 + 0.4) * r, c.z + Math.sin(i * 2.1 + 0.4) * r, ['axe', 'spear', 'sword'][i % 3], w ? w.opts : { hp: 100 }));
+        }
         g.ui.subtitle(c.name, c.cry, 4); g.audio.play('shout'); g.audio.setMusic('raid');
         continue;
       }

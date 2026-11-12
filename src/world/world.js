@@ -243,6 +243,7 @@ export class World {
     for (let i = 0; i < 6; i++) { const a = i * 1.047 + 0.3; P.runestone(ctx, 334 + Math.cos(a) * 4.4, 1386 + Math.sin(a) * 4.4, -a + 1.57); } // Storm-Wife's Rock
     P.fireRing(ctx, 334, 1386, 0.5);
     P.runestone(ctx, -120, 1484, 0.2);                                                       // Utvær: the last stone
+    P.fireRing(ctx, -104, 1473, 0.7); P.leanTo(ctx, -108.5, 1468.5, 0.5); P.leanTo(ctx, -99, 1476.5, -2.3); P.crate(ctx, -100.5, 1470.5, 0.6, 0.8); P.barrel(ctx, -106.5, 1476); P.dryingRack(ctx, -111, 1474, 1.3); // and an old fishing station
     // the islands (open-world prototype): Gulen's law-rock and hall, Bulandet's fishing camp
     P.runestone(ctx, POI.lawRock.x, POI.lawRock.z, -0.3);
     P.fireRing(ctx, -58, 258, 0.6); P.bench(ctx, -60.2, 256.6, 1.1); P.dryingRack(ctx, -46, 268, 0.8); P.barrel(ctx, -61, 262.4); P.crate(ctx, -49.5, 252.5, 0.4);

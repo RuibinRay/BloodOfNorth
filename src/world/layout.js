@@ -112,6 +112,6 @@ export const ISLES = [
   { id: 'utvaer', k: 1.6, a: -0.3, name: 'Utvær', x: -120, z: 1480, r: 50, h: 3, rough: 0.9, bare: true },
 ];
 /** Camps and landmarks on the islands: trees and boulders keep clear of these. [x, z, radius] */
-export const SEA_CLEAR = [[-40, 752, 15], [206, 592, 13], [-242, 555, 10], [-415, 806, 13], [348, 852, 11], [124, 1023, 9], [-230, 1040, 7], [466, 1135, 9], [-60, 1260, 9], [-457, 1297, 9], [334, 1386, 9], [-120, 1484, 6]];
+export const SEA_CLEAR = [[-40, 752, 15], [206, 592, 13], [-242, 555, 10], [-415, 806, 13], [348, 852, 11], [124, 1023, 9], [-230, 1040, 7], [466, 1135, 9], [-60, 1260, 9], [-457, 1297, 9], [334, 1386, 9], [-120, 1484, 6], [-104, 1473, 12]];
 /** Where one law ends and the next begins. */
 export const DISTRICT_LINE = 660;

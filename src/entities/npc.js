@@ -72,7 +72,7 @@ export class NPC {
   }
 
   update(dt) {
-    if (!this.root.visible || this.mode === 'spar' || this.mode === 'enemy') return; // sparring and combat drive their own NPCs
+    if (!this.root.visible || this.mode === 'spar' || this.mode === 'enemy' || this.mode === 'crew') return; // sparring, combat and the ship drive their own NPCs
     const g = this.game, p = g.player, h = this.h;
     let wantSpeed = 0;
     if (this.dead) { /* stay down */ }

@@ -255,7 +255,7 @@ export class Act1 {
     if (id === 'q_ice') this.ch2.playEnding();
     if (id === 'q_wings') this.ch3.playEnding();
     if (id === 'q_axe') this.a2.playEnding();
-    if (this.open.built) this.open.sea.questDone(id);
+    if (this.open.built) { this.open.sea.questDone(id); this.open.fleet.questDone(id); }
   }
   steps = {
     'q_morning.ylva'() { this.hint('move'); this.g.after(9, () => { if (this.g.quests.at('q_morning', 'ylva')) this.hint('talk'); }); },
@@ -813,7 +813,7 @@ export class Act1 {
     if (!m) return null;
     if (m.npc) { const n = this.npc(m.npc); return n && n.visible ? { x: n.pos.x, z: n.pos.z, y: n.pos.y + n.h.headHeight() + 0.45 } : null; }
     if (m.dyn === 'deerBody') return this.deerBody && !this.deerBody.harvested ? { x: this.deerBody.pos.x, z: this.deerBody.pos.z, y: this.deerBody.pos.y + 1.2 } : null;
-    if (m.dyn === 'horse' || m.dyn === 'boat') return this.open.dyn(m.dyn);
+    if (m.dyn === 'horse' || m.dyn === 'boat' || m.dyn === 'ship') return this.open.dyn(m.dyn);
     if (m.dyn === 'wolf') { const w = this.ch2.wolf; return w && !w.dead ? { x: w.pos.x, z: w.pos.z, y: w.pos.y + 1.3 } : null; }
     if (m.pos) {
       const pl = this.g.player.pos, k = m.pos.join();
