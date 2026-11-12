@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { fbm, noise2, smoothstep, lerp, clamp, distToPolyline } from '../core/util.js';
 import { FLATS, PATHS, FIELDS, VILLAGE, POI, ISLES } from './layout.js';
 import { patch, TEX } from './geo.js';
+import { realmAt, buildRealmHeights, buildRealm } from './realm.js';
 
 export const SIZE = 640, HALF = SIZE / 2, N = 256, CELL = SIZE / N;
 const H = new Float32Array((N + 1) * (N + 1));
@@ -69,9 +70,12 @@ function mainAt(x, z) {
   const ix = fx | 0, iz = fz | 0, tx = fx - ix, tz = fz - iz, i = iz * (N + 1) + ix;
   return lerp(lerp(H[i], H[i + 1], tx), lerp(H[i + N + 1], H[i + N + 2], tx), tz);
 }
-/** Bilinear height lookup on the mesh grids (matches the rendered surface): the valley, or the chart outside it. */
+/** Bilinear height lookup on the mesh grids (matches the rendered surface): the valley, the chart of the home
+ *  waters round it, or (beyond the chart) the great islands of the open sea. */
 export function heightAt(x, z) {
-  return x > HALF || x < -HALF || z > HALF || z < -HALF ? chartAt(x, z) : mainAt(x, z);
+  if (x <= HALF && x >= -HALF && z <= HALF && z >= -HALF) return mainAt(x, z);
+  if (x >= CH.x0 && x <= CH.x0 + CH.w && z <= CH.z0 + CH.d) return chartAt(x, z);
+  return realmAt(x, z);
 }
 export function slopeAt(x, z) {
   const e = 1.5;
@@ -117,6 +121,7 @@ export function buildHeights() {
     // under the valley's own mesh the chart ducks out of sight; along the seam it sits a hand's width lower
     CHH[j * (CH.nx + 1) + i] = e < 0 ? chartRaw(x, z) : e === 0 ? mainAt(x, z) - 0.15 : e <= 10 ? mainAt(x, z) - 3 : -60;
   }
+  buildRealmHeights();
   // the fishing rock sits on the west bank of the river, east of the village
   POI.fishing.z = 58; POI.fishing.x = riverX(58) - 8.6;
 }
@@ -156,6 +161,7 @@ function paintAlbedo() {
       // rock on slopes, snow on the heights
       col = mix3(col, rock, smoothstep(0.42, 0.85, sl));
       col = mix3(col, snow, smoothstep(46, 62, h + n * 10) * (1 - smoothstep(0.9, 1.5, sl) * 0.7));
+      if (h < -2.5) col = mix3(col, [58, 70, 76], smoothstep(-2.5, -8, h)); // the deep fjord floor matches the open sea's
       const k = 1.04 + n2 * 0.16, o = (j * T + i) * 4;
       d[o] = col[0] * k; d[o + 1] = col[1] * k; d[o + 2] = col[2] * k; d[o + 3] = 255;
     }
@@ -196,6 +202,7 @@ function buildChart() {
     const sh = 1 - smoothstep(0.3, 1.5, h); r = lerp(r, 156, sh); gg = lerp(gg, 146, sh); b = lerp(b, 118, sh);            // shingle
     const rk = smoothstep(0.42, 0.85, sl); r = lerp(r, 116, rk); gg = lerp(gg, 112, rk); b = lerp(b, 106, rk);              // rock
     const sn = smoothstep(46, 62, h + nn * 10) * (1 - smoothstep(0.9, 1.5, sl) * 0.7); r = lerp(r, 228, sn); gg = lerp(gg, 232, sn); b = lerp(b, 240, sn);
+    const dp = smoothstep(-2.5, -8, h); r = lerp(r, 58, dp); gg = lerp(gg, 70, dp); b = lerp(b, 76, dp);                      // deep floor: the colour of the open sea's
     const k = 1.04 + nn * 0.14; d[o] = r * k; d[o + 1] = gg * k; d[o + 2] = b * k; d[o + 3] = 255;
   }
   g.putImageData(img, 0, 0);
@@ -229,15 +236,16 @@ export function buildTerrain(scene) {
   mesh.receiveShadow = true;
   scene.add(mesh);
   scene.add(buildChart());
+  buildRealm(scene);
 
   // --- water: the fjord (one big plane at sea level) and the river ribbon ---
   const waterMat = new THREE.MeshStandardMaterial({
     color: 0x24465a, roughness: 0.08, metalness: 0.55, transparent: true, opacity: 0.88,
     normalMap: TEX.waterN, normalScale: new THREE.Vector2(0.55, 0.55), envMapIntensity: 1.3,
   });
-  TEX.waterN.repeat.set(350, 350);
-  const sea = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), waterMat);
-  sea.rotation.x = -Math.PI / 2; sea.position.y = 0; sea.receiveShadow = true;
+  TEX.waterN.repeat.set(580, 580);
+  const sea = new THREE.Mesh(new THREE.PlaneGeometry(10000, 10000), waterMat); // the home waters and the open sea of the ten islands
+  sea.rotation.x = -Math.PI / 2; sea.position.set(0, 0, 1600); sea.receiveShadow = true;
   scene.add(sea);
 
   const seg = 220, rp = [], ruv = [], ri = [];

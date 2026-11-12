@@ -80,6 +80,31 @@ export class FX {
   removeFire(f) { const i = this.fires.indexOf(f); if (i >= 0) this.fires.splice(i, 1); }
   addSmoke(x, y, z, rate = 1) { const s = { x, y, z, rate, on: true, acc: 0 }; this.smokes.push(s); return s; }
 
+  /** A stroke of lightning down to (x, y, z): a forked white line that lives a few frames, a flash, and sparks. */
+  bolt(x, y, z, height = 26) {
+    if (!this.bolts) {
+      this.bolts = Array.from({ length: 4 }, () => {
+        const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(40 * 3), 3));
+        const l = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: 0xdff0ff, transparent: true, opacity: 0, fog: false, depthWrite: false }));
+        l.frustumCulled = false; l.visible = false; this.scene.add(l); return { l, t: 0 };
+      });
+      this.flash = new THREE.PointLight(0xbfdcff, 0, 60, 1.4); this.scene.add(this.flash);
+    }
+    const b = this.bolts.find((q) => q.t <= 0) || this.bolts[0], a = b.l.geometry.attributes.position;
+    let px = x + (Math.random() - 0.5) * 5, py = y + height, pz = z + (Math.random() - 0.5) * 5, i = 0;
+    const seg = (ax, ay, az, bx, by, bz) => { if (i < 40) { a.setXYZ(i++, ax, ay, az); a.setXYZ(i++, bx, by, bz); } };
+    for (let k = 0; k < 13; k++) { // the stroke itself, jagged, homing on the ground point; now and then a fork
+      const u = (k + 1) / 13, nx = x + (px - x) * (1 - u) * 0.7 + (Math.random() - 0.5) * 1.7 * (1 - u), ny = y + height * (1 - u), nz = z + (pz - z) * (1 - u) * 0.7 + (Math.random() - 0.5) * 1.7 * (1 - u);
+      seg(px, py, pz, nx, ny, nz);
+      if (k % 3 === 1) seg(nx, ny, nz, nx + (Math.random() - 0.5) * 5, ny - 2 - Math.random() * 3, nz + (Math.random() - 0.5) * 5);
+      px = nx; py = ny; pz = nz;
+    }
+    for (; i < 40; i++) a.setXYZ(i, x, y, z);
+    a.needsUpdate = true; b.l.visible = true; b.l.material.opacity = 1; b.t = 0.22;
+    this.flash.position.set(x, y + 3, z); this.flash.intensity = 900; this.flashT = 0.3;
+    this.burst('spark', x, y + 0.2, z, 34);
+    for (let k = 0; k < 10; k++) { const an = Math.random() * 6.28, r = 1 + Math.random() * 3.4; this.burst('spark', x + Math.cos(an) * r, y + 0.15, z + Math.sin(an) * r, 2); }
+  }
   burst(kind, x, y, z, n = 12) {
     for (let i = 0; i < n; i++) {
       const a = Math.random() * 6.28, u = Math.random();
@@ -131,6 +156,10 @@ export class FX {
         s.acc -= 1;
         this.norm.spawn(s.x, s.y, s.z, (Math.random() - 0.5) * 0.2, 0.7 + Math.random() * 0.5, (Math.random() - 0.5) * 0.2, 5 + Math.random() * 3, 0.5, 0.62, 0.62, 0.64, 0.2, 0.42, 0.45, 0);
       }
+    }
+    if (this.bolts) { // lightning fades in a handful of frames
+      for (const b of this.bolts) if (b.t > 0) { b.t -= dt; b.l.material.opacity = Math.max(0, b.t / 0.22) * (Math.random() < 0.3 ? 0.4 : 1); if (b.t <= 0) b.l.visible = false; }
+      if (this.flashT > 0) { this.flashT -= dt; this.flash.intensity = 900 * Math.max(0, this.flashT / 0.3); }
     }
     this.fireLoud = loud;
     this.add.update(dt, w.x, w.z); this.norm.update(dt, w.x, w.z);

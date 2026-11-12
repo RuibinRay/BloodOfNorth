@@ -48,6 +48,22 @@ kbd { font: 600 0.82em/1 ui-monospace, Menlo, monospace; background: rgba(20, 16
 #bar-ice i { background: linear-gradient(#cfe6f4, #7fb0cc); }
 #bar-ward i { background: linear-gradient(#e8f4ff, #7fa8e0); }
 #bar-ward.ready i { background: linear-gradient(#ffffff, #9fd0ff); box-shadow: 0 0 10px #bfe0ff; }
+#bar-ward.angry i { background: linear-gradient(#ffb09a, #c2452e); box-shadow: none; }
+#bar-ward.lit i { background: linear-gradient(#ffffff, #e8f6ff); box-shadow: 0 0 16px #ffffff; }
+#target em { display: block; margin-top: 6px; font-style: normal; font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase; color: #ff9a80; opacity: 0; transition: opacity 0.15s; }
+#target em.on { opacity: 1; }
+.ic { width: 1.2em; height: 1.2em; vertical-align: -0.22em; margin-right: 0.45em; opacity: 0.9; flex: none; }
+.ic.big { width: 1.5em; height: 1.5em; vertical-align: -0.3em; }
+i.key { font-style: normal; border: 1px solid rgba(231, 217, 187, 0.5); border-radius: 3px; padding: 0 5px; font-size: 0.92em; }
+#arts { position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); display: none; gap: 8px; }
+#arts.on { display: flex; }
+#arts .art { position: relative; width: 44px; height: 44px; display: grid; place-items: center; background: rgba(10, 8, 6, 0.6); border: 1px solid rgba(231, 217, 187, 0.3); border-radius: 6px; color: rgba(231, 217, 187, 0.4); }
+#arts .art .ic { width: 24px; height: 24px; margin: 0; }
+#arts .art.ready { color: #dff0ff; border-color: rgba(191, 224, 255, 0.8); box-shadow: 0 0 10px rgba(159, 208, 255, 0.45); }
+#arts .art.angry { color: #e0705a; border-color: rgba(194, 69, 46, 0.7); }
+#arts .art kbd { position: absolute; right: -5px; bottom: -7px; font: 600 11px/1 system-ui, sans-serif; padding: 2px 4px; background: #1a1612; border: 1px solid rgba(231, 217, 187, 0.35); border-radius: 3px; color: #e7d9bb; }
+#lock { position: absolute; left: 0; top: 0; width: 18px; height: 18px; margin: -9px 0 0 -9px; border: 2px solid #f4efe2; transform-origin: center; box-shadow: 0 0 6px #000, inset 0 0 4px #000; opacity: 0; pointer-events: none; rotate: 45deg; }
+#lock.on { opacity: 0.9; }
 #alert.red { color: #ff6a55; text-shadow: 0 0 16px #ff2a10, 0 2px 4px #000; }
 #warn { position: absolute; top: 50%; width: 0; height: 0; opacity: 0; border: 16px solid transparent; filter: drop-shadow(0 0 6px #000); }
 #warn.on { animation: warn 0.9s ease-out; }

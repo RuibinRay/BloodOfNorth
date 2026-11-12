@@ -13,7 +13,7 @@ import { dampAngle, angleDiff, clamp, lerp } from '../core/util.js';
 Object.assign(QUESTS, {
   s_pirates: {
     title: 'Wolves on the Water', kind: 'side', xp: 150,
-    desc: 'Sea-wolves in one ship, the Skerry-Hound, have taken two traders in the water between Skorpa and the Skerry of Horns. Gorm Gull-Feeder commands her.',
+    desc: 'Sea-wolves in one ship, the Skerry-Hound, have taken two traders in the water between Skorpa and the Skerry of Horns. Hroar Gull-Feeder commands her.',
     steps: [
       { id: 'find', text: 'Hunt the Skerry-Hound in the water south of Skorpa', type: 'event', key: 'sighted_hound', marker: { pos: [-250, 1270] } },
       { id: 'win', text: 'Sink the Skerry-Hound, or board her and clear her deck', type: 'event', key: 'foe_hound', marker: { dyn: 'hound' } },
@@ -29,7 +29,7 @@ Object.assign(QUESTS, {
 const HOUND_WATER = [[-330, 1150], [-300, 1330], [-180, 1400], [-150, 1160]];
 const FOES = {
   hound: { name: 'the Skerry-Hound', L: 13.5, B: 3.4, D: 1.15, rise: 1.7, mast: 7.2, seed: 31, hull: 90, men: 7, minMen: 4, fast: 12.2, sight: 140, who: 'Sea-wolf', loot: 70, pts: HOUND_WATER, kinds: [null, 'archer', 'berserk'],
-    captain: { name: 'Gorm Gull-Feeder', opts: { hp: 200, dmg: 16, skill: 0.6, boss: true, rageLine: 'I have fed the gulls better men than you!' } }, hail: 'A striped sail, and fat with silver. Out oars! Run her down!' },
+    captain: { name: 'Hroar Gull-Feeder', opts: { hp: 200, dmg: 16, skill: 0.6, boss: true, rageLine: 'I have fed the gulls better men than you!' } }, hail: 'A striped sail, and fat with silver. Out oars! Run her down!' },
   tooth: { name: 'the Iron Tooth', L: 19, B: 4.0, D: 1.4, rise: 2.3, mast: 9, seed: 41, hull: 170, men: 9, minMen: 6, fast: 13.4, sight: 260, who: "Ironwolf's man", loot: 160, kinds: [null, 'shield', 'archer', 'shield', 'archer'], pts: [[60, 640], [150, 900], [40, 1120], [-140, 930], [-120, 700]],
     captain: { name: 'Hrut Half-Hand', opts: { hp: 300, dmg: 19, skill: 0.7, boss: true, reach: 2.3, rageLine: 'The jarl wants the bird alive. He said nothing about you!' } }, hail: 'There. The white raven, as the jarl said. Lay us alongside!' },
   wolf: { name: 'a sea-wolf', L: 12.5, B: 3.1, D: 1.05, rise: 1.5, mast: 6.8, seed: 51, hull: 70, men: 5, minMen: 3, fast: 11.8, sight: 130, who: 'Sea-wolf', loot: 35, pts: HOUND_WATER, kinds: ['archer'], hail: 'A sail! Ours now. Pull!' },
@@ -217,7 +217,7 @@ export class SeaWar {
     if (!g.combat.alive().length) { g.combat.clear(); g.audio.setMusic('day'); }
     g.inventory.add('silver', f.def.loot); g.ui.questBanner('Taken at sea', cap(f.name));
     g.ui.toast(`${f.def.loot} in silver from her sea-chests.`);
-    const prize = { hound: ['sword', "Gorm's sword"], tooth: ['longaxe', "Hrut's long axe"] }[f.kind]; // a captain's weapon goes to whoever took his deck
+    const prize = { hound: ['sword', "Hroar's sword"], tooth: ['longaxe', "Hrut's long axe"] }[f.kind]; // a captain's weapon goes to whoever took his deck
     if (prize && !g.inventory.has(prize[0])) { g.inventory.add(prize[0], 1); g.ui.toast(`${prize[1]} is yours. {weapon1} steps through your weapons.`.replace('{weapon1}', g.input.label('weapon1'))); }
     this.defeat(f);
     g.ui.hint('Her deck is yours. Go back to your own steering oar with {interact} to cut her loose.');
@@ -236,7 +236,7 @@ export class SeaWar {
     const q = this.g.quests, R = 'Ragnhild Reeve', none = { choices: [], nodes: [] };
     if (!q.isDone('s_tithe')) return none;
     if (!q.st.s_pirates) return { choices: [{ t: '"The tithe is broken. What else troubles the Skerries?"', to: 'ship' }], nodes: [
-      { id: 'ship', s: R, t: 'Sea-wolves. One ship, the Skerry-Hound, working the water south of Skorpa. Two traders gone since midsummer, and Gorm Gull-Feeder laughing about it in every harbour that will have him.' },
+      { id: 'ship', s: R, t: 'Sea-wolves. One ship, the Skerry-Hound, working the water south of Skorpa. Two traders gone since midsummer, and Hroar Gull-Feeder laughing about it in every harbour that will have him.' },
       { s: R, t: 'She will come for a sail like yours. Loose arrows as she closes. Strike her side under sail and you may break her. Or let her lay alongside, and take her deck: that way you keep what she carries.', to: 'end', fx: { quest: 's_pirates' } },
     ] };
     if (q.isDone('s_pirates') && !q.st.s_irontooth) return { choices: [{ t: '"The Skerry-Hound will take no more traders."', to: 'ship' }], nodes: [

@@ -3,7 +3,8 @@ import * as THREE from 'three';
 import { rng, noise2, clamp } from '../core/util.js';
 import { M, at, cyl, cone, tint, merge, patch } from './geo.js';
 import { heightAt, slopeAt, forestDensity, distToPaths, inField, riverX, HALF } from './terrain.js';
-import { VILLAGE, POI, ISLES, SEA_CLEAR } from './layout.js';
+import { VILLAGE, POI, ISLES, SEA_CLEAR, GREAT } from './layout.js';
+import { realmClear } from './realm.js';
 
 function pineGeo() {
   const parts = [tint(at(cyl(0.1, 0.3, 10, 6), 0, 5, 0), 0x4a382a, 0.25, 1)];
@@ -153,6 +154,23 @@ export function scatterVegetation(scene, world, quality) {
       if (h < -0.5 || !clearOf(x, z)) continue;
       const big = R2() < 0.16 || slopeAt(x, z) > 0.5, sc = big ? 1.1 + R2() * 1.9 : 0.3 + R2() * 0.6;
       ir.push({ x, z, y: h - sc * 0.2, sc, sx: 0.8 + R2() * 0.6, sy: 0.7 + R2() * 0.5, sz: 0.8 + R2() * 0.6, ry: R2() * 6.28, big: sc > 1.05 });
+    }
+  }
+  // the great islands: woods where the story wants woods, boulders on every slope, nothing on level ground or roads
+  // (a third random stream, so nothing above moves)
+  const R3 = rng(4471);
+  for (const il of GREAT) {
+    const span = il.r * (il.k || 1), nT = Math.round(span * il.forest * 2.4), nR = Math.round(span * 0.55);
+    for (let i = 0, k = 0; i < nT * 6 && k < nT; i++) {
+      const a = R3() * 6.28, d = Math.sqrt(R3()) * span, x = il.x + Math.cos(a) * d, z = il.z + Math.sin(a) * d, h = heightAt(x, z);
+      if (h < (il.marsh ? 0.5 : 2) || h > 46 || slopeAt(x, z) > 0.6 || !realmClear(il, x, z) || noise2(x * 0.02 + 3, z * 0.02) < (il.forest > 0.4 ? -0.25 : 0.1)) continue;
+      (R3() < (il.marsh ? 0.8 : 0.3) ? ib : ip).push({ x, z, y: h - 0.15, sc: 0.7 + R3() * 0.7, ry: R3() * 6.28 }); k++;
+    }
+    for (let i = 0; i < nR; i++) {
+      const a = R3() * 6.28, d = Math.sqrt(R3()) * span, x = il.x + Math.cos(a) * d, z = il.z + Math.sin(a) * d, h = heightAt(x, z);
+      if (h < -0.5 || !realmClear(il, x, z)) continue;
+      const big = R3() < 0.18 || slopeAt(x, z) > 0.5, sc = big ? 1.2 + R3() * 2.2 : 0.3 + R3() * 0.6;
+      ir.push({ x, z, y: h - sc * 0.2, sc, sx: 0.8 + R3() * 0.6, sy: 0.7 + R3() * 0.5, sz: 0.8 + R3() * 0.6, ry: R3() * 6.28, big: sc > 1.05 });
     }
   }
   instanced(pineGeo(), treeMat, ip, { collide: 0.36 });

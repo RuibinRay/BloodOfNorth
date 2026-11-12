@@ -17,28 +17,43 @@ playtests; none are claimed until then.
 | 0.10 | **More weapons** | Weapon classes with their own numbers (data/weapons.js): sword, ash spear, two-handed long axe beside Ragnar's axe; throwing axes; a weapon key that steps through what is carried; traders' war-gear and captains' weapons as loot | Automated playtest: damage, time, breath, reach and sweep measured for every weapon; stop-thrust, shield-breaking, riposte and parry windows; thrown axes hit, interrupt and are picked up; story chapters still use the baseline numbers | **Done** |
 | 0.11 | **Skill trees** | Renown becomes skill points (one per 150); the five designed trees (Berserker, Shieldmaster, Hunter, Warlord, Wayfarer), five skills each, learned in order from adulthood; a Skills panel; renown for fallen enemies; Raven's Eye from the helm and the saddle | Automated playtest: all 25 skills measured with and without, order and cost enforced, closed for the child chapters, regression on every chapter and the Act II raid | **Done** |
 | 0.12 | **Faces, motion and combat depth** | From the owner's brief. Animated faces (eyes, blinking, brows, speech-driven mouths, eight expressions, look-at), breathing, cloth and hair sway, foot planting, two-handed grip; Eirik's lightning scar; an Appearance screen. Directional strikes, combo heavy, lunges, sidestep and roll, block impacts, execution camera, bow arc and shoulder swap; the Storm-Ward; raven warnings; twin seaxes and a war maul; enemy move sets, strings, unblockable and area blows, phases, dodging and adapting; the seven elites | Automated playtest: every expression and speech captured in close-up, every new strike, dodge, block, ward and weapon measured, all seven elites fought through their phases by proxy, regression on every chapter and the Act II raid | **Done** |
-| 0.13 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: combat difficulty above all, then riding, rowing and sailing feel, aim, stealth, camera | Three people finish everything built without help | Next |
-| 0.14 | **Real assets in** | Working Higgsfield credentials; key art; GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
-| 0.15 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or keep growing the web build, which now holds a 1.3 × 2 km world at 60 fps in the test window | A written decision | Planned |
-| 0.16 | **The Hunted Wolf** | Companions, bounties, the ship in the story, Grave-Song, Act III | Act III plays through | Planned |
-| 0.17 | **Across the Sea** | Longship, naval combat, ports, sieges, the outer skerries, Act IV | — | Planned |
-| 0.18 | **The Broken Raven** | Settlement, recruiting, supply, territory, Act V | — | Planned |
-| 0.19 | **War of the Jarls** | Faction politics, duels, large battles, "my king", Acts VI and VII, four endings | — | Planned |
+| 0.13 | **The story arrives** | The owner's story stored as canon; the story bible and all 89 missions rebuilt from it; the sea widened to carry five great islands at story scale (Jarnøy, Solvik, Myrholm, Skalløy, Svartøy) with the places the story names; the lightning scene (Act I); Stormguard by the story's rules; five Stormborn skills (Thunder Smash first); the real seven champions, two hands and Håkon, each with named skills, fought where they fall; Raven-Feeder's reforgings; camera lock, input buffering and weightier movement; icons; island people with jobs and routes; a researched feature plan | Automated playtest: all ten fights in order, every storm skill measured, Stormguard's rules checked, the lightning scene played through, people counted on four islands, earlier chapters still start | **Done** |
+| 0.14 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: combat difficulty above all, then riding, rowing and sailing feel, aim, stealth, camera | Three people finish everything built without help | Next |
+| 0.15 | **Real assets in** | Working Higgsfield credentials; key art; GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
+| 0.16 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or keep growing the web build, which now holds a 1.3 × 2 km world at 60 fps in the test window | A written decision | Planned |
+| 0.17 | **The Farmer's Axe** | Act II as the story tells it: Bjornstead rebuilt as a coastal village, a farmer's life, Kettil and the barn, the peddlers, the walls, Kaupang and Leif | Act II plays through against the text | Planned |
+| 0.18 | **The Wolves of Iron** | Brokk, Astrid, Torvald, Ingrid; the Battle of Iron Shore; Act III | Act III plays through | Planned |
+| 0.19 | **Blood Across the Sea** | The treasure voyage, Wessex, six islands burning, Hedeby Sound; Act IV | — | Planned |
+| 0.20 | **The Broken Raven** | Ravenhold rebuilt, the hunger winter, the tannery, the ring, Vængr; Act V | — | Planned |
+| 0.21 | **The Nine Oaths and the Raven King** | Myrholm, Skalløy, the judgment, the wedding, the invasion of Svartøy; Acts VI and VII and the epilogue. One ending: the story's | — | Planned |
 | 1.0 | **Polish** | Side missions, minigames, voiced dialogue, recorded music, performance targets (60 fps at 1440p on suitable hardware as an objective), accessibility pass | Full playthrough signed off | Planned |
 
 ## Immediate next steps
 
-1. Supply the Higgsfield key ID and secret, run `npm run hf -- auth`, then generate the key art and reference sheets.
-2. Play everything by hand, the raid especially, and note every moment that feels unfair, unclear or slow.
-3. Decide where the project lives: a PC that can run UE5, or continue in the browser for another chapter.
+1. Play the ten champion fights and the storm skills by hand and say which feel unfair, unclear or too easy.
+2. Rule on the items under "Under review" in the story bible.
+3. Supply the Higgsfield key ID and secret, run `npm run hf -- auth`, then generate the key art and reference sheets.
+4. Decide where the project lives: a PC that can run UE5, or continue in the browser for another chapter.
 
-## Known gaps in 0.12
+## Known gaps in 0.13
+
+- **The champion fights are fights only.** The battles, voyages and scenes round them (Iron Shore, the treasure ship, the marsh hunt, the burning forge, the landing on Svartøy) are not built, and the companions who are in those scenes are not in the game.
+- **Five of the ten islands are still small.** Kinn, Gulen, Fedje, Skorpa and Vængr are the old sandbox islets (about 150 to 250 m). Bjornstead is still one farm in a dale, not the story's coastal village. Kaupang, Hedeby Sound and Wessex are not on the map.
+- **Parts of what was built earlier contradict the story** (player choices the story has already made, the Act II ending with Kettil, who rules which island). They are listed under "Under review" in the story bible and are not fixed.
+- The great islands' buildings are plain placeholder longhouses, and the same few props repeat. Houses cannot be entered; the Hall of Wolves is the one interior, with an open roof.
+- Island people have no hours of the day, no memory and no reactions yet, and there are none on Svartøy or the home islands. They walk straight lines along roads.
+- Stormguard's "calm" is a simple anger meter. The storm skills reuse existing animations (Thunder Smash is the maul's slam with lightning).
+- Champion difficulty, skill costs and the storm bar's fill rate are guesses: every fight was run by script with stand-in blows, never by hand.
+- A save made part-way through the old "First Flight" quest will land two steps off, because the lightning scene was inserted into it.
+- The lock-on has no gamepad button, and the new keys are keyboard only.
+- Icons are line drawings made in code.
+
+## Known gaps carried over from 0.12
 
 - This is still a procedural, low-polygon build in a browser. There are no skin textures, hair strands, motion capture or recorded voices, and it does not look like the games the brief names. Faces are built from simple shapes; mouths follow the letters of a line, not a voice.
 - Cloth and hair swing as single stiff pieces. Foot planting bends the legs on slopes; it does not stop feet sliding at every speed.
 - Blocking is still a facing check with an impact reaction, not weapon-against-weapon collision.
 - Mud, rain, destructible objects and breakable shields from the brief are not built. Lighting and materials are unchanged.
-- The scar is on Eirik from the first scene, the ward is called the Storm-Ward, and the Seven have invented names and a place: all three are placeholders waiting for the story.
 - None of it has been played by hand; elite difficulty is unknown.
 
 

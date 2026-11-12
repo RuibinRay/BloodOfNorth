@@ -128,6 +128,10 @@ export class Humanoid {
       hd.push(tint(at(new THREE.SphereGeometry(0.128, 10, 6, 0, Math.PI * 2, 0, Math.PI * 0.5), 0, 0.165, 0, 0, 0, 0, 1, 1.12, 1.05), 0x70747a, 0.08, 24));
       hd.push(tint(at(cyl(0.131, 0.131, 0.028, 10), 0, 0.166, 0, 0, 0, 0, 1, 1, 1.05), 0x4c4f54, 0.05, 25));
       hd.push(tint(at(box(0.024, 0.1, 0.02), 0, 0.125, 0.128), 0x4c4f54, 0.05, 26));
+    } else if (L.skull) { // a bear's skull worn as a helm
+      hd.push(tint(at(new THREE.SphereGeometry(0.135, 9, 6, 0, Math.PI * 2, 0, Math.PI * 0.52), 0, 0.17, 0.0, 0, 0, 0, 1.05, 1.1, 1.15), 0xd8cfb8, 0.1, 24));
+      hd.push(tint(at(box(0.1, 0.06, 0.13), 0, 0.2, 0.13, 0.25, 0, 0), 0xd0c6ac, 0.08, 25));
+      for (const sx of [-1, 1]) { hd.push(tint(at(cone(0.012, 0.05, 4), sx * 0.035, 0.155, 0.185, Math.PI, 0, 0), 0xefe8d8, 0, 26 + sx)); hd.push(tint(at(sphere(0.022, 5, 4), sx * 0.05, 0.215, 0.1), 0x18140f, 0, 28 + sx)); }
     } else if (L.hairStyle !== 'bald') hd.push(tint(cap(), L.hair, 0.12, 27));
     const back = []; // hair that hangs: its own piece, so it swings
     if (L.hairStyle === 'long' || L.hairStyle === 'braid' || L.hairStyle === 'braids')
@@ -393,8 +397,27 @@ function itemGeo(name) {
       g.push(tint(at(cyl(0.016, 0.02, 0.66, 5), 0, 0, 0.23, Math.PI / 2, 0, 0), WD, 0.08, 1));
       g.push(tint(at(box(0.022, 0.2, 0.1), 0, -0.07, 0.5), IR, 0.06, 2), tint(at(box(0.024, 0.07, 0.07), 0, 0.0, 0.5), 0x70747a, 0, 3));
       if (name === 'brother_axe') g.push(tint(at(box(0.026, 0.03, 0.03), 0, 0, 0.12), 0x4f7a8c, 0, 4), tint(at(box(0.026, 0.03, 0.03), 0, 0, 0.36), 0x4f7a8c, 0, 5), tint(at(box(0.028, 0.05, 0.05), 0, -0.1, 0.5), 0xc9b27a, 0, 6));
-      if (name === 'father_axe') g.push(tint(at(box(0.026, 0.03, 0.03), 0, 0, 0.2), 0x8a2f25, 0, 4), tint(at(box(0.026, 0.03, 0.03), 0, 0, 0.3), 0x8a2f25, 0, 5));
+      if (name === 'father_axe') g.push( // Raven-Feeder: a bearded head, the dark iron collar at the top of the haft, ravens scratched into the steel
+        tint(at(box(0.02, 0.1, 0.07), 0, -0.2, 0.47), IR, 0.06, 4), tint(at(cyl(0.027, 0.027, 0.085, 7), 0, 0, 0.41, Math.PI / 2, 0, 0), 0x1c1c20, 0, 5),
+        tint(at(box(0.024, 0.045, 0.03), 0, -0.05, 0.5), 0x2a2a2e, 0, 6), tint(at(box(0.024, 0.03, 0.05), 0, -0.12, 0.5), 0x2a2a2e, 0, 7));
       break;
+    case 'daneaxe': g.push(tint(at(cyl(0.022, 0.028, 1.75, 5), 0, 0, 0.62, Math.PI / 2, 0, 0), WD, 0.08, 1), tint(at(box(0.028, 0.44, 0.24), 0, -0.14, 1.36), IR, 0.06, 2), tint(at(box(0.034, 0.08, 0.09), 0, 0.02, 1.36), 0x70747a, 0, 3)); break;
+    case 'anvilhammer': g.push(tint(at(cyl(0.028, 0.034, 1.4, 6), 0, 0, 0.5, Math.PI / 2, 0, 0), WD, 0.08, 1), tint(at(box(0.3, 0.26, 0.42), 0, 0, 1.2), 0x2c2d31, 0.08, 2), tint(at(box(0.34, 0.07, 0.07), 0, 0, 1.2), 0x1a1b1e, 0, 3), tint(at(box(0.07, 0.3, 0.07), 0, 0, 1.2), 0x1a1b1e, 0, 4)); break;
+    case 'wolfsjudgment': { // Håkon's hammer: a head of black iron ringed with short spikes
+      g.push(tint(at(cyl(0.024, 0.03, 1.35, 6), 0, 0, 0.48, Math.PI / 2, 0, 0), 0x3a2e24, 0.08, 1), tint(at(box(0.2, 0.2, 0.34), 0, 0, 1.12), 0x18181b, 0.08, 2));
+      for (let i = 0; i < 8; i++) { const a = (i / 8) * 6.283; g.push(tint(at(cone(0.028, 0.11, 4), Math.cos(a) * 0.15, Math.sin(a) * 0.15, 1.12, 0, 0, a - Math.PI / 2), 0x30323a, 0, 3 + i)); }
+      break;
+    }
+    case 'starfall': g.push(tint(at(cyl(0.02, 0.026, 0.95, 6), 0, 0, 0.34, Math.PI / 2, 0, 0), WD, 0.08, 1), tint(at(box(0.15, 0.15, 0.26), 0, 0, 0.8), 0x0e0e12, 0.12, 2), tint(at(box(0.16, 0.04, 0.04), 0, 0, 0.8), 0x4a5a70, 0, 3)); break;
+    case 'club': g.push(tint(at(cyl(0.05, 0.022, 1.15, 6), 0, 0, 0.42, Math.PI / 2, 0, 0), WD, 0.1, 1), tint(at(sphere(0.13, 7, 6), 0, 0, 1.0, 0, 0, 0, 1, 1, 1.25), 0x3a3d43, 0.08, 2)); break;
+    case 'ironshield': g.push(tint(at(cyl(0.56, 0.56, 0.045, 18), 0.1, 0.08, 0, 0, 0, Math.PI / 2), 0x3a2e24, 0.1, 1), tint(at(new THREE.TorusGeometry(0.56, 0.03, 5, 18), 0.1, 0.08, 0, 0, Math.PI / 2, 0), 0x4c4f54, 0, 2), tint(at(sphere(0.1, 7, 5), 0.13, 0.08, 0, 0, 0, 0, 0.6, 1, 1), IR, 0, 3), tint(at(box(0.02, 1.0, 0.07), 0.125, 0.08, 0), 0x4c4f54, 0, 4), tint(at(box(0.02, 0.07, 1.0), 0.125, 0.08, 0), 0x4c4f54, 0, 5)); break;
+    case 'halfshield': { // Rurik's: half black, half white
+      const a = new THREE.CylinderGeometry(0.42, 0.42, 0.03, 16, 1, false, 0, Math.PI), b = new THREE.CylinderGeometry(0.42, 0.42, 0.03, 16, 1, false, Math.PI, Math.PI);
+      g.push(tint(at(a, 0.09, 0.08, 0, 0, 0, Math.PI / 2), 0xe6e2d8, 0.06, 1), tint(at(b, 0.09, 0.08, 0, 0, 0, Math.PI / 2), 0x141416, 0.06, 2), tint(at(sphere(0.07, 7, 5), 0.11, 0.08, 0, 0, 0, 0, 0.6, 1, 1), IR, 0, 3));
+      break;
+    }
+    case 'buckler': g.push(tint(at(cyl(0.2, 0.2, 0.03, 12), 0.07, 0.04, 0, 0, 0, Math.PI / 2), 0x4c4f54, 0.1, 1), tint(at(sphere(0.06, 6, 5), 0.09, 0.04, 0, 0, 0, 0, 0.7, 1, 1), 0x2a2c30, 0, 2)); break;
+    case 'javelins': for (let i = 0; i < 3; i++) g.push(tint(at(cyl(0.011, 0.012, 1.3, 4), (i - 1) * 0.035, 0.02 * (i % 2), 0.2, Math.PI / 2, 0, 0), WD, 0.08, i), tint(at(cone(0.022, 0.16, 4), (i - 1) * 0.035, 0.02 * (i % 2), 0.92, Math.PI / 2, 0, 0), IR, 0, 4 + i)); break;
     case 'woodaxe': g.push(tint(at(cyl(0.02, 0.024, 0.85, 5), 0, 0, 0.3, Math.PI / 2, 0, 0), WD, 0.08, 1), tint(at(box(0.03, 0.2, 0.13), 0, -0.06, 0.68), IR, 0.06, 2)); break;
     case 'longaxe': g.push(tint(at(cyl(0.02, 0.025, 1.4, 5), 0, 0, 0.5, Math.PI / 2, 0, 0), WD, 0.08, 1), tint(at(box(0.03, 0.32, 0.2), 0, -0.11, 1.08), IR, 0.06, 2), tint(at(box(0.034, 0.07, 0.08), 0, 0.0, 1.08), 0x70747a, 0, 3)); break;
     case 'seax': g.push(bladeZ(0.46, 0.05, IR, 1), tint(at(box(0.11, 0.03, 0.03), 0, 0, 0.07), 0x6e5a36, 0, 2), tint(at(cyl(0.018, 0.018, 0.14, 5), 0, 0, 0, Math.PI / 2, 0, 0), WD, 0, 3)); break;

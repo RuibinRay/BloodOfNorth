@@ -219,7 +219,8 @@ export class Mounts {
       m.speed = damp(m.speed, want, m.sailUp ? 0.55 : 0.9, dt);
       m.yaw -= mv.x * (m.sailUp ? m.sailTurn : m.turn) * dt * clamp(Math.abs(m.speed) / 2 + 0.35, 0.35, 1);
       const nx = m.pos.x + Math.sin(m.yaw) * m.speed * dt, nz = m.pos.z + Math.cos(m.yaw) * m.speed * dt;
-      const onChart = Math.abs(nx) < (nz > 322 ? BOUNDS.seaX - 6 : 300) && nz < BOUNDS.maxZ - 6;
+      const wide = nz >= BOUNDS.realmZ + 6 || (Math.abs(m.pos.x) > BOUNDS.seaX - 6 && nz >= BOUNDS.realmZ); // south of the home coast the open sea runs out to the ten islands
+      const onChart = Math.abs(nx) < (wide ? BOUNDS.realmX - 6 : nz > 322 ? BOUNDS.seaX - 6 : 300) && nz < BOUNDS.maxZ - 6 && !(Math.abs(nx) > BOUNDS.seaX - 6 && nz < BOUNDS.realmZ + 6);
       const other = ship ? this.boat : this.ship, od = other ? Math.hypot(nx - other.pos.x, nz - other.pos.z) : 99; // do not run down your own other hull
       const clash = od < 6.5 && od < Math.hypot(m.pos.x - other.pos.x, m.pos.z - other.pos.z);
       if (heightAt(nx, nz) < m.draught && onChart && !clash && !(this.blocked && this.blocked(nx, nz, m))) { m.pos.x = nx; m.pos.z = nz; }

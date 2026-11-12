@@ -90,7 +90,9 @@ export const HOUSES = [
   { id: 'bjornbarn', x: 169, z: -135, ry: Math.PI / 2, len: 9, wid: 5.2, ridge: 3.9, roof: 'thatch', door: -1, doorX: 0 },
 ];
 
-export const BOUNDS = { minX: -250, maxX: 250, minZ: -262, maxZ: 1590, seaX: 628 };
+// the home valley is 250 m either side; south of the fjord mouth the home waters are 628 m either side as far as
+// homeZ; beyond that lies the open sea of the ten islands (GREAT, below), realmX either side down to maxZ
+export const BOUNDS = { minX: -250, maxX: 250, minZ: -262, maxZ: 3560, seaX: 628, homeZ: 1590, realmX: 1960, realmZ: 640 };
 
 /** Islands of the sea chart (open water south of the fjord mouth). r = radius, h = height of the flat
  *  ground, rough = bumpiness, k and a = stretch and turn of its outline, p = [dx, dz, height, radius] of its hill,
@@ -115,3 +117,54 @@ export const ISLES = [
 export const SEA_CLEAR = [[-40, 752, 15], [206, 592, 13], [-242, 555, 10], [-415, 806, 13], [348, 852, 11], [124, 1023, 9], [-230, 1040, 7], [466, 1135, 9], [-60, 1260, 9], [-457, 1297, 9], [334, 1386, 9], [-120, 1484, 6], [-104, 1473, 12]];
 /** Where one law ends and the next begins. */
 export const DISTRICT_LINE = 660;
+
+/** The great islands of the story (docs/story): each has its own heightfield, out in the open sea beyond the home
+ *  waters. Offsets below are metres from the island's centre (+x east, +z south; north is toward home).
+ *  r = radius of the outline, k and a = its stretch and turn, h = height of the common ground, rough = bumpiness;
+ *  bays [dx, dz, r] bite a harbour or a cliff-foot out of the coast; hills [dx, dz, height, radius];
+ *  flats [dx, dz, radius, height] level ground for a town, a hall or a fight; cuts { pts, w, y } carve a ravine or
+ *  a channel down to y; marsh = a drowned island of reeds and pools; forest 0..1 = how wooded;
+ *  ground = which colours the land is painted in (see realm.js). */
+export const GREAT = [
+  { id: 'jarnoy', name: 'Jarnøy', title: 'the Iron Isle', ruler: 'King Hroald Ironvein', x: -1350, z: 1450, r: 290, k: 1.2, a: 0.25, h: 9, rough: 3, forest: 0.55, ground: 'iron',
+    bays: [[300, -20, 100], [268, 130, 90]],
+    hills: [[-190, -10, 44, 130], [-40, 50, 26, 150], [150, -170, 18, 85], [20, 215, 8, 70]],
+    flats: [[170, -22, 78, 4], [176, 96, 58, 1.7], [78, -14, 40, 8.5], [118, -62, 13, 6], [-10, 62, 34, 22], [40, 236, 26, 2.5]],
+    roads: [[[226, -24], [170, -22], [118, -40], [78, -14], [30, 30], [-10, 62]], [[170, -22], [176, 60], [176, 96]], [[78, -14], [60, 110], [40, 236]]] },
+  { id: 'solvik', name: 'Solvik', title: 'the Golden Quay', ruler: 'King Eystein Goldhand', x: 1350, z: 1450, r: 240, k: 1.3, a: -0.3, h: 6, rough: 2, forest: 0.3, ground: 'gold',
+    bays: [[-268, 40, 95], [30, 228, 44]],
+    hills: [[70, 10, 24, 120], [-40, -150, 12, 70]],
+    flats: [[-150, 26, 82, 3.5], [-64, -34, 36, 9], [0, 188, 20, 2.2]],
+    roads: [[[-200, 36], [-150, 26], [-100, -10], [-64, -34]], [[-150, 26], [-80, 110], [0, 188]]] },
+  { id: 'svartoy', name: 'Svartøy', title: 'the Black Isle', ruler: 'Jarl Håkon Ironwolf', x: 0, z: 2420, r: 340, k: 1.1, a: 0, h: 9, rough: 3.5, forest: 0.12, ground: 'black',
+    bays: [[0, -300, 85], [104, 285, 55]],
+    hills: [[0, 40, 20, 270], [-215, 0, 30, 120], [220, 30, 26, 120]],
+    flats: [[0, -205, 60, 3], [14, -150, 30, 13], [0, 4, 78, 26], [0, 112, 50, 38], [30, 222, 44, 9], [0, -106, 15, 22], [0, -54, 15, 22]], // the bridgeheads last: they keep their height
+    cuts: [{ pts: [[-330, -98], [-90, -78], [0, -80], [90, -82], [330, -66]], w: 21, y: 2.5 }],
+    roads: [[[0, -240], [0, -200], [14, -150], [0, -106]], [[0, -54], [0, 4], [0, 76], [0, 112]], [[0, 150], [20, 190], [30, 222], [104, 250]]] },
+  { id: 'myrholm', name: 'Myrholm', title: 'the Marsh Isle', ruler: 'Queen Thora', x: -1150, z: 3000, r: 300, k: 1.3, a: 0.4, h: 0.3, rough: 0.5, forest: 0.1, ground: 'marsh', marsh: true,
+    bays: [[30, -288, 70]],
+    hills: [[10, -40, 2.4, 90]],
+    flats: [[6, -36, 56, 2.6], [34, -210, 34, 1.6], [-70, 186, 24, -0.42], [-150, 30, 20, 0.15], [128, 96, 20, 0.15], [170, -70, 18, 0.5]],
+    cuts: [{ pts: [[70, -250], [96, -150], [70, -60], [110, 20], [70, 120], [120, 230]], w: 9, y: -1.9 }, { pts: [[-250, -60], [-150, -20], [-100, 80], [-170, 160], [-110, 260]], w: 8, y: -1.9 }],
+    roads: [[[34, -238], [34, -210], [20, -120], [6, -36]], [[6, -36], [50, 20], [94, 60], [128, 96]], [[6, -36], [-70, 0], [-125, 30], [-150, 30]]] },
+  { id: 'skalloy', name: 'Skalløy', title: 'the Forge Isle', ruler: 'Jarl Gudmund', x: 1150, z: 3000, r: 250, k: 1.15, a: -0.2, h: 8, rough: 3, forest: 0.25, ground: 'stone',
+    bays: [[-262, -34, 90], [252, 70, 90]],
+    hills: [[120, 40, 30, 150], [-30, -170, 14, 80]],
+    flats: [[-140, -26, 60, 3.5], [-40, -20, 60, 9], [-58, 86, 30, 10], [158, 62, 34, 30]],
+    roads: [[[-196, -34], [-140, -26], [-40, -20], [40, 10], [110, 44], [158, 62]], [[-40, -20], [-58, 86]]] },
+];
+/** Places on the great islands the story names (offsets from the island's centre, as above). The world builder puts
+ *  the buildings here, the champions wait here, and the map labels these. */
+export const PLACES = {
+  jarnoy: { town: [170, -22], shore: [176, 96], hall: [78, -14], tower: [118, -62], furnaces: [-10, 62], hamlet: [40, 236], landing: [236, -22] },
+  solvik: { quay: [-150, 26], hall: [-64, -34], cave: [0, 188], landing: [-206, 38], ship: [-226, 44] },
+  svartoy: { harbor: [0, -205], bend: [14, -150], bridgeN: [0, -106], bridgeS: [0, -54], town: [0, 4], gate: [0, 76], hall: [0, 116], pens: [30, 222], cove: [104, 250], landing: [0, -246], flagship: [30, -304] },
+  myrholm: { hall: [6, -36], landing: [34, -210], tower: [-70, 186], stiltsW: [-150, 30], stiltsE: [128, 96], peat: [170, -70] },
+  skalloy: { harbor: [-140, -26], forge: [-40, -20], hall: [-58, 86], quarry: [158, 62], landing: [-202, -34] },
+};
+/** World position of a named place: place('svartoy', 'bridgeN') -> { x, z }. */
+export function place(isle, name, dx = 0, dz = 0) {
+  const s = GREAT.find((g) => g.id === isle), p = PLACES[isle][name];
+  return { x: s.x + p[0] + dx, z: s.z + p[1] + dz };
+}

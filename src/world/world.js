@@ -6,9 +6,10 @@ import { buildHeights, buildTerrain, heightAt, riverX, riverSurfaceY } from './t
 import { scatterVegetation } from './vegetation.js';
 import * as P from './props.js';
 import { HOUSES, POI, FIELDS, BOUNDS } from './layout.js';
+import { buildRealmProps } from './realm_props.js';
 
 const CELL = 8;
-const key = (ix, iz) => (ix + 64) * 256 + (iz + 64);
+const key = (ix, iz) => (ix + 512) * 2048 + (iz + 512); // cells of 8 m: good for 4 km either way
 
 export class World {
   constructor() {
@@ -58,7 +59,9 @@ export class World {
         }
       }
     }
-    const bx = pos.z > 322 ? BOUNDS.seaX : BOUNDS.maxX; // the sea chart is wider than the home valley
+    // the home valley, then the wider home waters, then (south of realmZ) the open sea of the ten islands
+    if (Math.abs(pos.x) > BOUNDS.seaX && pos.z < BOUNDS.realmZ) pos.z = BOUNDS.realmZ; // no way back north except through the home waters
+    const bx = pos.z >= BOUNDS.realmZ ? BOUNDS.realmX : pos.z > 322 ? BOUNDS.seaX : BOUNDS.maxX;
     pos.x = clamp(pos.x, -bx, bx); pos.z = clamp(pos.z, BOUNDS.minZ, BOUNDS.maxZ);
   }
   pointInBox(x, z, margin = 0) {
@@ -101,6 +104,8 @@ export class World {
     if (this.ice && z < 170 && Math.abs(x - riverX(z)) < 9.5) { const s = riverSurfaceY(z) + 0.04; if (s > h) h = s; }
     return h;
   }
+  /** The old birch behind Bjornstead: whole before the lightning, split after. */
+  setBirch(split) { this.birchSplit.visible = split; this.birchWhole.visible = !split; }
   addDeck(d) { this.decks.push(d); return d; }
   removeDeck(d) { this.decks = this.decks.filter((x) => x !== d); }
   setIce(on) { this.ice = on; this.terrain.setIce(on); }
@@ -221,10 +226,16 @@ export class World {
     ctx.b.add(tint(at(new THREE.IcosahedronGeometry(0.42, 1), POI.skyIron.x, heightAt(POI.skyIron.x, POI.skyIron.z) + 0.24, POI.skyIron.z, 0, 0.7, 0, 1.15, 0.8, 1), 0x1b1a1e, 0.25, 5), M.vcPlain);
     this.addCircle(POI.skyIron.x, POI.skyIron.z, 0.5, 0.6);
     P.runestone(ctx, POI.axeStone.x, POI.axeStone.z, 0.5);
-    const yy = heightAt(POI.yew.x, POI.yew.z);
-    for (const s of [-1, 1]) ctx.b.add(tint(at(cyl(0.13, 0.3, 3.6, 6), POI.yew.x + s * 0.28, yy + 1.7, POI.yew.z, 0, 0, -s * 0.16), 0x241c17, 0.2, 6), M.vcPlain);
+    // the old birch on the hill behind Bjornstead: whole until the lightning finds it (Act I), split and still green ever after
+    const yy = heightAt(POI.yew.x, POI.yew.z), sb = new Builder(), wb = new Builder();
+    for (const s of [-1, 1]) sb.add(tint(at(cyl(0.13, 0.3, 3.6, 6), POI.yew.x + s * 0.28, yy + 1.7, POI.yew.z, 0, 0, -s * 0.16), 0x241c17, 0.2, 6), M.vcPlain);
     for (const [dx, dy, dz, sc] of [[-0.9, 3.5, 0.2, 1.3], [1.0, 3.8, -0.3, 1.4], [0.1, 4.7, 0.5, 1.1], [-0.3, 2.7, -0.9, 0.9]])
-      ctx.b.add(tint(at(new THREE.IcosahedronGeometry(1, 1), POI.yew.x + dx, yy + dy, POI.yew.z + dz, 0, dx, 0, sc, sc * 0.8, sc), 0x2c4a2a, 0.3, 7), M.vcPlain);
+      sb.add(tint(at(new THREE.IcosahedronGeometry(1, 1), POI.yew.x + dx, yy + dy, POI.yew.z + dz, 0, dx, 0, sc, sc * 0.8, sc), 0x2c4a2a, 0.3, 7), M.vcPlain);
+    wb.add(tint(at(cyl(0.16, 0.34, 8.4, 7), POI.yew.x, yy + 4.1, POI.yew.z), 0xd9d5c8, 0.18, 8), M.vcPlain);
+    for (const [dx, dy, dz, sc] of [[0, 8.6, 0, 2.3], [-1.6, 7.2, 0.6, 1.7], [1.5, 7.4, -0.5, 1.8], [0.3, 6.2, 1.5, 1.4], [-0.4, 6.4, -1.5, 1.4]])
+      wb.add(tint(at(new THREE.IcosahedronGeometry(1, 1), POI.yew.x + dx, yy + dy, POI.yew.z + dz, 0, dx, 0, sc, sc * 0.85, sc), 0x6a8a3a, 0.3, 9), M.vcPlain);
+    wb.add(tint(at(cyl(0.05, 0.09, 3.2, 5), POI.yew.x + 1.3, yy + 6.6, POI.yew.z + 0.2, 0, 0, -1.1), 0xd9d5c8, 0.18, 10), M.vcPlain); // the branch the ravens cling to
+    this.birchSplit = sb.build(); this.birchWhole = wb.build(); this.birchWhole.visible = false; scene.add(this.birchSplit, this.birchWhole);
     this.addCircle(POI.yew.x, POI.yew.z, 0.6, 4);
     const ty = heightAt(POI.tarn.x, POI.tarn.z);
     const ice = new THREE.Mesh(new THREE.CircleGeometry(6.4, 28), new THREE.MeshStandardMaterial({ color: 0xd3e5f0, roughness: 0.22, metalness: 0.1 }));
@@ -254,6 +265,9 @@ export class World {
     P.runestone(ctx, POI.lawRock.x, POI.lawRock.z, -0.3);
     P.fireRing(ctx, -58, 258, 0.6); P.bench(ctx, -60.2, 256.6, 1.1); P.dryingRack(ctx, -46, 268, 0.8); P.barrel(ctx, -61, 262.4); P.crate(ctx, -49.5, 252.5, 0.4);
     P.fireRing(ctx, 62, 281, 0.55); P.dryingRack(ctx, 66, 277, -0.4); P.dryingRack(ctx, 57, 284, 1.2); P.leanTo(ctx, 67.5, 284.5, -2.4); P.barrel(ctx, 59.4, 278.6);
+
+    // the great islands of the open sea (see realm_props.js); the places champions are fought are kept in this.realm
+    this.realm = buildRealmProps(ctx, this, scene);
 
     const stat = ctx.b.build();
     scene.add(stat);

@@ -1,6 +1,7 @@
 // Act I, Chapter 3 — "A Stranger's Hearth". Bjorn's farm: a new family, two raven chicks, an axe under
 // the hearthstone, then spring and the white raven's first flight. Ends Act I with the ten-year jump.
 import * as THREE from 'three';
+import { EIRIK_SCARRED } from '../entities/player.js';
 import { POI } from '../world/layout.js';
 import { heightAt } from '../world/terrain.js';
 import { shared, M, at, cone, sphere, tint, merge } from '../world/geo.js';
@@ -71,13 +72,15 @@ export class Chapter3 {
       use: () => g.dialogue.start(tree, { onEnd: () => this.foundSecret(id) }) });
     secret('barrow', 'barrow', 2.8, 'sec_barrow'); secret('skyiron', 'skyIron', 2.2, 'sec_skyiron');
     secret('twinaxe', 'axeStone', 3, 'sec_twinaxe'); secret('yew', 'yew', 3.2, 'sec_yew');
+    { const it = w.interactables.find((o) => o.id === 'sec_yew'), en = it.enabled; it.enabled = () => !!st.flags.lightning && en(); } // the birch is only split once the lightning has found it
+    w.addInteractable({ id: 'birchclimb', x: POI.yew.x, z: POI.yew.z, r: 3.4, priority: 3, label: 'Climb to the ravens', enabled: () => g.quests.at('q_wings', 'climb') && g.mode === 'play', use: () => this.lightning() });
     w.addInteractable({ id: 'tarn', x: POI.tarn.x, z: POI.tarn.z, r: 6.5, label: 'Look into the ice', enabled: () => st.stage === 'ch3' && !st.secrets.icespear, use: () => g.dialogue.start('tarn_ground') });
 
     // what the white raven can find from the air
     const R = g.ravens, at2 = (poi) => () => POI[poi];
     R.addMarkable({ id: 'icespear', pos: at2('tarn'), r: 30, label: 'something under the ice', enabled: () => !st.secrets.icespear, onMark: () => g.dialogue.start('sec_icespear', { onEnd: () => this.foundSecret('icespear') }) });
     for (const [id, poi, label, what] of [['barrow', 'barrow', 'a mound ringed with stones', 'Stone-ringed mound'], ['twinaxe', 'axeStone', 'a standing stone', 'Standing stone'], ['yew', 'yew', 'a split tree, still green', 'Split yew']])
-      R.addMarkable({ id: 'm_' + id, pos: at2(poi), r: 34, label, enabled: () => !st.secrets[id] && !st.marks[id], onMark: () => { st.marks[id] = { x: POI[poi].x, z: POI[poi].z, label: what }; g.ui.toast(`Marked on your map: ${what}`); } });
+      R.addMarkable({ id: 'm_' + id, pos: at2(poi), r: 34, label, enabled: () => !st.secrets[id] && !st.marks[id] && (id !== 'yew' || !!st.flags.lightning), onMark: () => { st.marks[id] = { x: POI[poi].x, z: POI[poi].z, label: what }; g.ui.toast(`Marked on your map: ${what}`); } });
     R.addMarkable({ id: 'hunters', pos: at2('hunters'), r: 75, label: 'smoke on the west bank', enabled: () => !!st.flags.spring && !st.flags.sawHunters,
       onMark: () => { st.flags.sawHunters = true; g.ui.subtitle('Eirik', 'Men with the wolf on their shields. Still looking. But on the wrong side of the river.', 6); } });
     R.addMarkable({ id: 'lamb', pos: () => (this.lamb ? this.lamb.pos : POI.lamb), r: 42, label: 'the lost lamb', enabled: () => g.quests.at('q_wings', 'spot'),
@@ -90,6 +93,8 @@ export class Chapter3 {
     const g = this.g, A = this.act;
     this.build();
     A.snowTarget = spring ? 0 : 1; shared.uSnow.value = A.snowTarget;
+    g.world.setBirch(!!this.st.flags.lightning);
+    if (this.st.flags.lightning && !g.player.adult && !(g.player.look && g.player.look.scar)) g.player.setLook(EIRIK_SCARRED, false); // the scar is his from the lightning on
     A.wTarget = { ...(spring ? SPRING : WINTER) }; Object.assign(g.sky.weather, A.wTarget);
     g.audio.setMusic('day');
     this.chicks.visible = !spring;
@@ -131,6 +136,25 @@ export class Chapter3 {
     if (q.at('q_hearth', 'bjorn2')) return d('bjorn_axe', done);
     if (q.at('q_wings', 'dusk')) return d('bjorn_dusk', done);
     return d('bjorn_idle');
+  }
+  /** The lightning (the owner's story, Act I, Chapter 6): he climbs the old birch in the storm to save his ravens. */
+  lightning() {
+    const g = this.g, p = g.player, y = heightAt(POI.yew.x, POI.yew.z);
+    p.frozen = true; this.hint(null); p.h.play('pickup', 0.9);
+    g.ui.subtitle('', g.fmt('The bark was slick with rain. He reached the branch, and called, and {w} hopped toward his hand.'), 3.4);
+    g.after(3.5, () => {
+      for (let i = 0; i < 3; i++) g.after(i * 0.09, () => g.fx.bolt(POI.yew.x, y + (i === 0 ? 7 : 0), POI.yew.z, 46));
+      g.audio.play('thunder'); p.cam.shake = 1.2; g.hitStop = 0.25;
+      g.after(0.2, () => g.ui.fade(true, 0.35)
+        .then(() => g.ui.card('The world turned white.', 'There was no sound at first. Then a sound bigger than the sea. Then nothing.', 5.5))
+        .then(() => {
+          this.st.flags.lightning = true; this.season(true); this.posts(); g.sky.time = 8.6; g.ravens.setMode('follow');
+          p.teleport(...POST.seat, Math.atan2(FIRE.x - POST.seat[0], FIRE.z - POST.seat[1])); p.loopOverride = 'warm';
+          return g.ui.card('Three days of fever', 'Across his left eye, from brow to cheekbone, ran a deep forked burn. Signe prayed to Thor, then to Frigg, then to every god she could name, then shouted at all of them.', 7);
+        })
+        .then(() => g.ui.fade(false, 1.8))
+        .then(() => { p.loopOverride = null; g.dialogue.start('lightning_wake', { npc: this.npc('signe'), onEnd: () => { p.frozen = false; g.quests.notify('event', 'lightning'); g.ui.hint('The lightning left him three things besides the scar: he hears his ravens, he can see through the white one\'s eyes ({raven}), and, grown, the Stormguard.'); } }); }));
+    });
   }
   feedChicks() {
     const g = this.g, p = g.player;
@@ -229,6 +253,14 @@ export class Chapter3 {
       this.npc('freydis').teleport(153.5, -150.6, 0.4);
       g.ui.card('Spring', g.fmt('{w} and {b} grew faster than he did.'), 4.2).then(() => g.ui.fade(false, 1.6)).then(() => { p.frozen = false; g.quests.notify('event', 'woke4'); });
     },
+    'q_wings.storm'(r) { // the spring after his tenth birthday, a storm comes off the sea
+      const g = this.g; this.season(true); if (r) this.posts();
+      this.act.wTarget = { snow: 0, fog: 0.03, overcast: 1, wind: 3.4 }; Object.assign(g.sky.weather, this.act.wTarget); g.sky.time = 15.2; g.ravens.setMode('hidden');
+      g.audio.play('thunder', { vol: 0.5 });
+      g.ui.subtitle('', g.fmt('The sky went green-black. In the crown of the old birch, {w} and {b} were clinging to a branch that was cracking at the trunk.'), 6);
+      g.ui.hint('He should have run home. Run to the old birch on the hill east of the farm.');
+    },
+    'q_wings.climb'(r) { const g = this.g; this.season(true); if (r) this.posts(); this.act.wTarget = { snow: 0, fog: 0.03, overcast: 1, wind: 3.4 }; Object.assign(g.sky.weather, this.act.wTarget); g.sky.time = 15.2; g.ravens.setMode('hidden'); g.ui.hint('Press {interact} at the birch to climb.'); },
     'q_wings.freydis'(r) { this.season(true); if (r) { this.posts(); this.npc('freydis').teleport(153.5, -150.6, 0.4); } this.npc('freydis').say(this.g.fmt('{n}! {n}, come quick!'), 3); this.hint(null); },
     'q_wings.eye'(r) { this.season(true); if (r) { this.posts(); this.npc('freydis').teleport(153.5, -150.6, 0.4); } this.spawnLamb(false); this.hint('raven'); },
     'q_wings.spot'(r) { this.season(true); if (r) { this.posts(); this.npc('freydis').teleport(153.5, -150.6, 0.4); } this.spawnLamb(false); this.g.ui.hint('The lamb went north-west, past the fallen pine. Fly over the trees and press {interact} when the prompt appears.'); },
@@ -261,6 +293,8 @@ export class Chapter3 {
     } else if (q.at('q_hearth', 'name') && g.mode === 'play' && !g.dialogue.active) { // safety net after a load
       this.st.quests.q_hearth.step--; this.atNest = true;
     }
+    if (q.at('q_wings', 'storm') && dist(p.pos, POI.yew.x, POI.yew.z) < 9) q.notify('reach', 'birch');
+    if ((q.at('q_wings', 'storm') || q.at('q_wings', 'climb')) && g.mode === 'play' && this.t % 5.5 < dt) { g.fx.bolt(POI.yew.x + (Math.random() - 0.5) * 120, heightAt(POI.yew.x, POI.yew.z) + 10, POI.yew.z + (Math.random() - 0.5) * 120, 60); g.after(0.5 + Math.random(), () => g.audio.play('thunder', { vol: 0.4 })); }
     if (this.lamb && !this.lamb.follow && this.t % 5 < dt && dist(p.pos, this.lamb.pos.x, this.lamb.pos.z) < 70) g.audio.play('bird', { vol: 0.8 });
     if (this.chicks.visible && this.t % 4 < dt && dist(p.pos, this.chicks.position.x, this.chicks.position.z) < 12) g.audio.play('bird', { vol: 0.5 });
   }

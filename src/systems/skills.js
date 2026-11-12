@@ -2,6 +2,9 @@
 // POINT_EVERY renown is one skill point. Five trees, as the design names them, five skills each, learned in
 // order. A skill is a rule the other systems ask about with game.skills.has(id): this file holds no effects,
 // only what exists and what has been learned. Skills open when Eirik is grown; a boy's renown counts later.
+// The sixth tree, Stormborn, is what the lightning left in him: skills he USES (a key each, paid for from the
+// storm bar) rather than rules that are always on. `free` skills are his from the day he is grown; `key` names
+// the input action that uses one. (The written story names four gifts; these are the game's extension of them.)
 export const POINT_EVERY = 150;
 
 export const TREES = [
@@ -41,13 +44,22 @@ export const TREES = [
     { id: 'y_wright', name: "Shipwright's Eye", cost: 3, desc: 'The crew can patch the hull most of the way without a ferryman.' },
   ] },
 ];
+TREES.push({ id: 'stormborn', name: 'Stormborn', blurb: 'What the lightning left. Each is used with its own key and spends the storm bar.', skills: [
+  { id: 'st_smash', name: 'Thunder Smash', cost: 0, free: true, key: 'art1', storm: 40, desc: 'Leap and bring the axe down. Lightning follows it: everyone within five paces is hurt, guards break, shield walls open, and a swing that has started is stopped.' },
+  { id: 'st_step', name: 'Storm-Step', cost: 1, key: 'art2', storm: 25, desc: 'Go through the man in front of you between one heartbeat and the next, cutting as you pass, and come out behind him. Nothing can touch you on the way.' },
+  { id: 'st_turn', name: 'The Turning Blow', cost: 2, desc: "Bjorn's log-splitting turn. A heavy blow thrown straight after the Stormguard or a parry becomes a full circle that no guard stops and that reaches every man around you." },
+  { id: 'st_cry', name: 'Storm-Cry', cost: 2, key: 'art3', storm: 35, desc: 'A shout with thunder under it. Enemies within nine paces lose the blow they were about to throw, the crew take heart and mend, and Eirik\'s own anger goes out of him.' },
+  { id: 'st_break', name: 'Stormbreak', cost: 3, key: 'art4', storm: 100, desc: 'Spend the whole bar. For eight breaths every blow hits a third harder and throws a spark of lightning into a second man.' },
+] });
 const INDEX = new Map();
 for (const t of TREES) t.skills.forEach((s, i) => INDEX.set(s.id, { skill: s, tree: t, i }));
 
 export class Skills {
   constructor(game) { this.g = game; this.seen = null; }
   get st() { const s = this.g.state; return s.skills || (s.skills = {}); }
-  has(id) { return !!this.st[id]; }
+  has(id) { return !!this.st[id] || (INDEX.has(id) && !!INDEX.get(id).skill.free && this.open()); }
+  /** The skill's own data (cost in storm, key). */
+  def(id) { return INDEX.get(id).skill; }
   /** Skills open with adulthood: a boy learns by doing. */
   open() { return !!this.g.player.adult; }
   earned() { return Math.floor(this.g.state.xp / POINT_EVERY); }

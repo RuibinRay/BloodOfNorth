@@ -1,11 +1,22 @@
 # Blood of the North — Rise of the Raven King
 
-A third-person Viking action RPG. This repository holds **vertical slice 0.12**: all three chapters of
-Act I (Eirik's childhood), the opening chapter of Act II (Eirik at nineteen, with real combat), and an
-open-world sandbox that runs from the home valley out to a sea chart of islands, with a ship of your own, a
-crew to row her and enemies to fight at sea, plus the design foundation for the full campaign.
+A third-person Viking action RPG that follows the owner's story, *The Rise of the Raven King*
+([docs/story](docs/story/THE_RISE_OF_THE_RAVEN_KING.md): seven acts and an epilogue). This repository holds
+**slice 0.13**: Act I (Eirik's childhood, now with the lightning that scars him), the opening of Act II
+(Eirik at nineteen, with real combat), and an open world that runs from the home valley across the home
+waters to five great islands of the story built at full scale, where the Ironwolf's seven champions, his
+two hands and the Ironwolf himself can be fought in the places the story has them fall.
 
-> **What this is, plainly.** Four real, playable 3D chapters (well over an hour; untimed) that run in a browser.
+**New in 0.13.** The story stored and made canon ([story bible](docs/STORY_BIBLE.md), [89 missions with their
+state](data/missions.json)) · Jarnøy, Solvik, Myrholm, Skalløy and Svartøy on the map · ten champion fights,
+each with named skills ([weapons and skills](docs/WEAPONS.md)) · Stormguard by the story's rules, Thunder
+Smash and four more storm skills · Raven-Feeder's three reforgings · camera lock, weightier movement, a walk
+key · icons for items, weapons and missions · people on the islands who work, walk their roads and appear
+round you on dry land · [the feature plan](docs/FEATURE_PLAN.md), with what was learned from how the big
+games are made.
+
+> **What this is, plainly.** Four real, playable 3D chapters and a large sandbox that run in a browser. Of the
+> story's 89 missions, 6 are built, 10 partly, 10 as the boss fight alone, and 63 are still to build.
 > It is not the 40-hour game, it is not Unreal Engine 5, and it is not photorealistic: every character,
 > prop and sound is generated in code as a placeholder. See [Status](#status) for exactly what exists.
 
@@ -29,7 +40,10 @@ Then open http://localhost:5184. A production build is `npm run build` (output i
 | Sprint, crouch | `Shift`, `C` | L3, R3 |
 | Interact | `E` | A |
 | Dodge: a sidestep; a roll when going forward or sprinting | `Space` | B |
-| Storm-Ward: turn any blow, even a red one (needs half a bar) | `Z` | — |
+| Stormguard: turn any blow, even a red one. It also answers by itself when death is close. Only when calm; costs half the storm bar, more each time | `Z` | — |
+| Thunder Smash, Storm-Step, Storm-Cry, Stormbreak (spend the storm bar) | `4`, `5`, `6`, `7` | — |
+| Lock the camera to an opponent; again lets go; flick the mouse to change man | `L` or middle mouse | — |
+| Walk | hold `Alt` | — |
 | Bow: swap shoulder | `T` | — |
 | Attack or loose arrow (hold and release for a heavy blow). Push sideways for a wide cut, back for an overhead blow, forward with a heavy for a lunging thrust | left mouse | X or RT |
 | Block / parry, or aim bow | right mouse | LT |

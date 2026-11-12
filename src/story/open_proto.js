@@ -11,7 +11,8 @@ import { Law, Mounts, MARK_NAMES } from '../systems/openworld.js';
 import { SeaChart } from './sea_chart.js';
 import { Fleet } from './fleet.js';
 import { SeaWar } from './seawar.js';
-import { Seven } from './seven.js';
+import { Champions } from './champions.js';
+import { Ambient } from '../systems/ambient.js';
 import { angleDiff } from '../core/util.js';
 
 Object.assign(ITEMS, {
@@ -59,8 +60,9 @@ export class OpenProto {
     for (const k in this.sea.steps) this.steps[k] = (r) => this.sea.steps[k].call(this.sea, r);
     this.fleet = new Fleet(game, this);
     for (const k in this.fleet.steps) this.steps[k] = (r) => this.fleet.steps[k].call(this.fleet, r);
-    this.seven = new Seven(game, this);
-    for (const k in this.seven.steps) this.steps[k] = (r) => this.seven.steps[k].call(this.seven, r);
+    this.life = new Ambient(game, this);    // the people of the great islands, brought in round him as he moves
+    this.table = new Champions(game, this); // the Wolf's table: the story's seven champions, the two hands, and Håkon
+    for (const k in this.table.steps) this.steps[k] = (r) => this.table.steps[k].call(this.table, r);
     this.war = new SeaWar(game, this);
     for (const k in this.war.steps) this.steps[k] = (r) => this.war.steps[k].call(this.war, r);
   }
@@ -100,18 +102,18 @@ export class OpenProto {
     mk('bjorn', 'Bjorn', CAST2.bjorn.look, 157, -133.4, -2.4, { law: false, role: 'kin' });
     mk('signe', 'Signe', CAST2.signe.look, 144.6, -137.9, 0.8, { law: false, role: 'kin', loop: 'cook' });
     mk('freydis', 'Freydis', CAST2.freydis.look, 151.8, -141, -2.2, { law: false, role: 'kin' });
-    mk('law', 'Thorgeir Lawspeaker', CAST.gunnar.look, POI.lawRock.x - 1.6, POI.lawRock.z + 1.7, 2.6, { role: 'law' });
+    mk('law', 'Hallvard the Lawspeaker', CAST.gunnar.look, POI.lawRock.x - 1.6, POI.lawRock.z + 1.7, 2.6, { role: 'law' });
     mk('merchant', 'Asgerd', CAST.asa.look, -56.6, 260.2, 2.4, { role: 'merchant' });
-    mk('folk0', 'Orm Ferryman', CAST.odd.look, -45, 263.5, 1.2, { loop: 'fish', hold: 'rod' });
-    mk('folk1', 'Hauk', CAST.farmer1.look, -62, 271, 0.4, { weapon: 'spear', loop: 'guard', hold: 'spear' });
+    mk('folk0', 'Ivar Ferryman', CAST.odd.look, -45, 263.5, 1.2, { loop: 'fish', hold: 'rod' });
+    mk('folk1', 'Havard', CAST.farmer1.look, -62, 271, 0.4, { weapon: 'spear', loop: 'guard', hold: 'spear' });
     mk('fisher0', 'Gudrun', CAST.farmer2.look, 60.4, 279.4, -1.0, { role: 'task' });
-    mk('fisher1', 'Ketil', CAST.farmer1.look, 65.5, 284.6, 1.8, { loop: 'fish', hold: 'rod' });
-    mk('fisher2', 'Old Svein', CAST.hrolf.look, 57.6, 284.6, 0.9, { loop: 'sit' });
+    mk('fisher1', 'Kol', CAST.farmer1.look, 65.5, 284.6, 1.8, { loop: 'fish', hold: 'rod' });
+    mk('fisher2', 'Old Njal', CAST.hrolf.look, 57.6, 284.6, 0.9, { loop: 'sit' });
 
     g.events.on('playerSwing', (n, heavy) => this.swingAtFolk(heavy));
     g.events.on('playerDied', () => this.fail());
     g.events.on('mounted', (type) => g.quests.notify('event', 'mounted_' + type));
-    this.sea.build(); this.fleet.build(); this.war.build();
+    this.sea.build(); this.fleet.build(); this.war.build(); this.table.build();
   }
   /** One of the people of the open world. o2: role, loop, hold, weapon, line, port; law:false keeps them out of the law. */
   person(id, name, look, x, z, yaw, o2 = {}) {
@@ -150,10 +152,10 @@ export class OpenProto {
     if (n.role === 'kin') { n.say(g.fmt({ bjorn: 'Take the bay mare. And come back with all your fingers, {n}.', signe: 'Eat before you go. The sea is hungry enough for both of you.', freydis: 'If {b} steals from the islanders, you are paying for it.' }[n.id]), 4); return; }
     n.say(g.fmt(n.line && tier.min >= 15 && Math.random() < 0.6 ? n.line : tier.hail), n.line ? 5 : 3.5);
   }
-  /** The keeper of the law in whichever district this is: Thorgeir on Gulen, Ragnhild on Kinn. */
+  /** The keeper of the law in whichever district this is: Hallvard on Gulen, Ragnhild on Kinn. */
   lawTalk(n) {
     const g = this.g, s = this.law.s, D = this.law.def, inv = g.inventory, L = n.name, E = 'Eirik', silver = inv.count('silver'), cost = s.marks * 25;
-    const kin = n.id === 'reeve', work = kin ? this.sea.reeveWork() : this.seven.offer(), flag = kin ? 'metReeve' : 'metLaw', king = kin ? 'kingOfSkerries' : 'kingOfGulen';
+    const kin = n.id === 'reeve', work = kin ? this.sea.reeveWork() : this.table.offer(), flag = kin ? 'metReeve' : 'metLaw', king = kin ? 'kingOfSkerries' : 'kingOfGulen';
     let tree;
     if (s.marks > 0) tree = [
       { s: L, t: `You carry ${s.marks} wolf-mark${s.marks > 1 ? 's' : ''} in ${D.local}, {n}: ${MARK_NAMES[s.marks].toLowerCase()}. The law offers two roads. Silver, or the hide.` },
@@ -169,7 +171,7 @@ export class OpenProto {
     else tree = [
       { s: L, t: work.intro || (this.st.flags[flag] ? 'No man here names you wolf, {n}.' : kin
         ? 'A white raven, and a Vestland boat. I am Ragnhild; I hold the Skerries for whoever is strong enough to ask me to. So far nobody has asked well.'
-        : 'So you are the one with the white raven. I am Thorgeir. I keep the law on Gulen: what is sworn, what is owed, and who is a wolf.'), fx: { flag } },
+        : 'So you are the one with the white raven. I am Hallvard. I keep the law on Gulen: what is sworn, what is owed, and who is a wolf.'), fx: { flag } },
       { s: E, t: '', choices: [
         { t: '"What is the law here?"', to: 'law' },
         ...(work.choices || []),
@@ -180,7 +182,7 @@ export class OpenProto {
         ? 'The same as any law, with more water in it. Harm a man where others see, and you carry a wolf-mark. But the marks you earned in the Vestland are the Vestland\'s business, unless you earned enough of them that the boats talk.'
         : 'Harm a man where others can see and you earn a wolf-mark. One is a fine. Two, and the islands raise the hue and cry. Three, and men come hunting the price on you. Pay the blood-price here, win the hide-duel, or keep out of sight until talk dies.', to: 'end' },
       { id: 'notyet', s: L, t: kin
-        ? 'Not yet. Out here a name is worth what it has done. Put out the fire on Batalden. Light the one on Skorpa. Trade fair with Thora.'
+        ? 'Not yet. Out here a name is worth what it has done. Put out the fire on Batalden. Light the one on Skorpa. Trade fair with Gyda.'
         : 'Not yet. They know your name, not your worth. Help the fishers on Bulandet. Trade fair. Be seen to be generous.', to: 'end' },
       { id: 'king', s: L, t: 'They have sworn already, my king. A second oath is worth less than the first.', to: 'end' },
       { id: 'swear', s: L, t: `Then hear it, ${D.seat}! This is Eirik Ravensson. By rock and by ring, he is our king, and we are his folk.`, to: 'end' },
@@ -299,7 +301,7 @@ export class OpenProto {
     'q_open.shore'() { this.build(); },
     'q_open.boat'() { this.build(); this.g.ui.hint('Dismount with {interact}. The boat is moored off the end of the landing; wade out and board it.'); },
     'q_open.gulen'() { this.build(); },
-    'q_open.law'() { this.build(); this.g.ui.hint('The law-rock is the carved stone. Thorgeir stands beside it.'); },
+    'q_open.law'() { this.build(); this.g.ui.hint('The law-rock is the carved stone. Hallvard the Lawspeaker stands beside it.'); },
     'q_open.free'(r) {
       this.build();
       if (!this.g.quests.st.q_sea) this.g.quests.start('q_sea'); // the fjord is only the doorstep
@@ -313,7 +315,7 @@ export class OpenProto {
     this.t += dt;
     if (g.mode === 'play') g.sky.time = Math.min(16.4, g.sky.time + dt / 420);
     this.st.time = g.sky.time; p.warmth = 100; p.hunger = 100;
-    this.law.update(dt); this.mounts.update(dt); this.sea.update(dt); this.fleet.update(dt); this.war.update(dt);
+    this.law.update(dt); this.mounts.update(dt); this.sea.update(dt); this.fleet.update(dt); this.war.update(dt); this.table.update(dt); this.life.update(dt);
     const s = this.law.s; // the law of whichever district he is standing in
     if (q.at('q_open', 'shore') && dist(p.pos, POI.dock.x, POI.dock.z) < 28) q.notify('reach', 'shore');
     if (q.at('q_open', 'gulen') && dist(p.pos, POI.gulen.x, POI.gulen.z) < 44) q.notify('reach', 'gulen');

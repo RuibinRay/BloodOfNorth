@@ -255,7 +255,7 @@ export class Act1 {
     if (id === 'q_ice') this.ch2.playEnding();
     if (id === 'q_wings') this.ch3.playEnding();
     if (id === 'q_axe') this.a2.playEnding();
-    if (this.open.built) { this.open.sea.questDone(id); this.open.fleet.questDone(id); this.open.war.questDone(id); this.open.seven.questDone(id); }
+    if (this.open.built) { this.open.sea.questDone(id); this.open.fleet.questDone(id); this.open.war.questDone(id); this.open.table.questDone(id); }
   }
   steps = {
     'q_morning.ylva'() { this.hint('move'); this.g.after(9, () => { if (this.g.quests.at('q_morning', 'ylva')) this.hint('talk'); }); },

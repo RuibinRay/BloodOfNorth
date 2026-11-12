@@ -137,6 +137,10 @@ export class AudioSys {
       case 'bird': { const f = 2200 + Math.random() * 1800; [0, 0.09, 0.18].forEach((d) => this.tone({ freq: f, dur: 0.07, gain: 0.025 * v, slide: 1.25, delay: d })); break; }
       case 'shout': this.tone({ freq: 190 + Math.random() * 60, type: 'sawtooth', dur: 0.4, gain: 0.1 * v, slide: 0.75, lp: 900, attack: 0.04 }); break;
       case 'crackle': this.burst({ dur: 0.03, freq: 3000 + Math.random() * 3000, q: 3, gain: 0.12 * v }); break;
+      case 'thunder': // a crack, then the roll after it
+        this.burst({ dur: 0.09, freq: 5200, q: 0.5, gain: 0.6 * v }); this.burst({ dur: 0.5, freq: 1400, q: 0.3, gain: 0.5 * v, sweep: 0.2 });
+        this.tone({ freq: 62, dur: 1.6, gain: 0.6 * v, slide: 0.55 }); this.burst({ dur: 1.8, freq: 180, type: 'lowpass', gain: 0.4 * v, attack: 0.05 }); this.tone({ freq: 41, dur: 2.2, gain: 0.35 * v, slide: 0.8, delay: 0.25 });
+        break;
       case 'heart': this.tone({ freq: 55, dur: 0.16, gain: 0.5 * v, slide: 0.7 }); this.tone({ freq: 50, dur: 0.18, gain: 0.4 * v, slide: 0.7, delay: 0.22 }); break;
       default: break;
     }

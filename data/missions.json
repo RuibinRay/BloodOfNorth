@@ -1,590 +1,1204 @@
 {
- "about": "Campaign mission database. status: built (playable and tested) | planned | outline. Minutes are design targets, not measured playtime.",
- "main_story_target_minutes": 2400,
+ "about": "Mission breakdown of the owner's story (docs/story/THE_RISE_OF_THE_RAVEN_KING.md), chapter by chapter. status: built (playable; tested by script) | partial (something of it is playable; read the note) | fight_only (the champion fight is playable in its place, without the chapter round it) | planned. Minutes are design targets, not measured playtime: nothing here has been timed with a person playing.",
+ "source": "docs/story/THE_RISE_OF_THE_RAVEN_KING.md",
+ "updated": "2026-11-12",
  "acts": [
   {
    "act": 1,
-   "title": "The Night of Ashes",
-   "target_minutes": 240,
-   "built_minutes_estimate": 134,
-   "missions": [
+   "title": "The Burning Snow",
+   "eirik_age": "9 to 10",
+   "theme": "Everything can be taken in one night, and someone can still choose to give it back.",
+   "chapters": [
     {
-     "id": "a1m01",
-     "title": "The Last Good Day",
-     "type": "tutorial",
-     "minutes": 12,
-     "summary": "Talk with Ylva, find Ragnar at the chopping block.",
-     "status": "built"
+     "chapter": 1,
+     "title": "Hrafnvik",
+     "missions": [
+      {
+       "id": "a1c1m1",
+       "title": "The Last Warm Day",
+       "type": "tutorial",
+       "target_minutes": 20,
+       "summary": "The woodpile and Raven-Feeder; Ragnar's lesson; the hunt, the fire, wooden swords; the grey-cloaked stranger at the door.",
+       "status": "partial",
+       "note": "Built as the first chapter's day. The stranger (Torvald), the runes in the ash and the axe's name in dialogue are not in yet."
+      }
+     ]
     },
     {
-     "id": "a1m02",
-     "title": "Wood for Winter",
-     "type": "activity",
-     "minutes": 6,
-     "summary": "Split five logs.",
-     "status": "built"
+     "chapter": 2,
+     "title": "Wolves in the Snow",
+     "missions": [
+      {
+       "id": "a1c2m1",
+       "title": "The Night They Came",
+       "type": "escape",
+       "target_minutes": 25,
+       "summary": "Thirty torches on the ridge. Ragnar meets Håkon; Ylva gives Eirik the axe and cuts Kettil's hand; the old birch, the ridge, the thin ice.",
+       "status": "partial",
+       "note": "Built as the night raid and escape. Håkon by name, Kettil's hand, Sigurd counting silver and the lie \"he is under the river\" are not shown yet."
+      }
+     ]
     },
     {
-     "id": "a1m03",
-     "title": "The Quiet Foot",
-     "type": "hunt",
-     "minutes": 18,
-     "summary": "Bow lesson, hares, track and stalk a deer; first trait choice.",
-     "status": "built"
+     "chapter": 3,
+     "title": "The Winter Alone",
+     "missions": [
+      {
+       "id": "a1c3m1",
+       "title": "The Hollow Under the Spruce",
+       "type": "survival",
+       "target_minutes": 25,
+       "summary": "Shelter, three days to make fire, what there is to eat.",
+       "status": "built",
+       "note": "Built as \"The Long White\"."
+      },
+      {
+       "id": "a1c3m2",
+       "title": "The She-Wolf",
+       "type": "choice",
+       "target_minutes": 10,
+       "summary": "A starving wolf with a snare on her leg. Kill her for the meat, or cut the wire.",
+       "status": "partial",
+       "note": "Built as feed-or-kill; the snare and cutting the wire are not in yet."
+      }
+     ]
     },
     {
-     "id": "a1m04",
-     "title": "Fire Before Dark",
-     "type": "survival",
-     "minutes": 8,
-     "summary": "Gather tinder at the old birch and strike a fire; Ragnar hints at his past.",
-     "status": "built"
+     "chapter": 4,
+     "title": "The Bear's House",
+     "missions": [
+      {
+       "id": "a1c4m1",
+       "title": "Are You a Troll?",
+       "type": "story",
+       "target_minutes": 15,
+       "summary": "Bjorn finds him at the thaw and carries him home; Signe, Freydis, forty days of silence.",
+       "status": "partial",
+       "note": "Built as the fever and the farm. Bjornstead is still one farm in a dale, not the coastal village of twenty houses."
+      },
+      {
+       "id": "a1c4m2",
+       "title": "Under the Hearthstone",
+       "type": "story",
+       "target_minutes": 5,
+       "summary": "He buries Raven-Feeder beside the hearth.",
+       "status": "built"
+      }
+     ]
     },
     {
-     "id": "a1m05",
-     "title": "Wooden Swords",
-     "type": "combat tutorial",
-     "minutes": 8,
-     "summary": "Strike, block, parry, dodge. The lesson of the blade.",
-     "status": "built"
+     "chapter": 5,
+     "title": "Two Ravens",
+     "missions": [
+      {
+       "id": "a1c5m1",
+       "title": "The Fallen Nest",
+       "type": "activity",
+       "target_minutes": 15,
+       "summary": "One black chick, one white. Feeding them; naming them.",
+       "status": "built"
+      },
+      {
+       "id": "a1c5m2",
+       "title": "Old Hrefna's Bones",
+       "type": "story",
+       "target_minutes": 5,
+       "summary": "The seeress and the five sayings.",
+       "status": "planned",
+       "note": "Old Hrefna is not in the game yet. The five omens round Bjornstead are."
+      }
+     ]
     },
     {
-     "id": "a1m06",
-     "title": "Supper",
-     "type": "free roam",
-     "minutes": 10,
-     "summary": "Fishing, neighbours, the Raven Stone; Ylva's question.",
-     "status": "built"
+     "chapter": 6,
+     "title": "The Lightning",
+     "missions": [
+      {
+       "id": "a1c6m1",
+       "title": "The Old Birch",
+       "type": "set piece",
+       "target_minutes": 8,
+       "summary": "The storm off the sea, the climb, the strike; three days of fever; the scar and the first word: Warm. Boy. Wake.",
+       "status": "built",
+       "note": "New in 0.13."
+      },
+      {
+       "id": "a1c6m2",
+       "title": "What the Sky Left",
+       "type": "tutorial",
+       "target_minutes": 15,
+       "summary": "Raven's Voice and Raven's Eye: the lost lamb found from the air.",
+       "status": "built"
+      },
+      {
+       "id": "a1c6m3",
+       "title": "The Stick and the Little Shield",
+       "type": "tutorial",
+       "target_minutes": 6,
+       "summary": "Bjorn's feint from behind; Stormguard answers for the first time; Hrefna names it.",
+       "status": "planned",
+       "note": "Stormguard exists for the grown Eirik; this scene does not."
+      }
+     ]
     },
     {
-     "id": "a1m07",
-     "title": "The Night of Ashes",
-     "type": "set piece",
-     "minutes": 12,
-     "summary": "Longships, the duel, the flight, the gate, a stealth escape.",
-     "status": "built"
-    },
-    {
-     "id": "a1m08",
-     "title": "Alone",
-     "type": "survival",
-     "minutes": 6,
-     "summary": "A blizzard, a draining warmth meter, the first fire alone.",
-     "status": "built"
-    },
-    {
-     "id": "a1m09",
-     "title": "The Long White",
-     "type": "survival",
-     "minutes": 14,
-     "summary": "Cut boughs, mend the lean-to, follow deer tracks in the snow, cook, sleep. Hunger and warmth.",
-     "status": "built"
-    },
-    {
-     "id": "a1m10",
-     "title": "Teeth in the Dark",
-     "type": "encounter",
-     "minutes": 4,
-     "summary": "A wolf wants the kill: shoot it or throw it a share.",
-     "status": "built"
-    },
-    {
-     "id": "a1m11",
-     "title": "Thin Ice",
-     "type": "stealth/traversal",
-     "minutes": 10,
-     "summary": "Trackers in the forest, a river of thin ice, and Bjorn finding a boy in the snow.",
-     "status": "built"
-    },
-    {
-     "id": "a1m12",
-     "title": "A Stranger's Hearth",
-     "type": "story",
-     "minutes": 12,
-     "summary": "Bjornstead. Tell them your name, or not. Two raven chicks in a fallen nest: name them, feed them. Split wood for Bjorn.",
-     "status": "built"
-    },
-    {
-     "id": "a1m13",
-     "title": "The Axe Under the Floor",
-     "type": "story",
-     "minutes": 4,
-     "summary": "Bjorn knows the axe. Hide it under the hearthstone. Winter passes.",
-     "status": "built"
-    },
-    {
-     "id": "a1m14",
-     "title": "First Flight",
-     "type": "raven / exploration",
-     "minutes": 10,
-     "summary": "Spring. Fly the white raven to find a lost lamb; five omens around the farm seed later weapons. Ten winters pass.",
-     "status": "built"
+     "chapter": 7,
+     "title": "The Wolf's Hall",
+     "missions": [
+      {
+       "id": "a1c7m1",
+       "title": "Seven Seats",
+       "type": "cutscene",
+       "target_minutes": 4,
+       "summary": "Svartøy: the seven champions, the two hands, Kettil in the lowest seat. Ten winters pass.",
+       "status": "planned"
+      }
+     ]
     }
-   ]
+   ],
+   "target_minutes": 153
   },
   {
    "act": 2,
    "title": "The Farmer's Axe",
-   "target_minutes": 300,
-   "built_minutes_estimate": 30,
-   "missions": [
+   "eirik_age": "19",
+   "theme": "A peaceful life is worth defending.",
+   "chapters": [
     {
-     "id": "a2m01",
+     "chapter": 1,
      "title": "Ten Winters",
-     "type": "combat tutorial",
-     "minutes": 8,
-     "summary": "Nineteen. A drill with Bjorn teaches light and heavy blows, guard, parry and guard-breaking.",
-     "status": "built"
+     "missions": [
+      {
+       "id": "a2c1m1",
+       "title": "Strength and Where to Put It",
+       "type": "tutorial",
+       "target_minutes": 12,
+       "summary": "Splitting wood with Bjorn; Old Skeggi eats the boot; Freydis.",
+       "status": "partial",
+       "note": "Built as the ten-years-on morning and the sparring. The goat is not in."
+      }
+     ]
     },
     {
-     "id": "a2m02",
-     "title": "Iron and Charcoal",
-     "type": "crafting",
-     "minutes": 30,
-     "summary": "Forge a sickle, then quietly re-haft the old axe.",
-     "status": "planned"
+     "chapter": 2,
+     "title": "A Farmer's Life",
+     "missions": [
+      {
+       "id": "a2c2m1",
+       "title": "The Wounded Elk",
+       "type": "hunt",
+       "target_minutes": 12,
+       "summary": "Mjöll's pictures: water, blood, broken branch.",
+       "status": "planned"
+      },
+      {
+       "id": "a2c2m2",
+       "title": "The Red Cow",
+       "type": "choice",
+       "target_minutes": 8,
+       "summary": "Hauk against Grjotgard at the Thing.",
+       "status": "planned"
+      },
+      {
+       "id": "a2c2m3",
+       "title": "The Harvest Feast",
+       "type": "activity",
+       "target_minutes": 12,
+       "summary": "Kaestur, the wrestling match, the ache in the scar.",
+       "status": "planned"
+      }
+     ]
     },
     {
-     "id": "a2m03",
-     "title": "Market Day",
-     "type": "trade",
-     "minutes": 35,
-     "summary": "Sell the harvest at Kaupang; a rival's son picks a fight.",
-     "status": "planned"
-    },
-    {
-     "id": "a2m04",
-     "title": "The Boar of Ashwood",
-     "type": "hunt",
-     "minutes": 30,
-     "summary": "Hunt with Freydis; she asks about the scars he will not explain.",
-     "status": "planned"
-    },
-    {
-     "id": "a2m05",
-     "title": "Harvest Feast",
-     "type": "social",
-     "minutes": 30,
-     "summary": "Drinking contest, a wrestling bout, a first dance.",
-     "status": "planned"
-    },
-    {
-     "id": "a2m06",
+     "chapter": 3,
      "title": "Smoke on the Ridge",
-     "type": "raven / scouting",
-     "minutes": 5,
-     "summary": "The white raven finds seven tithe-takers on the river road. Lift the hearthstone.",
-     "status": "built"
+     "missions": [
+      {
+       "id": "a2c3m1",
+       "title": "Wolves",
+       "type": "story",
+       "target_minutes": 8,
+       "summary": "Seven riders. Kettil Red-Hand demands tribute and two girls; he knows the scar.",
+       "status": "partial",
+       "note": "Built as the tithe-takers' visit; needs a pass against the story's words."
+      }
+     ]
     },
     {
-     "id": "a2m07",
+     "chapter": 4,
      "title": "The Farmer's Axe",
-     "type": "combat",
-     "minutes": 12,
-     "summary": "Hold the yard, stop them firing the barn, bring down Kettil Red-Hand. Bjorn fights beside you.",
-     "status": "built"
+     "missions": [
+      {
+       "id": "a2c4m1",
+       "title": "The Stone by the Hearth",
+       "type": "story",
+       "target_minutes": 3,
+       "summary": "He lifts the flat stone.",
+       "status": "built"
+      },
+      {
+       "id": "a2c4m2",
+       "title": "The Fight for Bjornstead",
+       "type": "battle",
+       "target_minutes": 20,
+       "summary": "Waves through the yard; the barn door, the pigsty, the narrow lane; Sót and the helmet strap.",
+       "status": "partial",
+       "note": "Built as a three-wave raid with Bjorn beside him. The set pieces are not in."
+      },
+      {
+       "id": "a2c4m3",
+       "title": "The Boy Who Survived",
+       "type": "boss",
+       "target_minutes": 8,
+       "summary": "Kettil: the buckler, the mud, Stormguard; the children in the barn; the wolf brooch in the mud.",
+       "status": "partial",
+       "note": "Kettil is fought and can be spared or not. In the story Eirik turns his back to save six children: that choice is fixed and must be rebuilt."
+      }
+     ]
     },
     {
-     "id": "a2m08",
-     "title": "What the Dying Say",
-     "type": "choice",
-     "minutes": 3,
-     "summary": "Kettil names Håkon and the question he asks at every farm. Spare him or finish it.",
-     "status": "built"
-    },
-    {
-     "id": "a2m09",
+     "chapter": 5,
      "title": "The Wolf Remembers",
-     "type": "story",
-     "minutes": 2,
-     "summary": "Word reaches Håkon that Ragnar's son is alive.",
-     "status": "built"
+     "missions": [
+      {
+       "id": "a2c5m1",
+       "title": "Did You See Him Die?",
+       "type": "cutscene",
+       "target_minutes": 4,
+       "summary": "Håkon cuts the wolf from Kettil's cloak; the bounty.",
+       "status": "planned"
+      }
+     ]
+    },
+    {
+     "chapter": 6,
+     "title": "The Peddlers",
+     "missions": [
+      {
+       "id": "a2c6m1",
+       "title": "Grim and Grimolf",
+       "type": "stealth",
+       "target_minutes": 12,
+       "summary": "Mjöll at their camp; the net across the path; Skull-Ringer; outlawry.",
+       "status": "planned"
+      }
+     ]
+    },
+    {
+     "chapter": 7,
+     "title": "Walls Before Winter",
+     "missions": [
+      {
+       "id": "a2c7m1",
+       "title": "The First Speech",
+       "type": "choice",
+       "target_minutes": 8,
+       "summary": "The vote at the Thing stones.",
+       "status": "planned"
+      },
+      {
+       "id": "a2c7m2",
+       "title": "The Hardest Summer",
+       "type": "building",
+       "target_minutes": 25,
+       "summary": "Timber, ditch, palisade, the watchtower by the old birch; the latrine trench.",
+       "status": "planned",
+       "note": "Settlement building is not built."
+      }
+     ]
+    },
+    {
+     "chapter": 8,
+     "title": "The Captain Without a Ship",
+     "missions": [
+      {
+       "id": "a2c8m1",
+       "title": "Kaupang",
+       "type": "story",
+       "target_minutes": 12,
+       "summary": "The market, the thrall pen, Leif and Orm the reeve.",
+       "status": "planned",
+       "note": "Kaupang is not on the map yet."
+      },
+      {
+       "id": "a2c8m2",
+       "title": "The Wreck in the Sea Cave",
+       "type": "dive",
+       "target_minutes": 15,
+       "summary": "The tide, the silver, Gisli under the beam.",
+       "status": "planned"
+      },
+      {
+       "id": "a2c8m3",
+       "title": "Weighted Dice",
+       "type": "choice",
+       "target_minutes": 8,
+       "summary": "The Kaupang Thing; Leif pays his debts; the Sea-Raven.",
+       "status": "planned",
+       "note": "A ship called the Sea-Raven can be bought in the sandbox; Leif is not built."
+      }
+     ]
+    },
+    {
+     "chapter": 9,
+     "title": "The First Oath",
+     "missions": [
+      {
+       "id": "a2c9m1",
+       "title": "The Arm-Ring",
+       "type": "story",
+       "target_minutes": 6,
+       "summary": "The feast; Bjorn's ring; smoke in the west.",
+       "status": "planned"
+      }
+     ]
     }
-   ]
+   ],
+   "target_minutes": 173
   },
   {
    "act": 3,
-   "title": "The Hunted Wolf",
-   "target_minutes": 360,
-   "built_minutes_estimate": 0,
-   "missions": [
+   "title": "The Wolves of Iron",
+   "eirik_age": "20 to 21",
+   "theme": "Courage means protecting people who cannot repay you.",
+   "chapters": [
     {
-     "id": "a3m01",
-     "title": "A Price on a Name",
-     "type": "stealth",
-     "minutes": 35,
-     "summary": "Bounty hunters in the forest; turn their traps on them.",
-     "status": "planned"
+     "chapter": 1,
+     "title": "The Island Prince",
+     "missions": [
+      {
+       "id": "a3c1m1",
+       "title": "Iron for Wool",
+       "type": "voyage",
+       "target_minutes": 12,
+       "summary": "Jarnøy; Arvid kills the collector; Håkon's demand.",
+       "status": "planned",
+       "note": "Jarnøy is on the map with its town, hall and furnaces; King Hroald, Arvid and Ingrid stand there."
+      }
+     ]
     },
     {
-     "id": "a3m02",
-     "title": "Shield and Scorn",
-     "type": "companion",
-     "minutes": 40,
-     "summary": "Meet Astrid defending a ford; fight beside her, or over her.",
-     "status": "planned"
+     "chapter": 2,
+     "title": "Fifty from Ravenhold",
+     "missions": [
+      {
+       "id": "a3c2m1",
+       "title": "The Vote",
+       "type": "choice",
+       "target_minutes": 6,
+       "summary": "Bjorn: he eats one village at a time.",
+       "status": "planned"
+      },
+      {
+       "id": "a3c2m2",
+       "title": "Brokk",
+       "type": "companion",
+       "target_minutes": 8,
+       "summary": "The mule, the anvil, the hand.",
+       "status": "planned"
+      },
+      {
+       "id": "a3c2m3",
+       "title": "Astrid",
+       "type": "companion",
+       "target_minutes": 15,
+       "summary": "The ravine camp; nine farmers; no brother.",
+       "status": "planned"
+      },
+      {
+       "id": "a3c2m4",
+       "title": "Torvald",
+       "type": "companion",
+       "target_minutes": 8,
+       "summary": "The grey cloak and the hammer.",
+       "status": "planned"
+      }
+     ]
     },
     {
-     "id": "a3m03",
-     "title": "The Thing at Borre",
-     "type": "politics",
-     "minutes": 45,
-     "summary": "Answer a false murder charge before the assembly.",
-     "status": "planned"
+     "chapter": 3,
+     "title": "The Healer's Hands",
+     "missions": [
+      {
+       "id": "a3c3m1",
+       "title": "The Well, Not the Harbour",
+       "type": "story",
+       "target_minutes": 6,
+       "summary": "Ingrid's hospital; Leif fetches water.",
+       "status": "planned"
+      }
+     ]
     },
     {
-     "id": "a3m04",
-     "title": "Leif's Bad Bargain",
-     "type": "heist",
-     "minutes": 40,
-     "summary": "Free Leif's ship from a harbour reeve who holds it for debt.",
-     "status": "planned"
+     "chapter": 4,
+     "title": "The Battle of Iron Shore",
+     "missions": [
+      {
+       "id": "a3c4m1",
+       "title": "Six Days",
+       "type": "preparation",
+       "target_minutes": 15,
+       "summary": "The trench, the stakes, the Stinking Ditch.",
+       "status": "planned",
+       "note": "The stake line stands on the Iron Shore."
+      },
+      {
+       "id": "a3c4m2",
+       "title": "Eleven Ships",
+       "type": "battle",
+       "target_minutes": 20,
+       "summary": "Arrows from the headland; the charge; the shield wall.",
+       "status": "planned"
+      },
+      {
+       "id": "a3c4m3",
+       "title": "The Side Gate",
+       "type": "choice",
+       "target_minutes": 8,
+       "summary": "Hold the wall, or go back for the families. Grjotgard.",
+       "status": "planned"
+      }
+     ]
     },
     {
-     "id": "a3m05",
-     "title": "Old Scars",
-     "type": "mentor",
-     "minutes": 35,
-     "summary": "Torvald teaches the shield wall and tells half the truth about Ragnar.",
-     "status": "planned"
+     "chapter": 5,
+     "title": "The Longshot",
+     "missions": [
+      {
+       "id": "a3c5m1",
+       "title": "Through the Granary",
+       "type": "boss",
+       "target_minutes": 10,
+       "summary": "Up the fallen beam to the tower top; Arne Longshot.",
+       "status": "fight_only",
+       "note": "The fight is built on the tower (The Wolf's Table). The burning granary and the battle round it are not."
+      }
+     ]
     },
     {
-     "id": "a3m06",
-     "title": "Knives in the Hall",
-     "type": "stealth",
-     "minutes": 35,
-     "summary": "An assassin among the guests at a wedding feast.",
-     "status": "planned"
+     "chapter": 6,
+     "title": "The Enemy Who Escaped",
+     "missions": [
+      {
+       "id": "a3c6m1",
+       "title": "Choose",
+       "type": "boss",
+       "target_minutes": 10,
+       "summary": "Ulf Two-Blades; the burning boats.",
+       "status": "planned"
+      }
+     ]
     },
     {
-     "id": "a3m07",
-     "title": "The Healer's Road",
-     "type": "escort",
-     "minutes": 35,
-     "summary": "Bring Ingrid through a plague-struck valley.",
-     "status": "planned"
+     "chapter": 7,
+     "title": "The Gift of Iron",
+     "missions": [
+      {
+       "id": "a3c7m1",
+       "title": "Work, Not Gold",
+       "type": "story",
+       "target_minutes": 8,
+       "summary": "Weregild; twelve carts of iron; the first reforging; Storm-Yew; Ingrid joins.",
+       "status": "partial",
+       "note": "Only the reforging is in: the Jarnøy smith, once Arne has fallen."
+      }
+     ]
     },
     {
-     "id": "a3m08",
-     "title": "Why Hrafnvik",
-     "type": "investigation",
-     "minutes": 40,
-     "summary": "Follow the tribute rolls to learn who else was asked the question.",
-     "status": "planned"
-    },
-    {
-     "id": "a3m09",
-     "title": "Two-Blades",
-     "type": "boss",
-     "minutes": 55,
-     "summary": "Ulf Two-Blades in a burning boathouse.",
-     "status": "planned"
+     "chapter": 8,
+     "title": "The Price of Victory",
+     "missions": [
+      {
+       "id": "a3c8m1",
+       "title": "Destroy the Roots",
+       "type": "cutscene",
+       "target_minutes": 4,
+       "summary": "Håkon will not send the fleet.",
+       "status": "planned"
+      }
+     ]
     }
-   ]
+   ],
+   "target_minutes": 130
   },
   {
    "act": 4,
    "title": "Blood Across the Sea",
-   "target_minutes": 360,
-   "built_minutes_estimate": 0,
-   "missions": [
+   "eirik_age": "22 to 23",
+   "theme": "Trust is a leader's greatest strength, and his greatest weakness.",
+   "chapters": [
     {
-     "id": "a4m01",
-     "title": "First Wind",
-     "type": "sailing",
-     "minutes": 35,
-     "summary": "Learn the ship: sail, oars, reading the sky.",
-     "status": "planned"
+     "chapter": 1,
+     "title": "The Golden Voyage",
+     "missions": [
+      {
+       "id": "a4c1m1",
+       "title": "Fafnir's Bed",
+       "type": "voyage",
+       "target_minutes": 15,
+       "summary": "The treasure ship; life aboard; Ingrid and the dice.",
+       "status": "planned",
+       "note": "Solvik is on the map with its quay and King Eystein."
+      }
+     ]
     },
     {
-     "id": "a4m02",
-     "title": "The Belt Storm",
-     "type": "naval survival",
-     "minutes": 30,
-     "summary": "Ride out a storm in the Danish belts.",
-     "status": "planned"
+     "chapter": 2,
+     "title": "Wolves on the Water",
+     "missions": [
+      {
+       "id": "a4c2m1",
+       "title": "Three Sails in the Fog",
+       "type": "sea battle",
+       "target_minutes": 15,
+       "summary": "Rurik's ships surround the knarr.",
+       "status": "planned",
+       "note": "Sea battles exist in the sandbox."
+      },
+      {
+       "id": "a4c2m2",
+       "title": "The Honorable One",
+       "type": "boss",
+       "target_minutes": 10,
+       "summary": "Rurik Shieldsplitter on the deck of the Sea-Raven.",
+       "status": "fight_only",
+       "note": "The fight is built on his own deck at the Solvik jetty."
+      }
+     ]
     },
     {
-     "id": "a4m03",
-     "title": "Hedeby",
-     "type": "trade/politics",
-     "minutes": 45,
-     "summary": "A port of every tongue; buy an ally or a spy.",
-     "status": "planned"
+     "chapter": 3,
+     "title": "The English Court",
+     "missions": [
+      {
+       "id": "a4c3m1",
+       "title": "Wessex",
+       "type": "story",
+       "target_minutes": 15,
+       "summary": "The burh, Wulfstan, the token; the fever; the harbour wall.",
+       "status": "planned",
+       "note": "Wessex is not on the map."
+      }
+     ]
     },
     {
-     "id": "a4m04",
-     "title": "The Sacred Grove",
-     "type": "diplomacy",
-     "minutes": 40,
-     "summary": "Win a Svear chieftain at Uppsala without profaning the grove.",
-     "status": "planned"
-    },
-    {
-     "id": "a4m05",
-     "title": "Lindisfarne Tide",
-     "type": "moral choice",
-     "minutes": 40,
-     "summary": "A minster on a tidal island: raid it, guard it, or bargain.",
-     "status": "planned"
-    },
-    {
-     "id": "a4m06",
-     "title": "The Burh at Jorvik",
-     "type": "siege",
-     "minutes": 55,
-     "summary": "Take a walled town by ladder, gate or treachery.",
-     "status": "planned"
-    },
-    {
-     "id": "a4m07",
+     "chapter": 4,
      "title": "The Iron Circle",
-     "type": "investigation",
-     "minutes": 35,
-     "summary": "Captured letters name the jarls behind Håkon.",
-     "status": "planned"
+     "missions": [
+      {
+       "id": "a4c4m1",
+       "title": "The Sealed Chest",
+       "type": "story",
+       "target_minutes": 6,
+       "summary": "The letters; the bloodline; Torvald at the cooking fire.",
+       "status": "planned"
+      }
+     ]
     },
     {
-     "id": "a4m08",
-     "title": "Hedeby Sound",
-     "type": "set piece",
-     "minutes": 50,
-     "summary": "Torvald's signal fires; the fleet is cut apart.",
-     "status": "planned"
+     "chapter": 5,
+     "title": "Six Islands Burning",
+     "missions": [
+      {
+       "id": "a4c5m1",
+       "title": "Smoke, Everywhere",
+       "type": "missions",
+       "target_minutes": 30,
+       "summary": "Kinn, Fedje, Skorpa, Gulen, Solvik: survivors, raiders, the signal tower, the boy in the sea cave.",
+       "status": "planned",
+       "note": "The sea cave stands on Solvik."
+      }
+     ]
     },
     {
-     "id": "a4m09",
+     "chapter": 6,
+     "title": "The Council of Six",
+     "missions": [
+      {
+       "id": "a4c6m1",
+       "title": "An Attack on One",
+       "type": "choice",
+       "target_minutes": 10,
+       "summary": "Six kings in Bjorn's longhouse; the token.",
+       "status": "planned"
+      }
+     ]
+    },
+    {
+     "chapter": 7,
+     "title": "The Betrayal at Hedeby Sound",
+     "missions": [
+      {
+       "id": "a4c7m1",
+       "title": "The Third Fire",
+       "type": "sea battle",
+       "target_minutes": 20,
+       "summary": "The trap; Ari; Astrid's shoulder.",
+       "status": "planned",
+       "note": "Hedeby Sound is not on the map."
+      },
+      {
+       "id": "a4c7m2",
+       "title": "How Many Called You Brother",
+       "type": "choice",
+       "target_minutes": 6,
+       "summary": "The axe a finger from Ingrid's face.",
+       "status": "planned"
+      }
+     ]
+    },
+    {
+     "chapter": 8,
      "title": "Driftwood",
-     "type": "survival",
-     "minutes": 30,
-     "summary": "Wash ashore with whoever is left.",
-     "status": "planned"
+     "missions": [
+      {
+       "id": "a4c8m1",
+       "title": "Not Yet",
+       "type": "story",
+       "target_minutes": 8,
+       "summary": "Kettil's raid on Ravenhold; Bjorn's leg; the birch with two crowns.",
+       "status": "planned"
+      }
+     ]
     }
-   ]
+   ],
+   "target_minutes": 135
   },
   {
    "act": 5,
    "title": "The Broken Raven",
-   "target_minutes": 420,
-   "built_minutes_estimate": 0,
-   "missions": [
+   "eirik_age": "24 to 25",
+   "theme": "Building something is harder than destroying it.",
+   "chapters": [
     {
-     "id": "a5m01",
+     "chapter": 1,
      "title": "Ashes Again",
-     "type": "story",
-     "minutes": 35,
-     "summary": "The settlement burned in his absence.",
-     "status": "planned"
+     "missions": [
+      {
+       "id": "a5c1m1",
+       "title": "I'll Carry It",
+       "type": "choice",
+       "target_minutes": 10,
+       "summary": "Hauk; choosing who is disappointed.",
+       "status": "planned"
+      }
+     ]
     },
     {
-     "id": "a5m02",
-     "title": "Those Who Stayed",
-     "type": "recruit",
-     "minutes": 45,
-     "summary": "Gather the scattered: each asks a price.",
-     "status": "planned"
+     "chapter": 2,
+     "title": "The Winter of Hunger",
+     "missions": [
+      {
+       "id": "a5c2m1",
+       "title": "Boiled Clean",
+       "type": "choice",
+       "target_minutes": 10,
+       "summary": "The flux; the blot; Hrefna and Ingrid.",
+       "status": "planned"
+      },
+      {
+       "id": "a5c2m2",
+       "title": "Big! Big! Big!",
+       "type": "activity",
+       "target_minutes": 10,
+       "summary": "The whale; whale law.",
+       "status": "planned"
+      },
+      {
+       "id": "a5c2m3",
+       "title": "The First Law",
+       "type": "choice",
+       "target_minutes": 6,
+       "summary": "No one who comes for shelter is made a thrall for debt.",
+       "status": "planned"
+      }
+     ]
     },
     {
-     "id": "a5m03",
-     "title": "Timber and Trust",
-     "type": "settlement",
-     "minutes": 50,
-     "summary": "Raise the hall, the smithy, the palisade.",
-     "status": "planned"
+     "chapter": 3,
+     "title": "The Raven Taken",
+     "missions": [
+      {
+       "id": "a5c3m1",
+       "title": "The Tannery Yard",
+       "type": "stealth",
+       "target_minutes": 25,
+       "summary": "Ottar's camp; Sót's eyes; the pits; eleven prisoners; the cage.",
+       "status": "planned"
+      }
+     ]
     },
     {
-     "id": "a5m04",
-     "title": "Grain for Spears",
-     "type": "logistics",
-     "minutes": 40,
-     "summary": "Secure a winter's supply by trade, tribute or theft.",
-     "status": "planned"
+     "chapter": 4,
+     "title": "The Ring of Halfdan",
+     "missions": [
+      {
+       "id": "a5c4m1",
+       "title": "Inside the Collar",
+       "type": "story",
+       "target_minutes": 6,
+       "summary": "The oath-ring; Bjorn knew.",
+       "status": "planned",
+       "note": "Raven-Feeder's model has the collar."
+      },
+      {
+       "id": "a5c4m2",
+       "title": "Gannet Rock",
+       "type": "voyage",
+       "target_minutes": 12,
+       "summary": "Old Thrand tells him everything.",
+       "status": "planned",
+       "note": "Gannet Rock and Old Thrand are in the sandbox, without this scene."
+      }
+     ]
     },
     {
-     "id": "a5m05",
-     "title": "The Ring",
-     "type": "story",
-     "minutes": 35,
-     "summary": "Ylva's ring surfaces. The truth about Halfdan's line.",
-     "status": "planned"
+     "chapter": 5,
+     "title": "The Wing Isle",
+     "missions": [
+      {
+       "id": "a5c5m1",
+       "title": "Sixty Berserkers",
+       "type": "battle",
+       "target_minutes": 15,
+       "summary": "The forest settlement; Svanhild.",
+       "status": "planned"
+      },
+      {
+       "id": "a5c5m2",
+       "title": "The Holmgang Ground",
+       "type": "boss",
+       "target_minutes": 10,
+       "summary": "Skarde Bear-Maw; the lie; wait.",
+       "status": "fight_only",
+       "note": "The fight is built on the hazel square on Vængr, with the lie and the tiring."
+      }
+     ]
     },
     {
-     "id": "a5m06",
-     "title": "Three Fords",
-     "type": "strategy",
-     "minutes": 50,
-     "summary": "Take the river crossings that feed Håkon's hall.",
-     "status": "planned"
+     "chapter": 6,
+     "title": "The Letter That Was Never Written",
+     "missions": [
+      {
+       "id": "a5c6m1",
+       "title": "The Ribbon",
+       "type": "story",
+       "target_minutes": 8,
+       "summary": "The forgery; Torvald's whole confession.",
+       "status": "planned"
+      }
+     ]
     },
     {
-     "id": "a5m07",
-     "title": "Ingrid's Counsel",
-     "type": "choice",
-     "minutes": 30,
-     "summary": "A patient siege or a night assault. One of them costs her life.",
-     "status": "planned"
-    },
-    {
-     "id": "a5m08",
-     "title": "The Wolf's Hall",
-     "type": "assault",
-     "minutes": 60,
-     "summary": "Fight through Håkon's hall.",
-     "status": "planned"
-    },
-    {
-     "id": "a5m09",
-     "title": "Shield-Brothers",
-     "type": "boss",
-     "minutes": 45,
-     "summary": "Håkon, in three phases, with Ragnar's lesson as the last prompt.",
-     "status": "planned"
-    },
-    {
-     "id": "a5m10",
-     "title": "What Killing Solves",
-     "type": "story",
-     "minutes": 30,
-     "summary": "He names the Circle and dies. Nothing ends.",
-     "status": "planned"
+     "chapter": 7,
+     "title": "The Feast of Survivors",
+     "missions": [
+      {
+       "id": "a5c7m1",
+       "title": "One Night",
+       "type": "activity",
+       "target_minutes": 12,
+       "summary": "The archery contest; the thrown sword; the harbour wall; the boat from Myrholm.",
+       "status": "planned"
+      }
+     ]
     }
-   ]
+   ],
+   "target_minutes": 124
   },
   {
    "act": 6,
-   "title": "War of the Jarls",
-   "target_minutes": 360,
-   "built_minutes_estimate": 0,
-   "missions": [
+   "title": "The Nine Oaths",
+   "eirik_age": "26 to 28",
+   "theme": "A kingdom is built from promises, sacrifice and the courage to trust again.",
+   "chapters": [
     {
-     "id": "a6m01",
-     "title": "The Captive",
-     "type": "rescue",
-     "minutes": 45,
-     "summary": "Break a captured ally out of a sea-fort.",
-     "status": "planned"
+     "chapter": 1,
+     "title": "The Marsh Queen",
+     "missions": [
+      {
+       "id": "a6c1m1",
+       "title": "The Arrow With the Blue Thread",
+       "type": "investigation",
+       "target_minutes": 20,
+       "summary": "Gest; Astrid arrested; Mjöll over the marsh; surety.",
+       "status": "planned",
+       "note": "Myrholm is on the map: hall, stilt villages, causeways, the peat cutting."
+      },
+      {
+       "id": "a6c1m2",
+       "title": "The Hunt",
+       "type": "tracking",
+       "target_minutes": 15,
+       "summary": "Eyvind's channels; the bog body.",
+       "status": "planned"
+      },
+      {
+       "id": "a6c1m3",
+       "title": "Under the Rotting Tower",
+       "type": "boss",
+       "target_minutes": 10,
+       "summary": "Eydis the Mire; Sót.",
+       "status": "fight_only",
+       "note": "The fight is built in the drowned ground, with stake pits, javelins, poison and mud."
+      }
+     ]
     },
     {
-     "id": "a6m02",
-     "title": "Against the Tide",
-     "type": "defence",
-     "minutes": 50,
-     "summary": "Hold the settlement against five times its number.",
-     "status": "planned"
+     "chapter": 2,
+     "title": "The Last Forge",
+     "missions": [
+      {
+       "id": "a6c2m1",
+       "title": "Better Than Yours",
+       "type": "story",
+       "target_minutes": 10,
+       "summary": "Brokk and Halvar; the sky-iron; the true story of the hand.",
+       "status": "planned",
+       "note": "Skalløy is on the map; Halvar and Jarl Gudmund stand there."
+      }
+     ]
     },
     {
-     "id": "a6m03",
-     "title": "Guest-Right",
-     "type": "infiltration",
-     "minutes": 45,
-     "summary": "Enter a rival's great hall as a guest and leave with his secrets.",
-     "status": "planned"
+     "chapter": 3,
+     "title": "The Black Anvil",
+     "missions": [
+      {
+       "id": "a6c3m1",
+       "title": "Lane by Lane",
+       "type": "battle",
+       "target_minutes": 12,
+       "summary": "Eighty men with pitch; getting the smiths out.",
+       "status": "planned"
+      },
+      {
+       "id": "a6c3m2",
+       "title": "The Doorway",
+       "type": "story",
+       "target_minutes": 4,
+       "summary": "Brokk holds it.",
+       "status": "planned"
+      },
+      {
+       "id": "a6c3m3",
+       "title": "The Quarry Edge",
+       "type": "boss",
+       "target_minutes": 12,
+       "summary": "Bersi Black-Anvil; it will not guard anyone else.",
+       "status": "fight_only",
+       "note": "The fight is built at the forge gate: make the hammer land on nothing."
+      }
+     ]
     },
     {
-     "id": "a6m04",
-     "title": "Two Clans, One River",
-     "type": "negotiation",
-     "minutes": 40,
-     "summary": "End a three-generation feud, or pick a side.",
-     "status": "planned"
+     "chapter": 4,
+     "title": "The Smith's Last Words",
+     "missions": [
+      {
+       "id": "a6c4m1",
+       "title": "Nine Days",
+       "type": "story",
+       "target_minutes": 10,
+       "summary": "The boat on the beach; the last reforging; Star-Fall.",
+       "status": "partial",
+       "note": "Only the reforgings are in (Halvar, once Bersi has fallen)."
+      }
+     ]
     },
     {
-     "id": "a6m05",
-     "title": "Holmgang",
-     "type": "duel",
-     "minutes": 35,
-     "summary": "Ritual combat on a hide with a jarl's champion.",
-     "status": "planned"
+     "chapter": 5,
+     "title": "The Judgment of Torvald",
+     "missions": [
+      {
+       "id": "a6c5m1",
+       "title": "On Halfdan's Ring",
+       "type": "choice",
+       "target_minutes": 10,
+       "summary": "The oath; the pens.",
+       "status": "planned"
+      }
+     ]
     },
     {
-     "id": "a6m06",
-     "title": "The Long Siege",
-     "type": "command",
-     "minutes": 60,
-     "summary": "Direct engines, sappers and a relief ambush.",
-     "status": "planned"
+     "chapter": 6,
+     "title": "The Death of the Iron Circle",
+     "missions": [
+      {
+       "id": "a6c6m1",
+       "title": "Which End Cuts",
+       "type": "cutscene",
+       "target_minutes": 5,
+       "summary": "Sigurd and Håkon.",
+       "status": "planned"
+      }
+     ]
     },
     {
-     "id": "a6m07",
-     "title": "The Oathbreaker",
-     "type": "hunt",
-     "minutes": 45,
-     "summary": "Run Torvald to ground. Kill him, judge him or hear him.",
-     "status": "planned"
+     "chapter": 7,
+     "title": "The Nine Oaths",
+     "missions": [
+      {
+       "id": "a6c7m1",
+       "title": "Swear to Each Other",
+       "type": "story",
+       "target_minutes": 10,
+       "summary": "Nine hands on the ring, and Bjorn's on top.",
+       "status": "planned"
+      }
+     ]
     },
     {
-     "id": "a6m08",
-     "title": "The High Seat Question",
-     "type": "politics",
-     "minutes": 40,
-     "summary": "The jarls ask what he means to be.",
-     "status": "planned"
+     "chapter": 8,
+     "title": "A Wedding Before War",
+     "missions": [
+      {
+       "id": "a6c8m1",
+       "title": "The Bride-Price",
+       "type": "activity",
+       "target_minutes": 10,
+       "summary": "Leif against a king; the Twins; the medical kit.",
+       "status": "planned"
+      }
+     ]
+    },
+    {
+     "chapter": 9,
+     "title": "Four Hundred",
+     "missions": [
+      {
+       "id": "a6c9m1",
+       "title": "The Last Night",
+       "type": "story",
+       "target_minutes": 12,
+       "summary": "Every companion; Bjorn, Signe, the stolen cloth.",
+       "status": "planned"
+      }
+     ]
     }
-   ]
+   ],
+   "target_minutes": 140
   },
   {
    "act": 7,
    "title": "The Raven King",
-   "target_minutes": 360,
-   "built_minutes_estimate": 0,
-   "missions": [
+   "eirik_age": "29",
+   "theme": "Revenge ends a life. Leadership decides what happens afterward.",
+   "chapters": [
     {
-     "id": "a7m01",
-     "title": "The Coalition",
-     "type": "story",
-     "minutes": 30,
-     "summary": "Sigurd Stonehand gathers every jarl who fears a king.",
-     "status": "planned"
-    },
-    {
-     "id": "a7m02",
+     "chapter": 1,
      "title": "Fire on the Water",
-     "type": "naval battle",
-     "minutes": 55,
-     "summary": "Break the blockade.",
-     "status": "planned"
+     "missions": [
+      {
+       "id": "a7c1m1",
+       "title": "The Floating Wall",
+       "type": "sea battle",
+       "target_minutes": 20,
+       "summary": "Thirty ships chained; Leif round the end; the marsh boats.",
+       "status": "planned"
+      }
+     ]
     },
     {
-     "id": "a7m03",
-     "title": "The Pass",
-     "type": "land battle",
-     "minutes": 55,
-     "summary": "Hold the mountain road while the fleet turns.",
-     "status": "planned"
+     "chapter": 2,
+     "title": "Two Blades, One Sea",
+     "missions": [
+      {
+       "id": "a7c2m1",
+       "title": "Husband and Wife",
+       "type": "boss",
+       "target_minutes": 12,
+       "summary": "Leif, then Eirik, against Ulf across two burning decks.",
+       "status": "fight_only",
+       "note": "The fight is built on two lashed ships in Svartøy harbour."
+      }
+     ]
     },
     {
-     "id": "a7m04",
-     "title": "Every Hand",
-     "type": "command",
-     "minutes": 45,
-     "summary": "Spend what was built: allies answer according to how they were treated.",
-     "status": "planned"
+     "chapter": 3,
+     "title": "The Black Shore",
+     "missions": [
+      {
+       "id": "a7c3m1",
+       "title": "The Slopes",
+       "type": "battle",
+       "target_minutes": 20,
+       "summary": "Four hundred ashore; twice he goes back for trapped men.",
+       "status": "planned",
+       "note": "Svartøy is on the map: harbour, road, ravine, bridge, upper town, hall, pens, cove."
+      }
+     ]
     },
     {
-     "id": "a7m05",
-     "title": "Stonehand",
-     "type": "boss",
-     "minutes": 50,
-     "summary": "The last duel, in the ring of standing stones.",
-     "status": "planned"
+     "chapter": 4,
+     "title": "The Red-Hand Returns",
+     "missions": [
+      {
+       "id": "a7c4m1",
+       "title": "The Bend in the Road",
+       "type": "boss",
+       "target_minutes": 10,
+       "summary": "Kettil: mud, the buckler, the boot knife.",
+       "status": "fight_only",
+       "note": "The fight is built at the bend."
+      }
+     ]
     },
     {
-     "id": "a7m06",
-     "title": "The Crown",
-     "type": "ending",
-     "minutes": 35,
-     "summary": "One of four endings.",
-     "status": "planned"
+     "chapter": 5,
+     "title": "The Pens",
+     "missions": [
+      {
+       "id": "a7c5m1",
+       "title": "Star-Fall",
+       "type": "battle",
+       "target_minutes": 12,
+       "summary": "Torvald's twenty; Arvid; Kári.",
+       "status": "planned",
+       "note": "The pens and the cove stand."
+      }
+     ]
     },
     {
-     "id": "a7m07",
-     "title": "The Old Birch",
-     "type": "epilogue",
-     "minutes": 30,
-     "summary": "Family, companions, and what the North remembers.",
-     "status": "planned"
+     "chapter": 6,
+     "title": "Vigdis, the Left Hand",
+     "missions": [
+      {
+       "id": "a7c6m1",
+       "title": "Left-Left, Right-Right",
+       "type": "boss",
+       "target_minutes": 10,
+       "summary": "The burning bridge.",
+       "status": "fight_only",
+       "note": "The fight is built on the bridge, with her rhythm and the fire."
+      }
+     ]
+    },
+    {
+     "chapter": 7,
+     "title": "Gorm, the Right Hand",
+     "missions": [
+      {
+       "id": "a7c7m1",
+       "title": "The Steps of the Hall",
+       "type": "boss",
+       "target_minutes": 12,
+       "summary": "Make him swing; the rim; the neck.",
+       "status": "fight_only",
+       "note": "The fight is built at the gate."
+      }
+     ]
+    },
+    {
+     "chapter": 8,
+     "title": "The Hall of Wolves",
+     "missions": [
+      {
+       "id": "a7c8m1",
+       "title": "You Have Your Grandfather's Eyes",
+       "type": "story",
+       "target_minutes": 6,
+       "summary": "Why he did it.",
+       "status": "planned",
+       "note": "The hall stands, with the high seat and the broken ring."
+      }
+     ]
+    },
+    {
+     "chapter": 9,
+     "title": "The Ironwolf",
+     "missions": [
+      {
+       "id": "a7c9m1",
+       "title": "Four Parts",
+       "type": "boss",
+       "target_minutes": 20,
+       "summary": "The sword of the guardsman; the weapons of war; Wolf's Judgment; the last oath.",
+       "status": "fight_only",
+       "note": "The fight is built in four parts, with the scar going cold in the last."
+      }
+     ]
+    },
+    {
+     "chapter": 10,
+     "title": "What the Dead Leave Behind",
+     "missions": [
+      {
+       "id": "a7c10m1",
+       "title": "The Killing Is",
+       "type": "story",
+       "target_minutes": 8,
+       "summary": "Three days on Svartøy.",
+       "status": "planned"
+      }
+     ]
+    },
+    {
+     "chapter": 11,
+     "title": "The Crown of the North",
+     "missions": [
+      {
+       "id": "a7c11m1",
+       "title": "Stand Beside Me",
+       "type": "story",
+       "target_minutes": 10,
+       "summary": "The Thing at Gulen; the first laws.",
+       "status": "planned"
+      }
+     ]
     }
-   ]
+   ],
+   "target_minutes": 140
+  },
+  {
+   "act": 8,
+   "title": "Epilogue: The Old Birch",
+   "eirik_age": "41",
+   "theme": "Let our children inherit something better than our wars.",
+   "chapters": [
+    {
+     "chapter": 1,
+     "title": "Ravenhold",
+     "missions": [
+      {
+       "id": "a8c1m1",
+       "title": "Twelve Years Later",
+       "type": "story",
+       "target_minutes": 10,
+       "summary": "The stones; Torvald and Hauk; the Thing-Ring.",
+       "status": "planned"
+      }
+     ]
+    },
+    {
+     "chapter": 2,
+     "title": "Leif's House",
+     "missions": [
+      {
+       "id": "a8c2m1",
+       "title": "He Lost Two",
+       "type": "story",
+       "target_minutes": 4,
+       "summary": "Liv; the Twins on the wall.",
+       "status": "planned"
+      }
+     ]
+    },
+    {
+     "chapter": 3,
+     "title": "The Last Lesson",
+     "missions": [
+      {
+       "id": "a8c3m1",
+       "title": "Home",
+       "type": "story",
+       "target_minutes": 6,
+       "summary": "Little Brokk; the young raven with one white feather.",
+       "status": "planned"
+      }
+     ]
+    }
+   ],
+   "target_minutes": 20
   }
  ],
  "side_missions": [
@@ -996,5 +1610,15 @@
    "premise": "Find five old things a boy cannot move; each returns as a weapon in a later act.",
    "status": "built"
   }
- ]
+ ],
+ "totals": {
+  "missions": 89,
+  "target_minutes": 1015,
+  "by_status": {
+   "built": 6,
+   "partial": 10,
+   "fight_only": 10,
+   "planned": 63
+  }
+ }
 }

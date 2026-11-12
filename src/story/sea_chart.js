@@ -84,13 +84,13 @@ export class SeaChart {
 
     // ---- people ------------------------------------------------------------------------
     o.npc('folk0').role = 'ferry'; o.npc('folk0').port = 'gulen';
-    o.person('shepherd', 'Aslak', LOOK.shepherd, -244, 556, 1.2, { line: 'Selja feeds forty sheep and one fool. The fjord is behind you; everything else is in front.' });
-    o.person('pilot', 'Kari Pilot', LOOK.pilot, 204.5, 591.5, -0.6, { role: 'ferry', port: 'fedje' });
+    o.person('shepherd', 'Eilif', LOOK.shepherd, -244, 556, 1.2, { line: 'Selja feeds forty sheep and one fool. The fjord is behind you; everything else is in front.' });
+    o.person('pilot', 'Kolbein Pilot', LOOK.pilot, 204.5, 591.5, -0.6, { role: 'ferry', port: 'fedje' });
     o.person('fedje1', 'Tosti', { hair: 0x7a5a3a, tunic: 0x6a6a5a, beard: 'short' }, 209.6, 594.6, -1.9, { loop: 'sit', line: 'Kinn is the big one, south and a little west. You will know it by the cleft hill.' });
     o.person('reeve', 'Ragnhild Reeve', LOOK.reeve, -41.6, 753.6, 2.5, { role: 'law' });
-    o.person('trader', 'Thora', LOOK.trader, -35.2, 757.6, -2.6, { role: 'merchant' });
+    o.person('trader', 'Gyda', LOOK.trader, -35.2, 757.6, -2.6, { role: 'merchant' });
     o.person('skipper', 'Bard Skipper', LOOK.skipper, -47.5, 741.5, 0.3, { role: 'ferry', port: 'kinn' });
-    o.person('kguard', 'Ulf', LOOK.guard, -31, 749.5, -1.2, { weapon: 'spear', loop: 'guard', hold: 'spear' });
+    o.person('kguard', 'Bolli', LOOK.guard, -31, 749.5, -1.2, { weapon: 'spear', loop: 'guard', hold: 'spear' });
     o.person('widow', 'Ragna', LOOK.widow, 348.5, 851.5, -2.2, { line: 'Hunt what you like on Værøy. The hares eat my kale and the deer eat what the hares leave.' });
     o.person('hermit', 'Old Thrand', LOOK.hermit, 464.8, 1134.2, 0.9, { role: 'hermit', loop: 'sit', law: false });
     o.person('seer', 'The Storm-Wife', LOOK.seer, 335.3, 1387.1, -2.3, { role: 'seer', law: false });
@@ -169,7 +169,7 @@ export class SeaChart {
     if (!q.st.s_wreckers && fl.cleared_batalden && !fl.wreckersPaid) return { choice: { t: ask, to: 'work' }, nodes: [{ id: 'work', s: R, t: 'It was wreckers on Batalden. Was. A man with a white raven went ashore there, the boats say. That was owed before it was asked: thirty in silver.', to: 'end', fx: { do: () => { fl.wreckersPaid = true; pay(30, 25, 'The Skerries are safer').do(); } } }] };
     if (!q.st.s_wreckers && !fl.cleared_batalden) return { choice: { t: ask, to: 'work' }, nodes: [
       { id: 'work', s: R, t: 'Wreckers. Three of them on Batalden, the island to the west. They light a fire on the north point and ships steer for it thinking it is ours.' },
-      { s: R, t: 'Put the fire out. Them too. I cannot spare Ulf, and the fishermen will not go.', to: 'end', fx: { quest: 's_wreckers' } }] };
+      { s: R, t: 'Put the fire out. Them too. I cannot spare Bolli, and the fishermen will not go.', to: 'end', fx: { quest: 's_wreckers' } }] };
     if (!q.st.s_beacon && !fl.beaconLit && !q.isActive('s_wreckers')) return { choice: { t: ask, to: 'work' }, nodes: [
       { id: 'work', s: R, t: 'The beacon on Skorpa, south-west, the tall one. Its keeper drowned at midwinter and nobody since has had the legs for the climb.' },
       { s: R, t: 'Light it, and every steersman from here to Utvær will ask who did. That is worth more to you than my silver.', to: 'end', fx: { quest: 's_beacon' } }] };

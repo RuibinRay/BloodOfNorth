@@ -1,95 +1,95 @@
 # Story bible
 
-Alternate-history Scandinavia and the British Isles, 859–900. Real places and customs; invented rulers and politics.
-Status key: **[built]** playable now · **[written]** scripted in this document · **[outline]** beats only.
+**The canon is the owner's own text:** [story/THE_RISE_OF_THE_RAVEN_KING.md](story/THE_RISE_OF_THE_RAVEN_KING.md), supplied on 2026-11-12 and stored word for word. This file is the working summary the game is checked against. Where the two disagree, the story wins.
 
-## The secret at the centre
+Canon levels used below: **Established** (in the owner's text) · **Provisional** (the game's addition, not in the text) · **Under review** (the game and the text disagree; the owner decides).
 
-Old King **Halfdan the Grey** of the Vestland had one child who outlived him: a daughter, hidden from the
-jarls who wanted his high seat. He gave her into the keeping of his most trusted hirdman, **Ragnar**, with
-his sworn word and his ring. She is **Ylva**. Their son, **Eirik**, is Halfdan's only grandson.
+The mission-by-mission breakdown with what is built is [../data/missions.json](../data/missions.json). Weapons and skills are in [WEAPONS.md](WEAPONS.md).
 
-Ragnar's shield-brother **Håkon** swore the same oath, then watched the kingdom tear itself apart for want
-of an heir while Ragnar "hid on a farm". Håkon came to believe that the only way to end the jarls' wars was
-to end the question: find Halfdan's line and close it, then rule as the strong hand the North needed.
-A council of jarls, the **Iron Circle**, backs him for their own reasons.
+## The story in one paragraph
 
-So "what the old king gave you" is not a treasure. It is Eirik's mother. Eirik learns this in Act V.
+A farmer's son whose parents are murdered by a warlord grows up, gathers six companions and nine islands, kills the warlord's seven champions and two bodyguards, and becomes the Raven King of the North. Seven acts and an epilogue. Eirik is 9 when it starts and 41 when it ends.
 
-## Cast
+## The secret at the centre (Established)
 
-| Name | Role | Arc |
+King **Halfdan the Grey** ruled the whole North for thirty years and had one child, a daughter born late: **Ylva**. When he died the jarls fought over the kingdom; whoever married her could claim it, and whoever wanted it for himself had to kill her. Halfdan's guard **Ragnar** smuggled her out of the burning hall, hid her on a farm, married her. Their son is **Eirik**. Ragnar's shield-brother **Håkon** knew. He came to believe the North would bleed for as long as one drop of Halfdan's blood lived, and decided to end the line and rule by fear. The **Iron Circle** (Jarl **Sigurd Stonehand**) paid for it, meaning to rule through him. **Torvald** told Håkon where the farm was, then rode to warn Ragnar, then rode away.
+
+The oath-ring of Halfdan (a crowned raven over three waves) is hidden in the dark iron collar of Ragnar's axe, **Raven-Feeder**. Old **Thrand** on Gannet Rock tells Eirik in Act V. The question the story ends on is not who has the blood but what gives anyone the right to be followed.
+
+## Eirik's gifts from the lightning (Established)
+
+The spring after his tenth birthday, lightning strikes the old birch behind Bjornstead while he is climbing it to save his ravens.
+
+| Gift | The story's rule | In the game |
 |---|---|---|
-| **Eirik Ravensson** | Protagonist, 9 to mid-40s | Frightened child, disciplined survivor, feared warrior, burdened king. Shaped by four traits: Wisdom, Compassion, Ferocity, Pride |
-| **Ragnar** | Father, former hirdman | Dies in Act I holding the yard. His lesson — "A blade may save your life, but wisdom decides when to draw it" — is the game's moral spine |
-| **Ylva** | Mother, Halfdan's hidden daughter | Dies at the north gate buying Eirik's escape. Gives him the axe |
-| **Jarl Håkon Ironwolf** | Antagonist, Acts I–V | A man keeping a broken oath the only way he can see. Offers Eirik the same choice he made |
-| **Bjorn, Signe, Freydis** | Adoptive family, Act II on | What Eirik stands to lose. Freydis becomes a voice of conscience, or a casualty of neglect |
-| **Astrid** | Shieldmaiden companion | Håkon burned her hall. Wants justice; tests whether Eirik wants the same or only revenge |
-| **Leif** | Longship captain, navigator | Wit and loyalty. The companion most likely to tell Eirik the truth |
-| **Torvald** | Veteran, combat mentor | Served with Ragnar. **The Act IV betrayer** — he believes Håkon is right about the heir |
-| **Ingrid** | Healer and negotiator | The diplomatic path. Dies in Act V if Eirik chooses the reckless assault |
-| **Jarl Sigurd Stonehand** | Coalition leader, Act VII | The Iron Circle's true power. Outlasts Håkon |
+| The scar | A pale forked line through the left eyebrow, across the lid, to the cheekbone. The eye turns silver-grey in cold light. Never fades. | Appears in the lightning scene and stays. The silver eye is not drawn. |
+| Raven's Voice | He speaks to his two ravens in thought. They answer in short words, smells, pictures. Mjöll: fish, cold, man, danger, home. Sót: mostly rude. | Mjöll's first words are spoken in the lightning scene. No further raven speech yet. |
+| Raven's Eye | He sees what the white raven sees, as far as she can fly in a quarter of an hour. Rain, darkness and fear blur it; holding it too long hurts. | Playable (key V). The blur and the headache are not built. |
+| Stormguard | When death is a heartbeat away the scar burns, time slows, he sees the blow and blocks it. Only when calm. It leaves him shaking and drained. It cannot stop arrows from every side or save anyone but himself. In the last fight it runs out. | Built to those rules: see [WEAPONS.md](WEAPONS.md). |
 
-## Acts
+**Provisional:** the *Stormborn* skills (Thunder Smash, Storm-Step, the Turning Blow, Storm-Cry, Stormbreak) are the game's extension, asked for by the owner. The Turning Blow is the story's own last move (meet the blow with the collar, turn with it, strike from the right).
 
-**Act I — The Night of Ashes** (4 h)
-- Ch.1 *The Night of Ashes* **[built]** — the last day, the raid, the escape, the first fire alone.
-- Ch.2 *The Long White* **[built]** — alone at the old birch: shelter, hunger, a deer, a wolf at the kill;
-  then Håkon's trackers, the river ice, and Bjorn finding him in the snow. The wolf is fed or killed (`wolfFed` / `wolfKilled`).
-- Ch.3 *A Stranger's Hearth* **[built]** — Bjorn and Signe's farm in a hidden dale. He gives his name, half of it, or a lie
-  (`toldName` / `halfName` / `liedName`). With Freydis he rescues two raven chicks, a white and a black, and names them.
-  Bjorn recognises the axe (he once stood in a shield-wall beside Ragnar) and has him hide it under the hearthstone.
-  In spring the white raven's first flight finds a lost lamb. Five omens around the farm seed later weapons. Ten winters pass. — recovery with the farm family; the choice to tell them his name, or not.
+## People (Established)
 
-**Act II — The Farmer's Axe** (5 h) **[opening built; the rest outline]** — *Built:* the drill with Bjorn, the white raven spotting
-the tithe-takers, the axe out from under the hearthstone, the three-wave defence of Bjornstead against Kettil Red-Hand, and the choice
-over the dying Kettil (`sparedKettil` / `killedKettil`, `barnBurned`). *Outline:* ten years on. Farming, smithing, trade, a rival's
-feud, a harvest feast. Håkon's raiders come; Eirik takes the axe from under the floor. First real combat:
-farmhouse, fields, barn, burning village. A dying raider talks. Håkon learns the boy lived.
+**Family.** Eirik Ravensson · Ragnar (father; killed by Håkon, Act I) · Ylva (mother; killed by Kettil helping Eirik escape) · Bjorn (adoptive father; wounded Act IV; dies of old age before the epilogue) · Signe · Freydis (two years older; marries Halvar; son Little Brokk) · Mjöll, the white raven (dies of old age) · Sót, the black raven (survives).
 
-**Act III — The Hunted Wolf** (6 h) **[outline]** — bounties, assassins, a false murder charge at the
-Thing. Astrid, Leif, Torvald and Ingrid join. Winning a longship. The act boss is Håkon's marshal,
-**Ulf Two-Blades**, in a burning boathouse.
+**The six companions.** Leif (captain of the Sea-Raven; the Twins; joins Act II at Kaupang; marries Ingrid) · Astrid (archer; Storm-Yew; her brother Kári was taken; joins Act III) · Brokk (smith; crushed left hand; killed by Bersi, Act VI) · Torvald (hammer and shield; betrays in Act IV; spared; redeems himself in Act VII) · Svanhild (sword; captain of Jarl Jorund's guard; seasick; joins Act V) · Princess Ingrid (healer; daughter of King Hroald; joins Act III).
 
-**Act IV — Blood Across the Sea** (6 h) **[outline]** — Denmark, Svealand, Northumbria. Sailing, storms,
-a siege, trade ports. The Iron Circle is revealed. Destroyer or uniter: the first large fork.
-**Torvald betrays the fleet at Hedeby Sound**; Eirik loses most of his ships.
+**Rulers.** Hroald Ironvein (Jarnøy) · Eystein Goldhand (Solvik) · Ragnvald Stormwake (Kinn) · Hallvard the Lawspeaker (Gulen) · Aslak (Fedje) · Svein (Skorpa) · Jarl Jorund (Vængr) · Queen Thora and Prince Eyvind (Myrholm) · Jarl Gudmund (Skalløy) · Prince Arvid, Halvar, Old Thrand, Old Hrefna, Gisli, Ari Hauksson, Hauk, Grjotgard, Liv, Little Brokk, Old Skeggi the goat.
 
-**Act V — The Broken Raven** (7 h) **[outline]** — the settlement burns, the army scatters. Rebuilding:
-recruits, supplies, alliances, territory. Ylva's ring surfaces and the truth with it. Ingrid lives or
-dies by Eirik's decision. Håkon falls in his own hall and, dying, names the Circle.
+**The enemy.** Jarl Håkon Ironwolf (Svartøy; sword and shield, spear, axe, bow, and the spiked hammer Wolf's Judgment; he cannot understand loyalty freely given) · Jarl Sigurd Stonehand (killed by Håkon, Act VI) · the two hands, Vigdis Quickblood (left) and Gorm Stone-Lung (right) · the seven champions in the order they fall: Arne Longshot, Rurik Shieldsplitter, Skarde Bear-Maw, Eydis the Mire, Bersi Black-Anvil, Ulf Two-Blades, Kettil Red-Hand.
 
-**Act VI — War of the Jarls** (6 h) **[outline]** — each region has a ruler to win: by duel, favour,
-marriage, concession or defeat. Seven set-piece missions; loyalty, casualties and stability all move.
+## The ten islands (Established) and where they are in the game
 
-**Act VII — The Raven King** (6 h) **[outline]** — the coalition's last war, by land and sea. Eirik
-commands and fights. Sigurd Stonehand at the end.
+Bjornstead sits on the mainland coast facing them and grows into Ravenhold, capital of the alliance.
 
-## Endings
+| Island | Ruler | Known for | Side | In the game |
+|---|---|---|---|---|
+| Jarnøy, the Iron Isle | King Hroald | iron | original six | **Built at story scale** (about 700 x 580 m): harbour town, watchtower and granary, the hall, the Iron Shore, furnaces, the burned hamlet |
+| Solvik, the Golden Quay | King Eystein | gold, merchant ships | original six | **Built at story scale**: stone quay and warehouses, the hall, the sea cave, Rurik's ship |
+| Kinn, the Storm Coast | King Ragnvald | sailors | original six | Small sandbox island in the home waters; to be enlarged |
+| Gulen, the Law Isle | King Hallvard | the great Thing | original six | Small sandbox island with the law-rock; to be enlarged |
+| Fedje, the Wind Isle | King Aslak | timber, shipwrights | original six | Small sandbox island; to be enlarged |
+| Skorpa, the Beacon Isle | King Svein | grain, beacons | original six | Small sandbox island with the beacon; to be enlarged |
+| Vængr, the Wing Isle | Jarl Jorund | swordsmen | joins Act V | Small sandbox island; the holmgang ground is there; to be enlarged |
+| Myrholm, the Marsh Isle | Queen Thora | healers, hidden waterways | joins Act VI | **Built at story scale**: reeds, pools, channels, causeways, stilt villages, the queen's hall, the drowned watchtower, the peat cutting |
+| Skalløy, the Forge Isle | Jarl Gudmund | quarries, smithing | joins Act VI | **Built at story scale**: harbour, forge street, the jarl's hall, the quarry above the sea |
+| Svartøy, the Black Isle | Jarl Håkon | war harbour, fortress | the enemy | **Built at story scale** (about 750 x 680 m): harbour, the road and its bend, the ravine and the long bridge, the palisaded upper town, the Hall of Wolves, the thrall pens, the hidden cove |
 
-| Ending | Reached by |
-|---|---|
-| **The High King** | High Wisdom, most jarls won without blood, companions loyal |
-| **The Iron King** | High Ferocity and Pride, jarls broken by force, rule by fear |
-| **The Broken Crown** | Victory with Freydis estranged or dead and two or more companions lost |
-| **The Peacekeeper** | High Compassion and Wisdom; Eirik refuses the high seat and binds a league of kingdoms |
+Not on the map yet: Bjornstead as a coastal village with a harbour (it is one farm in a dale), Ravenhold's walls, Hrafnvik's place half a day north of it, Kaupang, Hedeby Sound, Wessex.
 
-The epilogue visits the adoptive family, each living companion, and the old birch.
+## Acts (Established)
 
-## The ravens
+1. **The Burning Snow** (9 to 10). Hrafnvik; Wolves in the Snow; The Winter Alone; The Bear's House; Two Ravens; The Lightning; The Wolf's Hall.
+2. **The Farmer's Axe** (19). Ten Winters; A Farmer's Life; Smoke on the Ridge; The Farmer's Axe; The Wolf Remembers; The Peddlers; Walls Before Winter; The Captain Without a Ship; The First Oath.
+3. **The Wolves of Iron** (20 to 21). The Island Prince; Fifty from Ravenhold; The Healer's Hands; The Battle of Iron Shore; The Longshot; The Enemy Who Escaped; The Gift of Iron; The Price of Victory.
+4. **Blood Across the Sea** (22 to 23). The Golden Voyage; Wolves on the Water; The English Court; The Iron Circle; Six Islands Burning; The Council of Six; The Betrayal at Hedeby Sound; Driftwood.
+5. **The Broken Raven** (24 to 25). Ashes Again; The Winter of Hunger; The Raven Taken; The Ring of Halfdan; The Wing Isle; The Letter That Was Never Written; The Feast of Survivors.
+6. **The Nine Oaths** (26 to 28). The Marsh Queen; The Last Forge; The Black Anvil; The Smith's Last Words; The Judgment of Torvald; The Death of the Iron Circle; The Nine Oaths; A Wedding Before War; Four Hundred.
+7. **The Raven King** (29). Fire on the Water; Two Blades, One Sea; The Black Shore; The Red-Hand Returns; The Pens; Vigdis, the Left Hand; Gorm, the Right Hand; The Hall of Wolves; The Ironwolf; What the Dead Leave Behind; The Crown of the North.
+8. **Epilogue: The Old Birch** (41). Ravenhold; Leif's House; The Last Lesson.
 
-A white raven and her black brother, from one nest, named by the player (default Mjöll and Sót). She sees;
-he guards. They are with Eirik in every act and every ending; people come to know him as "the one with the
-white raven". Their abilities by act, and the Act V capture, are in `docs/OPEN_WORLD.md`.
+The spine: *"A blade may save your life, but wisdom decides when to draw it."* Ragnar always struck from the left; he tells his son to change; the last blow of the war comes from the right.
 
-## Continuity rules
+## Old Hrefna's five sayings (Established) and the five omens
 
-- Ragnar's axe is carried in every act. It is upgraded, never replaced.
-- Eirik's first fire is called back in Acts II, V and VII.
-- No horned helmets, no plate armour, no stone castles in Norway. England has burhs and minsters.
-- Traits and flags recorded in Chapter 1 (`cleanKill`, `askedWhy`, `heardRumor`, `readStone`,
-  `dreamFarmer` / `dreamWarrior` / `dreamWayfarer`, and Chapter 2's `wolfFed` / `wolfKilled`) are referenced by later dialogue.
-- A fed wolf returns in Act III; a killed one leaves a pelt Freydis notices.
-- Eirik is a child for Act I only. The ten-year jump is the last beat of Chapter 3; Act II opens at nineteen.
-- Secret weapons come only from the omens found (or missed) at Bjornstead: Storm-Yew, Grave-Song, Winter's Tooth, The Brothers, Star-Fall.
+"A yew that sings in a storm. A sword that sings over graves. A winter tooth. Two brothers. A star that falls and is beaten into a hammer." The first is Storm-Yew (Astrid's bow, cut from the yew that grows through the stump of the lightning-split birch); the last is Star-Fall (Halvar's sky-iron hammer, given to Torvald). The story does not say what the middle three become. The game's five omens round Bjornstead (the split birch, the barrow sword, the spear in the ice, the twin-axe stone, the sky-iron) stand for the five sayings.
+
+## Under review: where the game still disagrees with the story
+
+These were built before the story arrived. Each needs either a rebuild or the owner's ruling.
+
+1. **Choices the story has already made.** The game lets the player feed or kill the wolf, give a false name, spare or kill Kettil in Act II, and tracks four traits toward "endings". The story has one course of events and one ending. The choices that contradict it should go, or be kept only where the story leaves room.
+2. **Kettil in Act II.** In the story Eirik has him down, hears the children in the burning barn, and turns his back. The game's version is a boss fight with a spare-or-kill choice.
+3. **Bjornstead.** The story's is a coastal village of twenty houses with a harbour and a forge, half a day south of Hrafnvik. The game's is one farm in a dale beside the Hrafnvik valley.
+4. **Sky-iron.** The story's falls on Skalløy two years before Act VI. The game has a black stone propping Bjorn's barn door as an omen.
+5. **Who rules in the sandbox.** The player can be sworn "king" of Gulen and the Skerries by standing alone, and a reeve named Ragnhild holds Kinn. The story has King Hallvard on Gulen and King Ragnvald on Kinn, and Eirik is never king of an island.
+6. **The Left Brother.** A second axe found on Vængr ("two brothers"). Not in the story.
+7. **Sandbox people renamed** so they no longer share a name with someone in the story: Ulf (Kinn) is Bolli, Hauk (Gulen) is Havard, Ketil is Kol, the trader Thora is Gyda, the shepherd Aslak is Eilif, Kari Pilot is Kolbein, Orm Ferryman is Ivar, Old Svein is Old Njal, the pirate Gorm Gull-Feeder is Hroar, and the lawspeaker on Gulen is now Hallvard.
+
+## World rules (Established unless marked)
+
+- No magic but the four gifts. The gods are prayed to and shouted at; they do not answer. Hrefna's cures are mostly goat urine; Ingrid's are clean water, honey, moss, yarrow, willow bark.
+- Law is the Thing: free men, a lawspeaker, outlawry, weregild, holmgang. Thralldom for debt is legal until Eirik's first law.
+- War is not a song: shoving, mud, men calling for their mothers. Every victory in the story has a price and someone else often pays it.
+- The tone carries its own comedy: the goat, the frying pan, the Stinking Ditch, the tannery pits, Leif's dice.

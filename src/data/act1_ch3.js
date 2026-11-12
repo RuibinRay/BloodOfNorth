@@ -5,7 +5,7 @@ import { CAST, QUESTS, HINTS, DIALOGUE } from './act1.js';
 
 /** Omens found as a child. Each is the seed of a weapon that can only be claimed in a later act. */
 export const SECRETS = {
-  yew: { name: 'The Lightning Yew', returns: 'Act II', weapon: 'Storm-Yew — a war bow cut from wood the storm could not kill' },
+  yew: { name: 'The Split Birch', returns: 'Act III', weapon: "Storm-Yew — a bow cut from the young yew that grows up through the scorched stump (Astrid's, in the story)" },
   barrow: { name: 'The Sword in the Barrow', returns: 'Act III', weapon: "Grave-Song — a barrow-king's sword, given, not taken" },
   icespear: { name: 'The Spear in the Ice', returns: 'Act IV', weapon: "Winter's Tooth — a spear from the tarn that never thaws" },
   twinaxe: { name: 'The Twin-Axe Stone', returns: 'Act IV', weapon: 'The Brothers — paired axes on an island shaped like a wing' },
@@ -40,6 +40,8 @@ Object.assign(QUESTS, {
     desc: 'Spring. The ravens grew faster than he did.',
     steps: [
       { id: 'wake', text: 'Spring', type: 'event', key: 'woke4' },
+      { id: 'storm', text: 'A storm off the sea: get to the old birch on the hill', type: 'reach', key: 'birch', marker: { poi: 'yew' } },
+      { id: 'climb', text: 'Climb to the ravens', type: 'event', key: 'lightning', marker: { poi: 'yew' } },
       { id: 'freydis', text: 'Find out what Freydis is shouting about', type: 'talk', key: 'freydis', marker: { npc: 'freydis' } },
       { id: 'eye', text: 'Send the white raven up', type: 'event', key: 'ravenEye' },
       { id: 'spot', text: 'Find the lost lamb from the air and mark it', type: 'event', key: 'lambSpotted' },
@@ -147,8 +149,14 @@ Object.assign(DIALOGUE, {
     { s: E, t: 'It is a map. To somewhere across the sea. Two axes. Two brothers?' },
   ],
   sec_yew: [
-    { s: 'The Lightning Yew', t: 'Lightning split this tree to the root, long ago. It should be dead. Every twig of it is green.' },
-    { s: 'The Lightning Yew', t: 'The old people say a bow cut from a tree the storm could not kill will never miss in the rain. Nobody has dared to cut it.' },
+    { s: 'The Split Birch', t: 'The lightning cut the old birch down the middle like a log under an axe. It should be dead. Both halves are in bud.' },
+    { s: 'Old Hrefna', t: 'The sky put a little of itself in the boy. It put more in the tree. Something will grow up through that stump one day. A yew that sings in a storm.' },
+  ],
+  lightning_wake: [
+    { s: '{w}', t: 'Warm. Boy. Wake.' },
+    { s: 'Eirik', t: 'It was not a voice exactly. A feeling of feathers and wind, and a thought that was not mine.' },
+    { s: 'Signe', t: 'Three days of fever. Old Hrefna packed that eye with honey and moss. It will see. The mark will stay.' },
+    { s: 'Old Hrefna', t: 'Gifts from the sky draw eyes from the earth. Tell no one.' },
   ],
   sec_icespear: [
     { s: 'The Spear in the Ice', t: "From above, {w} shows you what no one on the ground could see: a long straight shadow under the tarn's ice. A spear, standing upright, as if thrown down from the sky." },

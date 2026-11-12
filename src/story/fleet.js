@@ -112,13 +112,13 @@ export class Fleet {
     if (!this.owned) {
       const guest = this.standing('skerries') >= 40, price = guest ? 60 : 100;
       return { choices: [{ t: '"The karve off your north beach. Whose is she?"', to: 'ship' }], nodes: [
-        { id: 'ship', s: R, t: "She was Orm Keeper's, who kept the Skorpa beacon and drowned under it. No heir. So she is the district's, which is to say mine, and she is rotting for want of use." },
+        { id: 'ship', s: R, t: "She was Odd Keeper's, who kept the Skorpa beacon and drowned under it. No heir. So she is the district's, which is to say mine, and she is rotting for want of use." },
         { s: R, t: guest ? 'For a guest of the Skerries, sixty in silver. She seats six and will move with two.' : 'A hundred in silver, stranger. Sixty, when the Skerries know you better. She seats six and will move with two.' },
         { s: 'Eirik', t: '', choices: [
           { t: `Pay ${price} silver (you carry ${silver})`, to: silver >= price ? 'shipyes' : 'shippoor', fx: silver >= price ? { do: () => this.buy(price) } : null },
           { t: '"Not yet."', to: 'end' },
         ] },
-        { id: 'shipyes', s: R, t: 'Then she is yours, and well rid of. Find hands before you find weather. Ulf would go, for a guest. Bard sells rowers like he sells passage.', to: 'end' },
+        { id: 'shipyes', s: R, t: 'Then she is yours, and well rid of. Find hands before you find weather. Bolli would go, for a guest. Bard sells rowers like he sells passage.', to: 'end' },
         { id: 'shippoor', s: R, t: 'Come back heavier.', to: 'end' },
       ] };
     }
@@ -233,7 +233,7 @@ export class Fleet {
     's_ship.crew'(r) {
       this.open.build();
       const q = this.g.state.quests.s_ship; q.count = this.rec ? this.rec.crew.length : 0; this.g.ui.refreshTracker();
-      if (!r) this.g.ui.hint('Hands for the oars: Ulf on Kinn, Hauk on Gulen, Ketil on Bulandet, Tosti on Fedje, and Bard Skipper hires out rowers. Each wants something first.');
+      if (!r) this.g.ui.hint('Hands for the oars: Bolli on Kinn, Havard on Gulen, Kol on Bulandet, Tosti on Fedje, and Bard Skipper hires out rowers. Each wants something first.');
       this.g.after(0.2, () => this.g.quests.notify('event', 'crew', 0));
     },
     's_ship.sail'() { this.open.build(); },

@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { clamp, damp, dampAngle, lerp, angleDiff } from '../core/util.js';
 import { Humanoid, makeItem } from './humanoid.js';
 import { shared } from '../world/geo.js';
-import { WEAPONS, MELEE_ORDER } from '../data/weapons.js';
+import { WEAPONS, MELEE_ORDER, ravenFeeder } from '../data/weapons.js';
 import { ITEMS } from '../data/act1.js';
 
 const _look = new THREE.Vector3();
@@ -12,9 +12,14 @@ export const EIRIK_ADULT = {
   tunic: 0x55664a, trim: 0xb0652a, legs: 0x4a3f33, boots: 0x33261a, sleeve: 0x55664a,
 };
 export const EIRIK_CHILD = {
-  scale: 0.7, child: true, skin: 0xe2b494, hair: 0xb58a4e, hairStyle: 'short', eyes: 0x86aec6, scar: 'lightning',
+  scale: 0.7, child: true, skin: 0xe2b494, hair: 0xb58a4e, hairStyle: 'short', eyes: 0x86aec6, // no scar yet: the lightning finds him the spring he is ten
   tunic: 0x7f8f66, trim: 0xb0652a, legs: 0x5a4a38, boots: 0x3a2a1c, sleeve: 0x7f8f66,
 };
+/** The boy after the old birch is struck (Act I, the lightning): the forked scar through his left eyebrow. */
+export const EIRIK_SCARRED = { ...EIRIK_CHILD, scar: 'lightning' };
+/** Stormguard (the story's rules): what it costs from the storm bar, and how much more each time in one fight;
+ *  how angry is too angry for it to answer; what it takes out of him. The storm skills' costs are in systems/skills.js. */
+export const STORM = { cost: 50, more: 15, calm: 60, drain: 35, shaken: 2.2, near: 26, smashR: 4.6, smashDmg: 60, stepDmg: 30, cryR: 9, breakSecs: 8 };
 const SPEED = { jog: 3.3, sprint: 5.0, crouch: 1.5, aim: 1.3, block: 1.2 };
 const _v = new THREE.Vector3(), _d = new THREE.Vector3();
 
@@ -26,7 +31,7 @@ export class Player {
     this.yaw = Math.PI; this.speed = 0; this.moving = false;
     this.health = 100; this.stamina = 100; this.warmth = 100; this.hunger = 100;
     this.headPos = new THREE.Vector3(); // where others look when they look at him
-    this.ward = 0; this.wardT = 0; this.camSide = 1; this.lastMove = { x: 0, y: 0 }; this.lungeT = 0; this.execT = 0; this.exK = 0;
+    this.ward = 0; this.wardT = 0; this.fury = 0; this.guards = 0; this.shakenT = 0; this.turnT = 0; this.breakT = 0; this.cd = { smash: 0, step: 0, cry: 0 }; this.fx = {}; this.stormDead = false; this.swingAge = 9; this.camSide = 1; this.lastMove = { x: 0, y: 0 }; this.lungeT = 0; this.execT = 0; this.exK = 0;
     this.crouch = false; this.equipped = 'none'; this.aiming = false; this.draw = 0;
     this.blocking = false; this.blockT = 0; this.combo = 0; this.comboT = 0;
     this.dodgeT = 0; this.dodgeDir = new THREE.Vector3(); this.iframes = 0; this.staminaDelay = 0;
@@ -80,13 +85,13 @@ export class Player {
     a.needsUpdate = true;
   }
   /** The numbers for what is in his hand (see data/weapons.js). */
-  weaponDef() { return WEAPONS[this.equipped] || WEAPONS.woodsword; }
+  weaponDef() { return this.equipped === 'father_axe' ? ravenFeeder(this.game.state.flags.reforge) : WEAPONS[this.equipped] || WEAPONS.woodsword; }
   /** What rides in the off hand beside the axe: a shield if he owns one, else the Left Brother; weapon3 swaps them. */
   offItem(name = this.equipped) {
     const inv = this.game.inventory, fl = this.game.state.flags, W = WEAPONS[name];
     if (W && W.offHold) return W.offHold; // a second blade
     if (!W || !W.off) return null;
-    const sh = inv.has('shield'), ax = W.off === 'any' && inv.has('brother_axe');
+    const sh = inv.has('shield') && !(this.fx.noShield > 0), ax = W.off === 'any' && inv.has('brother_axe'); // a split shield is no shield until he has another
     return sh && !(ax && fl.offAxe) ? 'shield' : ax ? 'brother_axe' : null;
   }
   hasShield() { return this.offItem() === 'shield'; }
@@ -109,9 +114,24 @@ export class Player {
     h.play('shove', 0.42, { hitAt: 0.35, onHit: () => g.events.emit('playerBash') });
     g.audio.play('whoosh', { vol: 0.5 });
   }
-  /** The Storm-Ward turns a blow: light, noise, and the world held still for a breath. */
+  /** Is he calm enough for the Stormguard to answer? It will not come to an angry man. */
+  calm() { return this.fury < STORM.calm; }
+  /** What the next Stormguard costs from the storm bar: more each time it is used in one fight. */
+  guardCost() { return Math.min(100, STORM.cost + this.guards * STORM.more); }
+  /** Can the Stormguard answer right now? */
+  canGuard() { return this.adult && !this.stormDead && this.calm() && this.ward >= this.guardCost(); }
+  /** Something a champion did to him: poison, slow, disarm, blind, noShield (seconds each). */
+  afflict(kind, secs, note) {
+    const g = this.game, had = this.fx[kind] > 0;
+    this.fx[kind] = Math.max(this.fx[kind] || 0, secs);
+    if (kind === 'disarm' && !had) this.h.hold('R', null);
+    if (kind === 'noShield' && !had) this.h.hold('L', this.offItem());
+    if (note && !had) g.ui.toast(note);
+  }
+  /** The Stormguard turns a blow: light, noise, and the world held still for a breath. Then the price. */
   wardFlash(from) {
     const g = this.game, ax = from.x - this.pos.x, az = from.z - this.pos.z, ad = Math.hypot(ax, az) || 1;
+    this.guards++; this.stamina = Math.max(0, this.stamina - STORM.drain); this.staminaDelay = STORM.shaken; this.shakenT = STORM.shaken; this.turnT = 1.3; // it leaves him shaking and drained
     for (let i = 0; i < 3; i++) g.fx.burst('spark', this.pos.x + (ax / ad) * (0.5 + i * 0.35), this.pos.y + 1.0 + i * 0.25, this.pos.z + (az / ad) * (0.5 + i * 0.35), 10);
     g.audio.play('parry'); g.audio.play('steel'); g.audio.play('drum', { vol: 0.8 });
     g.hitStop = 0.12; g.slowT = 0.45; this.cam.shake = 0.3; this.wardT = Math.min(this.wardT, 0.18); // one blow turned, and a moment more
@@ -121,8 +141,10 @@ export class Player {
   receiveArrow(from, dmg) {
     const g = this.game;
     if (this.iframes > 0) return 'dodged';
-    if (this.wardT > 0) { this.wardFlash(from); return 'warded'; }
     const facing = Math.abs(angleDiff(this.yaw, Math.atan2(from.x - this.pos.x, from.z - this.pos.z))) < 1.2;
+    // the Stormguard stops one arrow he can see coming, and then the moment is spent: it cannot stop arrows from every side
+    if (this.wardT > 0 && facing) { this.wardFlash(from); this.wardT = 0; return 'warded'; }
+    if (facing && this.health - dmg <= 0 && this.canGuard() && this.isMelee()) { this.ward -= this.guardCost(); this.wardFlash(from); this.wardT = 0; return 'warded'; }
     if (this.blocking && facing && this.hasShield()) { g.audio.play('clack'); if (!g.skills.has('s_wall')) this.stamina = Math.max(0, this.stamina - 4); return 'blocked'; }
     this.health = Math.max(this.mortal ? 0 : 1, this.health - dmg);
     this.h.play('stagger', 0.35); g.audio.play('hurt'); this.cam.shake = 0.18;
@@ -160,6 +182,8 @@ export class Player {
     const g = this.game, h = this.h;
     const W = this.weaponDef();
     if (h.busy || this.blocking || this.stamina < (heavy ? 14 : 6) * W.stam) return;
+    if (this.fx.disarm > 0) { if (!(this.dWarn > 0)) { this.dWarn = 1.5; g.ui.toast('Your weapon is out of your hand'); } return; }
+    this.fury = Math.min(100, this.fury + (heavy ? 11 : 7)); this.swingAge = 0; // every blow thrown in anger makes the Stormguard harder to reach
     const n = heavy ? 3 : (this.combo % 3) + 1, mv = this.lastMove;
     let anim = (heavy && W.animHeavy) || W.anim || 'atk' + n, mod = {}, speed = W.speed;
     // which way he is pushing chooses the blow (a grown man with a weapon that swings: a spear always thrusts, a maul always comes down)
@@ -169,6 +193,8 @@ export class Player {
       else if (heavy && mv.y > 0.5 && !W.animHeavy) { anim = 'thrust'; mod = { reach: 0.7, arc: 0.6, lunge: 2.6, dir: 'thrust' }; }                    // forward and heavy: a lunging thrust
     }
     if (W.double && !heavy) anim = this.combo % 2 ? 'twinL' : 'atk1'; // one hand, then the other
+    // the Turning Blow: straight after the Stormguard or a parry, a heavy blow goes the whole way round, through any guard
+    if (heavy && (this.turnT > 0 || this.riposteT > 0) && g.skills.has('st_turn')) { anim = W.animHeavy === 'slam' ? 'slam' : 'atk2'; mod = { arc: 3.3, sweep: 6, dmg: 1.7, reach: 0.9, pierce: true, turning: true, noSlam: true }; this.spinT = 0.34 / speed; this.spinV = (Math.PI * 2) / this.spinT; this.turnT = 0; g.audio.play('whoosh'); }
     if (heavy && this.combo >= 2) { mod.dmg = (mod.dmg || 1) * 1.2; mod.combo = true; speed *= 1.25; } // two light blows, then the heavy one: it comes faster and harder
     this.stamina -= (heavy ? 16 : 7) * W.stam; this.staminaDelay = 0.6; this.combo = heavy ? 0 : this.combo + 1; this.comboT = 1.0; this.crouch = false;
     g.audio.play('whoosh'); g.events.emit('swingStart', heavy);
@@ -180,6 +206,62 @@ export class Player {
       g.events.emit('playerSwing', n, heavy, mod);
       if (W.double && !heavy) g.after(0.11, () => g.events.emit('playerSwing', n, heavy, { ...mod, dmg: (mod.dmg || 1) * W.double, second: true }));
     } });
+  }
+  /** Lock the camera, and Eirik's front, to one opponent; again lets go. While locked, a flick of the mouse changes man. */
+  toggleLock() {
+    const g = this.game;
+    if (this.lock) { this.lock = null; g.audio.play('uiBack'); return; }
+    const e = g.combat.active ? g.combat.pickLock(null) : null;
+    if (e) { this.lock = e; g.audio.play('ui'); if (!g.state.flags.lockHint) { g.state.flags.lockHint = true; g.ui.hint('Locked on. The camera and Eirik keep to that man: move round him with {left} and {right}. Flick the mouse to change man; {lock} again lets go.'); } }
+    else g.ui.toast('No one to lock on to');
+  }
+  /** Can a storm skill be used: learned, the bar full enough, nothing else in hand. Says why not. */
+  artReady(id, cdKey) {
+    const g = this.game, k = g.skills.def(id);
+    if (!g.skills.has(id) || this.h.busy || this.blocking || this.stepT > 0 || this.fx.disarm > 0) return false;
+    if (this.stormDead) { g.ui.toast('The scar is cold. There is nothing left in it.'); return false; }
+    if (cdKey && this.cd[cdKey] > 0) { g.ui.toast(`${k.name}: not yet`); return false; }
+    if (this.ward < k.storm) { g.ui.toast(`${k.name} needs ${k.storm} of the storm bar: land blows and parry to fill it`); return false; }
+    this.ward -= k.storm; this.crouch = false;
+    return true;
+  }
+  /** Thunder Smash: a leap, the axe coming down, and lightning where it lands. */
+  thunderSmash() {
+    const g = this.game, h = this.h, tg = this.target;
+    if (!this.artReady('st_smash', 'smash')) return;
+    this.cd.smash = 7; this.fury = Math.min(100, this.fury + 10);
+    const gap = tg ? Math.hypot(tg.pos.x - this.pos.x, tg.pos.z - this.pos.z) : 4;
+    if (tg && gap < 9) this.yaw = Math.atan2(tg.pos.x - this.pos.x, tg.pos.z - this.pos.z);
+    this.lungeT = 0.34; this.lungeV = Math.max(1.5, Math.min(9, (gap - 1.8) / 0.34)); this.iframes = Math.max(this.iframes, 0.3);
+    g.audio.play('whoosh'); g.audio.play('shout', { vol: 0.8 }); g.events.emit('swingStart', true);
+    h.play('slam', 0.78, { hitAt: 0.5, onHit: () => g.events.emit('thunder') });
+  }
+  /** Storm-Step: through the man he faces, cutting as he passes, and out behind him. */
+  stormStep() {
+    const g = this.game, tg = this.target;
+    if (!tg || tg.dead || tg.dist(this) > 9) { if (g.skills.has('st_step')) g.ui.toast('Storm-Step: no one near enough to go through'); return; }
+    const dx = tg.pos.x - this.pos.x, dz = tg.pos.z - this.pos.z, d = Math.hypot(dx, dz) || 1;
+    let bx = tg.pos.x + (dx / d) * 1.7, bz = tg.pos.z + (dz / d) * 1.7;
+    if (!g.world.walkable(bx, bz) || g.world.pointInBox(bx, bz, 0.3)) { bx = tg.pos.x - (dx / d) * 1.1; bz = tg.pos.z - (dz / d) * 1.1; } // no room behind him: stop in his face
+    if (!this.artReady('st_step', 'step')) return;
+    this.cd.step = 4; this.yaw = Math.atan2(dx, dz);
+    this.stepA = { x: this.pos.x, z: this.pos.z }; this.stepB = { x: bx, z: bz }; this.stepDur = this.stepT = 0.16; this.stepTarget = tg; this.iframes = 0.34;
+    this.h.play('thrust', 0.3); g.audio.play('whoosh'); g.audio.play('steel', { vol: 0.5 });
+  }
+  /** Storm-Cry: a shout with thunder under it. */
+  stormCry() {
+    const g = this.game;
+    if (!this.artReady('st_cry', 'cry')) return;
+    this.cd.cry = 18; this.fury = Math.max(0, this.fury - 45);
+    this.h.play('cheer', 0.7, { hitAt: 0.3, onHit: () => g.events.emit('stormCry') });
+    g.audio.play('shout'); g.audio.play('horn', { freq: 82, vol: 0.5 });
+  }
+  /** Stormbreak: the whole bar, and for a few breaths every blow carries lightning. */
+  stormbreak() {
+    const g = this.game;
+    if (this.breakT > 0 || !this.artReady('st_break')) return;
+    this.breakT = STORM.breakSecs; this.h.play('cheer', 0.5);
+    g.fx.bolt(this.pos.x, this.pos.y, this.pos.z, 30); g.audio.play('thunder'); this.cam.shake = 0.5; g.events.emit('stormbreak');
   }
   /** Swap the body (child to grown man) while keeping position, camera and everything that points at the player. */
   setLook(look, adult) {
@@ -222,7 +304,11 @@ export class Player {
     if (this.iframes > 0) return 'dodged';
     if (this.wardT > 0) { this.wardFlash(attacker.pos); return 'warded'; }
     const facing = Math.abs(angleDiff(this.yaw, Math.atan2(attacker.pos.x - this.pos.x, attacker.pos.z - this.pos.z))) < 1.2;
-    if (this.blocking && facing && !opts.unblockable) {
+    const guarded = this.blocking && facing && !opts.unblockable;
+    // death a heartbeat away: the scar burns, and the Stormguard answers on its own, if he has kept his head
+    if (!guarded && this.health - dmg <= STORM.near && this.isMelee() && this.canGuard()) { this.ward -= this.guardCost(); g.events.emit('ward', true); this.wardFlash(attacker.pos); return 'warded'; }
+    if (!guarded && this.health - dmg <= STORM.near && this.adult && !this.calm() && !this.stormDead && this.ward >= this.guardCost() && !g.state.flags.calmHint) { g.state.flags.calmHint = true; g.ui.hint('The Stormguard did not answer: Eirik is too angry. Every blow he throws feeds the anger (the storm bar turns red). Hold {block} and breathe, and it comes back.'); }
+    if (guarded) {
       if (this.blockT < this.weaponDef().parry + (g.skills.has('s_turn') ? 0.1 : 0)) {
         g.audio.play('parry'); this.h.play('parry', 0.3);
         this.h.handWorld('R', _v); g.fx.burst('chips', _v.x, _v.y + 0.2, _v.z, 6);
@@ -241,7 +327,7 @@ export class Player {
       this.cam.shake = 0.12;
       return 'blocked';
     }
-    this.health = Math.max(this.mortal ? 0 : 1, this.health - dmg);
+    this.health = Math.max(this.mortal ? 0 : 1, this.health - dmg); this.fury = Math.min(100, this.fury + 9);
     if (!this.mist()) this.h.play('stagger', 0.5); // the red mist: a blow no longer breaks his swing
     g.audio.play('hurt'); this.cam.shake = 0.25;
     if (this.health <= 0) g.events.emit('playerDied');
@@ -268,7 +354,9 @@ export class Player {
       if (inp.hit('holster')) this.equip('none');
       if (inp.hit('weapon3')) this.swapOffHand();
       if (inp.hit('interact')) g.tryInteract();
+      if (inp.hit('lock')) this.toggleLock();
     }
+    if (this.lock && (this.lock.dead || !this.lock.cb || this.lock.cb.out || !g.combat.active || this.lock.dist(this) > 26)) this.lock = g.combat.active ? g.combat.pickLock(this.lock) : null; // the man he was locked to is down, or gone: the next nearest, or none
     const wantAimOrBlock = ctrl && inp.held('block');
     this.aiming = wantAimOrBlock && this.equipped === 'bow' && !h.busy;
     const wasBlocking = this.blocking;
@@ -283,24 +371,46 @@ export class Player {
     this.lastMove.x = mv.x; this.lastMove.y = mv.y;
     // dodge: a roll going forward or at a sprint, a quick sidestep otherwise (a boy only rolls)
     const roll = !this.adult || inp.held('sprint') || (dm > 0.2 && mv.y > 0.5), dodgeCost = roll ? 16 : 10;
-    if (ctrl && inp.hit('dodge') && this.dodgeT <= 0 && this.stamina >= dodgeCost && !this.aiming) {
+    this.bufDodge = (this.bufDodge || 0) - dt;
+    if (ctrl && inp.hit('dodge') && this.dodgeT > 0) this.bufDodge = 0.2; // asked for again before the first has finished: it follows straight on
+    if (ctrl && (inp.hit('dodge') || this.bufDodge > 0) && this.dodgeT <= 0 && this.stamina >= dodgeCost && !this.aiming) {
+      this.bufDodge = 0;
       this.dodgeDur = this.dodgeT = roll ? 0.42 : 0.26; this.dodgeK = roll ? 6.2 : 7.4; this.iframes = roll ? 0.32 : 0.2;
       this.stamina -= dodgeCost; this.staminaDelay = roll ? 0.7 : 0.45; this.crouch = false;
       if (dm > 0.2) this.dodgeDir.set(dx, 0, dz); else this.dodgeDir.set(-Math.sin(this.yaw), 0, -Math.cos(this.yaw));
       h.play(roll ? 'dodge' : 'sidestep', this.dodgeT); g.audio.play('whoosh', { vol: 0.6 }); g.events.emit('dodge', roll);
     }
-    // the Storm-Ward: for a moment, whatever comes is turned
-    this.wardT -= dt;
-    if (ctrl && inp.hit('ward') && this.adult && this.isMelee()) {
-      if (this.ward >= 50 && this.wardT <= 0 && !h.busy) { this.ward -= 50; this.wardT = 0.6; h.play('ward', 0.5); g.audio.play('parry', { vol: 0.6 }); h.handWorld('R', _v); g.fx.burst('spark', _v.x, _v.y + 0.2, _v.z, 8); g.events.emit('ward'); }
-      else if (this.ward < 50) g.ui.toast('The Storm-Ward is not ready: land blows and parry to fill it');
+    // the Stormguard: for a moment, whatever comes is turned. It answers on its own when death is close (see receive);
+    // the key calls it early, for a blow that cannot be blocked. Either way: only a calm man, and it costs more each time.
+    this.wardT -= dt; this.shakenT -= dt; this.turnT -= dt; this.breakT -= dt; this.swingAge += dt;
+    for (const k in this.cd) this.cd[k] -= dt; this.dWarn = (this.dWarn || 0) - dt;
+    this.fury = Math.max(0, this.fury - (this.blocking ? 26 : this.swingAge > 0.5 ? 12 : 0) * dt);
+    if (!g.combat.active) { this.guardsT = (this.guardsT || 0) + dt; if (this.guardsT > 6) this.guards = 0; } else this.guardsT = 0;
+    for (const k in this.fx) if (this.fx[k] > 0) { // what a champion did to him wears off
+      this.fx[k] -= dt;
+      if (k === 'poison') this.health = Math.max(4, this.health - 3 * dt);
+      if (this.fx[k] <= 0) { if (k === 'disarm') this.h.hold('R', WEAPONS[this.equipped] ? WEAPONS[this.equipped].hold || this.equipped : null); if (k === 'noShield' && this.isMelee()) { this.h.hold('L', this.offItem()); if (g.inventory.has('shield')) g.ui.toast('A fresh shield on your arm'); } }
     }
+    if (ctrl && inp.hit('ward') && this.adult && this.isMelee()) {
+      const cost = this.guardCost();
+      if (this.stormDead) g.ui.toast('The scar is cold. There is nothing left in it.');
+      else if (!this.calm()) g.ui.toast('Too angry: the Stormguard will not answer. Hold your guard and breathe.');
+      else if (this.ward >= cost && this.wardT <= 0 && !h.busy) { this.ward -= cost; this.wardT = 0.6; h.play('ward', 0.5); g.audio.play('parry', { vol: 0.6 }); h.handWorld('R', _v); g.fx.burst('spark', _v.x, _v.y + 0.2, _v.z, 8); g.events.emit('ward'); }
+      else if (this.ward < cost) g.ui.toast(`The storm bar is not full enough (${Math.round(cost)} needed): land blows and parry to fill it`);
+    }
+    if (ctrl && this.adult && this.isMelee()) for (const [act, fn] of [['art1', 'thunderSmash'], ['art2', 'stormStep'], ['art3', 'stormCry'], ['art4', 'stormbreak']]) if (inp.hit(act)) this[fn]();
     if (ctrl && inp.hit('shoulder')) this.camSide = -this.camSide;
     // melee: tap for a light blow; hold and release (or keep holding) for a heavy one that breaks a guard
     if (ctrl && this.isMelee()) {
       if (inp.held('attack') && this.atkHold >= 0) this.atkHold += dt;
       const rel = inp.released('attack') && this.atkHold > 0;
-      if (rel || this.atkHold > 0.62) { this.swing(this.atkHold > 0.36); this.atkHold = rel ? 0 : -1; }
+      if (rel || this.atkHold > 0.62) { // a blow asked for while the last one is still in the air is remembered for a moment, and thrown the instant he can
+        const heavy = this.atkHold > 0.36;
+        if (h.busy && !this.blocking) { this.bufAtk = heavy; this.bufT = 0.3; } else this.swing(heavy);
+        this.atkHold = rel ? 0 : -1;
+      }
+      this.bufT = (this.bufT || 0) - dt;
+      if (this.bufT > 0 && !h.busy && !this.blocking) { this.bufT = 0; this.swing(this.bufAtk); }
       if (!inp.held('attack') && this.atkHold < 0) this.atkHold = 0;
     } else this.atkHold = 0;
     if (ctrl && inp.hit('attack')) {
@@ -326,7 +436,14 @@ export class Player {
     let top = this.crouch ? SPEED.crouch : this.aiming ? SPEED.aim : this.blocking ? (this.hasShield() && g.skills.has('s_wall') ? SPEED.jog : SPEED.block) : this.sprinting ? SPEED.sprint : SPEED.jog;
     if (h.busy && this.dodgeT <= 0) top *= 0.35;
     top *= this.speedMul ?? 1;
-    this.speed = damp(this.speed, mv.mag * top, 10, dt);
+    if (this.fx.slow > 0) top *= 0.5; else if (this.shakenT > 0) top *= 0.78;
+    if (!this.riding && world.groundAt(this.pos.x, this.pos.z) < -0.2) top *= 0.62; // wading: the water and the mud hold his legs
+    if (ctrl && inp.held('walk') && !this.sprinting && !this.crouch) top = Math.min(top, 1.7); // a walk, when there is no hurry
+    if (!this.riding && dm > 1e-4 && this.dodgeT <= 0) { // the ground itself: a steep climb slows him, a slope down helps a little
+      const grade = (world.groundAt(this.pos.x + dx * 0.8, this.pos.z + dz * 0.8) - this.pos.y) / 0.8;
+      top *= grade > 0.3 ? clamp(1 - (grade - 0.3) * 0.7, 0.45, 1) : grade < -0.25 ? 1.06 : 1;
+    }
+    this.speed = damp(this.speed, mv.mag * top, mv.mag * top > this.speed ? 7.5 : 12, dt); // he gathers speed over a stride or two, and stops short
     if (this.sprinting) { this.stamina -= (g.skills.has('y_road') ? 6 : 10) * dt; this.staminaDelay = 0.9; }
     this.staminaDelay -= dt;
     if (this.staminaDelay <= 0) this.stamina = Math.min(100, this.stamina + 17 * dt);
@@ -334,7 +451,12 @@ export class Player {
     if (this.health < 100) this.health = Math.min(100, this.health + (g.combat.active && this.mortal ? 0.3 : 1.5) * dt);
 
     const px = this.pos.x, pz = this.pos.z;
-    if (this.dodgeT > 0) {
+    if (this.stepT > 0) { // Storm-Step: across the ground between two heartbeats
+      this.stepT -= dt; const u = 1 - Math.max(0, this.stepT) / this.stepDur, a = this.stepA, b = this.stepB;
+      this.pos.x = a.x + (b.x - a.x) * u; this.pos.z = a.z + (b.z - a.z) * u;
+      g.fx.burst('spark', this.pos.x, this.pos.y + 0.9, this.pos.z, 3);
+      if (this.stepT <= 0) { g.events.emit('stormStep', this.stepTarget); if (this.stepTarget) this.yaw = Math.atan2(this.stepTarget.pos.x - this.pos.x, this.stepTarget.pos.z - this.pos.z); }
+    } else if (this.dodgeT > 0) {
       this.dodgeT -= dt;
       const k = (this.dodgeK || 6.2) * Math.max(0.25, this.dodgeT / (this.dodgeDur || 0.42));
       this.pos.x += this.dodgeDir.x * k * dt; this.pos.z += this.dodgeDir.z * k * dt;
@@ -352,9 +474,16 @@ export class Player {
     this.moving = Math.hypot(this.pos.x - px, this.pos.z - pz) > 0.0005;
 
     if (this.blocking && this.target && Math.hypot(this.target.pos.x - this.pos.x, this.target.pos.z - this.pos.z) < 6) this.yaw = dampAngle(this.yaw, Math.atan2(this.target.pos.x - this.pos.x, this.target.pos.z - this.pos.z), 16, dt);
+    else if (this.lock && this.isMelee() && !this.sprinting && this.dodgeT <= 0 && !(this.stepT > 0) && !(this.spinT > 0)) this.yaw = dampAngle(this.yaw, Math.atan2(this.lock.pos.x - this.pos.x, this.lock.pos.z - this.pos.z), 14, dt); // locked on: he keeps his front to the man, and moves round him
     else if (this.aiming || this.blocking) this.yaw = dampAngle(this.yaw, cam.yaw, 16, dt);
     else if (this.faceTarget) this.yaw = dampAngle(this.yaw, Math.atan2(this.faceTarget.x - this.pos.x, this.faceTarget.z - this.pos.z), 8, dt);
-    else if (dm > 1e-4 && this.speed > 0.1 && this.dodgeT <= 0) this.yaw = dampAngle(this.yaw, Math.atan2(dx, dz), 11, dt);
+    else if (dm > 1e-4 && this.speed > 0.1 && this.dodgeT <= 0) {
+      const want = Math.atan2(dx, dz), off = angleDiff(this.yaw, want);
+      this.yaw = dampAngle(this.yaw, want, this.sprinting ? 7.5 : 13, dt); // quick on his feet at a jog, a wider turn at a run
+      this.leanT = clamp(-off * Math.min(1, this.speed / 5) * 0.32, -0.15, 0.15);
+    }
+    this.lean = damp(this.lean || 0, this.moving && !this.riding ? this.leanT || 0 : 0, 7, dt); this.leanT = 0; this.root.rotation.z = this.lean; // he leans into a turn
+    if (this.spinT > 0) { this.spinT -= dt; this.yaw += this.spinV * dt; } // the Turning Blow carries him round
     this.root.rotation.y = this.yaw;
     // his face and where he looks: the man he is fighting, the person he is talking to, else straight ahead
     this.headPos.set(this.pos.x, this.pos.y + h.headHeight(), this.pos.z);
@@ -374,6 +503,12 @@ export class Player {
     if (ctrl || g.mode === 'play') {
       const lk = g.input.look(dt);
       cam.yaw -= lk.dx; cam.pitch = clamp(cam.pitch + lk.dy, -0.42, 1.25);
+      if (this.lock) { // locked on: the camera keeps the man in the middle of the frame; a flick of the mouse changes to the next man that way
+        const lx = this.lock.pos.x - this.pos.x, lz = this.lock.pos.z - this.pos.z, ld = Math.hypot(lx, lz);
+        cam.yaw = dampAngle(cam.yaw, Math.atan2(lx, lz), 5.5, dt); cam.pitch = damp(cam.pitch, clamp(0.34 - ld * 0.012, 0.16, 0.34), 3, dt);
+        this.flick = (this.flick || 0) * Math.exp(-6 * dt) + lk.dx; this.flickCd = (this.flickCd || 0) - dt;
+        if (Math.abs(this.flick) > 0.3 && this.flickCd <= 0) { const nx = g.combat.pickLock(this.lock, Math.sign(this.flick)); if (nx) { this.lock = nx; g.audio.play('ui', { vol: 0.6 }); } this.flick = 0; this.flickCd = 0.45; }
+      }
     }
     cam.aimK = damp(cam.aimK, this.aiming ? 1 : 0, 10, dt);
     const headY = this.pos.y + this.h.headHeight() + 0.12;
@@ -398,7 +533,7 @@ export class Player {
     }
     c.position.set(x, y, z);
     c.lookAt(tx, ty, tz);
-    const fov = lerp(g.baseFov ?? 58, 40, cam.aimK);
+    const fov = lerp((g.baseFov ?? 58) + (this.sprinting && this.speed > 4 ? 5 : 0), 40, cam.aimK); // the view opens a little at a run
     if (Math.abs(c.fov - fov) > 0.05) { c.fov = damp(c.fov, fov, 9, dt); c.updateProjectionMatrix(); }
   }
 }
