@@ -92,7 +92,7 @@ export class Player {
 
   update(dt, ctrl) {
     const g = this.game, inp = g.input, h = this.h, cam = this.cam, world = g.world;
-    ctrl = ctrl && !this.frozen;
+    ctrl = ctrl && !this.frozen && !g.ravens.eye;
     const mv = ctrl ? inp.move() : { x: 0, y: 0, mag: 0 };
     const fX = Math.sin(cam.yaw), fZ = Math.cos(cam.yaw), rX = -Math.cos(cam.yaw), rZ = Math.sin(cam.yaw);
     let dx = fX * mv.y + rX * mv.x, dz = fZ * mv.y + rZ * mv.x;
@@ -182,7 +182,7 @@ export class Player {
 
   updateCamera(dt, ctrl) {
     const g = this.game, cam = this.cam, c = g.camera;
-    if (g.cine.active) return;
+    if (g.cine.active || g.ravens.eye) return;
     if (ctrl || g.mode === 'play') {
       const lk = g.input.look(dt);
       cam.yaw -= lk.dx; cam.pitch = clamp(cam.pitch + lk.dy, -0.42, 1.25);

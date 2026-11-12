@@ -122,7 +122,7 @@ export class Dialogue {
     if (i >= this.nodes.length) return this.finish();
     this.i = i; this.shown = 0; this.sel = 0;
     const n = this.nodes[i];
-    this.text = n.t || '';
+    this.text = this.game.fmt(n.t || '');
     this.choices = n.choices || null;
     if (this.npc) this.npc.h.setLoop && (this.npc.talking = n.s === this.npc.name);
     this.game.ui.showDialogue(n.s, '', this.text.length ? null : this.choices, this.sel);

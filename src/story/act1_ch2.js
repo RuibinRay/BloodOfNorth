@@ -250,7 +250,7 @@ export class Chapter2 {
           sub: ['Signe', 'Then carry him, you great ox, before the cold finishes its work.', 4.8] },
         { dur: 6.5, from: P(1.6, -3.4, 1.7), to: P(2.6, -5, 2.7), look: () => [bx, by() + 0.5, bz], fov: 40,
           sub: ['Bjorn', '...And look what he is holding on to.', 4.5] },
-      ], { skippable: false, onEnd: () => { g.ui.fade(true, 2.4).then(() => { this.st.stage = 'complete'; g.autosave(); A.showChapterEnd(); }); } });
+      ], { skippable: false, onEnd: () => { g.ui.fade(true, 2.4).then(() => { this.st.stage = 'ch2done'; g.autosave(); A.showChapterEnd(); }); } });
     });
   }
 

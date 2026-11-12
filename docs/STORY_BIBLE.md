@@ -37,7 +37,10 @@ So "what the old king gave you" is not a treasure. It is Eirik's mother. Eirik l
 - Ch.1 *The Night of Ashes* **[built]** — the last day, the raid, the escape, the first fire alone.
 - Ch.2 *The Long White* **[built]** — alone at the old birch: shelter, hunger, a deer, a wolf at the kill;
   then Håkon's trackers, the river ice, and Bjorn finding him in the snow. The wolf is fed or killed (`wolfFed` / `wolfKilled`).
-- Ch.3 *A Stranger's Hearth* **[outline]** (next) — recovery with the farm family; the choice to tell them his name, or not.
+- Ch.3 *A Stranger's Hearth* **[built]** — Bjorn and Signe's farm in a hidden dale. He gives his name, half of it, or a lie
+  (`toldName` / `halfName` / `liedName`). With Freydis he rescues two raven chicks, a white and a black, and names them.
+  Bjorn recognises the axe (he once stood in a shield-wall beside Ragnar) and has him hide it under the hearthstone.
+  In spring the white raven's first flight finds a lost lamb. Five omens around the farm seed later weapons. Ten winters pass. — recovery with the farm family; the choice to tell them his name, or not.
 
 **Act II — The Farmer's Axe** (5 h) **[outline]** — ten years on. Farming, smithing, trade, a rival's
 feud, a harvest feast. Håkon's raiders come; Eirik takes the axe from under the floor. First real combat:
@@ -72,6 +75,12 @@ commands and fights. Sigurd Stonehand at the end.
 
 The epilogue visits the adoptive family, each living companion, and the old birch.
 
+## The ravens
+
+A white raven and her black brother, from one nest, named by the player (default Mjöll and Sót). She sees;
+he guards. They are with Eirik in every act and every ending; people come to know him as "the one with the
+white raven". Their abilities by act, and the Act V capture, are in `docs/OPEN_WORLD.md`.
+
 ## Continuity rules
 
 - Ragnar's axe is carried in every act. It is upgraded, never replaced.
@@ -80,3 +89,5 @@ The epilogue visits the adoptive family, each living companion, and the old birc
 - Traits and flags recorded in Chapter 1 (`cleanKill`, `askedWhy`, `heardRumor`, `readStone`,
   `dreamFarmer` / `dreamWarrior` / `dreamWayfarer`, and Chapter 2's `wolfFed` / `wolfKilled`) are referenced by later dialogue.
 - A fed wolf returns in Act III; a killed one leaves a pelt Freydis notices.
+- Eirik is a child for Act I only. The ten-year jump is the last beat of Chapter 3; Act II opens at nineteen.
+- Secret weapons come only from the omens found (or missed) at Bjornstead: Storm-Yew, Grave-Song, Winter's Tooth, The Brothers, Star-Fall.

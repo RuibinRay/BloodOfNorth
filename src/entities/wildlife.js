@@ -66,9 +66,9 @@ function sheepModel() {
   g.add(mesh(parts));
   return g;
 }
-function ravenModel() {
-  const g = new THREE.Group(), col = 0x14141a;
-  g.add(mesh([tint(at(sphere(0.1, 6, 5), 0, 0, 0, 0, 0, 0, 0.8, 0.8, 1.9), col, 0.1, 1), tint(at(cone(0.03, 0.12, 4), 0, 0.02, 0.24, Math.PI / 2, 0, 0), 0x2a2a30, 0, 2), tint(at(box(0.12, 0.01, 0.2), 0, 0, -0.24), col, 0.1, 3)]));
+export function ravenModel(col = 0x14141a, beak = 0x2a2a30) {
+  const g = new THREE.Group();
+  g.add(mesh([tint(at(sphere(0.1, 6, 5), 0, 0, 0, 0, 0, 0, 0.8, 0.8, 1.9), col, 0.1, 1), tint(at(cone(0.03, 0.12, 4), 0, 0.02, 0.24, Math.PI / 2, 0, 0), beak, 0, 2), tint(at(box(0.12, 0.01, 0.2), 0, 0, -0.24), col, 0.1, 3)]));
   g.userData.wings = [];
   for (const s of [-1, 1]) {
     const w = new THREE.Group();

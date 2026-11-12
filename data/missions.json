@@ -6,7 +6,7 @@
    "act": 1,
    "title": "The Night of Ashes",
    "target_minutes": 240,
-   "built_minutes_estimate": 108,
+   "built_minutes_estimate": 134,
    "missions": [
     {
      "id": "a1m01",
@@ -100,17 +100,25 @@
      "id": "a1m12",
      "title": "A Stranger's Hearth",
      "type": "story",
-     "minutes": 40,
-     "summary": "Bjorn finds him. Recovery; tell them his name, or not.",
-     "status": "planned"
+     "minutes": 12,
+     "summary": "Bjornstead. Tell them your name, or not. Two raven chicks in a fallen nest: name them, feed them. Split wood for Bjorn.",
+     "status": "built"
     },
     {
      "id": "a1m13",
      "title": "The Axe Under the Floor",
      "type": "story",
-     "minutes": 30,
-     "summary": "Hide Ragnar's axe; first winter on the farm. Ten years pass.",
-     "status": "planned"
+     "minutes": 4,
+     "summary": "Bjorn knows the axe. Hide it under the hearthstone. Winter passes.",
+     "status": "built"
+    },
+    {
+     "id": "a1m14",
+     "title": "First Flight",
+     "type": "raven / exploration",
+     "minutes": 10,
+     "summary": "Spring. Fly the white raven to find a lost lamb; five omens around the farm seed later weapons. Ten winters pass.",
+     "status": "built"
     }
    ]
   },
@@ -979,6 +987,14 @@
    "type": "loyalty",
    "premise": "She will heal anyone; an enemy is brought to her door.",
    "status": "outline"
+  },
+  {
+   "id": "s51",
+   "title": "Things That Wait",
+   "region": "Bjornstead",
+   "type": "secrets",
+   "premise": "Find five old things a boy cannot move; each returns as a weapon in a later act.",
+   "status": "built"
   }
  ]
 }

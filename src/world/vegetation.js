@@ -103,7 +103,7 @@ export function scatterVegetation(scene, world, quality) {
     const x = (R() - 0.5) * 600, z = (R() - 0.5) * 600, h = heightAt(x, z);
     if (h < -0.6 || distToPaths(x, z) < 1.5 || inField(x, z) !== null) continue;
     const dv = Math.hypot(x - VILLAGE.x, z - VILLAGE.z);
-    if (dv < VILLAGE.r - 4) continue;
+    if (dv < VILLAGE.r - 4 || Math.hypot(x - POI.farm.x, z - POI.farm.z) < 27) continue;
     const big = R() < 0.14 || slopeAt(x, z) > 0.5;
     const sc = big ? 1.1 + R() * 1.7 : 0.25 + R() * 0.5;
     rocks.push({ x, z, y: h - sc * 0.2, sc, sx: 0.8 + R() * 0.6, sy: 0.7 + R() * 0.5, sz: 0.8 + R() * 0.6, ry: R() * 6.28, big: sc > 1.05 });
@@ -117,7 +117,7 @@ export function scatterVegetation(scene, world, quality) {
   const grass = new THREE.InstancedMesh(grassGeo(), patch(new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide }), { sway: 0.5, snow: 1, upNormal: true }), want);
   let n = 0;
   for (let i = 0; i < want * 6 && n < want; i++) {
-    const x = -200 + R() * 330, z = -175 + R() * 330;
+    const x = -200 + R() * 425, z = -200 + R() * 355;
     const h = heightAt(x, z);
     if (h < 0.75 || h > 40) continue;
     if (distToPaths(x, z) < 0.25 || inField(x, z) !== null) continue;

@@ -28,7 +28,12 @@ export const POI = {
   oldBirch: { x: -122, z: -96, name: 'The old birch' },
   deer: { x: -150, z: -128, name: 'Deer clearing' },
   runestone: { x: -84, z: 30, name: 'The Raven Stone' },
-  fishing: { x: 0, z: 0, name: 'Fishing rock' }, // filled in by terrain.js (depends on the river curve)
+  fishing: { x: 0, z: 0, name: 'Fishing rock' },
+  // Bjornstead, the hidden dale east of the river (Chapter 3). Unnamed points are secrets: found, not labelled.
+  farm: { x: 150, z: -140, name: 'Bjornstead' },
+  farmFire: { x: 146, z: -137 }, farmChop: { x: 158, z: -139 }, farmDoor: { x: 152, z: -142.4 }, pen: { x: 148.5, z: -155.5 },
+  nest: { x: 126, z: -151 }, barrow: { x: 178, z: -166 }, axeStone: { x: 139, z: -178 }, yew: { x: 187, z: -121 },
+  tarn: { x: 197, z: -150 }, skyIron: { x: 165.3, z: -133.2 }, lamb: { x: 113, z: -171 }, hunters: { x: 57, z: -150 }, // filled in by terrain.js (depends on the river curve)
 };
 
 /** Flattened pads. `h` is absolute; `dh` is relative to the natural height at the centre. */
@@ -39,6 +44,9 @@ export const FLATS = [
   { x: POI.deer.x, z: POI.deer.z, r: 22, dh: 0 },
   { x: POI.runestone.x, z: POI.runestone.z, r: 10, dh: 2.4 },
   { x: 118, z: -122, r: 16, dh: 0 }, // clearing east of the river where Chapter 2 ends
+  { x: 150, z: -140, r: 34, dh: 0.6, name: 'farm' },
+  { x: 178, z: -166, r: 7, dh: 2.4, name: 'barrow' },   // a small plateau reads as a grave mound
+  { x: 197, z: -150, r: 12, dh: -0.8, name: 'tarn' },
 ];
 
 /** Trodden paths: used for ground colour and to keep trees off the trail. */
@@ -53,6 +61,9 @@ export const PATHS = [
   { w: 1.3, pts: [[-66, -38], [-82, -50], [-98, -70], [-118, -92]] },
   { w: 1.0, pts: [[-118, -92], [-134, -110], [-150, -128]] },
   { w: 1.2, pts: [[-16, 64], [-44, 46], [-70, 36], [-84, 30]] },
+  { w: 1.6, pts: [[152, -142], [158, -139], [164.5, -135]] },
+  { w: 1.3, pts: [[146, -138], [136, -146], [127, -150.5]] },
+  { w: 1.2, pts: [[118, -122], [134, -131], [146, -137]] },
 ];
 
 /** Ploughed fields (centre, size, rotation). */
@@ -71,6 +82,8 @@ export const HOUSES = [
   { id: 'barn', x: -46, z: 6, ry: 0.1, len: 12, wid: 6, ridge: 4.4, roof: 'thatch', door: 1, doorX: 0 },
   { id: 'boathouse', x: -14, z: 104, ry: Math.PI / 2, len: 10, wid: 5, ridge: 3.8, roof: 'thatch', door: 0 },
   { id: 'houseF', x: 12, z: 88, ry: -0.2, len: 10, wid: 5.2, ridge: 3.9, roof: 'turf', door: -1, doorX: 1 },
+  { id: 'bjornstead', x: 150, z: -147, ry: 0, len: 13, wid: 6, ridge: 4.4, roof: 'turf', door: 1, doorX: 2 },
+  { id: 'bjornbarn', x: 169, z: -135, ry: Math.PI / 2, len: 9, wid: 5.2, ridge: 3.9, roof: 'thatch', door: -1, doorX: 0 },
 ];
 
 export const BOUNDS = { minX: -250, maxX: 250, minZ: -262, maxZ: 200 };

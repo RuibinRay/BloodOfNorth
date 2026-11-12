@@ -1,7 +1,7 @@
 // World assembly: terrain, the village of Hrafnvik, collision, platforms and interactables.
 import * as THREE from 'three';
 import { clamp } from '../core/util.js';
-import { M, Builder, at, box, cyl, sphere, tint } from './geo.js';
+import { M, Builder, at, box, cyl, cone, sphere, tint } from './geo.js';
 import { buildHeights, buildTerrain, heightAt, riverX, riverSurfaceY } from './terrain.js';
 import { scatterVegetation } from './vegetation.js';
 import * as P from './props.js';
@@ -192,6 +192,38 @@ export class World {
     P.runestone(ctx, POI.runestone.x, POI.runestone.z, 1.2);
     const fr = POI.fishing;
     ctx.b.add(at(sphere(1.7, 9, 6), fr.x + 1.2, heightAt(fr.x + 1.2, fr.z) - 0.1, fr.z, 0, 0.4, 0, 1.5, 0.42, 1.2), M.stone);
+
+    // Bjornstead: yard, pen, chopping block
+    P.fireRing(ctx, POI.farmFire.x, POI.farmFire.z, 0.6); P.bench(ctx, 147.4, -135.6, 0.5);
+    P.choppingBlock(ctx, POI.farmChop.x, POI.farmChop.z); P.woodpile(ctx, 160.8, -141.8, 0.3, 4, 8);
+    P.fence(ctx, [[144, -159], [153, -159], [153, -152], [144, -152], [144, -159]]);
+    P.hayStack(ctx, 163, -147, 0.9); P.barrel(ctx, 154.6, -143.2); P.dryingRack(ctx, 142, -133, 0.4);
+    // the storm-felled raven pine and its nest
+    const ny = heightAt(POI.nest.x, POI.nest.z);
+    ctx.b.add(at(cyl(0.2, 0.34, 9.5, 7), POI.nest.x - 3.6, ny + 0.32, POI.nest.z - 1.6, Math.PI / 2 - 0.05, 1.15, 0), M.bark);
+    this.addBox(POI.nest.x - 3.6, POI.nest.z - 1.6, 4.6, 0.35, 1.15 - Math.PI / 2, 0.7);
+    ctx.b.add(tint(at(new THREE.TorusGeometry(0.34, 0.13, 5, 10), POI.nest.x, ny + 0.14, POI.nest.z, Math.PI / 2, 0, 0), 0x4a3a28, 0.35, 3), M.vc);
+    for (const [x, z, r] of [[121.5, -155, 0.4], [129.5, -157.5, 1.9], [123, -146.5, 2.7]])
+      ctx.b.add(at(cyl(0.17, 0.2, 1.5, 6), x, heightAt(x, z) + 0.16, z, Math.PI / 2, r, 0), M.bark);
+    // -- old things that wait for a grown man (Chapter 3 secrets) --
+    const by = heightAt(POI.barrow.x, POI.barrow.z);
+    for (let i = 0; i < 9; i++) { const a = (i / 9) * 6.283; ctx.b.add(at(sphere(0.34 + (i % 3) * 0.08, 6, 5), POI.barrow.x + Math.cos(a) * 2.7, by + 0.1, POI.barrow.z + Math.sin(a) * 2.7, 0, i, 0, 1, 0.75, 1), M.stone); }
+    ctx.b.add(at(box(0.05, 0.36, 0.03), POI.barrow.x, by + 0.42, POI.barrow.z, 0.12, 0.4, 0.06), M.dark);
+    ctx.b.add(at(box(0.3, 0.045, 0.06), POI.barrow.x, by + 0.26, POI.barrow.z, 0.12, 0.4, 0.06), M.iron);
+    ctx.b.add(at(sphere(0.045, 6, 5), POI.barrow.x + 0.01, by + 0.62, POI.barrow.z + 0.02), M.iron);
+    ctx.b.add(tint(at(new THREE.IcosahedronGeometry(0.42, 1), POI.skyIron.x, heightAt(POI.skyIron.x, POI.skyIron.z) + 0.24, POI.skyIron.z, 0, 0.7, 0, 1.15, 0.8, 1), 0x1b1a1e, 0.25, 5), M.vcPlain);
+    this.addCircle(POI.skyIron.x, POI.skyIron.z, 0.5, 0.6);
+    P.runestone(ctx, POI.axeStone.x, POI.axeStone.z, 0.5);
+    const yy = heightAt(POI.yew.x, POI.yew.z);
+    for (const s of [-1, 1]) ctx.b.add(tint(at(cyl(0.13, 0.3, 3.6, 6), POI.yew.x + s * 0.28, yy + 1.7, POI.yew.z, 0, 0, -s * 0.16), 0x241c17, 0.2, 6), M.vcPlain);
+    for (const [dx, dy, dz, sc] of [[-0.9, 3.5, 0.2, 1.3], [1.0, 3.8, -0.3, 1.4], [0.1, 4.7, 0.5, 1.1], [-0.3, 2.7, -0.9, 0.9]])
+      ctx.b.add(tint(at(new THREE.IcosahedronGeometry(1, 1), POI.yew.x + dx, yy + dy, POI.yew.z + dz, 0, dx, 0, sc, sc * 0.8, sc), 0x2c4a2a, 0.3, 7), M.vcPlain);
+    this.addCircle(POI.yew.x, POI.yew.z, 0.6, 4);
+    const ty = heightAt(POI.tarn.x, POI.tarn.z);
+    const ice = new THREE.Mesh(new THREE.CircleGeometry(6.4, 28), new THREE.MeshStandardMaterial({ color: 0xd3e5f0, roughness: 0.22, metalness: 0.1 }));
+    ice.rotation.x = -Math.PI / 2; ice.position.set(POI.tarn.x, ty + 0.06, POI.tarn.z); ice.receiveShadow = true; scene.add(ice);
+    const shade = new THREE.Mesh(new THREE.PlaneGeometry(0.14, 3.3), new THREE.MeshBasicMaterial({ color: 0x1c2a36, transparent: true, opacity: 0.6, depthWrite: false }));
+    shade.rotation.set(-Math.PI / 2, 0, 0.5); shade.position.set(POI.tarn.x + 0.6, ty + 0.085, POI.tarn.z - 0.4); scene.add(shade);
 
     const stat = ctx.b.build();
     scene.add(stat);

@@ -73,12 +73,15 @@ orders nearby allies to lock shields). Experience comes from quests and from doi
 | Shelter | Cut boughs with the axe and thatch the lean-to; the camp fire restores warmth |
 | The wolf | Circles and lunges (dodge to avoid); resolved by an arrow or by throwing it meat |
 | Thin ice | Strain rises when running or standing still, falls when creeping; at full strain the ice breaks and costs warmth |
+| Raven's Eye | From spring in Chapter 3: fly the white raven within about 170 m of Eirik, climb and dive, and mark what she sees; the black raven circles Eirik as a beacon |
+| Omens | Five hidden things around Bjornstead, one visible only from the air; each is recorded and returns as a weapon |
 | Traits | Wisdom, Compassion, Ferocity, Pride, raised by choices and actions, and saved |
 
 ## World
 
-Eight regions, each a streamed zone with a hub, three to five sub-areas and a signature activity.
-Only Hrafnvik valley exists **[built: 640 m square]**. See `data/world.json`.
+From Act II the game is an open sea map of about forty islands with horse, boat and ship travel, a
+Viking wanted system (wolf-marks) and regional standing that runs from outlaw to "my king": see
+`docs/OPEN_WORLD.md`. Only the Hrafnvik valley, with Bjornstead on its east side, exists **[built: 640 m square]**.
 
 Living-world rules: day and night **[built]**; weather **[built: clear, snow, blizzard]**; seasons
 **[planned]**; NPC work posts with an evening change **[proto]**; village economy, crime and reputation

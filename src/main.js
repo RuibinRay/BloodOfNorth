@@ -11,6 +11,7 @@ import { FX } from './world/fx.js';
 import { Player } from './entities/player.js';
 import { NPC } from './entities/npc.js';
 import { Wildlife } from './entities/wildlife.js';
+import { Ravens } from './entities/ravens.js';
 import { Quests, Inventory, Dialogue, Cine } from './systems/systems.js';
 import { ITEMS, QUESTS, DIALOGUE } from './data/act1.js';
 import { Act1 } from './story/act1.js';
@@ -20,6 +21,7 @@ const RUNNING = new Set(['play', 'dialogue', 'cutscene', 'activity']);
 const freshState = () => ({
   stage: 'day', time: 8.7, flags: {}, traits: { wisdom: 0, compassion: 0, ferocity: 0, pride: 0 }, rel: { ragnar: 0, ylva: 0 },
   inventory: {}, quests: {}, xp: 0, choices: [], playtime: 0, player: null, waypoint: null,
+  secrets: {}, marks: {}, ravenNames: null, alias: null,
 });
 const TRAIT_NAMES = { wisdom: 'Wisdom', compassion: 'Compassion', ferocity: 'Ferocity', pride: 'Pride' };
 
@@ -53,6 +55,7 @@ class Game {
     this.wildlife = new Wildlife(this);
     this.player = new Player(this);
     this.scene.add(this.player.root);
+    this.ravens = new Ravens(this);
     this.quests = new Quests(this, QUESTS);
     this.inventory = new Inventory(this, ITEMS);
     this.dialogue = new Dialogue(this, DIALOGUE);
@@ -92,11 +95,17 @@ class Game {
   applyFx(fx) {
     if (!fx) return;
     const st = this.state;
-    if (fx.trait) for (const k in fx.trait) { st.traits[k] += fx.trait[k]; this.ui.toast(`${TRAIT_NAMES[k]} grows`); }
-    if (fx.rel) for (const k in fx.rel) st.rel[k] += fx.rel[k];
+    if (fx.trait) for (const k in fx.trait) { st.traits[k] = (st.traits[k] || 0) + fx.trait[k]; this.ui.toast(`${TRAIT_NAMES[k]} grows`); }
+    if (fx.rel) for (const k in fx.rel) st.rel[k] = (st.rel[k] || 0) + fx.rel[k];
     if (fx.flag) [].concat(fx.flag).forEach((f) => (st.flags[f] = true));
     if (fx.give) for (const k in fx.give) this.inventory.add(k, fx.give[k]);
     if (fx.quest && !st.quests[fx.quest]) this.quests.start(fx.quest);
+    if (fx.state) Object.assign(st, fx.state);
+  }
+  /** Fill story tokens: {w} white raven, {b} black raven, {n} the name the family uses. */
+  fmt(text) {
+    const [w, b] = this.ravens.names();
+    return String(text).replace(/\{w\}/g, w).replace(/\{b\}/g, b).replace(/\{n\}/g, this.state.alias || 'Eirik');
   }
   applySettings() {
     const q = this.settings.quality, dpr = window.devicePixelRatio || 1;
@@ -150,9 +159,9 @@ class Game {
     if (!this.started) return false;
     const st = this.state, p = this.player, tr = this.quests.tracked()[0];
     st.player = { x: p.pos.x, z: p.pos.z, yaw: p.yaw };
-    if (st.stage === 'day' || st.stage === 'ch2') st.time = this.sky.time;
+    if (st.stage === 'day' || st.stage === 'ch2' || st.stage === 'ch3') st.time = this.sky.time;
     st.vitals = { health: p.health, warmth: p.warmth, hunger: p.hunger };
-    return writeSave(slot, st, { quest: tr ? tr.def.title : this.quests.isDone('q_ice') ? 'Chapter Two complete' : 'Chapter One complete', step: tr ? tr.step.text : this.quests.isDone('q_ice') ? 'The Long White' : 'The Night of Ashes', playtime: st.playtime });
+    return writeSave(slot, st, { quest: tr ? tr.def.title : this.quests.isDone('q_wings') ? 'Act One complete' : this.quests.isDone('q_ice') ? 'Chapter Two complete' : 'Chapter One complete', step: tr ? tr.step.text : 'Between chapters', playtime: st.playtime });
   }
   autosave() { this.saveGame('auto'); }
   reloadCheckpoint() { try { sessionStorage.setItem('botn.boot', 'load:auto'); } catch { /* ignore */ } location.reload(); }
@@ -184,7 +193,9 @@ class Game {
       this.state.playtime += dt;
       for (let i = this.timers.length - 1; i >= 0; i--) { const t = this.timers[i]; t.t -= dt; if (t.t <= 0) { this.timers.splice(i, 1); t.fn(); } }
       if (m === 'play') {
-        if (inp.hit('pause')) this.pause();
+        if (this.ravens.eye) { if (inp.hit('pause') || inp.hit('raven')) this.ravens.exitEye(); }
+        else if (inp.hit('raven')) this.ravens.enterEye();
+        else if (inp.hit('pause')) this.pause();
         else if (inp.hit('journal')) this.openPanelFromPlay('journal');
         else if (inp.hit('inventory')) this.openPanelFromPlay('inventory');
         else if (inp.hit('map')) this.openPanelFromPlay('map');
@@ -194,9 +205,10 @@ class Game {
         this.player.update(dt, this.mode === 'play');
         for (const n of this.npcs.values()) n.update(dt);
         this.wildlife.update(dt);
+        this.ravens.update(dt);
         this.story.update(dt);
         this.cine.update(dt);
-        this.interaction = this.mode === 'play' ? this.findInteraction() : null;
+        this.interaction = this.mode === 'play' && !this.ravens.eye ? this.findInteraction() : null;
         this.sense = damp(this.sense, this.mode === 'play' && inp.held('sense') ? 1 : 0, 6, dt);
       }
     } else if (m === 'menu') {
@@ -217,7 +229,7 @@ class Game {
     const anim = m === 'paused' ? 0 : real;
     shared.uTime.value += anim;
     this.world.terrain.update(shared.uTime.value);
-    const focus = m === 'menu' ? this.focusMenu || (this.focusMenu = new THREE.Vector3(-4, 5, 48)) : this.player.pos;
+    const focus = m === 'menu' ? this.focusMenu || (this.focusMenu = new THREE.Vector3(-4, 5, 48)) : this.ravens.eye ? this.ravens.white.position : this.player.pos;
     this.sky.update(anim, this.camera, focus);
     this.fx.update(anim, focus, this.sky.isNight);
     this.audio.update(real);
@@ -242,7 +254,7 @@ class Game {
       time: (h) => { g.sky.time = h; },
       /** Jump straight to a quest step (marks earlier main quests done). */
       jump: (qid, sid) => {
-        const order = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice'];
+        const order = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings'];
         if (!g.started) { g.started = true; g.ui.hideMain(); g.setMode('play'); }
         for (const id of order) {
           if (id === qid) break;
@@ -253,7 +265,7 @@ class Game {
         const oi = order.indexOf(qid);
         if (oi >= 2) for (const [k, n] of [['bow', 1], ['arrow', 12], ['flint', 1]]) if (!g.inventory.has(k)) g.inventory.add(k, n, true);
         if (oi >= 4) if (!g.inventory.has('woodsword')) g.inventory.add('woodsword', 1, true);
-        if (oi >= 8) { g.state.stage = 'ch2'; if (!g.inventory.has('father_axe')) g.inventory.add('father_axe', 1, true); if (qid === 'q_ice' || i >= 6) if (!g.inventory.has('venison')) g.inventory.add('venison', 3, true); }
+        if (oi >= 8) { g.state.stage = oi >= 10 ? 'ch3' : 'ch2'; if (!g.inventory.has('father_axe')) g.inventory.add('father_axe', 1, true); if (qid === 'q_ice' || i >= 6) if (!g.inventory.has('venison')) g.inventory.add('venison', 3, true); }
         g.quests.enter(qid, true); g.ui.refreshTracker();
       },
       info: () => ({

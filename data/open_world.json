@@ -1,0 +1,439 @@
+{
+ "about": "Open-world design for Act II onward. Design only: nothing here is built except entries marked built. See docs/OPEN_WORLD.md.",
+ "grows_up": {
+  "after": "Act I (end of Chapter 3)",
+  "jump_years": 10,
+  "age_in_act_2": 19
+ },
+ "island_groups": [
+  {
+   "group": "Vestland coast",
+   "islands": [
+    {
+     "name": "Bjornsvik",
+     "hook": "the home landing below the dale"
+    },
+    {
+     "name": "Kaupang",
+     "hook": "market town; trade, contests, the first Thing"
+    },
+    {
+     "name": "Hrafnvik",
+     "hook": "the burned village, slowly resettled by strangers"
+    },
+    {
+     "name": "Selja",
+     "hook": "a hermit's cave and a spring"
+    },
+    {
+     "name": "Fedje",
+     "hook": "pilots who know every rock, for a price"
+    },
+    {
+     "name": "Utvaer",
+     "hook": "the last light before open sea"
+    }
+   ]
+  },
+  {
+   "group": "Inner skerries",
+   "islands": [
+    {
+     "name": "Gulen",
+     "hook": "law-rock where the western Thing meets"
+    },
+    {
+     "name": "Bulandet",
+     "hook": "fishing camps that pay nobody"
+    },
+    {
+     "name": "Kinn",
+     "hook": "a cliff church and a smuggler's stair"
+    },
+    {
+     "name": "Batalden",
+     "hook": "seal hunters and a feud"
+    },
+    {
+     "name": "Vaeroy",
+     "hook": "a horse fair on a tidal flat"
+    },
+    {
+     "name": "Hovden",
+     "hook": "wreckers' lights"
+    },
+    {
+     "name": "Skorpa",
+     "hook": "abandoned, for a reason"
+    }
+   ]
+  },
+  {
+   "group": "The Belts",
+   "islands": [
+    {
+     "name": "Hedeby",
+     "hook": "the great port; every tongue, every coin"
+    },
+    {
+     "name": "Samso",
+     "hook": "a jarl's fleet anchorage"
+    },
+    {
+     "name": "Als",
+     "hook": "bog offerings and the men who dig them up"
+    },
+    {
+     "name": "Fyn",
+     "hook": "rich farms, heavy tolls"
+    },
+    {
+     "name": "Laeso",
+     "hook": "salt boilers"
+    }
+   ]
+  },
+  {
+   "group": "Svear lakes",
+   "islands": [
+    {
+     "name": "Birka",
+     "hook": "lake market under a hill fort"
+    },
+    {
+     "name": "Adelso",
+     "hook": "a king's hall across the water"
+    },
+    {
+     "name": "The Grove Isle",
+     "hook": "sacred; weapons stay in the boat"
+    },
+    {
+     "name": "Helgo",
+     "hook": "a workshop island of smiths"
+    }
+   ]
+  },
+  {
+   "group": "Northumbrian shore",
+   "islands": [
+    {
+     "name": "Lindisfarne",
+     "hook": "a minster cut off by the tide twice a day"
+    },
+    {
+     "name": "Farne",
+     "hook": "seabirds and a watch-fire"
+    },
+    {
+     "name": "Tynemouth",
+     "hook": "a burh on a headland"
+    },
+    {
+     "name": "Jorvik reach",
+     "hook": "the river road to the walled town"
+    }
+   ]
+  },
+  {
+   "group": "Outer skerries",
+   "islands": [
+    {
+     "name": "Vaengr",
+     "hook": "the wing-shaped island carved on the Twin-Axe Stone"
+    },
+    {
+     "name": "Gannet Rock",
+     "hook": "an old hirdman who knew Halfdan"
+    },
+    {
+     "name": "The Burned Stave",
+     "hook": "a hall with every body facing the door"
+    },
+    {
+     "name": "Draugr's Barrow",
+     "hook": "grave-robbers dressed as the dead"
+    },
+    {
+     "name": "Skerry of Horns",
+     "hook": "a hoard and a riddle on a hilt"
+    },
+    {
+     "name": "Storm-Wife's Rock",
+     "hook": "a woman who says she calls weather"
+    }
+   ]
+  },
+  {
+   "group": "Ice coast",
+   "islands": [
+    {
+     "name": "Jostedal tongue",
+     "hook": "glacier ice down to the sea"
+    },
+    {
+     "name": "Walrus Strand",
+     "hook": "ivory hunters"
+    },
+    {
+     "name": "The Tarns",
+     "hook": "high lakes that never thaw"
+    }
+   ]
+  },
+  {
+   "group": "Whale grounds",
+   "islands": [
+    {
+     "name": "Hval Station",
+     "hook": "summer whaling camp"
+    },
+    {
+     "name": "Blood Bay",
+     "hook": "where the boats drive the pods"
+    }
+   ]
+  },
+  {
+   "group": "The Edge",
+   "islands": [
+    {
+     "name": "Fog Bank",
+     "hook": "unmapped until Act VI"
+    },
+    {
+     "name": "Drift Ice",
+     "hook": "moves; no two visits alike"
+    },
+    {
+     "name": "The Old Stone",
+     "hook": "something that was there before the first ship"
+    }
+   ]
+  }
+ ],
+ "transport": [
+  {
+   "id": "foot",
+   "from": "Act I",
+   "status": "built"
+  },
+  {
+   "id": "skis_sledge",
+   "from": "Act II",
+   "status": "planned",
+   "note": "winter only"
+  },
+  {
+   "id": "horse",
+   "from": "Act II",
+   "status": "planned",
+   "note": "fjord horse; whistle, saddlebags, mounted spear and bow"
+  },
+  {
+   "id": "faering",
+   "from": "Act II",
+   "status": "planned",
+   "note": "two-oar boat; inner skerries in calm weather"
+  },
+  {
+   "id": "karve",
+   "from": "Act III",
+   "status": "planned",
+   "note": "crew of eight; the first ship that is yours"
+  },
+  {
+   "id": "longship",
+   "from": "Act IV",
+   "status": "planned",
+   "note": "crew of thirty; raids, sea battles, upgrades"
+  },
+  {
+   "id": "knarr_passage",
+   "from": "Act II",
+   "status": "planned",
+   "note": "pay a trader between ports: fast travel that pirates can interrupt"
+  },
+  {
+   "id": "ferry",
+   "from": "Act II",
+   "status": "planned",
+   "note": "short crossings; some ferrymen inform"
+  }
+ ],
+ "outlawry": {
+  "icon": "wolf-marks",
+  "scope": "per law-district",
+  "levels": [
+   {
+    "marks": 1,
+    "name": "Fined",
+    "norse": "bót",
+    "response": "cold shoulders; the reeve demands payment"
+   },
+   {
+    "marks": 2,
+    "name": "Hue and cry",
+    "norse": null,
+    "response": "locals chase; gates shut"
+   },
+   {
+    "marks": 3,
+    "name": "Lesser outlawry",
+    "norse": "fjörbaugsgarðr",
+    "response": "bounty hunters; merchants refuse; three safe houses"
+   },
+   {
+    "marks": 4,
+    "name": "Full outlawry",
+    "norse": "skóggangr",
+    "response": "anyone may kill you; house-guard with dogs; companions may leave"
+   },
+   {
+    "marks": 5,
+    "name": "Wolf in hallowed places",
+    "norse": "vargr í véum",
+    "response": "the jarl's ships and champion; every port closed"
+   }
+  ],
+  "ways_down": [
+   "pay the blood-price at a Thing",
+   "win a holmgang against the accuser's champion",
+   "a friendly jarl speaks for you",
+   "lie low: one mark per season",
+   "leave the district"
+  ],
+  "rules": [
+   "unwitnessed crimes add nothing",
+   "a declared killing is manslaughter; a hidden one is murder (two marks worse)",
+   "kin hold a feud separate from the law"
+  ]
+ },
+ "standing": [
+  {
+   "tier": "Wolf",
+   "address": "vargr",
+   "behaviour": "fighters attack on sight; farmers bar doors"
+  },
+  {
+   "tier": "Stranger",
+   "address": "traveller",
+   "behaviour": "wary; high prices"
+  },
+  {
+   "tier": "Guest",
+   "address": "by name",
+   "behaviour": "lodging, rumours, side missions"
+  },
+  {
+   "tier": "Kinsman",
+   "address": "friend / Ravensson",
+   "behaviour": "gifts, discounts, men join raids"
+  },
+  {
+   "tier": "Jarl",
+   "address": "lord",
+   "behaviour": "tribute, muster, disputes brought for judgment"
+  },
+  {
+   "tier": "King",
+   "address": "my king",
+   "behaviour": "people kneel; free lodging and remounts; levy on a horn-call"
+  }
+ ],
+ "ravens": [
+  {
+   "ability": "Raven's Eye",
+   "raven": "white",
+   "from": "Act I ch.3",
+   "status": "built"
+  },
+  {
+   "ability": "Beacon",
+   "raven": "black",
+   "from": "Act I ch.3",
+   "status": "built"
+  },
+  {
+   "ability": "Witness sense",
+   "raven": "white",
+   "from": "Act II",
+   "status": "planned"
+  },
+  {
+   "ability": "Harry",
+   "raven": "black",
+   "from": "Act II",
+   "status": "planned"
+  },
+  {
+   "ability": "Omen",
+   "raven": "white",
+   "from": "Act II",
+   "status": "planned"
+  },
+  {
+   "ability": "Thief",
+   "raven": "black",
+   "from": "Act III",
+   "status": "planned"
+  },
+  {
+   "ability": "Landfall",
+   "raven": "white",
+   "from": "Act III",
+   "status": "planned"
+  },
+  {
+   "ability": "Battle-crows",
+   "raven": "both",
+   "from": "Act IV",
+   "status": "planned"
+  },
+  {
+   "ability": "Messenger",
+   "raven": "either",
+   "from": "Act V",
+   "status": "planned"
+  }
+ ],
+ "secret_weapons": [
+  {
+   "omen": "yew",
+   "weapon": "Storm-Yew",
+   "class": "bow",
+   "act": 2
+  },
+  {
+   "omen": "barrow",
+   "weapon": "Grave-Song",
+   "class": "sword",
+   "act": 3
+  },
+  {
+   "omen": "icespear",
+   "weapon": "Winter's Tooth",
+   "class": "spear",
+   "act": 4
+  },
+  {
+   "omen": "twinaxe",
+   "weapon": "The Brothers",
+   "class": "dual_axes",
+   "act": 4
+  },
+  {
+   "omen": "skyiron",
+   "weapon": "Star-Fall",
+   "class": "hammer",
+   "act": 5
+  },
+  {
+   "omen": null,
+   "weapon": "Raven-Feeder",
+   "class": "axe",
+   "act": "2-7",
+   "note": "Ragnar's axe, reforged three times, never replaced"
+  }
+ ]
+}
