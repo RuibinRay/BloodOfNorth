@@ -47,7 +47,7 @@ export class Player {
     this.equipped = name; this.aiming = false; this.blocking = false; this.draw = 0;
     this.h.hold('R', name === 'woodsword' ? (this.adult ? 'woodsword_big' : 'woodsword') : name === 'father_axe' ? 'father_axe' : null);
     if (this.adult) this.showBackAxe(name !== 'father_axe' && this.game.inventory.has('father_axe') && !this.game.state.flags.axeHidden);
-    this.h.hold('L', name === 'bow' ? 'bow' : null);
+    this.h.hold('L', name === 'bow' ? 'bow' : name === 'father_axe' && this.game.inventory.has('brother_axe') ? 'brother_axe' : null);
     this.game.audio.play('page');
     this.game.events.emit('equip', name);
     return true;
@@ -56,7 +56,7 @@ export class Player {
   /** The melee weapon slot 1 draws: Ragnar's axe once he has taken it up, otherwise the practice blade. */
   melee() {
     const g = this.game;
-    if (g.state.stage === 'act2' && g.inventory.has('father_axe') && !g.state.flags.axeHidden) return 'father_axe';
+    if ((g.state.stage === 'act2' || g.state.stage === 'open') && g.inventory.has('father_axe') && !g.state.flags.axeHidden) return 'father_axe';
     return g.inventory.has('woodsword') ? 'woodsword' : null;
   }
   swing(heavy) {

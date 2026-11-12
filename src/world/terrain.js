@@ -2,11 +2,15 @@
 // a river on the east flank and a flattened shelf for the village.
 import * as THREE from 'three';
 import { fbm, noise2, smoothstep, lerp, clamp, distToPolyline } from '../core/util.js';
-import { FLATS, PATHS, FIELDS, VILLAGE, POI } from './layout.js';
+import { FLATS, PATHS, FIELDS, VILLAGE, POI, ISLES } from './layout.js';
 import { patch, TEX } from './geo.js';
 
 export const SIZE = 640, HALF = SIZE / 2, N = 256, CELL = SIZE / N;
 const H = new Float32Array((N + 1) * (N + 1));
+/** The sea chart: a coarser heightfield under and around the valley. It carries the mainland coast outside
+ *  the valley's own grid and 1.3 km of open water and islands to the south. */
+export const CH = { x0: -640, z0: -480, w: 1280, d: 2080, nx: 256, nz: 416, c: 5 };
+const CHH = new Float32Array((CH.nx + 1) * (CH.nz + 1));
 
 export function riverX(z) { return 78 + Math.sin(z * 0.021) * 22 + Math.sin(z * 0.055 + 1.3) * 6; }
 const floorY = (z) => 3.5 - z * 0.018;
@@ -37,11 +41,37 @@ function raw(x, z) {
   return h;
 }
 
-/** Bilinear height lookup on the mesh grid (matches the rendered surface). */
-export function heightAt(x, z) {
+function chartRaw(x, z) {
+  // the mainland: the valley's walls run on as a coastal massif, which breaks up and sinks toward the south
+  const ax = Math.abs(x), coast = 505 + fbm(x * 0.006 + 2.3, 1.7, 3) * 120 - smoothstep(330, 600, ax) * 110;
+  const k = (1 - smoothstep(coast - 200, coast, z)) * (1 - smoothstep(450, 615, ax + fbm(4.1, z * 0.007, 2) * 45)) * (1 - smoothstep(-345, -470, z));
+  const sea = lerp(-13 + fbm(x * 0.004 + 9, z * 0.004 - 3, 3) * 2.5, base(x, z), k);
+  let h = sea;
+  for (const s of ISLES) {
+    // an island: a stretched, turned, wobbly-edged shelf with a beach, shallows round it, and maybe a hill
+    const dx = x - s.x, dz = z - s.z, ca = Math.cos(s.a || 0), sa = Math.sin(s.a || 0);
+    const d = Math.hypot((dx * ca + dz * sa) / (s.k || 1), -dx * sa + dz * ca) * (1 + 0.3 * fbm(x * 0.013 + s.x * 0.7, z * 0.013 - s.z * 0.7, 2));
+    if (d >= s.r) continue;
+    let top = s.h + fbm(x * 0.02 + s.x, z * 0.02 - s.z, 3) * s.rough;
+    if (s.p) top += s.p[2] * (1 - smoothstep(0, s.p[3], Math.hypot(dx - s.p[0], dz - s.p[1])));
+    const land = lerp(-2.2, top, 1 - smoothstep(s.r * 0.42, s.r * 0.86, d));
+    h = Math.max(h, lerp(sea, land, 1 - smoothstep(s.r * 0.86, s.r, d)));
+  }
+  return h;
+}
+function chartAt(x, z) {
+  const fx = clamp((x - CH.x0) / CH.c, 0, CH.nx - 0.001), fz = clamp((z - CH.z0) / CH.c, 0, CH.nz - 0.001);
+  const ix = fx | 0, iz = fz | 0, tx = fx - ix, tz = fz - iz, i = iz * (CH.nx + 1) + ix;
+  return lerp(lerp(CHH[i], CHH[i + 1], tx), lerp(CHH[i + CH.nx + 1], CHH[i + CH.nx + 2], tx), tz);
+}
+function mainAt(x, z) {
   const fx = clamp((x + HALF) / CELL, 0, N - 0.001), fz = clamp((z + HALF) / CELL, 0, N - 0.001);
   const ix = fx | 0, iz = fz | 0, tx = fx - ix, tz = fz - iz, i = iz * (N + 1) + ix;
   return lerp(lerp(H[i], H[i + 1], tx), lerp(H[i + N + 1], H[i + N + 2], tx), tz);
+}
+/** Bilinear height lookup on the mesh grids (matches the rendered surface): the valley, or the chart outside it. */
+export function heightAt(x, z) {
+  return x > HALF || x < -HALF || z > HALF || z < -HALF ? chartAt(x, z) : mainAt(x, z);
 }
 export function slopeAt(x, z) {
   const e = 1.5;
@@ -82,6 +112,11 @@ export function forestDensity(x, z) {
 export function buildHeights() {
   for (const f of FLATS) if (f.h === undefined) f.h = base(f.x, f.z) + (f.dh || 0);
   for (let j = 0; j <= N; j++) for (let i = 0; i <= N; i++) H[j * (N + 1) + i] = raw(-HALF + i * CELL, -HALF + j * CELL);
+  for (let j = 0; j <= CH.nz; j++) for (let i = 0; i <= CH.nx; i++) {
+    const x = CH.x0 + i * CH.c, z = CH.z0 + j * CH.c, e = Math.min(HALF - Math.abs(x), HALF - Math.abs(z));
+    // under the valley's own mesh the chart ducks out of sight; along the seam it sits a hand's width lower
+    CHH[j * (CH.nx + 1) + i] = e < 0 ? chartRaw(x, z) : e === 0 ? mainAt(x, z) - 0.15 : e <= 10 ? mainAt(x, z) - 3 : -60;
+  }
   // the fishing rock sits on the west bank of the river, east of the village
   POI.fishing.z = 58; POI.fishing.x = riverX(58) - 8.6;
 }
@@ -138,6 +173,38 @@ function forestDensityFast(x, z) {
   return d * smoothstep(VILLAGE.r + 6, VILLAGE.r + 34, dv);
 }
 
+function buildChart() {
+  const nx = CH.nx, nz = CH.nz, nv = (nx + 1) * (nz + 1), pos = new Float32Array(nv * 3), uv = new Float32Array(nv * 2), idx = new Uint32Array(nx * nz * 6);
+  for (let j = 0; j <= nz; j++) for (let i = 0; i <= nx; i++) {
+    const k = j * (nx + 1) + i;
+    pos[k * 3] = CH.x0 + i * CH.c; pos[k * 3 + 1] = CHH[k]; pos[k * 3 + 2] = CH.z0 + j * CH.c;
+    uv[k * 2] = i / nx; uv[k * 2 + 1] = 1 - j / nz;
+  }
+  let q = 0;
+  for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) { const a = j * (nx + 1) + i, b = a + 1, c = a + nx + 1, e = c + 1; idx[q++] = a; idx[q++] = c; idx[q++] = b; idx[q++] = b; idx[q++] = c; idx[q++] = e; }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  geo.setIndex(new THREE.BufferAttribute(idx, 1)); geo.computeVertexNormals();
+  // painted colour, to match the valley: shingle at the waterline, grass and heather, rock on slopes, snow on the heights
+  const TW = 768, TH = Math.round((TW * CH.d) / CH.w), cv = document.createElement('canvas'); cv.width = TW; cv.height = TH;
+  const g = cv.getContext('2d'), img = g.createImageData(TW, TH), d = img.data, px = CH.w / TW;
+  for (let j = 0; j < TH; j++) for (let i = 0; i < TW; i++) {
+    const x = CH.x0 + (i + 0.5) * px, z = CH.z0 + (j + 0.5) * px, h = heightAt(x, z), o = (j * TW + i) * 4;
+    const sl = Math.hypot(heightAt(x + 2.5, z) - h, heightAt(x, z + 2.5) - h) / 2.5, nn = noise2(x * 0.09, z * 0.09) * 0.5 + 0.5, n2 = noise2(x * 0.021 + 7, z * 0.021) * 0.5 + 0.5;
+    let r = lerp(92, 128, nn), gg = lerp(104, 116, nn), b = lerp(50, 58, nn);
+    const hth = smoothstep(0.5, 0.8, n2) * 0.6; r = lerp(r, 118, hth); gg = lerp(gg, 92, hth); b = lerp(b, 84, hth);       // heather
+    const sh = 1 - smoothstep(0.3, 1.5, h); r = lerp(r, 156, sh); gg = lerp(gg, 146, sh); b = lerp(b, 118, sh);            // shingle
+    const rk = smoothstep(0.42, 0.85, sl); r = lerp(r, 116, rk); gg = lerp(gg, 112, rk); b = lerp(b, 106, rk);              // rock
+    const sn = smoothstep(46, 62, h + nn * 10) * (1 - smoothstep(0.9, 1.5, sl) * 0.7); r = lerp(r, 228, sn); gg = lerp(gg, 232, sn); b = lerp(b, 240, sn);
+    const k = 1.04 + nn * 0.14; d[o] = r * k; d[o + 1] = gg * k; d[o + 2] = b * k; d[o + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+  const m = new THREE.Mesh(geo, patch(new THREE.MeshStandardMaterial({ map: tex, roughness: 0.96, metalness: 0 }), { detail: TEX.detail, snow: 1 }));
+  m.receiveShadow = true;
+  return m;
+}
+
 export function buildTerrain(scene) {
   const pos = new Float32Array((N + 1) * (N + 1) * 3), uv = new Float32Array((N + 1) * (N + 1) * 2);
   const idx = new Uint32Array(N * N * 6);
@@ -161,14 +228,15 @@ export function buildTerrain(scene) {
   const mesh = new THREE.Mesh(geo, mat);
   mesh.receiveShadow = true;
   scene.add(mesh);
+  scene.add(buildChart());
 
   // --- water: the fjord (one big plane at sea level) and the river ribbon ---
   const waterMat = new THREE.MeshStandardMaterial({
     color: 0x24465a, roughness: 0.08, metalness: 0.55, transparent: true, opacity: 0.88,
     normalMap: TEX.waterN, normalScale: new THREE.Vector2(0.55, 0.55), envMapIntensity: 1.3,
   });
-  TEX.waterN.repeat.set(150, 150);
-  const sea = new THREE.Mesh(new THREE.PlaneGeometry(2600, 2600), waterMat);
+  TEX.waterN.repeat.set(350, 350);
+  const sea = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), waterMat);
   sea.rotation.x = -Math.PI / 2; sea.position.y = 0; sea.receiveShadow = true;
   scene.add(sea);
 

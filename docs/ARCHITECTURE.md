@@ -19,7 +19,7 @@ scale to a seamless open world; those need the engine port below.
 | Boot, loop, modes, save/load | `src/main.js` | Modes: menu, play, dialogue, cutscene, activity, paused, ui. `frame(dt)` advances everything and can be stepped by tests |
 | Input | `src/core/input.js` | Action map over keyboard, mouse and gamepad; rebinding; pointer lock |
 | Audio | `src/core/audio.js` | WebAudio synthesis only: ambience beds, effects, generative score |
-| World | `src/world/*` | Analytic heightfield baked to a 257² grid; painted 1024² albedo; instanced vegetation; merged static village mesh; circle and box colliders with a spatial grid |
+| World | `src/world/*` | Analytic heightfield baked to a 257² grid for the valley (2.5 m cells), plus a coarser 257 × 417 chart (5 m cells) round and south of it for the mainland coast and the islands; painted 1024² albedo; instanced vegetation; merged static village mesh; circle and box colliders with a spatial grid |
 | Sky and weather | `src/world/sky.js` | Shader dome, sun and moon light with shadows, exponential fog, snow particles, PMREM environment map |
 | Effects | `src/world/fx.js` | Two pooled particle systems; five real lights assigned to the nearest fires |
 | Characters | `src/entities/humanoid.js` | Jointed rig with pose blending: locomotion, looping overlays, one-shot actions with hit events |

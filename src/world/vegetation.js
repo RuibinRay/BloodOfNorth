@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { rng, noise2, clamp } from '../core/util.js';
 import { M, at, cyl, cone, tint, merge, patch } from './geo.js';
 import { heightAt, slopeAt, forestDensity, distToPaths, inField, riverX, HALF } from './terrain.js';
-import { VILLAGE, POI } from './layout.js';
+import { VILLAGE, POI, ISLES, SEA_CLEAR } from './layout.js';
 
 function pineGeo() {
   const parts = [tint(at(cyl(0.1, 0.3, 10, 6), 0, 5, 0), 0x4a382a, 0.25, 1)];
@@ -137,5 +137,27 @@ export function scatterVegetation(scene, world, quality) {
   grass.instanceMatrix.needsUpdate = true; grass.instanceColor.needsUpdate = true;
   grass.receiveShadow = true; grass.castShadow = false; grass.frustumCulled = false;
   scene.add(grass);
-  return { grass, rockMesh, counts: { pines: pines.length, birches: birches.length, bushes: bushes.length, rocks: rocks.length, grass: n } };
+  // the sea chart: wind-bent pines and birch in groves, boulders on every shore (own random stream, so
+  // the valley's trees stay exactly where the story expects them)
+  const R2 = rng(9117), ip = [], ib = [], ir = [];
+  const clearOf = (x, z) => SEA_CLEAR.every(([cx, cz, cr]) => Math.hypot(x - cx, z - cz) > cr);
+  for (const il of ISLES) {
+    const nT = il.bare ? 0 : Math.round(il.r * 0.6), nR = Math.round(il.r * (il.bare ? 0.9 : 0.5));
+    for (let i = 0, k = 0; i < nT * 5 && k < nT; i++) {
+      const a = R2() * 6.28, d = Math.sqrt(R2()) * il.r * 0.8, x = il.x + Math.cos(a) * d, z = il.z + Math.sin(a) * d, h = heightAt(x, z);
+      if (h < 1.8 || h > 24 || slopeAt(x, z) > 0.6 || !clearOf(x, z) || noise2(x * 0.035, z * 0.035) < 0.02) continue;
+      (R2() < 0.3 ? ib : ip).push({ x, z, y: h - 0.15, sc: 0.6 + R2() * 0.6, ry: R2() * 6.28 }); k++;
+    }
+    for (let i = 0; i < nR; i++) {
+      const a = R2() * 6.28, d = Math.sqrt(R2()) * il.r * 0.92, x = il.x + Math.cos(a) * d, z = il.z + Math.sin(a) * d, h = heightAt(x, z);
+      if (h < -0.5 || !clearOf(x, z)) continue;
+      const big = R2() < 0.16 || slopeAt(x, z) > 0.5, sc = big ? 1.1 + R2() * 1.9 : 0.3 + R2() * 0.6;
+      ir.push({ x, z, y: h - sc * 0.2, sc, sx: 0.8 + R2() * 0.6, sy: 0.7 + R2() * 0.5, sz: 0.8 + R2() * 0.6, ry: R2() * 6.28, big: sc > 1.05 });
+    }
+  }
+  instanced(pineGeo(), treeMat, ip, { collide: 0.36 });
+  instanced(birchGeo(), birchMat, ib, { collide: 0.2, hue: 0.2 });
+  instanced(rockGeo(), M.vc, ir, { hue: 0.05 });
+  ir.forEach((r) => { if (r.big) world.addCircle(r.x, r.z, 0.78 * r.sc, 1.2 * r.sc); });
+  return { grass, rockMesh, counts: { pines: pines.length, birches: birches.length, bushes: bushes.length, rocks: rocks.length, grass: n, isles: ip.length + ib.length + ir.length } };
 }

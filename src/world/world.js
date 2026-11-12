@@ -58,7 +58,8 @@ export class World {
         }
       }
     }
-    pos.x = clamp(pos.x, BOUNDS.minX, BOUNDS.maxX); pos.z = clamp(pos.z, BOUNDS.minZ, BOUNDS.maxZ);
+    const bx = pos.z > 322 ? BOUNDS.seaX : BOUNDS.maxX; // the sea chart is wider than the home valley
+    pos.x = clamp(pos.x, -bx, bx); pos.z = clamp(pos.z, BOUNDS.minZ, BOUNDS.maxZ);
   }
   pointInBox(x, z, margin = 0) {
     for (const b of this.boxes) {
@@ -225,6 +226,23 @@ export class World {
     const shade = new THREE.Mesh(new THREE.PlaneGeometry(0.14, 3.3), new THREE.MeshBasicMaterial({ color: 0x1c2a36, transparent: true, opacity: 0.6, depthWrite: false }));
     shade.rotation.set(-Math.PI / 2, 0, 0.5); shade.position.set(POI.tarn.x + 0.6, ty + 0.085, POI.tarn.z - 0.4); scene.add(shade);
 
+    // sea chart landmarks (the islands are ISLES in layout.js; who lives there is in story/sea_chart.js)
+    for (let i = 0; i < 7; i++) { const a = i * 0.9, r = 0.25 + (i % 3) * 0.22; ctx.b.add(at(sphere(0.34 - i * 0.025, 6, 5), -60 + Math.cos(a) * r, heightAt(-60, 1260) + 0.2 + i * 0.2, 1260 + Math.sin(a) * r, 0, a, 0, 1, 0.7, 1), M.stone); }
+    this.addCircle(-60, 1260, 0.7, 1.4);                                                   // Vængr: the cairn
+    P.fireRing(ctx, -40, 752, 0.7); P.leanTo(ctx, -46, 747, 0.6); P.leanTo(ctx, -34, 746.5, -0.5); P.barrel(ctx, -43.5, 755); P.crate(ctx, -36, 756, 0.3); P.runestone(ctx, -45.5, 758.5, 0.4); P.bench(ctx, -38, 748.6, 0.2); // Kinn: the reeve's camp
+    P.fireRing(ctx, 207, 594, 0.55); P.dryingRack(ctx, 212, 589, 0.5); P.leanTo(ctx, 201, 588, 0.9); P.barrel(ctx, 209.5, 597); // Fedje: the pilot's station
+    P.leanTo(ctx, -241, 553, -0.6); P.hayStack(ctx, -237, 557, 0.8);                         // Selja: a shepherd's shelter
+    P.fireRing(ctx, -415, 806, 0.9); P.leanTo(ctx, -410, 801, -0.8); P.crate(ctx, -418, 809, 0.5); P.crate(ctx, -419.3, 807.8, 1.1, 0.55); P.barrel(ctx, -412, 809.5); // Batalden: the wreckers' fire
+    P.leanTo(ctx, 351, 849, 2.6); P.fireRing(ctx, 347, 853.5, 0.5); P.dryingRack(ctx, 343, 849, 0.3); // Værøy: a croft
+    const wreck = P.makeShip({ L: 9, B: 2.5, D: 0.95, rise: 1.2, sail: false, shields: false, seed: 4 }); // Hovden: a wrecked karve
+    wreck.position.set(127, heightAt(127, 1027) - 0.2, 1027); wreck.rotation.set(0.04, 1.1, 0.3); scene.add(wreck); this.addCircle(127, 1027, 2.4, 2);
+    P.crate(ctx, 121, 1022, 0.8);
+    P.woodpile(ctx, -230, 1040, 0.4, 5, 5);                                                  // Skorpa: the beacon pile
+    P.leanTo(ctx, 466, 1136, 2.2); P.fireRing(ctx, 469.5, 1133, 0.5);                        // Gannet Rock: a hermit
+    P.fireRing(ctx, -456, 1296, 0.6); P.crate(ctx, -459, 1298.5, 0.2);                       // Skerry of Horns: a hoard
+    for (let i = 0; i < 6; i++) { const a = i * 1.047 + 0.3; P.runestone(ctx, 334 + Math.cos(a) * 4.4, 1386 + Math.sin(a) * 4.4, -a + 1.57); } // Storm-Wife's Rock
+    P.fireRing(ctx, 334, 1386, 0.5);
+    P.runestone(ctx, -120, 1484, 0.2);                                                       // Utvær: the last stone
     // the islands (open-world prototype): Gulen's law-rock and hall, Bulandet's fishing camp
     P.runestone(ctx, POI.lawRock.x, POI.lawRock.z, -0.3);
     P.fireRing(ctx, -58, 258, 0.6); P.bench(ctx, -60.2, 256.6, 1.1); P.dryingRack(ctx, -46, 268, 0.8); P.barrel(ctx, -61, 262.4); P.crate(ctx, -49.5, 252.5, 0.4);

@@ -4,6 +4,8 @@ import * as THREE from 'three';
 import { clamp, damp, dampAngle } from '../core/util.js';
 import { heightAt } from '../world/terrain.js';
 import { makeShip } from '../world/props.js';
+import { M } from '../world/geo.js';
+import { BOUNDS } from '../world/layout.js';
 import { horseModel } from '../entities/wildlife.js';
 
 export const MARK_NAMES = ['', 'Fined', 'Hue and cry', 'Lesser outlawry', 'Full outlawry', 'Wolf in hallowed places'];
@@ -15,13 +17,21 @@ export const TIERS = [
   { min: 80, name: 'Jarl', hail: 'Lord. The island is yours to call on.' },
   { min: 100, name: 'King', hail: 'My king.' },
 ];
+/** Law-districts. Outlawry and standing are kept per district: cross the water and you may be a stranger again. */
+export const DISTRICTS = {
+  vestland: { name: 'Vestland', local: 'the Vestland', seat: 'Gulen', champion: 'Hallvard' },
+  skerries: { name: 'The Skerries', local: 'the Skerries', seat: 'Kinn', champion: 'Sigtrygg Salt-Beard' },
+};
 const WEIGHT = { assault: 1, theft: 1, killing: 2 };
 const _v = new THREE.Vector3();
 
-/** Outlawry and standing for one law-district. State lives in game.state.open so it is saved. */
+/** Outlawry and standing, per law-district. State lives in game.state.open so it is saved
+ *  (the Vestland's on the object itself, as in 0.5 saves; the Skerries' under .sk). */
 export class Law {
-  constructor(game, district = 'Vestland') { this.g = game; this.district = district; this.huntT = 0; this.onChange = null; }
-  get s() { return this.g.state.open; }
+  constructor(game) { this.g = game; this.id = 'vestland'; this.huntT = 0; this.onChange = null; }
+  get s() { const o = this.g.state.open; return this.id === 'vestland' ? o : o.sk; }
+  get district() { return DISTRICTS[this.id].name; }
+  get def() { return DISTRICTS[this.id]; }
   tier() { const s = this.s; if (s.marks >= 4) return TIERS[0]; let t = TIERS[0]; for (const x of TIERS) if (s.standing >= x.min) t = x; return t; }
   addStanding(n, why) {
     const s = this.s, before = this.tier().name;
@@ -50,9 +60,10 @@ export class Law {
   }
   update(dt) {
     const g = this.g, s = this.s;
-    if (s.marks > 0 && !g.combat.active && g.mode === 'play') { // talk dies down if you keep out of trouble
-      s.cool = (s.cool || 0) + dt;
-      if (s.cool > 150) { s.cool = 0; const b = s.marks; s.marks--; g.ui.toast('Talk dies down. A wolf-mark fades.'); if (this.onChange) this.onChange(s.marks, b); }
+    if (!g.combat.active && g.mode === 'play') for (const d of [g.state.open, g.state.open.sk]) { // talk dies down, here and across the water
+      if (!d || d.marks <= 0) continue;
+      d.cool = (d.cool || 0) + dt;
+      if (d.cool > 150) { d.cool = 0; const b = d.marks; d.marks--; if (d === s) { g.ui.toast('Talk dies down. A wolf-mark fades.'); if (this.onChange) this.onChange(d.marks, b); } }
     }
     g.ui.setLaw({ district: this.district, tier: this.tier().name, marks: s.marks, name: MARK_NAMES[s.marks] });
   }
@@ -73,7 +84,14 @@ export class Mounts {
   spawnBoat(x, z, yaw = 0) {
     const g = this.g, model = makeShip({ L: 6.4, B: 1.7, D: 0.62, rise: 0.75, seed: 7 });
     g.scene.add(model);
-    const b = (this.boat = { type: 'boat', model, pos: model.position, yaw, speed: 0 });
+    const b = (this.boat = { type: 'boat', model, pos: model.position, yaw, speed: 0, sailUp: false, sailK: 0 });
+    const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.07, 3.7, 6), M.timber); mast.position.set(0, 2.1, 0.3);
+    const yard = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 2.8, 5), M.timber); yard.rotation.z = Math.PI / 2; yard.position.set(0, 3.74, 0.37);
+    const sg = new THREE.PlaneGeometry(2.6, 2.6, 6, 4), sp = sg.attributes.position;
+    for (let i = 0; i < sp.count; i++) sp.setZ(i, Math.cos((sp.getX(i) / 1.3) * 1.4) * 0.38 * (0.4 + 0.6 * (0.5 - sp.getY(i) / 2.6)));
+    sg.computeVertexNormals(); sg.translate(0, -1.3, 0); // it hangs from the yard, so it furls upward
+    b.sail = new THREE.Mesh(sg, M.sail); b.sail.position.set(0, 3.72, 0.43); b.sail.scale.y = 0.07;
+    model.add(mast, yard, b.sail);
     b.pos.set(x, -0.14, z); model.rotation.y = yaw;
     g.world.addInteractable({ id: 'boat', pos: () => b.pos, r: 6, priority: 1, label: 'Board the boat', enabled: () => !this.on, use: () => this.mount(b) });
     return b;
@@ -96,12 +114,13 @@ export class Mounts {
     this.on = null; p.frozen = false; p.riding = false; p.loopOverride = null; p.h.lift = 0; p.cam.maxDist = p.adult ? 4.9 : 4.1;
     const x = to ? to.x : m.pos.x + Math.cos(m.yaw) * 1.3, z = to ? to.z : m.pos.z - Math.sin(m.yaw) * 1.3;
     p.pos.set(x, g.world.groundAt(x, z), z); p.speed = 0;
-    m.speed = 0; g.ui.hint(null); g.audio.play('uiBack');
+    m.speed = 0; m.sailUp = false; g.ui.hint(null); g.audio.play('uiBack');
     g.events.emit('dismounted', m.type);
   }
   whistle() {
     const g = this.g, h = this.horse;
     if (!h || this.on) return;
+    if (Math.hypot(h.pos.x - g.player.pos.x, h.pos.z - g.player.pos.z) > 170) { g.audio.play('bird'); g.ui.toast('You whistle. She is too far to hear.'); return; }
     h.called = true; g.audio.play('bird'); g.after(0.12, () => g.audio.play('bird')); g.ui.toast('You whistle. Hooves answer.');
   }
   /** Nearest dry ground within reach of the boat. */
@@ -156,17 +175,28 @@ export class Mounts {
       this.hint('horse', 'Ride with {forward}{left}{back}{right}. Hold {sprint} to gallop. {interact} to dismount, {whistle} to call the horse.');
       if (act) this.dismount();
     } else {
-      const want = mv.y > 0.1 ? 4.8 : mv.y < -0.1 ? -1.6 : 0;
-      m.speed = damp(m.speed, want, 0.9, dt);
-      m.yaw -= mv.x * 0.95 * dt * clamp(Math.abs(m.speed) / 2 + 0.35, 0.35, 1);
+      if (live && inp.hit('sprint')) { m.sailUp = !m.sailUp; g.audio.play('page'); g.ui.toast(m.sailUp ? 'The sail is set.' : 'Sail down. Oars out.'); }
+      // under sail she runs on her own; the oars are slower but will go anywhere
+      const want = m.sailUp ? (mv.y < -0.1 ? 3.2 : 11.5) : mv.y > 0.1 ? 4.8 : mv.y < -0.1 ? -1.6 : 0;
+      m.speed = damp(m.speed, want, m.sailUp ? 0.55 : 0.9, dt);
+      m.yaw -= mv.x * (m.sailUp ? 0.62 : 0.95) * dt * clamp(Math.abs(m.speed) / 2 + 0.35, 0.35, 1);
       const nx = m.pos.x + Math.sin(m.yaw) * m.speed * dt, nz = m.pos.z + Math.cos(m.yaw) * m.speed * dt;
-      if (heightAt(nx, nz) < -0.45 && Math.abs(nx) < 300 && nz < 316) { m.pos.x = nx; m.pos.z = nz; } else m.speed *= 0.2;
+      const onChart = Math.abs(nx) < (nz > 322 ? BOUNDS.seaX - 6 : 300) && nz < BOUNDS.maxZ - 6;
+      if (heightAt(nx, nz) < -0.45 && onChart) { m.pos.x = nx; m.pos.z = nz; }
+      else {
+        m.speed *= 0.2;
+        if (!onChart && this.t - (this.edgeT || -99) > 12) { this.edgeT = this.t; g.ui.toast('The chart ends here. Past this the Whale Road has no names yet.'); }
+        if (m.sailUp) { m.sailUp = false; if (onChart) g.ui.toast('She grounds. The sail comes down.'); }
+      }
+      m.sailK = damp(m.sailK, m.sailUp ? 1 : 0, 3.5, dt); m.sail.scale.y = 0.07 + 0.93 * m.sailK; p.cam.maxDist = 8.5 + 3.5 * m.sailK;
       m.pos.y = -0.14 + Math.sin(this.t * 1.3) * 0.04;
-      m.model.rotation.set(Math.sin(this.t * 0.9) * 0.03, m.yaw, Math.sin(this.t * 1.1) * 0.04);
+      m.model.rotation.set(Math.sin(this.t * 0.9) * 0.03, m.yaw, Math.sin(this.t * 1.1) * 0.04 + m.sailK * 0.07);
       p.pos.set(m.pos.x, 0.0, m.pos.z); p.yaw = m.yaw; p.root.rotation.y = m.yaw;
-      if (Math.abs(m.speed) > 1 && this.t % 1.4 < dt) { g.audio.play('splash', { vol: 0.25 }); g.fx.burst('splash', m.pos.x - Math.sin(m.yaw) * 2.6, 0.05, m.pos.z - Math.cos(m.yaw) * 2.6, 3); }
+      if (Math.abs(m.speed) > 1 && this.t % (m.speed > 7 ? 0.5 : 1.4) < dt) { g.audio.play('splash', { vol: 0.25 }); g.fx.burst('splash', m.pos.x - Math.sin(m.yaw) * 2.6, 0.05, m.pos.z - Math.cos(m.yaw) * 2.6, 3); }
       const land = this.shore();
-      this.hint(land ? 'land' : 'row', land ? 'Press {interact} to step ashore.' : 'Row with {forward}, back water with {back}, steer with {left}{right}.');
+      if (land) this.hint('land', 'Press {interact} to step ashore.');
+      else if (m.sailUp) this.hint('sail', 'Under sail. Steer with {left}{right}, hold {back} to spill the wind, {sprint} lowers the sail.');
+      else this.hint('row', 'Row with {forward}, back water with {back}, steer with {left}{right}. {sprint} sets the sail.');
       if (land && act) this.dismount(land);
     }
   }

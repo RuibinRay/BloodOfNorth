@@ -87,7 +87,7 @@ export class Ravens {
       x = p.pos.x + (dx / d) * LEASH; z = p.pos.z + (dz / d) * LEASH;
       if (this.t - this.leashT > 6) { this.leashT = this.t; g.ui.toast(`${this.names()[0]} will not fly further from you`); }
     }
-    x = clamp(x, -305, 305); z = clamp(z, -305, 305);
+    const lim = z > 322 ? 628 : 305; x = clamp(x, -lim, lim); z = clamp(z, -305, 1590);
     const y = damp(w.position.y, Math.max(g.world.groundAt(x, z), 0) + this.alt, 3, dt);
     w.position.set(x, y, z); w.rotation.set(0, this.yaw, -mv.x * 0.35);
     flap(w, this.speed > 12 ? 13 : 8);

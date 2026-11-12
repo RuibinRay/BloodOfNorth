@@ -90,4 +90,28 @@ export const HOUSES = [
   { id: 'bjornbarn', x: 169, z: -135, ry: Math.PI / 2, len: 9, wid: 5.2, ridge: 3.9, roof: 'thatch', door: -1, doorX: 0 },
 ];
 
-export const BOUNDS = { minX: -250, maxX: 250, minZ: -262, maxZ: 314 };
+export const BOUNDS = { minX: -250, maxX: 250, minZ: -262, maxZ: 1590, seaX: 628 };
+
+/** Islands of the sea chart (open water south of the fjord mouth). r = radius, h = height of the flat
+ *  ground, rough = bumpiness, k and a = stretch and turn of its outline, p = [dx, dz, height, radius] of its hill,
+ *  bare = no trees.
+ *  A nameless entry is a lobe of its neighbour. */
+export const ISLES = [
+  { id: 'selja', k: 1.35, a: 0.5, name: 'Selja', x: -250, z: 560, r: 70, h: 4.5, rough: 1.2, p: [-24, 14, 12, 30] },
+  { id: 'fedje', k: 1.5, a: -0.4, name: 'Fedje', x: 210, z: 600, r: 80, h: 3.5, rough: 1.0, p: [26, 22, 7, 30] },
+  { id: 'kinn', k: 1.25, a: 0.2, name: 'Kinn', x: -40, z: 760, r: 95, h: 5, rough: 1.2, p: [30, 28, 24, 40] },
+  { id: 'batalden', k: 1.4, a: 1.2, name: 'Batalden', x: -420, z: 800, r: 75, h: 4, rough: 1.5, p: [-22, -16, 10, 28] },
+  { id: 'vaeroy', k: 1.3, a: -0.9, name: 'Værøy', x: 340, z: 860, r: 90, h: 5, rough: 1.5, p: [-25, 30, 14, 38] },
+  { id: 'hovden', k: 1.6, a: 0.1, name: 'Hovden', x: 120, z: 1010, r: 60, h: 3, rough: 0.8 },
+  { id: 'skorpa', k: 1.15, a: 0.8, name: 'Skorpa', x: -230, z: 1040, r: 85, h: 5, rough: 1.6, p: [0, 0, 27, 62] },
+  { id: 'gannet', k: 1.2, a: 2.0, name: 'Gannet Rock', x: 470, z: 1130, r: 44, h: 6, rough: 1.5, p: [12, -10, 20, 21], bare: true },
+  { id: 'vaengr', k: 1.5, a: -0.51, name: 'Vængr', x: -60, z: 1260, r: 78, h: 4, rough: 1.2, p: [-26, -22, 8, 28] },
+  { id: 'vaengr2', k: 1.7, a: -0.2, name: null, x: 22, z: 1214, r: 60, h: 3.5, rough: 1.0 },
+  { id: 'horns', k: 1.3, a: 0.3, name: 'Skerry of Horns', x: -450, z: 1290, r: 55, h: 4, rough: 1.6, p: [14, -12, 16, 20], bare: true },
+  { id: 'stormwife', k: 1.15, a: 1.0, name: "Storm-Wife's Rock", x: 330, z: 1380, r: 48, h: 5, rough: 1.4, p: [-13, -13, 18, 21], bare: true },
+  { id: 'utvaer', k: 1.6, a: -0.3, name: 'Utvær', x: -120, z: 1480, r: 50, h: 3, rough: 0.9, bare: true },
+];
+/** Camps and landmarks on the islands: trees and boulders keep clear of these. [x, z, radius] */
+export const SEA_CLEAR = [[-40, 752, 15], [206, 592, 13], [-242, 555, 10], [-415, 806, 13], [348, 852, 11], [124, 1023, 9], [-230, 1040, 7], [466, 1135, 9], [-60, 1260, 9], [-457, 1297, 9], [334, 1386, 9], [-120, 1484, 6]];
+/** Where one law ends and the next begins. */
+export const DISTRICT_LINE = 660;

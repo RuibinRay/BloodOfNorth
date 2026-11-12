@@ -1,6 +1,6 @@
 # The open world (Act II onward)
 
-**Status: design, with a first sandbox built** (horse, rowing boat, two islands, wolf-marks, standing in one district; see the README). Otherwise nothing in this document is built except where marked **[built]**. The data version
+**Status: design, with a sandbox built** (horse, boat with a sail, fourteen islands, wolf-marks and standing in two law-districts, paid passage; see the README). Otherwise nothing in this document is built except where marked **[built]**. The data version
 is `data/open_world.json`. It is written so each system can be built and tested on its own.
 
 ## When Eirik grows up
@@ -33,6 +33,31 @@ island from most shores. About forty islands in nine groups (full list in the da
 | Whale grounds | 2 | Seasonal whaling stations |
 | The Edge | 3 | Unmapped until Act VI: fog, drift ice, something old |
 
+### Built so far (sandbox, 0.6)
+
+Fourteen islands in one continuous world about 1.3 km wide and 2 km long. They carry sandbox content, not
+the story hooks in the table above.
+
+| Island | District | What is there |
+|---|---|---|
+| Gulen | Vestland | Law-rock, lawspeaker, merchant, ferryman |
+| Bulandet | Vestland | Fishing camp; tithe-takers to drive off |
+| Selja | Vestland | A shepherd and his flock |
+| Fedje | Vestland | The pilot's station (passage) |
+| Kinn | Skerries | Seat of the district: the reeve, a trader, a skipper (passage), a guard |
+| Batalden | Skerries | Wreckers and their false fire; they attack whoever lands |
+| Værøy | Skerries | A croft; hares and deer to hunt |
+| Hovden | Skerries | A wrecked karve and its cargo |
+| Skorpa | Skerries | The tallest island; a beacon to light |
+| Gannet Rock | Skerries | A hermit who knows about the Brothers |
+| Vængr | Skerries | The wing-shaped island; the cairn |
+| Skerry of Horns | Skerries | Two outlaws and their hoard |
+| Storm-Wife's Rock | Skerries | A seeress in a ring of stones |
+| Utvær | Skerries | The last stone; the chart ends |
+
+Islands are found by coming within sight of them, by boat or through the white raven's eyes; the map
+screen's sea chart names them as they are found.
+
 ## Getting about
 
 | Means | From | Notes |
@@ -40,10 +65,10 @@ island from most shores. About forty islands in nine groups (full list in the da
 | On foot | Act I **[built]** | Sprint, crouch, climb scree |
 | Skis and sledge | Act II | Winter only; skis are fast downhill, a sledge carries a kill or a wounded friend |
 | Horse | Act II **[built: one horse]** | Fjord horses. Whistle to call, saddlebags for trade goods, mounted spear and bow. Horses refuse ice and steep scree |
-| Rowing boat (færing) | Act II **[built]** | Two oars, any beach, one passenger. Reaches the inner skerries in calm weather |
+| Rowing boat (færing) | Act II **[built, with a small sail]** | Two oars, any beach, one passenger. Reaches the inner skerries in calm weather. In the sandbox the sail is a speed toggle; wind is not modelled |
 | Small ship (karve) | Act III | Crew of eight, sail and oars, carries a horse. The first vessel that is yours |
 | Longship | Act IV | Crew of thirty, raids, sea battles, storms. Upgradable hull, sail, prow and crew |
-| Passage on a trader (knarr) | Act II | Pay a merchant to carry you between ports. This is the game's fast travel, and it can be boarded by pirates |
+| Passage on a trader (knarr) | Act II **[built as ferrymen]** | Pay to be carried between ports. This is the game's fast travel, and it can be boarded by pirates. Built: three harbours, six silver, harbours you have found only, your boat towed along. No pirates yet |
 | Ferrymen | Act II | Short crossings for a coin or a favour; some are informers |
 | The ravens | Act II | Not travel, but navigation: the white raven finds landfall in fog and marks hazards |
 
@@ -63,7 +88,7 @@ stranger again, unless word, or a ship, got there first.
 
 Rules that make it a system and not a punishment:
 
-- **[built in the sandbox]** marks 1 to 5 from assault and killing, witnesses, hue and cry at two marks, bounty-hunters at three, blood-price, hide-duel, and fading over time. Theft, feuds, safe houses and leaving the district are not built.
+- **[built in the sandbox]** marks 1 to 5 from assault and killing, witnesses, hue and cry at two marks, bounty-hunters at three, blood-price, hide-duel, and fading over time. Since 0.6 outlawry is regional across two districts: marks stay behind when you cross, unless you carried three or more, in which case one arrives before you. Theft, feuds and safe houses are not built.
 - **Witnesses.** A crime nobody saw adds nothing. The white raven can show who is watching before you act.
 - **Open versus secret.** Killing a man and declaring it at the next farm is manslaughter (payable). Hiding the body is murder (two marks worse).
 - **Ways down.** Pay the blood-price at a Thing; win a holmgang against the accuser's champion; have a jarl who favours you speak for you; lie low until the season turns (one mark per season); or leave the district.
@@ -84,7 +109,7 @@ people call him.
 | Jarl | "lord" | The district pays tribute, musters when called, brings its disputes to you |
 | King | **"my king"** | People kneel or raise a hand as you pass; free lodging and remounts; levy on a horn-call; bards sing your deeds, including the ones you regret |
 
-**[built in the sandbox]** all six tiers in one district, greetings by tier, kneeling for a king, and the oath at the law-rock. Tribute, musters and enemy-held lands are not built.
+**[built in the sandbox]** all six tiers in each of two districts, greetings by tier, kneeling for a king, and the oath before the lawspeaker or the reeve. Tribute, musters and enemy-held lands are not built.
 
 Standing rises through quests, fair judgments, defending the district, gifts and feasts. It falls through
 outlawry, broken oaths, heavy tribute and abandoning them in a raid. In lands sworn to an enemy jarl the
@@ -106,7 +131,7 @@ that people remember it. They are with Eirik for the whole game.
 | **Witness sense**: marked onlookers glow before a crime | White | Act II | planned |
 | **Harry**: he dives at a target's face; for three seconds the man cannot attack or guard | Black | Act II | **[built]** |
 | **Thief**: he steals a key, a ring, a letter | Black | Act III | planned |
-| **Landfall**: she finds the shore in fog and storm | White | Act III | planned |
+| **Landfall**: she finds the shore in fog and storm | White | Act III | partly **[built]**: islands she sees from the air go on the chart. No fog or storm yet |
 | **Messenger**: carry a token to an ally or the settlement | Either | Act V | planned |
 | **Omen**: she lands on things that matter; follow her to secrets | White | Act II | planned |
 | **Battle-crows**: after a won fight the wild ravens gather; renown rises, and so does fear | Both | Act IV | planned |
@@ -125,6 +150,6 @@ weapon. A weapon whose omen was missed can still be found, with more work and no
 | The Lightning Yew | **Storm-Yew**, war bow | Act II | Cut the stave in a thunderstorm; Bjorn refuses to help |
 | The Sword in the Barrow | **Grave-Song**, sword | Act III | Sit out a night on the mound and answer the barrow-king's three questions; it must be given |
 | The Spear in the Ice | **Winter's Tooth**, spear | Act IV | The white raven finds the one warm week; dive for it with a rope and a crew |
-| The Twin-Axe Stone | **The Brothers**, paired axes | Act IV | Sail to Vængr using the star on the stone; one axe is there, the other is in the hand of whoever got there first |
+| The Twin-Axe Stone | **The Brothers**, paired axes | Act IV | Sail to Vængr using the star on the stone; one axe is there, the other is in the hand of whoever got there first. **[The first axe is built in the sandbox, ahead of its act: carried in the off hand, +25% damage. The second and its owner are not built]** |
 | Sky-Iron | **Star-Fall**, war hammer | Act V | Needs a forge hot enough: the settlement's smithy at its last upgrade, and Brokk's nephew |
 | *(not an omen)* Ragnar's axe | **Raven-Feeder** | Act II–VII | Never replaced. Reforged three times, each time with something from the story |

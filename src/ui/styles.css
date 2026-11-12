@@ -206,6 +206,9 @@ ul.steps li.cur { font-weight: 700; }
 .slot .info { flex: 1; } .slot .info b { font-size: 17px; } .slot .info span { display: block; font-size: 13.5px; color: var(--ink-soft); }
 #map-wrap { position: relative; width: min(560px, 100%); aspect-ratio: 1; margin: 0 auto; border: 1px solid #6d5a3a; box-shadow: 0 0 0 3px var(--wood); cursor: crosshair; }
 #map-wrap canvas { width: 100%; height: 100%; display: block; }
+.maptabs { display: flex; gap: 8px; justify-content: center; margin: 0 0 10px; }
+.maptabs button { font: 600 13px var(--serif); letter-spacing: 0.06em; padding: 5px 14px; background: transparent; border: 1px solid #8a7248; border-radius: 3px; cursor: pointer; color: var(--ink-soft); }
+.maptabs button.on { background: var(--wood); color: var(--parch); border-color: var(--wood); }
 .status-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
 .status-grid ul { margin: 4px 0; padding-left: 18px; font-size: 14.5px; line-height: 1.5; }
 .tag { display: inline-block; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; padding: 2px 7px; border: 1px solid currentColor; margin-right: 6px; }

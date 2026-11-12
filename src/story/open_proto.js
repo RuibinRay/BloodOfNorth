@@ -8,6 +8,7 @@ import { CAST, RAIDER_LOOKS, QUESTS, ITEMS } from '../data/act1.js';
 import { CAST2 } from '../data/act2.js';
 import { EIRIK_ADULT } from '../entities/player.js';
 import { Law, Mounts, MARK_NAMES } from '../systems/openworld.js';
+import { SeaChart } from './sea_chart.js';
 import { angleDiff } from '../core/util.js';
 
 Object.assign(ITEMS, { silver: { name: 'Hacksilver', desc: "Cut silver, weighed, not counted. It buys arrows, passage, and a dead man's blood-price.", cat: 'Coin' } });
@@ -29,7 +30,11 @@ const PRICE = { hare: 4, fish: 3, venison: 6, hide: 10 };
 const dist = (p, x, z) => Math.hypot(p.x - x, p.z - z);
 
 export class OpenProto {
-  constructor(game, act) { this.g = game; this.act = act; this.built = false; this.folk = []; this.t = 0; this.saveT = 0; this.huntT = 0; this.hunters = null; this.task = null; }
+  constructor(game, act) {
+    this.g = game; this.act = act; this.built = false; this.folk = []; this.t = 0; this.saveT = 0; this.huntT = 0; this.hunters = null; this.task = null; this.traded = {};
+    this.sea = new SeaChart(game, this);
+    for (const k in this.sea.steps) this.steps[k] = (r) => this.sea.steps[k].call(this.sea, r);
+  }
   get st() { return this.g.state; }
   npc(id) { return this.g.npcs.get(id); }
 
@@ -51,6 +56,8 @@ export class OpenProto {
     for (const id of ['father_axe', 'bow']) if (!inv.has(id)) inv.add(id, 1, true);
     if (inv.count('arrow') < 12) inv.add('arrow', 12 - inv.count('arrow'), true);
     if (!st.open) { st.open = { marks: 0, standing: 30, cool: 0, horse: [155.5, -131], boat: null, on: null }; if (inv.count('silver') < 40) inv.add('silver', 40 - inv.count('silver'), true); }
+    if (!st.open.sk) st.open.sk = { marks: 0, standing: 15, cool: 0 }; // the Skerries: a second law-district
+    if (!st.open.seen) st.open.seen = {};
     p.showBackAxe(true); g.ravens.setMode('follow');
 
     this.law = new Law(g); this.law.onChange = (now, before) => this.marksChanged(now, before);
@@ -60,14 +67,7 @@ export class OpenProto {
     if (o.on === 'boat') this.mounts.mount(b); else if (o.on === 'horse') this.mounts.mount(h);
 
     // people: the family at home, the folk of the two islands
-    const mk = (id, name, look, x, z, yaw, o2 = {}) => {
-      const n = g.addNPC(id, { name, look }); n.teleport(x, z, yaw);
-      n.baseLoop = o2.loop || null; n.setLoop(n.baseLoop); n.weapon = o2.weapon || null; n.hp = 3; n.role = o2.role || 'folk'; n.home = [x, z];
-      if (o2.hold) n.h.hold('R', o2.hold);
-      n.talk = () => this.talk(n);
-      if (o2.law !== false) this.folk.push(n);
-      return n;
-    };
+    const mk = (...a) => this.person(...a);
     mk('bjorn', 'Bjorn', CAST2.bjorn.look, 157, -133.4, -2.4, { law: false, role: 'kin' });
     mk('signe', 'Signe', CAST2.signe.look, 144.6, -137.9, 0.8, { law: false, role: 'kin', loop: 'cook' });
     mk('freydis', 'Freydis', CAST2.freydis.look, 151.8, -141, -2.2, { law: false, role: 'kin' });
@@ -82,6 +82,17 @@ export class OpenProto {
     g.events.on('playerSwing', (n, heavy) => this.swingAtFolk(heavy));
     g.events.on('playerDied', () => this.fail());
     g.events.on('mounted', (type) => g.quests.notify('event', 'mounted_' + type));
+    this.sea.build();
+  }
+  /** One of the people of the open world. o2: role, loop, hold, weapon, line, port; law:false keeps them out of the law. */
+  person(id, name, look, x, z, yaw, o2 = {}) {
+    const n = this.g.addNPC(id, { name, look }); n.teleport(x, z, yaw);
+    n.baseLoop = o2.loop || null; n.setLoop(n.baseLoop); n.weapon = o2.weapon || null; n.hp = 3; n.role = o2.role || 'folk'; n.home = [x, z];
+    n.line = o2.line || null; n.port = o2.port || null;
+    if (o2.hold) n.h.hold('R', o2.hold);
+    n.talk = () => this.talk(n);
+    if (o2.law !== false) this.folk.push(n);
+    return n;
   }
   onSave() {
     const m = this.mounts, o = this.st.open;
@@ -96,47 +107,60 @@ export class OpenProto {
   talk(n) {
     const g = this.g, tier = this.law.tier();
     if (n.role === 'law') return this.lawTalk(n);
+    if (n.role === 'seer') return this.sea.seerTalk(n);
+    if (n.role === 'hermit') return this.sea.hermitTalk(n);
     if (tier.name === 'Wolf') { n.say(tier.hail, 3); return; }
+    if (n.role === 'ferry') return this.sea.ferryTalk(n);
     if (n.role === 'merchant') return this.merchantTalk(n);
     if (n.role === 'task' && !this.st.flags.bulandetDone && !this.task) return this.taskTalk(n);
     if (n.role === 'kin') { n.say(g.fmt({ bjorn: 'Take the bay mare. And come back with all your fingers, {n}.', signe: 'Eat before you go. The sea is hungry enough for both of you.', freydis: 'If {b} steals from the islanders, you are paying for it.' }[n.id]), 4); return; }
-    n.say(g.fmt(tier.hail), 3.5);
+    n.say(g.fmt(n.line && tier.min >= 15 && Math.random() < 0.6 ? n.line : tier.hail), n.line ? 5 : 3.5);
   }
+  /** The keeper of the law in whichever district this is: Thorgeir on Gulen, Ragnhild on Kinn. */
   lawTalk(n) {
-    const g = this.g, s = this.st.open, inv = g.inventory, L = n.name, E = 'Eirik', silver = inv.count('silver'), cost = s.marks * 25;
+    const g = this.g, s = this.law.s, D = this.law.def, inv = g.inventory, L = n.name, E = 'Eirik', silver = inv.count('silver'), cost = s.marks * 25;
+    const kin = n.id === 'reeve', work = kin ? this.sea.reeveWork() : {}, flag = kin ? 'metReeve' : 'metLaw', king = kin ? 'kingOfSkerries' : 'kingOfGulen';
     let tree;
     if (s.marks > 0) tree = [
-      { s: L, t: `You carry ${s.marks} wolf-mark${s.marks > 1 ? 's' : ''} in the Vestland, {n}: ${MARK_NAMES[s.marks].toLowerCase()}. The law offers two roads. Silver, or the hide.` },
+      { s: L, t: `You carry ${s.marks} wolf-mark${s.marks > 1 ? 's' : ''} in ${D.local}, {n}: ${MARK_NAMES[s.marks].toLowerCase()}. The law offers two roads. Silver, or the hide.` },
       { s: E, t: '', choices: [
-        { t: `Pay the blood-price: ${cost} silver (you carry ${silver})`, to: silver >= cost ? 'paid' : 'poor', fx: silver >= cost ? { do: () => { inv.remove('silver', cost, true); this.law.clear('The blood-price is paid. No man in the Vestland may name you wolf.'); } } : null },
-        { t: "Demand the hide-duel against the accuser's champion", to: 'holm', fx: { do: () => { this.pendingHolm = true; } } },
+        { t: `Pay the blood-price: ${cost} silver (you carry ${silver})`, to: silver >= cost ? 'paid' : 'poor', fx: silver >= cost ? { do: () => { inv.remove('silver', cost, true); this.law.clear(`The blood-price is paid. No man in ${D.local} may name you wolf.`); } } : null },
+        { t: "Demand the hide-duel against the accuser's champion", to: 'holm', fx: { do: () => { this.pendingHolm = n; } } },
         { t: '"Not today."', to: 'end' },
       ] },
       { id: 'paid', s: L, t: 'Weighed and witnessed. Go in peace, and try to stay in it.', to: 'end' },
       { id: 'poor', s: L, t: 'That is not enough silver. Sell what you carry, or choose the hide.', to: 'end' },
-      { id: 'holm', s: L, t: 'Then it is the hide. Hallvard! Fetch your axe. First blood does not end it.' },
+      { id: 'holm', s: L, t: `Then it is the hide. ${D.champion.split(' ')[0]}! Fetch your axe. First blood does not end it.` },
     ];
     else tree = [
-      { s: L, t: this.st.flags.metLaw ? 'No man here names you wolf, {n}.' : 'So you are the one with the white raven. I am Thorgeir. I keep the law on Gulen: what is sworn, what is owed, and who is a wolf.', fx: { flag: 'metLaw' } },
+      { s: L, t: work.intro || (this.st.flags[flag] ? 'No man here names you wolf, {n}.' : kin
+        ? 'A white raven, and a Vestland boat. I am Ragnhild; I hold the Skerries for whoever is strong enough to ask me to. So far nobody has asked well.'
+        : 'So you are the one with the white raven. I am Thorgeir. I keep the law on Gulen: what is sworn, what is owed, and who is a wolf.'), fx: { flag } },
       { s: E, t: '', choices: [
         { t: '"What is the law here?"', to: 'law' },
-        { t: `"Would the folk of Gulen swear to me?" (standing ${Math.round(s.standing)} of 80)`, to: s.standing >= 100 ? 'king' : s.standing >= 80 ? 'swear' : 'notyet', fx: s.standing >= 80 && s.standing < 100 ? { do: () => { this.st.flags.kingOfGulen = true; this.law.addStanding(100, 'The folk of Gulen swear to you'); } } : null },
+        ...(work.choice ? [work.choice] : []),
+        { t: `"Would the folk of ${D.seat} swear to me?" (standing ${Math.round(s.standing)} of 80)`, to: s.standing >= 100 ? 'king' : s.standing >= 80 ? 'swear' : 'notyet', fx: s.standing >= 80 && s.standing < 100 ? { do: () => { this.st.flags[king] = true; this.law.addStanding(100, `The folk of ${D.seat} swear to you`); } } : null },
         { t: '"Nothing. Keep well."', to: 'end' },
       ] },
-      { id: 'law', s: L, t: 'Harm a man where others can see and you earn a wolf-mark. One is a fine. Two, and the islands raise the hue and cry. Three, and men come hunting the price on you. Pay the blood-price here, win the hide-duel, or keep out of sight until talk dies.', to: 'end' },
-      { id: 'notyet', s: L, t: 'Not yet. They know your name, not your worth. Help the fishers on Bulandet. Trade fair. Be seen to be generous.', to: 'end' },
+      { id: 'law', s: L, t: kin
+        ? 'The same as any law, with more water in it. Harm a man where others see, and you carry a wolf-mark. But the marks you earned in the Vestland are the Vestland\'s business, unless you earned enough of them that the boats talk.'
+        : 'Harm a man where others can see and you earn a wolf-mark. One is a fine. Two, and the islands raise the hue and cry. Three, and men come hunting the price on you. Pay the blood-price here, win the hide-duel, or keep out of sight until talk dies.', to: 'end' },
+      { id: 'notyet', s: L, t: kin
+        ? 'Not yet. Out here a name is worth what it has done. Put out the fire on Batalden. Light the one on Skorpa. Trade fair with Thora.'
+        : 'Not yet. They know your name, not your worth. Help the fishers on Bulandet. Trade fair. Be seen to be generous.', to: 'end' },
       { id: 'king', s: L, t: 'They have sworn already, my king. A second oath is worth less than the first.', to: 'end' },
-      { id: 'swear', s: L, t: 'Then hear it, Gulen! This is Eirik Ravensson. By rock and by ring, he is our king, and we are his folk.' },
+      { id: 'swear', s: L, t: `Then hear it, ${D.seat}! This is Eirik Ravensson. By rock and by ring, he is our king, and we are his folk.`, to: 'end' },
+      ...(work.nodes || []),
     ];
-    this.say(tree, n, () => { g.quests.notify('talk', 'law'); if (this.pendingHolm) { this.pendingHolm = false; this.holmgang(); } });
+    this.say(tree, n, () => { g.quests.notify('talk', n.id); if (this.pendingHolm) { const at = this.pendingHolm; this.pendingHolm = null; this.holmgang(at); } });
   }
   merchantTalk(n) {
     const g = this.g, inv = g.inventory, M = n.name, silver = inv.count('silver');
     const worth = Object.keys(PRICE).reduce((a, k) => a + inv.count(k) * PRICE[k], 0);
     this.say([
-      { s: M, t: 'Asgerd. I buy what the land gives and sell what it cannot. What have you?' },
+      { s: M, t: `${M}. I buy what the land gives and sell what it cannot. What have you?` },
       { s: 'Eirik', t: '', choices: [
-        { t: `Sell game and hides (${worth} silver)`, to: worth > 0 ? 'sold' : 'none', fx: worth > 0 ? { do: () => { for (const k in PRICE) if (inv.count(k)) inv.remove(k, 999, true); inv.add('silver', worth); if (!this.traded) { this.traded = true; this.law.addStanding(5, 'Fair trade'); } } } : null },
+        { t: `Sell game and hides (${worth} silver)`, to: worth > 0 ? 'sold' : 'none', fx: worth > 0 ? { do: () => { for (const k in PRICE) if (inv.count(k)) inv.remove(k, 999, true); inv.add('silver', worth); if (!this.traded[this.law.id]) { this.traded[this.law.id] = true; this.law.addStanding(5, 'Fair trade'); } } } : null },
         { t: 'Buy ten arrows (8 silver)', to: silver >= 8 ? 'bought' : 'poor', fx: silver >= 8 ? { do: () => { inv.remove('silver', 8, true); inv.add('arrow', 10); } } : null },
         { t: "Give 20 silver to the hall's winter stores", to: silver >= 20 ? 'gift' : 'poor', fx: silver >= 20 ? { do: () => { inv.remove('silver', 20, true); this.law.addStanding(12, 'A gift to the hall'); } } : null },
         { t: '"Nothing today."', to: 'end' },
@@ -171,10 +195,10 @@ export class OpenProto {
     this.task = [0, 1].map((i) => this.fighter('tithe' + i, 'Tithe-taker', RAIDER_LOOKS[i], c.x - 3 + i * 5, c.z - 15, i ? 'spear' : 'axe', { hp: 110 }));
     this.g.audio.setMusic('raid');
   }
-  holmgang() {
-    const g = this.g, x = POI.lawRock.x + 6, z = POI.lawRock.z + 5;
-    this.fighter('champ', 'Hallvard the Champion', RAIDER_LOOKS[2], x, z, 'axe', { hp: 240, dmg: 17, skill: 0.65, boss: true, rageLine: 'You fight like a king. Kings bleed too!',
-      onDown: (e) => { e.die(); g.combat.clear(); g.audio.setMusic('day'); this.law.clear('Hallvard yields the hide. Your marks are struck out.'); this.law.addStanding(15, 'You won the hide-duel'); } });
+  holmgang(by) {
+    const g = this.g, x = by.pos.x + 7.5, z = by.pos.z + 3.3, who = this.law.def.champion, first = who.split(' ')[0];
+    this.fighter('champ_' + this.law.id, who === first ? who + ' the Champion' : who, RAIDER_LOOKS[2], x, z, 'axe', { hp: 240, dmg: 17, skill: 0.65, boss: true, rageLine: 'You fight like a king. Kings bleed too!',
+      onDown: (e) => { e.die(); g.combat.clear(); g.audio.setMusic('day'); this.law.clear(`${first} yields the hide. Your marks are struck out.`); this.law.addStanding(15, 'You won the hide-duel'); } });
     g.audio.setMusic('raid');
   }
   spawnHunters() {
@@ -231,16 +255,21 @@ export class OpenProto {
     'q_open.boat'() { this.build(); this.g.ui.hint('Dismount with {interact}. The boat is moored off the end of the landing; wade out and board it.'); },
     'q_open.gulen'() { this.build(); },
     'q_open.law'() { this.build(); this.g.ui.hint('The law-rock is the carved stone. Thorgeir stands beside it.'); },
-    'q_open.free'() { this.build(); this.g.ui.hint('Sell to Asgerd, help Gudrun on Bulandet (the island to the east), or see what the law does when you break it. {map} shows both islands.'); },
+    'q_open.free'(r) {
+      this.build();
+      if (!this.g.quests.st.q_sea) this.g.quests.start('q_sea'); // the fjord is only the doorstep
+      if (!r) this.g.ui.hint('Sell to Asgerd, help Gudrun on Bulandet (the island to the east), or see what the law does when you break it. South of Gulen the fjord opens to the sea: {sprint} in the boat sets the sail.');
+    },
   };
 
   update(dt) {
     if (!this.built) return;
-    const g = this.g, p = g.player, q = g.quests, s = this.st.open;
+    const g = this.g, p = g.player, q = g.quests;
     this.t += dt;
     if (g.mode === 'play') g.sky.time = Math.min(16.4, g.sky.time + dt / 420);
     this.st.time = g.sky.time; p.warmth = 100; p.hunger = 100;
-    this.law.update(dt); this.mounts.update(dt);
+    this.law.update(dt); this.mounts.update(dt); this.sea.update(dt);
+    const s = this.law.s; // the law of whichever district he is standing in
     if (q.at('q_open', 'shore') && dist(p.pos, POI.dock.x, POI.dock.z) < 28) q.notify('reach', 'shore');
     if (q.at('q_open', 'gulen') && dist(p.pos, POI.gulen.x, POI.gulen.z) < 44) q.notify('reach', 'gulen');
 

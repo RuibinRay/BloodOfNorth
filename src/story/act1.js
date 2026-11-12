@@ -20,7 +20,7 @@ const FLEE_PATH = [[-23, 66], [-21, 56], [-21, 50], [-10, 43], [-7, 30], [-8, 12
 const CAMP_SEAT = [POI.camp.x - 1.75, POI.camp.z + 1.0];
 const DUEL = { ragnar: [-15, 70], hakon: [-10.5, 70.4], g1: [-6, 73.2], g2: [-6.5, 67.4] };
 const GATE_PATROL = [[[-13, -9], [-19.5, -13.5]], [[-9, 2], [-14, -7]]];
-const QUESTS_MAIN = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_smoke', 'q_axe', 'q_open'];
+const QUESTS_MAIN = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_smoke', 'q_axe', 'q_open', 'q_sea'];
 const WEATHER = {
   day: { snow: 0, fog: 0, overcast: 0.08, wind: 1 },
   dusk: { snow: 0.12, fog: 0.02, overcast: 0.3, wind: 1.1 },
@@ -255,6 +255,7 @@ export class Act1 {
     if (id === 'q_ice') this.ch2.playEnding();
     if (id === 'q_wings') this.ch3.playEnding();
     if (id === 'q_axe') this.a2.playEnding();
+    if (this.open.built) this.open.sea.questDone(id);
   }
   steps = {
     'q_morning.ylva'() { this.hint('move'); this.g.after(9, () => { if (this.g.quests.at('q_morning', 'ylva')) this.hint('talk'); }); },
@@ -818,7 +819,7 @@ export class Act1 {
       const pl = this.g.player.pos, k = m.pos.join();
       if (m.until && Math.hypot(pl.x - m.pos[0], pl.z - m.pos[1]) < m.until) this.markerSeen = k;
       if (m.until && this.markerSeen === k) return null;
-      return { x: m.pos[0], z: m.pos[1], y: this.g.world.groundAt(m.pos[0], m.pos[1]) + 1.6 };
+      return { x: m.pos[0], z: m.pos[1], y: Math.max(0, this.g.world.groundAt(m.pos[0], m.pos[1])) + 1.6 };
     }
     if (m.poi) {
       const p = POI[m.poi], pl = this.g.player.pos;

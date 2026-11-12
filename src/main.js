@@ -257,9 +257,16 @@ class Game {
       /** Render one frame and return the canvas as a PNG data URL (for saving test screenshots). */
       shot: () => { g.frame(0, true); return g.renderer.domElement.toDataURL('image/jpeg', 0.8); },
       time: (h) => { g.sky.time = h; },
+      /** Render from a free camera (overview shots of the world) and save it as a test screenshot. */
+      view: async (name, c, t, fog) => {
+        g.frame(0, false); const f = g.scene.fog.density; if (fog) g.scene.fog.density = fog;
+        g.camera.position.set(...c); g.camera.lookAt(...t); g.camera.updateMatrixWorld(); g.sky.dome.position.copy(g.camera.position);
+        g.renderer.render(g.scene, g.camera); g.scene.fog.density = f;
+        return (await fetch('/__shot?name=' + name, { method: 'POST', body: g.renderer.domElement.toDataURL('image/jpeg', 0.8) })).status;
+      },
       /** Jump straight to a quest step (marks earlier main quests done). */
       jump: (qid, sid) => {
-        const order = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_smoke', 'q_axe', 'q_open'];
+        const order = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_smoke', 'q_axe', 'q_open', 'q_sea'];
         if (!g.started) { g.started = true; g.ui.hideMain(); g.setMode('play'); }
         for (const id of order) {
           if (id === qid) break;

@@ -4,8 +4,10 @@ import { codeLabel, ACTION_LABELS, DEFAULT_BINDINGS } from '../core/input.js';
 import { listSaves, saveSettings, deleteSave, latestSave, DEFAULT_SETTINGS } from '../core/save.js';
 import { ITEMS, QUESTS } from '../data/act1.js';
 import { SECRETS } from '../data/act1_ch3.js';
-import { POI } from '../world/layout.js';
+import { POI, ISLES, DISTRICT_LINE } from '../world/layout.js';
 import { heightAt, riverX, riverSurfaceY, SIZE, HALF } from '../world/terrain.js';
+/** The part of the world the sea chart shows: from the landing beach south to the edge of the chart. */
+const SEA_VIEW = { x0: -640, z0: 160, w: 1280, h: 1440 };
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -308,35 +310,79 @@ export class UI {
     x2.putImageData(img, 0, 0);
     return c;
   }
+  /** The sea chart's base: coasts, shallows and depth. Names are drawn on top as islands are found. */
+  buildSeaMap() {
+    const V = SEA_VIEW, W = 512, H = Math.round((W * V.h) / V.w), c = document.createElement('canvas'); c.width = W; c.height = H;
+    const x2 = c.getContext('2d'), img = x2.createImageData(W, H), d = img.data;
+    for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
+      const x = V.x0 + ((i + 0.5) / W) * V.w, z = V.z0 + ((j + 0.5) / H) * V.h, h = heightAt(x, z), o = (j * W + i) * 4;
+      let r, g, b;
+      if (h < 0.05) { const k = Math.min(1, -h / 12); r = 164 - k * 58; g = 186 - k * 52; b = 186 - k * 44; if (h > -2.6) { r += 20; g += 16; b += 6; } }
+      else if (h < 0.7) { r = 92; g = 74; b = 50; } // the coast, inked
+      else { const lit = Math.max(-0.2, Math.min(0.22, (heightAt(x + 6, z + 6) - h) * 0.035)), k = Math.min(1, h / 45); r = (204 - k * 26) * (1 + lit); g = (188 - k * 22) * (1 + lit); b = (146 + k * 8) * (1 + lit); }
+      d[o] = r; d[o + 1] = g; d[o + 2] = b; d[o + 3] = 255;
+    }
+    x2.putImageData(img, 0, 0);
+    return c;
+  }
   render_map(body) {
-    const g = this.g;
-    if (!this.mapBase) this.mapBase = this.buildMap();
-    body.innerHTML = `<div id="map-wrap"><canvas width="840" height="840"></canvas></div><p class="muted" style="text-align:center">The Hrafnvik valley · click to set or clear a waypoint · north is up</p>`;
-    const cv = body.querySelector('canvas'), x = cv.getContext('2d'), S = 840, wx = (v) => ((v + HALF) / SIZE) * S;
+    const g = this.g, open = g.state.stage === 'open' && g.story.open.built ? g.story.open : null;
+    const sea = !!open && (this.mapPick ? this.mapPick === 'sea' : g.player.pos.z > 300);
+    const V = sea ? SEA_VIEW : { x0: -HALF, z0: -HALF, w: SIZE, h: SIZE }, H = 840, W = Math.round((H * V.w) / V.h);
+    if (sea ? !this.seaBase : !this.mapBase) { if (sea) this.seaBase = this.buildSeaMap(); else this.mapBase = this.buildMap(); }
+    const named = ISLES.filter((s) => s.name), seen = open ? g.state.open.seen : {}, found = named.filter((s) => seen[s.id]).length;
+    body.innerHTML = `${open ? `<div class="maptabs"><button data-v="valley" class="${sea ? '' : 'on'}">Hrafnvik valley</button><button data-v="sea" class="${sea ? 'on' : ''}">Sea chart</button></div>` : ''}
+      <div id="map-wrap" style="aspect-ratio:${W}/${H};width:min(${Math.round((560 * W) / H)}px,100%)"><canvas width="${W}" height="${H}"></canvas></div>
+      <p class="muted" style="text-align:center">${sea ? `The Whale Road · ${found} of ${named.length} islands found` : 'The Hrafnvik valley'} · click to set or clear a waypoint · north is up</p>`;
+    body.querySelectorAll('.maptabs button').forEach((b) => { b.onclick = () => { this.mapPick = b.dataset.v; g.audio.play('ui'); this.render_map(body); }; });
+    const cv = body.querySelector('canvas'), x = cv.getContext('2d'), X = (v) => ((v - V.x0) / V.w) * W, Z = (v) => ((v - V.z0) / V.h) * H;
+    const label = (t, px, pz, dy = -8) => { x.strokeStyle = 'rgba(236,224,196,0.85)'; x.lineWidth = 3; x.strokeText(t, X(px), Z(pz) + dy); x.fillText(t, X(px), Z(pz) + dy); };
     const draw = () => {
-      x.drawImage(this.mapBase, 0, 0, S, S);
-      x.fillStyle = 'rgba(46,34,20,0.16)'; x.fillRect(0, 0, S, S);
+      x.drawImage(sea ? this.seaBase : this.mapBase, 0, 0, W, H);
+      x.fillStyle = 'rgba(46,34,20,0.16)'; x.fillRect(0, 0, W, H);
       x.textAlign = 'center'; x.font = 'italic 15px Georgia'; x.lineWidth = 3;
-      for (const k in POI) {
-        const p = POI[k]; if (!p.name) continue;
-        x.fillStyle = '#2a1c12'; x.beginPath(); x.arc(wx(p.x), wx(p.z), 3.2, 0, 6.3); x.fill();
-        x.strokeStyle = 'rgba(236,224,196,0.85)'; x.strokeText(p.name, wx(p.x), wx(p.z) - 8); x.fillText(p.name, wx(p.x), wx(p.z) - 8);
+      if (!sea) {
+        for (const k in POI) {
+          const p = POI[k]; if (!p.name) continue;
+          x.fillStyle = '#2a1c12'; x.beginPath(); x.arc(X(p.x), Z(p.z), 3.2, 0, 6.3); x.fill(); label(p.name, p.x, p.z);
+        }
+        x.font = '600 24px Georgia'; x.fillStyle = '#3a1c14'; label('HRAFNVIK', 8, 36, 0);
+        x.font = 'italic 17px Georgia'; x.fillStyle = '#1e3a4c'; label('Hrafnfjord', 0, 240, 0);
+      } else {
+        // where one law ends and the next begins
+        x.save(); x.setLineDash([9, 7]); x.strokeStyle = 'rgba(96,34,26,0.55)'; x.lineWidth = 1.6; x.beginPath(); x.moveTo(0, Z(DISTRICT_LINE)); x.lineTo(W, Z(DISTRICT_LINE)); x.stroke(); x.restore();
+        x.font = '600 13px Georgia'; x.fillStyle = 'rgba(96,34,26,0.8)'; x.textAlign = 'left';
+        x.fillText('V E S T L A N D', 12, Z(DISTRICT_LINE) - 8); x.fillText('T H E   S K E R R I E S', 12, Z(DISTRICT_LINE) + 19); x.textAlign = 'center';
+        x.font = 'italic 15px Georgia'; x.fillStyle = '#1e3a4c'; label('Hrafnfjord', 0, 372, 0); label('to Hrafnvik', 4, 196, 0);
+        x.fillStyle = '#2a1c12'; label('Gulen', POI.gulen.x - 8, POI.gulen.z, 30); label('Bulandet', POI.bulandet.x + 14, POI.bulandet.z, 28);
+        for (const s of named) {
+          const k = seen[s.id];
+          x.font = k ? 'italic 15px Georgia' : '600 17px Georgia'; x.fillStyle = k ? '#2a1c12' : 'rgba(42,28,18,0.45)';
+          label(k ? s.name : '?', s.x, s.z + s.r, k ? 12 : 4);
+        }
+        x.strokeStyle = '#2a1c12'; x.lineWidth = 1.6;
+        for (const k in open.sea.ports) { const pt = open.sea.ports[k]; if (k !== 'gulen' && !seen[k]) continue; x.beginPath(); x.arc(X(pt.moor[0]), Z(pt.moor[1]), 4.5, 0, 6.3); x.stroke(); x.beginPath(); x.moveTo(X(pt.moor[0]), Z(pt.moor[1]) - 4.5); x.lineTo(X(pt.moor[0]), Z(pt.moor[1]) + 8); x.stroke(); }
+        const cx = W - 44, cy = 52; // compass
+        x.fillStyle = '#3a1c14'; x.beginPath(); x.moveTo(cx, cy - 26); x.lineTo(cx + 7, cy); x.lineTo(cx, cy + 26); x.lineTo(cx - 7, cy); x.closePath(); x.globalAlpha = 0.55; x.fill(); x.globalAlpha = 1;
+        x.font = '600 14px Georgia'; x.fillText('N', cx, cy - 31);
       }
-      x.font = '600 24px Georgia'; x.fillStyle = '#3a1c14'; x.strokeText('HRAFNVIK', wx(8), wx(36)); x.fillText('HRAFNVIK', wx(8), wx(36));
-      x.font = 'italic 17px Georgia'; x.fillStyle = '#1e3a4c'; x.strokeText('Hrafnfjord', wx(0), wx(240)); x.fillText('Hrafnfjord', wx(0), wx(240));
+      if (open) for (const [m, col] of [[open.mounts.horse, '#6a4426'], [open.mounts.boat, '#f4efe2']]) {
+        if (!m || open.mounts.on === m) continue;
+        x.fillStyle = col; x.strokeStyle = '#2a1c12'; x.lineWidth = 1.5; x.beginPath(); x.ellipse(X(m.pos.x), Z(m.pos.z), m.type === 'boat' ? 7 : 4, 4, 0, 0, 6.3); x.fill(); x.stroke();
+      }
       const tr = g.quests.tracked()[0], mk = tr ? g.story.markerFor(tr.step) : null;
-      if (mk) { x.save(); x.translate(wx(mk.x), wx(mk.z)); x.rotate(Math.PI / 4); x.fillStyle = '#e9c668'; x.strokeStyle = '#2a1c12'; x.lineWidth = 2; x.fillRect(-7, -7, 14, 14); x.strokeRect(-7, -7, 14, 14); x.restore(); }
-      for (const k in g.state.marks) { const mk = g.state.marks[k]; x.fillStyle = '#f4efe2'; x.strokeStyle = '#2a1c12'; x.lineWidth = 2; x.beginPath(); x.arc(wx(mk.x), wx(mk.z), 5, 0, 6.3); x.fill(); x.stroke(); x.font = 'italic 13px Georgia'; x.strokeStyle = 'rgba(236,224,196,0.85)'; x.lineWidth = 3; x.fillStyle = '#2a1c12'; x.strokeText(mk.label, wx(mk.x), wx(mk.z) + 18); x.fillText(mk.label, wx(mk.x), wx(mk.z) + 18); }
+      if (mk) { x.save(); x.translate(X(mk.x), Z(mk.z)); x.rotate(Math.PI / 4); x.fillStyle = '#e9c668'; x.strokeStyle = '#2a1c12'; x.lineWidth = 2; x.fillRect(-7, -7, 14, 14); x.strokeRect(-7, -7, 14, 14); x.restore(); }
+      for (const k in g.state.marks) { const mk = g.state.marks[k]; x.fillStyle = '#f4efe2'; x.strokeStyle = '#2a1c12'; x.lineWidth = 2; x.beginPath(); x.arc(X(mk.x), Z(mk.z), 5, 0, 6.3); x.fill(); x.stroke(); x.font = 'italic 13px Georgia'; x.fillStyle = '#2a1c12'; label(mk.label, mk.x, mk.z, 18); }
       const wp = g.state.waypoint;
-      if (wp) { x.fillStyle = '#b9d2e2'; x.strokeStyle = '#16242e'; x.lineWidth = 2; x.beginPath(); x.moveTo(wx(wp.x), wx(wp.z)); x.lineTo(wx(wp.x) - 8, wx(wp.z) - 18); x.lineTo(wx(wp.x) + 8, wx(wp.z) - 18); x.closePath(); x.fill(); x.stroke(); }
-      const p = g.player; x.save(); x.translate(wx(p.pos.x), wx(p.pos.z)); x.rotate(-p.yaw + Math.PI);
+      if (wp) { x.fillStyle = '#b9d2e2'; x.strokeStyle = '#16242e'; x.lineWidth = 2; x.beginPath(); x.moveTo(X(wp.x), Z(wp.z)); x.lineTo(X(wp.x) - 8, Z(wp.z) - 18); x.lineTo(X(wp.x) + 8, Z(wp.z) - 18); x.closePath(); x.fill(); x.stroke(); }
+      const p = g.player; x.save(); x.translate(X(p.pos.x), Z(p.pos.z)); x.rotate(-p.yaw + Math.PI);
       x.fillStyle = '#8f2f24'; x.strokeStyle = '#fff'; x.lineWidth = 2; x.beginPath(); x.moveTo(0, -12); x.lineTo(8, 9); x.lineTo(0, 4); x.lineTo(-8, 9); x.closePath(); x.fill(); x.stroke(); x.restore();
     };
     draw();
     cv.onclick = (ev) => {
-      const r = cv.getBoundingClientRect(), mx = ((ev.clientX - r.left) / r.width) * SIZE - HALF, mz = ((ev.clientY - r.top) / r.height) * SIZE - HALF;
+      const r = cv.getBoundingClientRect(), mx = V.x0 + ((ev.clientX - r.left) / r.width) * V.w, mz = V.z0 + ((ev.clientY - r.top) / r.height) * V.h;
       const wp = g.state.waypoint;
-      g.state.waypoint = wp && Math.hypot(wp.x - mx, wp.z - mz) < 18 ? null : { x: mx, z: mz };
+      g.state.waypoint = wp && Math.hypot(wp.x - mx, wp.z - mz) < V.w / 36 ? null : { x: mx, z: mz };
       g.audio.play('ui'); draw();
     };
   }
@@ -402,8 +448,8 @@ export class UI {
       <p>This is the first playable chapter of a long project, not the finished game. Everything on screen is generated in code; characters, props and sound are placeholders awaiting real assets.</p>
       <div class="status-grid">
       <div><h4><span class="tag ok">playable</span></h4><ul><li>Act I, Chapter 1: a full day in Hrafnvik and the night raid</li><li>Act I, Chapter 2: winter survival, a wolf, trackers and the river ice</li><li>Act I, Chapter 3: Bjornstead, the raven chicks, the axe under the hearthstone, first flight</li><li>Raven's Eye: fly the white raven, mark what she sees</li><li>Five hidden omens that seed later secret weapons</li><li>Act II, Chapter 1: Eirik at nineteen, the drill with Bjorn, the raid on Bjornstead</li><li>Melee combat: light and heavy blows, block, parry, dodge, guard-breaking, enemies that take turns and flank, a two-phase captain</li><li>The black raven harries your target; arrows work on men</li><li>Hunger and warmth, shelter, cooking, thin-ice crossing</li><li>Third-person movement, camera, stamina, crouch, dodge</li><li>Dialogue with choices, traits and bonds</li><li>Quests, journal, objective tracker, map with waypoint</li><li>Woodcutting, bow hunting, tracking, fishing, fire-making</li><li>Sparring tutorial: strike, block, parry, dodge</li><li>Stealth escape with raider sight and hearing</li><li>Cold and warmth survival</li><li>Day/night sky, snow, fire, in-engine cutscenes</li><li>Save / load, autosave, settings, key rebinding, gamepad</li></ul></div>
-      <div><h4><span class="tag proto">prototype</span></h4><ul><li>Procedural characters and animation (to be replaced by rigged models)</li><li>Procedural audio and score</li><li>Villager routines (posts and an evening change, not full schedules)</li><li>Wildlife AI: hares, deer, sheep, ravens</li><li>Adult Eirik is the same placeholder rig, scaled up</li><li>Open world sandbox: horse, rowing boat, two islands, wolf-mark outlawry (witnesses, hue and cry, bounty-hunters, blood-price, hide-duel), district standing up to “my king”, trade</li><li>Higgsfield asset client (built, waiting on a valid key ID and secret)</li></ul></div>
-      <div><h4><span class="tag plan">planned</span></h4><ul><li>Acts II – VII (see docs/ROADMAP.md and data/missions.json)</li><li>The full sea map (about forty islands), ships and crews, more districts (docs/OPEN_WORLD.md)</li><li>Adult Eirik, nine weapon classes, five skill trees</li><li>Enemy combat AI, bosses, mounted and naval combat</li><li>Sailing, settlement, factions, trading, crafting</li><li>50 side missions and tavern games</li><li>Building interiors, voiced dialogue, real music</li><li>Unreal Engine 5 port for photoreal fidelity</li></ul></div></div>`;
+      <div><h4><span class="tag proto">prototype</span></h4><ul><li>Procedural characters and animation (to be replaced by rigged models)</li><li>Procedural audio and score</li><li>Villager routines (posts and an evening change, not full schedules)</li><li>Wildlife AI: hares, deer, sheep, ravens</li><li>Adult Eirik is the same placeholder rig, scaled up</li><li>Open world sandbox: horse, boat with a sail, fourteen islands on a sea chart, two law-districts, wolf-mark outlawry (witnesses, hue and cry, bounty-hunters, blood-price, hide-duel), standing up to “my king”, trade, paid passage between harbours, the first secret weapon</li><li>Higgsfield asset client (built, waiting on a valid key ID and secret)</li></ul></div>
+      <div><h4><span class="tag plan">planned</span></h4><ul><li>Acts II – VII (see docs/ROADMAP.md and data/missions.json)</li><li>The rest of the sea map (about forty islands; fourteen are built), ships and crews, more districts (docs/OPEN_WORLD.md)</li><li>Adult Eirik, nine weapon classes, five skill trees</li><li>Enemy combat AI, bosses, mounted and naval combat</li><li>Sailing, settlement, factions, trading, crafting</li><li>50 side missions and tavern games</li><li>Building interiors, voiced dialogue, real music</li><li>Unreal Engine 5 port for photoreal fidelity</li></ul></div></div>`;
   }
   showChapterEnd() {
     const g = this.g, st = g.state, q = g.quests, body = $('#panel-body');
@@ -428,7 +474,7 @@ export class UI {
       `<h4>Next</h4><p>Chapter Two, “The Long White”: keep the fire, find food, and stay ahead of the men who are still looking for you.</p>${cont('Continue to Chapter Two')}`,
       `<h4>Next</h4><p>Chapter Three, “A Stranger's Hearth”: fever, a farm in a hidden dale, and a girl who has found something in a fallen tree.</p>${cont('Continue to Chapter Three')}`,
       `${this.omensHTML()}<h4>Next</h4><p>Act II, “The Farmer's Axe”. Ten winters pass. Eirik is nineteen, the ravens are grown, and somebody is coming up the river road.</p>${cont('Continue to Act II')}`,
-      `${this.omensHTML()}<h4>Next <span class="tag proto">prototype</span></h4><p>The world opens. This is a sandbox, not a story chapter: a horse, a rowing boat, two islands in the fjord, a law that can make a man a wolf, and a people who may one day call him king.</p>${cont('Try the open world (prototype)')}`,
+      `${this.omensHTML()}<h4>Next <span class="tag proto">prototype</span></h4><p>The world opens. This is a sandbox, not a story chapter: a horse, a boat with a sail, a fjord and the islands beyond it, a law that can make a man a wolf, and a people who may one day call him king.</p>${cont('Try the open world (prototype)')}`,
     ][i];
     body.innerHTML = `<h3>${['The Night of Ashes', 'The Long White', "A Stranger's Hearth", "The Farmer's Axe"][i]}</h3><p>${summary}</p>
       <h4>Your Eirik</h4><p>Time played: ${fmtTime(st.playtime)} · Renown: ${st.xp} · Strongest trait: <b>${TRAITS[top]}</b></p>

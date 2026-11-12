@@ -10,13 +10,14 @@ playtests; none are claimed until then.
 | 0.3 | **A Stranger's Hearth** | Act I ch.3: the adoptive family, the two ravens and Raven's Eye, five omens, the axe under the hearthstone, the ten-year jump. **Act I is complete.** | Automated playtest passes every step and loads each one cold | **Done** |
 | 0.4 | **Grown** | Act II ch.1: Eirik at nineteen, melee combat (light, heavy, guard, parry, guard-breaking), enemy AI that takes turns and flanks, an ally, a two-phase captain, the raid on Bjornstead | Automated playtest: drill, raid won by a scripted average player, raid lost by standing still, every step loaded cold | **Done** |
 | 0.5 | **The world opens (sandbox)** | Horse, rowing boat, two islands, wolf-mark outlawry, district standing up to "my king", trade | Automated playtest: ride to the shore, row to an island, reach King, earn four wolf-marks and clear them, save and load in the boat | **Done** |
-| 0.6 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: combat difficulty above all, then riding and rowing feel, aim, stealth, camera | Three people finish everything built without help | Next |
-| 0.7 | **Real assets in** | Working Higgsfield credentials; key art; GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
-| 0.8 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or harden the web build for a sea map | A written decision with a prototype of the first island group in the chosen engine | Planned |
-| 0.9 | **The Hunted Wolf** | Companions, bounties, first ship, Grave-Song, Act III | Act III plays through | Planned |
-| 0.10 | **Across the Sea** | Longship, naval combat, ports, sieges, the outer skerries, Act IV | — | Planned |
-| 0.11 | **The Broken Raven** | Settlement, recruiting, supply, territory, Act V | — | Planned |
-| 0.12 | **War of the Jarls** | Faction politics, duels, large battles, "my king", Acts VI and VII, four endings | — | Planned |
+| 0.6 | **The sea chart (sandbox)** | The world grows from one valley to 1.3 km of open water: twelve more islands, a sail, a second law-district, discovery by boat or raven, paid passage between harbours, two hostile camps, the reeve's work, and the first omen paid off (the Left Brother on Vængr) | Automated playtest: sail out of the fjord, land on Kinn, every island found, both side quests, the cairn, passage, outlawry carried and not carried across the district line, save and load under sail, regression on all earlier chapters | **Done** |
+| 0.7 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: combat difficulty above all, then riding, rowing and sailing feel, aim, stealth, camera | Three people finish everything built without help | Next |
+| 0.8 | **Real assets in** | Working Higgsfield credentials; key art; GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
+| 0.9 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or keep growing the web build, which now holds a 1.3 × 2 km world at 60 fps in the test window | A written decision | Planned |
+| 0.10 | **The Hunted Wolf** | Companions, bounties, first ship, Grave-Song, Act III | Act III plays through | Planned |
+| 0.11 | **Across the Sea** | Longship, naval combat, ports, sieges, the outer skerries, Act IV | — | Planned |
+| 0.12 | **The Broken Raven** | Settlement, recruiting, supply, territory, Act V | — | Planned |
+| 0.13 | **War of the Jarls** | Faction politics, duels, large battles, "my king", Acts VI and VII, four endings | — | Planned |
 | 1.0 | **Polish** | Side missions, minigames, voiced dialogue, recorded music, performance targets (60 fps at 1440p on suitable hardware as an objective), accessibility pass | Full playthrough signed off | Planned |
 
 ## Immediate next steps
@@ -25,7 +26,13 @@ playtests; none are claimed until then.
 2. Play everything by hand, the raid especially, and note every moment that feels unfair, unclear or slow.
 3. Decide where the project lives: a PC that can run UE5, or continue in the browser for another chapter.
 
-## Known gaps in 0.5
+## Known gaps in 0.6
+
+- The sea is calm and the wind always fair: no weather, no currents, no swimming, no capsizing. The sail is a speed toggle.
+- The islands are sandbox content, not story: a handful of people, no buildings, no routines. Three are landmarks only.
+- The Left Brother is handed out ahead of its act (the design places it in Act IV) to prove the omen-to-weapon chain. It adds damage; it has no moves of its own.
+- Sailing, landing and the island fights were validated by script, not by hand.
+- The horse cannot be carried by boat, so it stays in the home valley.
 
 - Houses cannot be entered.
 - No voice acting; music and effects are synthesised.

@@ -65,6 +65,7 @@ export class Combat {
         c.posture = Math.min(100, c.posture + 16); this.checkPosture(e);
       } else {
         let dmg = (real ? 1 : 0.5) * (heavy ? 32 : 12 + n * 2);
+        if (real && g.inventory.has('brother_axe')) dmg *= 1.25; // the Left Brother in the off hand
         if (c.state === 'stagger') dmg *= 1.8;
         g.audio.play('arrowHit'); g.audio.play('thud', { vol: 0.5 }); p.cam.shake = heavy ? 0.22 : 0.1;
         const a = Math.atan2(e.pos.x - p.pos.x, e.pos.z - p.pos.z), k = heavy ? 0.7 : 0.3;
