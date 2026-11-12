@@ -19,7 +19,7 @@ export const CAST = {
   ragnar: { name: 'Ragnar', role: 'Father', look: { scale: 1.04, build: 1.12, hair: 0x9a7a48, hairStyle: 'long', beard: 'short', tunic: 0x4f6272, trim: 0xb89a4a, legs: 0x4a4034, sleeve: 0x4f6272 } },
   ylva: { name: 'Ylva', role: 'Mother', look: { scale: 0.96, female: true, build: 0.92, hair: 0x8a4a2a, hairStyle: 'braid', tunic: 0x5f7a56, trim: 0xc9a24a, apron: 0xd8cfb8, sleeve: 0xd8cfb8 } },
   hrolf: { name: 'Hrolf the Skald', role: 'Village skald', look: { scale: 0.97, hair: 0xb8b4ac, hairStyle: 'long', beard: 'long', tunic: 0x6a5a70, trim: 0x8a7a4a, cloak: 0x4a4458, sleeve: 0x6a5a70 } },
-  brokk: { name: 'Brokk', role: 'Smith', look: { scale: 1.02, build: 1.26, hairStyle: 'bald', beard: 'short', hair: 0x3a2a1c, tunic: 0x5a4a3a, apron: 0x3a2e24, skin: 0xc8946e } },
+  brokk: { name: 'Kolbrand', role: 'Smith', look: { scale: 1.02, build: 1.26, hairStyle: 'bald', beard: 'short', hair: 0x3a2a1c, tunic: 0x5a4a3a, apron: 0x3a2e24, skin: 0xc8946e } },
   odd: { name: 'Odd', role: 'Fisherman', look: { hair: 0x5a4a3a, beard: 'short', tunic: 0x6a6a5a, trim: 0x3a5a6a, sleeve: 0x6a6a5a } },
   thyra: { name: 'Thyra', role: 'Village girl', look: { scale: 0.72, child: true, female: true, hair: 0xd8b86a, hairStyle: 'braids', tunic: 0x9a5a4a, trim: 0xd8c890 } },
   gunnar: { name: 'Gunnar the Elder', role: 'Village elder', look: { build: 1.08, hair: 0x8a8680, hairStyle: 'long', beard: 'short', tunic: 0x7a3a2e, trim: 0xc9a24a, cloak: 0x3a4a5a, sleeve: 0x7a3a2e } },
@@ -248,7 +248,7 @@ export const DIALOGUE = {
     { s: 'Hrolf the Skald', t: 'Do not trouble your father with it. He has heard already. I saw his face.', fx: { flag: 'heardRumor', trait: { wisdom: 1 } } },
   ],
   hrolf_idle: [{ s: 'Hrolf the Skald', t: 'Three valleys since midsummer. Mark me, boy. Wolves do not stop at three.' }],
-  brokk: [{ s: 'Brokk', t: "Tell your father his axe-head is mended. And tell him it is the last time. That iron is older than I am." }],
+  brokk: [{ s: 'Kolbrand', t: "Tell your father his axe-head is mended. And tell him it is the last time. That iron is older than I am." }],
   odd: [{ s: 'Odd', t: 'River is running silver today. Cast past the big rock, where it is deep, and do not strike until the float goes under.' }],
   thyra: [
     { s: 'Thyra', t: 'Eirik! There is a carved stone up on the western knoll. A raven on it, and runes.' },

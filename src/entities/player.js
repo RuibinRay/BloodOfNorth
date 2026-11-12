@@ -7,6 +7,7 @@ import { WEAPONS, MELEE_ORDER, ravenFeeder } from '../data/weapons.js';
 import { ITEMS } from '../data/act1.js';
 
 const _look = new THREE.Vector3();
+const MAIL = 0.85; // what a mail shirt leaves of a blow (A3.mail in data/act3.js says the same)
 export const EIRIK_ADULT = {
   scale: 1.0, build: 1.08, skin: 0xdcae8e, hair: 0xa87e45, hairStyle: 'long', beard: 'short', eyes: 0x86aec6, scar: 'lightning',
   tunic: 0x55664a, trim: 0xb0652a, legs: 0x4a3f33, boots: 0x33261a, sleeve: 0x55664a,
@@ -305,6 +306,7 @@ export class Player {
     if (this.wardT > 0) { this.wardFlash(attacker.pos); return 'warded'; }
     const facing = Math.abs(angleDiff(this.yaw, Math.atan2(attacker.pos.x - this.pos.x, attacker.pos.z - this.pos.z))) < 1.2;
     const guarded = this.blocking && facing && !opts.unblockable;
+    if (g.inventory.has('mail')) dmg *= MAIL; // a mail shirt takes the edge off every blow (Act III)
     // death a heartbeat away: the scar burns, and the Stormguard answers on its own, if he has kept his head
     if (!guarded && this.health - dmg <= STORM.near && this.isMelee() && this.canGuard()) { this.ward -= this.guardCost(); g.events.emit('ward', true); this.wardFlash(attacker.pos); return 'warded'; }
     if (!guarded && this.health - dmg <= STORM.near && this.adult && !this.calm() && !this.stormDead && this.ward >= this.guardCost() && !g.state.flags.calmHint) { g.state.flags.calmHint = true; g.ui.hint('The Stormguard did not answer: Eirik is too angry. Every blow he throws feeds the anger (the storm bar turns red). Hold {block} and breathe, and it comes back.'); }

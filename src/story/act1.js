@@ -20,7 +20,7 @@ const FLEE_PATH = [[-23, 66], [-21, 56], [-21, 50], [-10, 43], [-7, 30], [-8, 12
 const CAMP_SEAT = [POI.camp.x - 1.75, POI.camp.z + 1.0];
 const DUEL = { ragnar: [-15, 70], hakon: [-10.5, 70.4], g1: [-6, 73.2], g2: [-6.5, 67.4] };
 const GATE_PATROL = [[[-13, -9], [-19.5, -13.5]], [[-9, 2], [-14, -7]]];
-const QUESTS_MAIN = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_farm', 'q_smoke', 'q_axe', 'q_wolf', 'q_peddlers', 'q_walls', 'q_captain', 'q_oath', 'q_open', 'q_sea'];
+const QUESTS_MAIN = ['q_isle', 'q_fifty', 'q_healer', 'q_shore', 'q_long', 'q_ulf', 'q_iron', 'q_price', 'q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_farm', 'q_smoke', 'q_axe', 'q_wolf', 'q_peddlers', 'q_walls', 'q_captain', 'q_oath', 'q_open', 'q_sea'];
 const WEATHER = {
   day: { snow: 0, fog: 0, overcast: 0.08, wind: 1 },
   dusk: { snow: 0.12, fog: 0.02, overcast: 0.3, wind: 1.1 },
@@ -260,6 +260,7 @@ export class Act1 {
     if (id === 'q_ice') this.ch2.playEnding();
     if (id === 'q_wings') this.ch3.playEnding();
     if (id === 'q_oath') this.a2.playEnding();
+    if (id === 'q_price') this.a2.playEnding3();
     if (this.open.built) { this.open.sea.questDone(id); this.open.fleet.questDone(id); this.open.war.questDone(id); this.open.table.questDone(id); }
   }
   steps = {
@@ -659,6 +660,13 @@ export class Act1 {
     Object.assign(g.player, { health: 100, warmth: 100, hunger: 100 }); g.sky.time = 9.5; g.player.pos.set(152, 0, -137);
     g.saveGame('auto'); g.reloadCheckpoint();
   }
+  /** Start Act III the same way: the spring after the Sea-Raven came home. */
+  beginAct3() {
+    const g = this.g, st = this.st;
+    st.stage = 'act2'; st.quests.q_isle = { status: 'active', step: 0, count: 0 }; st.flags.a2v = 2; st.player = null;
+    Object.assign(g.player, { health: 100, warmth: 100, hunger: 100 }); g.sky.time = 9.2;
+    g.saveGame('auto'); g.reloadCheckpoint();
+  }
   /** Start Act II the same way: ten winters on. */
   beginAct2() {
     const g = this.g, st = this.st;
@@ -775,7 +783,7 @@ export class Act1 {
     const g = this.g, p = g.player, q = g.quests;
     if (q.at('q_ashes', 'flee')) {
       const y = this.npc('ylva'), fb = this.fleeBarks || {};
-      if (!fb.brokk && Math.hypot(p.pos.x + 6, p.pos.z - 42) < 12) { fb.brokk = true; g.ui.subtitle('Brokk', 'RUN, BOY! Do not stop!', 2.6); g.audio.play('shout'); }
+      if (!fb.brokk && Math.hypot(p.pos.x + 6, p.pos.z - 42) < 12) { fb.brokk = true; g.ui.subtitle('Kolbrand', 'RUN, BOY! Do not stop!', 2.6); g.audio.play('shout'); }
       if (!fb.mid && p.pos.z < 16) { fb.mid = true; y.say('The gate. We are nearly there!', 3); }
       if (!this.gatePlayed && this.gateReady && y.dist(p) < 6.5) this.playGate();
     }

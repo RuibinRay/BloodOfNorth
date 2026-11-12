@@ -1,7 +1,7 @@
 {
  "about": "Mission breakdown of the owner's story (docs/story/THE_RISE_OF_THE_RAVEN_KING.md), chapter by chapter. status: built (playable; tested by script) | partial (something of it is playable; read the note) | fight_only (the champion fight is playable in its place, without the chapter round it) | planned. Minutes are design targets, not measured playtime: nothing here has been timed with a person playing.",
  "source": "docs/story/THE_RISE_OF_THE_RAVEN_KING.md",
- "updated": "2026-11-12 (0.14)",
+ "updated": "2026-11-12 (0.15)",
  "acts": [
   {
    "act": 1,
@@ -381,8 +381,8 @@
        "type": "voyage",
        "target_minutes": 12,
        "summary": "Jarnøy; Arvid kills the collector; Håkon's demand.",
-       "status": "planned",
-       "note": "Jarnøy is on the map with its town, hall and furnaces; King Hroald, Arvid and Ingrid stand there."
+       "status": "built",
+       "note": "The trade, the collectors at the pier, Arvid's three strokes, the three who are let go, Hroald, and the demand nine days later. The voyage is a card."
       }
      ]
     },
@@ -396,7 +396,8 @@
        "type": "choice",
        "target_minutes": 6,
        "summary": "Bjorn: he eats one village at a time.",
-       "status": "planned"
+       "status": "built",
+       "note": "The Thing in the story's words: Hauk, Bjorn's speech, Ari sent home. There is no vote to cast: the story casts it."
       },
       {
        "id": "a3c2m2",
@@ -404,7 +405,8 @@
        "type": "companion",
        "target_minutes": 8,
        "summary": "The mule, the anvil, the hand.",
-       "status": "planned"
+       "status": "built",
+       "note": "Brokk at the forge with his mule; the axe and its collar; a different tale of his hand each time he is asked."
       },
       {
        "id": "a3c2m3",
@@ -412,7 +414,8 @@
        "type": "companion",
        "target_minutes": 15,
        "summary": "The ravine camp; nine farmers; no brother.",
-       "status": "planned"
+       "status": "built",
+       "note": "Found through the raven's eye; the arrow at his throat; the trail to the ravine; two guards marked for Astrid's bow; five raiders; six farmers freed where the story has nine."
       },
       {
        "id": "a3c2m4",
@@ -420,7 +423,8 @@
        "type": "companion",
        "target_minutes": 8,
        "summary": "The grey cloak and the hammer.",
-       "status": "planned"
+       "status": "built",
+       "note": "Torvald at the gate with his horse; his shield-wall drill; the question about a ring, a brooch, a letter."
       }
      ]
     },
@@ -434,7 +438,8 @@
        "type": "story",
        "target_minutes": 6,
        "summary": "Ingrid's hospital; Leif fetches water.",
-       "status": "planned"
+       "status": "built",
+       "note": "Ingrid's hospital is laid out before the hall doors, not inside. Leif and the water are played as the scene."
       }
      ]
     },
@@ -448,8 +453,8 @@
        "type": "preparation",
        "target_minutes": 15,
        "summary": "The trench, the stakes, the Stinking Ditch.",
-       "status": "planned",
-       "note": "The stake line stands on the Iron Shore."
+       "status": "built",
+       "note": "Two lengths of trench and the ditch: timed tasks. Brokk's furnaces and Astrid's archers in the forest are told, not played."
       },
       {
        "id": "a3c4m2",
@@ -457,7 +462,8 @@
        "type": "battle",
        "target_minutes": 20,
        "summary": "Arrows from the headland; the charge; the shield wall.",
-       "status": "planned"
+       "status": "built",
+       "note": "Three volleys under the shield, five archers marked from the air, the charge into the Stinking Ditch, then the wall: sixteen defenders hold attackers in pairs while those who break through come for Eirik. A stand-in for 150 against 200. The bridge that collapses is not built."
       },
       {
        "id": "a3c4m3",
@@ -465,7 +471,8 @@
        "type": "choice",
        "target_minutes": 8,
        "summary": "Hold the wall, or go back for the families. Grjotgard.",
-       "status": "planned"
+       "status": "built",
+       "note": "The story makes the choice: he takes the ten to the side gate, holds it, and empties three houses. Grjotgard and Hauk, in the story's words."
       }
      ]
     },
@@ -479,8 +486,8 @@
        "type": "boss",
        "target_minutes": 10,
        "summary": "Up the fallen beam to the tower top; Arne Longshot.",
-       "status": "fight_only",
-       "note": "The fight is built on the tower (The Wolf's Table). The burning granary and the battle round it are not."
+       "status": "built",
+       "note": "The raven finds the way up; the fire is a timed task and the climb a fade; the point-blank arrow and the Stormguard; Arne with seax and knives; the fall into the granary."
       }
      ]
     },
@@ -494,7 +501,8 @@
        "type": "boss",
        "target_minutes": 10,
        "summary": "Ulf Two-Blades; the burning boats.",
-       "status": "planned"
+       "status": "built",
+       "note": "Ulf cannot be beaten here and Eirik cannot die: the fight ends when the Stormguard has answered twice, or on a clock. Three boats against a timer (Leif takes one), the salute, the pyres, Hroald's words to Arvid."
       }
      ]
     },
@@ -508,8 +516,8 @@
        "type": "story",
        "target_minutes": 8,
        "summary": "Weregild; twelve carts of iron; the first reforging; Storm-Yew; Ingrid joins.",
-       "status": "partial",
-       "note": "Only the reforging is in: the Jarnøy smith, once Arne has fallen."
+       "status": "built",
+       "note": "The gold refused, Ingrid's leave, the second forge, the first reforging played at the anvil, a mail shirt, Storm-Yew on the birch hill, rotten bait. Weregild and the twelve carts are told."
       }
      ]
     },
@@ -523,7 +531,8 @@
        "type": "cutscene",
        "target_minutes": 4,
        "summary": "Håkon will not send the fleet.",
-       "status": "planned"
+       "status": "built",
+       "note": "Played in the Hall of Wolves with the story's lines, then the straw man on Svartøy's harbour."
       }
      ]
     }
@@ -1624,10 +1633,10 @@
   "missions": 89,
   "target_minutes": 1015,
   "by_status": {
-   "built": 21,
-   "partial": 6,
-   "fight_only": 10,
-   "planned": 52
+   "built": 34,
+   "partial": 5,
+   "fight_only": 9,
+   "planned": 41
   }
  }
 }

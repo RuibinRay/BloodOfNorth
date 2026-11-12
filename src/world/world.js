@@ -8,6 +8,7 @@ import * as P from './props.js';
 import { HOUSES, POI, FIELDS, BOUNDS } from './layout.js';
 import { buildRealmProps } from './realm_props.js';
 import { buildMainland } from './mainland.js';
+import { buildJarnoyTown } from './jarnoy_town.js';
 import { mainAt } from './realm.js';
 
 const CELL = 8;
@@ -277,6 +278,7 @@ export class World {
     this.realm = buildRealmProps(ctx, this, scene);
     // the mainland coast: Bjornstead and Kaupang (see mainland.js); what the story changes there is kept in this.main
     this.main = buildMainland(ctx, this, scene);
+    this.main.jarnoy = buildJarnoyTown(ctx, this, scene);
 
     const stat = ctx.b.build();
     scene.add(stat);

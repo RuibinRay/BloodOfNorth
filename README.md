@@ -2,24 +2,24 @@
 
 A third-person Viking action RPG that follows the owner's story, *The Rise of the Raven King*
 ([docs/story](docs/story/THE_RISE_OF_THE_RAVEN_KING.md): seven acts and an epilogue). This repository holds
-**slice 0.14**: Act I (Eirik's childhood), all of Act II as the story tells it (Eirik at nineteen: the village
-of Bjornstead, the raid, the walls, Kaupang and the Sea-Raven), and an open world that runs from the home
-valley across the home waters to five great islands of the story built at full scale, where the Ironwolf's
-seven champions, his two hands and the Ironwolf himself can be fought in the places the story has them fall.
+**slice 0.15**: Act I (Eirik's childhood), Act II (Eirik at nineteen: Bjornstead, the raid, the walls, Kaupang
+and the Sea-Raven) and Act III (twenty: Jarnøy, four new companions, the Battle of Iron Shore), each as the
+story tells it, and an open world that runs from the home valley across the home waters to five great islands
+of the story built at full scale.
 
-**New in 0.14.** Act II, "The Farmer's Axe", rebuilt from the story's nine chapters and played in its words ·
-Bjornstead as the coastal village of twenty roofs, with a harbour, a forge, Thing stones and the old birch on
-the hill · the raid in waves, with the barn door, the pigsty and the narrow lane · Kettil in the mud, the
-Stormguard, and the children in the barn (the story's choice, not the player's) · the Hall of Wolves scene ·
-the peddlers and Skull-Ringer · walls that go up as you build them · Kaupang, Leif, a dive on a wreck, the
-Kaupang Thing · the arm-ring. Earlier: [0.13](docs/ROADMAP.md) stored the story, drew the ten-island map and
-built the champions and storm skills.
+**New in 0.15.** Act III, "The Wolves of Iron", all eight chapters in the story's order and words · Prince
+Arvid and the collectors · the Thing at Ravenhold · Brokk, Astrid (and the camp in the ravine), Torvald ·
+Princess Ingrid's hospital · the Battle of Iron Shore: arrows from the ridge, the Stinking Ditch, a shield wall
+with allies who fight, the side gate, Grjotgard · Arne Longshot in the watchtower · Ulf Two-Blades and the
+burning boats · the pyres · the first reforging, a mail shirt, Storm-Yew · the Ironwolf's answer. Also: Jarnøy's
+town has a wall and gates, and the main menu can start at the opening of any built act.
+Earlier: [0.14](docs/ROADMAP.md) built Act II, Bjornstead and Kaupang; 0.13 stored the story and drew the map.
 
-> **What this is, plainly.** Act I (three chapters), Act II (nine chapters) and a large sandbox that run in a
-> browser. Of the story's 89 missions, 21 are built, 6 partly, 10 as the boss fight alone, and 52 are still to
-> build. It is not the 40-hour game, it is not Unreal Engine 5, and it is not photorealistic: every character,
-> prop and sound is generated in code as a placeholder. Everything has been checked by scripted playtest only:
-> no person has played it through. See [Status](#status) for exactly what exists.
+> **What this is, plainly.** Acts I, II and III of seven, and a large sandbox, running in a browser. Of the
+> story's 89 missions, 34 are built, 5 partly, 9 as the boss fight alone, and 41 are still to build. It is not
+> the 40-hour game, it is not Unreal Engine 5, and it is not photorealistic: every character, prop and sound is
+> generated in code as a placeholder. Everything has been checked by scripted playtest only: no person has
+> played it through. See [Status](#status) for exactly what exists.
 
 ## Run it
 
@@ -111,6 +111,25 @@ All keyboard and mouse bindings can be changed in Settings.
 8. *The Captain Without a Ship* — Kaupang: the market, the thrall pen, Leif and Orm the reeve; a dive on a
    wreck with one breath at a time; a man under a beam; the Kaupang Thing; the Sea-Raven.
 9. *The First Oath* — the feast, the goat's trial, Bjorn's arm-ring, and smoke in the west.
+
+**Act III — "The Wolves of Iron."** Eirik is twenty. Eight chapters, in the story's order and words.
+
+1. *The Island Prince* — sail to Jarnøy, trade for iron, and watch Prince Arvid kill a collector over a
+   fisherman's daughter. Let the other three go. Nine days later, Håkon's demand.
+2. *Fifty from Ravenhold* — the Thing; Brokk at the forge; Astrid, found through the white raven's eyes, and the
+   raiders' camp in the ravine; Torvald, and his shield wall.
+3. *The Healer's Hands* — the voyage with the fifty; Princess Ingrid's hospital; Leif and the water.
+4. *The Battle of Iron Shore* — dig the trench, fill the Stinking Ditch; shields up under the arrows; call the
+   archers' places to Astrid from the air; hold the wall beside Torvald; take ten men to the side gate; get the
+   families out. Grjotgard.
+5. *The Longshot* — through the burning granary and up the tower to Arne Longshot.
+6. *The Enemy Who Escaped* — Ulf Two-Blades, who cannot be beaten today; three burning boats; the pyres.
+7. *The Gift of Iron* — gold refused, iron asked for; Ingrid; the second forge and the first reforging;
+   Storm-Yew.
+8. *The Price of Victory* — the Hall of Wolves (a scene).
+
+The main menu has **Start at an Act**, which begins Act I, II or III at its opening with the earlier acts taken
+as played.
 
 **Open-world sandbox — "The Whale Road" (prototype).** Not a story chapter: a place to try the systems.
 
@@ -214,10 +233,10 @@ the [story bible](docs/STORY_BIBLE.md).
 
 | | |
 |---|---|
-| **Playable and tested** | All of Act I (chapters 1–3) and all of Act II (nine chapters) start to finish, by scripted playtest; a village that burns, is walled and gains a ship as the story goes; timed work, a wrestling and shield-wall game, a dive with breath; melee combat against enemies that guard, take turns and flank, with a two-phase captain; an ally who fights; the black raven harrying a target; raven companions and Raven's Eye; five hidden omens; hunger and warmth, shelter, cooking, a wolf encounter with two outcomes, thin-ice crossing; movement, camera, stamina; dialogue with choices; quests, journal, tracker, map with waypoint; woodcutting, archery, tracking, fishing, fire-making; sparring; stealth with raider sight and hearing; cold survival; day/night, snow, fire; in-engine cutscenes; save/load with autosave; settings, key rebinding, gamepad |
+| **Playable and tested** | All of Act I (chapters 1–3), Act II (nine chapters) and Act III (eight chapters) start to finish, by scripted playtest; a battle with allies who hold attackers along a line; four companions who join in their scenes; start-at-an-act; a village that burns, is walled and gains a ship as the story goes; timed work, a wrestling and shield-wall game, a dive with breath; melee combat against enemies that guard, take turns and flank, with a two-phase captain; an ally who fights; the black raven harrying a target; raven companions and Raven's Eye; five hidden omens; hunger and warmth, shelter, cooking, a wolf encounter with two outcomes, thin-ice crossing; movement, camera, stamina; dialogue with choices; quests, journal, tracker, map with waypoint; woodcutting, archery, tracking, fishing, fire-making; sparring; stealth with raider sight and hearing; cold survival; day/night, snow, fire; in-engine cutscenes; save/load with autosave; settings, key rebinding, gamepad |
 | **Prototype** | The open-world sandbox (two law-districts, fourteen islands, one horse, a rowing boat and a crewed ship, sea battles with volleys, ramming and boarding, paid passage, one secret weapon, one crew raid); procedural characters and animation; procedural audio and score; villager routines; wildlife AI; combat balance and the new enemy kinds (tuned against scripted players only) |
 | **Blocked** | Higgsfield asset generation — the API needs a key ID *and* a secret; only one value was supplied. See [docs/HIGGSFIELD.md](docs/HIGGSFIELD.md) |
-| **Planned** | Everything else in the brief: Acts III through VII and the epilogue; the rest of the sea map (about forty islands of which fourteen exist as a sandbox; a longship of your own, fleets and crew who can be hurt; wind and weather at sea; more districts — designed in [docs/OPEN_WORLD.md](docs/OPEN_WORLD.md)); adult combat and nine weapons, skill trees, companions, sailing, settlement, factions, 50 side missions, UE5 port. See [docs/ROADMAP.md](docs/ROADMAP.md) |
+| **Planned** | Everything else in the brief: Acts IV through VII and the epilogue; the rest of the sea map (about forty islands of which fourteen exist as a sandbox; a longship of your own, fleets and crew who can be hurt; wind and weather at sea; more districts — designed in [docs/OPEN_WORLD.md](docs/OPEN_WORLD.md)); adult combat and nine weapons, skill trees, companions, sailing, settlement, factions, 50 side missions, UE5 port. See [docs/ROADMAP.md](docs/ROADMAP.md) |
 
 How it was tested: an automated playtest drives the real game loop through every quest step (see
 `debug` in [src/main.js](src/main.js)). It was verified on an Apple M2 at 60 fps. It has **not** been
@@ -231,7 +250,7 @@ src/world/     terrain, sky and weather, village props, vegetation, effects, col
 src/entities/  character rig and animation, player, NPCs and raiders, wildlife and arrows
 src/systems/   quests, dialogue, inventory, cutscene camera, activities
 src/data/      Act I items, cast, quests, dialogue (pure data)
-src/story/     director scripts: Act I (one per chapter), Act II (act2*.js), the sandbox, the champions
+src/story/     director scripts: Act I (one per chapter), Acts II and III (act2*.js, act3*.js), the sandbox, the champions
 src/ui/        HUD, menus, panels
 data/          campaign-wide design data (missions, world, combat) — engine-agnostic JSON
 assets/        asset registry and generated assets

@@ -1,6 +1,7 @@
 // Act II — "The Farmer's Axe", as the owner's story tells it (docs/story, Act II): nine chapters in Bjornstead, the
-// coastal village of twenty roofs, and in Kaupang. This file holds what every chapter shares (the village and its
-// people, the times of day, the helpers) and Chapters 1 to 3. The raid and the Hall of Wolves are in act2_raid.js,
+// coastal village of twenty roofs, and in Kaupang. This file holds what every chapter of the mainland acts shares
+// (the village and its people, the times of day, the helpers) and Act II's Chapters 1 to 3. Act III ("The Wolves
+// of Iron") runs on the same machinery: its chapters are in act3_home.js, act3_isle.js and act3_battle.js. The raid and the Hall of Wolves are in act2_raid.js,
 // the peddlers and the walls in act2_winter.js, Kaupang and the first oath in act2_sea.js.
 // Step handlers are idempotent: they run on play, on load and from the test harness (r = restoring).
 import * as THREE from 'three';
@@ -16,16 +17,24 @@ import { dampAngle } from '../core/util.js';
 import { A2Raid } from './act2_raid.js';
 import { A2Winter } from './act2_winter.js';
 import { A2Sea } from './act2_sea.js';
+import { A3Home } from './act3_home.js';
+import { A3Isle } from './act3_isle.js';
+import { A3Battle } from './act3_battle.js';
 
-const SUMMER = { snow: 0, fog: 0, overcast: 0.06, wind: 0.9 }, MIST = { snow: 0, fog: 0.05, overcast: 0.3, wind: 0.8 }, DUSK = { snow: 0, fog: 0.03, overcast: 0.4, wind: 1.3 }, GREY = { snow: 0, fog: 0.02, overcast: 0.55, wind: 1.2 }, FROST = { snow: 0.08, fog: 0.03, overcast: 0.5, wind: 1.2 };
+const SUMMER = { snow: 0, fog: 0, overcast: 0.06, wind: 0.9 }, MIST = { snow: 0, fog: 0.05, overcast: 0.3, wind: 0.8 }, DUSK = { snow: 0, fog: 0.03, overcast: 0.4, wind: 1.3 }, GREY = { snow: 0, fog: 0.02, overcast: 0.55, wind: 1.2 }, FROST = { snow: 0.08, fog: 0.03, overcast: 0.5, wind: 1.2 }, SMOKE = { snow: 0, fog: 0.06, overcast: 0.6, wind: 1.3 };
 /** The times of day the act moves through: hour, weather, music, and whether the feast is laid. */
 export const PHASES = {
-  morning: { time: 8.6, w: SUMMER }, hunt: { time: 11.2, w: SUMMER }, thing: { time: 13.4, w: SUMMER }, feast: { time: 16.72, w: SUMMER, feast: true }, dawn: { time: 7.12, w: MIST },
+  morning: { time: 8.6, w: SUMMER, day: true }, hunt: { time: 11.2, w: SUMMER, day: true }, thing: { time: 13.4, w: SUMMER }, feast: { time: 16.72, w: SUMMER, feast: true }, dawn: { time: 7.12, w: MIST, day: true },
   raid: { time: 16.7, w: DUSK, music: 'raid' }, after: { time: 17.1, w: DUSK, music: 'sorrow' }, hall: { time: 16.35, w: GREY, music: 'sorrow' },
-  ped: { time: 12.6, w: GREY }, pednight: { time: 22.5, w: GREY, music: 'sorrow' }, pedmorn: { time: 8.2, w: GREY }, pedeve: { time: 21.5, w: GREY, music: 'sorrow' },
-  stones: { time: 10.5, w: GREY }, work: { time: 12.2, w: SUMMER }, frost: { time: 9.4, w: FROST, snow: 0.07 },
+  ped: { time: 12.6, w: GREY, day: true }, pednight: { time: 22.5, w: GREY, music: 'sorrow' }, pedmorn: { time: 8.2, w: GREY, day: true }, pedeve: { time: 21.5, w: GREY, music: 'sorrow' },
+  stones: { time: 10.5, w: GREY }, work: { time: 12.2, w: SUMMER, day: true }, frost: { time: 9.4, w: FROST, snow: 0.07, day: true },
   market: { time: 11.5, w: SUMMER, at: 'kaupang' }, tavern: { time: 17.4, w: DUSK, at: 'kaupang' }, skerry: { time: 9.2, w: SUMMER, at: 'kaupang' }, kthing: { time: 13, w: SUMMER, at: 'kaupang' },
   oath: { time: 16.72, w: FROST, snow: 0.07, feast: true }, oathnight: { time: 22, w: FROST, snow: 0.07, music: 'sorrow' },
+  // Act III: Ravenhold through a year, and Jarnøy
+  a3spring: { time: 9.2, w: SUMMER, day: true }, a3stones: { time: 10.6, w: GREY }, a3month: { time: 13, w: SUMMER, day: true }, a3hills: { time: 15.2, w: GREY, day: true }, a3drill: { time: 8.4, w: MIST, day: true },
+  jday: { time: 11, w: SUMMER, at: 'jarnoy' }, jtax: { time: 10.2, w: GREY, at: 'jarnoy' }, jnine: { time: 15.4, w: GREY, at: 'jarnoy' }, jprep: { time: 13, w: SUMMER, at: 'jarnoy' },
+  jdawn: { time: 7.25, w: MIST, at: 'jarnoy', music: 'raid' }, jbattle: { time: 8.8, w: SMOKE, at: 'jarnoy', music: 'raid' }, jnight: { time: 21.6, w: GREY, at: 'jarnoy', music: 'sorrow' }, jfeast: { time: 16.6, w: SUMMER, at: 'jarnoy' },
+  a3autumn: { time: 12.5, w: GREY, day: true }, a3yew: { time: 16.2, w: SUMMER, day: true },
 };
 /** Where the village stands on an ordinary day: [dx, dz, facing (a yaw, or a point to face), loop, held]. */
 const DAY = {
@@ -41,7 +50,9 @@ export class Act2 {
   constructor(game, act) {
     this.g = game; this.act = act; this.built = false; this.phase = null; this.t = 0; this.heard = {};
     this.raid = new A2Raid(game, this); this.winter = new A2Winter(game, this); this.sea = new A2Sea(game, this);
-    this.parts = [this.raid, this.winter, this.sea];
+    this.home3 = new A3Home(game, this); this.isle = new A3Isle(game, this); this.battle = new A3Battle(game, this);
+    this.parts = [this.raid, this.winter, this.sea, this.home3, this.isle, this.battle]; // in the order they are built
+    this.talkers = [this.home3, this.isle, this.battle, this.raid, this.winter, this.sea]; // the later act answers first
     this.steps = {};
     for (const [k, f] of Object.entries(this.own)) this.steps[k] = f.bind(this);
     for (const part of this.parts) for (const [k, f] of Object.entries(part.steps)) this.steps[k] = f.bind(part);
@@ -143,14 +154,15 @@ export class Act2 {
   prog() {
     const q = this.g.quests, sq = this.st.quests, step = (id) => (sq[id] && sq[id].status === 'active' ? sq[id].step : -1), done = (id) => q.isDone(id), w = step('q_walls'), pd = step('q_peddlers');
     return { raided: done('q_axe') || step('q_axe') >= 9, armed: done('q_axe') || step('q_axe') >= 2, walls: done('q_walls') || w >= 9 ? 4 : w >= 8 ? 3 : w >= 7 ? 2 : w >= 6 ? 1 : 0,
-      seaRaven: done('q_captain'), peddlers: pd >= 0 && pd <= 6, netUp: pd === 5 || pd === 6, frying: pd >= 7 || done('q_peddlers') };
+      seaRaven: done('q_captain'), peddlers: pd >= 0 && pd <= 6, netUp: pd === 5 || pd === 6, frying: pd >= 7 || done('q_peddlers'),
+      ravenhold: !!sq.q_fifty, forge2: done('q_iron') || step('q_iron') >= 3 };
   }
   applyWorld() {
     const fl = this.prog(), S = this.W.stages, K = this.g.world.main.kaupang.stages, walls = fl.walls;
     if (fl.armed) this.ensureArmed();
     S.homes.set(!fl.raided); S.ashes.set(!!fl.raided);
     S.ditch.set(walls >= 1); S.trench.set(walls >= 2); S.privy.set(walls < 2); S.wall.set(walls >= 3); S.tower.set(walls >= 4);
-    S.searaven.set(!!fl.seaRaven); K.ship.set(!fl.seaRaven);
+    S.searaven.set(!!fl.seaRaven); K.ship.set(!fl.seaRaven); S.raven.set(fl.ravenhold); S.forge2.set(fl.forge2);
     S.camp.set(!!fl.peddlers); S.net.set(!!fl.netUp);
     if (fl.frying && !this.pan) { const [x, z] = this.B(-2.6, 117.9), m = new THREE.Mesh(tint(at(cyl(0.17, 0.17, 0.03, 12), 0, 0, 0, Math.PI / 2, 0, 0), 0x1c1c20, 0.1, 2), M.vcPlain); m.position.set(x, this.g.world.groundAt(x, z) + 1.5, z); this.g.scene.add(m); this.pan = m; // Skull-Ringer, on its peg by the door
       this.g.world.addInteractable({ id: 'a2pan', x, z, r: 1.6, label: 'Skull-Ringer', use: () => this.sub('The village laughs about the frying pan for years. Freydis keeps it on a peg by the door and calls it Skull-Ringer.', 6) }); }
@@ -176,14 +188,15 @@ export class Act2 {
     for (const id of this.folk) this.npc(id).visible = false;
     for (const id of ['bjorn', 'signe', 'freydis']) this.npc(id).visible = false;
     for (const part of this.parts) part.clear(name);
-    if (ph.at === 'kaupang') return this.sea.dress(name, r);
+    const host = { kaupang: this.sea, jarnoy: this.isle }[ph.at];
+    if (host) return host.dress(name, r);
     this.dress(name, r);
   }
   /** Who is where in Bjornstead at this time of day. */
   dress(name) {
     const day = () => { for (const id in DAY) this.post(id, DAY[id]); };
     const all = [...this.folk.filter((id) => !id.startsWith('kid')), 'signe', 'freydis'];
-    if (['morning', 'hunt', 'dawn', 'ped', 'pedmorn', 'work', 'frost'].includes(name)) day();
+    if (PHASES[name].day) day();
     if (name === 'morning') { this.npc('freydis').visible = this.g.quests.at('q_ten', 'freydis') || this.g.quests.isActive('q_farm'); }
     if (name === 'thing') { day(); this.post('hauk', [-88, 99, [-86, 99]]); this.post('grjotgard', [-84.4, 100.6, [-86, 99]]); this.post('lawman', [-91, 93.6, [-86, 99], 'talk']); this.post('bjorn', [-87, 94.4, [-86, 99]]); this.ring(['v3', 'v7', 'v9', 'v5'], -87, 98, 6.5, null, 0.6, 2.6); this.cow.visible = true; }
     if (name === 'feast' || name === 'oath') { // everyone at the long tables before the hall
@@ -200,7 +213,7 @@ export class Act2 {
   // ---- conversations -------------------------------------------------------------------
   talkTo(id) {
     const g = this.g, q = g.quests, n = this.npc(id), done = () => q.notify('talk', id);
-    for (const part of this.parts) if (part.talk(id, n)) return;
+    for (const part of this.talkers) if (part.talk(id, n)) return;
     if (id === 'freydis' && q.at('q_ten', 'freydis')) return this.say('a2_freydis1', n, done);
     if (id === 'bjorn' && q.at('q_farm', 'bjorn')) return this.say('a2_hunt', n, done);
     if (q.at('q_farm', 'sides') && (id === 'hauk' || id === 'grjotgard')) return this.say(id === 'hauk' ? 'a2_hauk' : 'a2_grjot', n, () => { if (!this.heard[id]) { this.heard[id] = true; done(); } });
@@ -395,6 +408,14 @@ export class Act2 {
     if (name === 'goat') return this.goat.roof ? null : { x: this.goat.pos.x, z: this.goat.pos.z, y: this.goat.pos.y + 1.5 };
     for (const part of this.parts) { const d = part.dyn && part.dyn(name); if (d !== undefined) return d; }
     return null;
+  }
+  /** What the village is called: Bjornstead, until the sailors name it for its ravens. */
+  get townName() { return this.st.quests.q_fifty ? 'Ravenhold' : 'Bjornstead'; }
+  playEnding3() {
+    const g = this.g, st = this.st;
+    if (this.ending) return;
+    this.ending = true; g.player.frozen = true; g.ravens.exitEye();
+    g.ui.fade(true, 1.2).then(() => g.ui.card('The Wolves of Iron', 'End of Act Three', 4.5)).then(() => { st.stage = 'complete'; g.autosave(); this.act.showChapterEnd(); });
   }
   playEnding() {
     const g = this.g, st = this.st;

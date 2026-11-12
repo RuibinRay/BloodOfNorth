@@ -114,9 +114,7 @@ function jarnoy(ctx, world) {
   ctx.b.add(at(cyl(0.16, 0.2, 9, 6), tw.x + 7.5, tw.y - 4.3, tw.z + 6.5, 0, 0.9, 0.95), M.bark);
   // King Hroald's hall, which the princess turns into a hospital
   house(ctx, ...W('hall'), 0.2, 22, { wid: 8, ridge: 6, smoke: true, doorX: 3 }); P.runestone(ctx, ...W('hall', 14, 12), 0.4); P.bench(ctx, ...W('hall', 6, 8), 0.2); P.dryingRack(ctx, ...W('hall', -10, 9), 0.2);
-  // the Iron Shore: the stake line above the beach, and the midden trench at its far end
-  stakes(ctx, ...W('shore', 30, -34), ...W('shore', 34, 30), 0.6); stakes(ctx, ...W('shore', 27, -30), ...W('shore', 31, 26), 0.7, 1.3);
-  ctx.b.add(tint(at(box(3, 0.5, 14), ...((q) => [q[0], heightAt(q[0], q[1]) - 0.05, q[1]])(W('shore', 16, 44)), 0, 0.2, 0), 0x2e2a1c, 0.3, 5), M.vcPlain);
+  // (the Iron Shore's stake trench and the Stinking Ditch are in jarnoy_town.js: Act III digs them)
   // the furnaces on the hill, smoking day and night
   for (const [dx, dz] of [[-8, -6], [0, 4], [9, -4], [-14, 6], [6, 12]]) furnace(ctx, ...W('furnaces', dx, dz));
   P.smithy(ctx, ...W('furnaces', 16, 10), 0.6); P.woodpile(ctx, ...W('furnaces', -18, -8), 0.3, 5, 9); P.woodpile(ctx, ...W('furnaces', -4, 18), 1.2, 4, 8); house(ctx, ...W('furnaces', 4, -20), 0.1, 10);

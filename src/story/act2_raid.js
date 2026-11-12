@@ -185,27 +185,43 @@ export class A2Raid {
   }
 
   // ---- the Hall of Wolves (Chapter 5) --------------------------------------------------------------
-  playHall() {
+  /** Lay the Hall of Wolves for a scene: the tables, Håkon in the high seat, his two hands behind it, the champions on the benches. */
+  hallOpen() {
     const g = this.g, c = this.c, p = g.player, h = g.world.realm.svartoy.hall, y0 = h.y, zs = h.z + h.hl + 1; // zs: the south wall
-    if (this.hallOn) return;
     this.hallOn = true; c.setPhase('hall', true);
     g.ravens.setMode('hidden'); p.frozen = true; p.root.visible = false; p.teleport(h.x, h.z + 2, 0);
-    if (!this.hallSet) { // tables for the meal: two down the hall, one across before the high seat
+    if (!this.hallSet) { // tables for the meal: two down the hall
       const b = new THREE.Group(), add = (geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; b.add(m); };
       for (const s of [-1, 1]) { add(box(1.0, 0.1, 6.2), M.plank, h.x + s * 2.3, y0 + 0.82, zs - 9.6); add(box(0.4, 0.08, 6), M.plank, h.x + s * 3.2, y0 + 0.46, zs - 9.6); for (const k of [-1, 1]) add(box(0.9, 0.8, 0.12), M.timber, h.x + s * 2.3, y0 + 0.4, zs - 9.6 + k * 2.6); }
       for (let i = 0; i < 10; i++) add(i % 3 ? cyl(0.08, 0.06, 0.14, 7) : sphere(0.15, 7, 5), M.timber, h.x + (i % 2 ? 2.3 : -2.3) + (i % 3) * 0.12, y0 + 0.94, zs - 12 + i * 0.55);
       g.scene.add(b); this.hallSet = b;
-      const mk = (id, name, look, x, z, yaw, loop, y = 0, hold = null) => { const n = g.npcs.get('hw_' + id) || g.addNPC('hw_' + id, { name, look }); n.mode = 'crew'; n.pos.set(x, y0 + y, z); n.yaw = yaw; n.root.rotation.y = yaw; n.h.hold('R', hold); n.pose = loop; return n; };
+      const mk = (id, name, look) => { const n = g.npcs.get('hw_' + id) || g.addNPC('hw_' + id, { name, look }); n.mode = 'crew'; return n; };
       const F = (id) => FOES.find((f) => f.id === id);
-      this.hallCast = { hakon: mk('hakon', 'Håkon', { ...CAST.hakon.look, helmet: false }, h.x, zs - 3.3, Math.PI, 'sit', 0.62),
-        vigdis: mk('vigdis', 'Vigdis', F('vigdis').look, h.x - 1.5, zs - 1.9, Math.PI, null), gorm: mk('gorm', 'Gorm', F('gorm').look, h.x + 1.6, zs - 1.9, Math.PI, null),
-        sigurd: mk('sigurd', 'Sigurd Stonehand', CAST2.sigurd.look, h.x - 3.2, zs - 5.4, 1.2, 'sit', 0) };
-      ['arne', 'rurik', 'skarde', 'eydis', 'bersi', 'ulf'].forEach((id, i) => { const s = i % 2 ? 1 : -1; this.hallCast[id] = mk(id, F(id).name, F(id).look, h.x + s * 3.2, zs - 7.6 - (i >> 1) * 1.9, -s * Math.PI / 2, 'sit', 0, id === 'arne' ? 'seax' : null); });
+      this.hallCast = { hakon: mk('hakon', 'Håkon', { ...CAST.hakon.look, helmet: false }), vigdis: mk('vigdis', 'Vigdis', F('vigdis').look), gorm: mk('gorm', 'Gorm', F('gorm').look), sigurd: mk('sigurd', 'Sigurd Stonehand', CAST2.sigurd.look) };
+      for (const id of ['arne', 'rurik', 'skarde', 'eydis', 'bersi', 'ulf']) this.hallCast[id] = mk(id, F(id).name, F(id).look);
+      this.hallCast.kettil = c.column().k;
     }
-    this.hallSet.visible = true; for (const n of Object.values(this.hallCast)) n.visible = true;
-    const C = this.hallCast, hk = C.hakon; hk.pos.set(h.x, y0 + 0.62, zs - 3.3); hk.pose = 'sit'; this.hakonWalk = null;
-    const k = c.column().k; c.riders.on = false; c.riders.horse.visible = false; k.visible = true; k.mode = 'crew'; k.pos.set(h.x, y0, zs - 15.5); k.yaw = 0; k.root.rotation.y = 0; k.h.hold('R', null); k.h.hold('L', null); k.pose = 'kneel'; C.kettil = k;
+    const C = this.hallCast, set = (n, x, z, yaw, pose, y = 0, hold = null) => { n.visible = true; n.mode = 'crew'; n.pos.set(x, y0 + y, z); n.yaw = yaw; n.root.rotation.y = yaw; n.h.hold('R', hold); n.h.hold('L', null); n.pose = pose; };
+    this.hallSet.visible = true; this.hakonWalk = null;
+    set(C.hakon, h.x, zs - 3.3, Math.PI, 'sit', 0.62); set(C.vigdis, h.x - 1.5, zs - 1.9, Math.PI, null); set(C.gorm, h.x + 1.6, zs - 1.9, Math.PI, null); set(C.sigurd, h.x - 3.2, zs - 5.4, 1.2, 'sit');
+    ['arne', 'rurik', 'skarde', 'eydis', 'bersi', 'ulf'].forEach((id, i) => { const s = i % 2 ? 1 : -1; set(C[id], h.x + s * 3.2, zs - 7.6 - (i >> 1) * 1.9, -s * Math.PI / 2, 'sit', 0, id === 'arne' ? 'seax' : null); });
+    c.riders.on = false; c.riders.horse.visible = false; set(C.kettil, h.x, zs - 15.5, 0, 'kneel');
     this.hallFires = [g.fx.addFire(h.x, y0 + 0.3, h.z - 4, 1.1), g.fx.addFire(h.x, y0 + 0.3, h.z + 3, 1.1)];
+    return { h, y0, zs, C, set };
+  }
+  hallClose(then) {
+    const g = this.g, p = g.player;
+    return g.ui.fade(true, 1.2).then(() => {
+      for (const n of Object.values(this.hallCast)) n.visible = false; this.hallSet.visible = false; for (const f of this.hallFires) g.fx.removeFire(f); this.hallFires = [];
+      p.root.visible = true; p.frozen = false; this.hallOn = false; g.ravens.setMode('follow');
+      then();
+      return g.ui.fade(false, 1.2);
+    });
+  }
+  playHall() {
+    const g = this.g, c = this.c;
+    if (this.hallOn) return;
+    const { h, y0, zs, C } = this.hallOpen(), hk = C.hakon, k = C.kettil;
     const eye = (n, up = 1.45) => [n.pos.x, n.pos.y + up, n.pos.z], cam = {
       kettil: () => ({ from: [h.x + 1.6, y0 + 1.1, zs - 13.2], look: eye(k, 0.95), fov: 36 }), hakon: () => ({ from: [h.x - 1.2, y0 + 1.5, zs - 12.6], look: eye(hk, hk.pose === 'sit' ? 1.0 : 1.55), fov: 34 }),
       table: () => ({ from: [h.x + 0.4, y0 + 3.1, zs - 20], to: [h.x - 0.4, y0 + 2.5, zs - 17.5], look: [h.x, y0 + 1.0, zs - 6], fov: 46 }),
@@ -215,16 +231,8 @@ export class A2Raid {
     const shots = HALL_LINES.map(([who, sp, text], i) => { const v = cam[who](), dur = 2.8 + text.length * 0.058; return { dur, from: v.from, to: v.to || [v.from[0] + 0.25, v.from[1], v.from[2] + 0.2], look: () => cam[who]().look, fov: v.fov, sub: [sp, text, dur - 0.3],
       onStart: () => { if (i === 6) { hk.pose = null; this.hakonWalk = { t: 0 }; } if (i === 9) { g.audio.play('steel', { vol: 0.5 }); } if (i === 3) g.audio.setMusic('raid'); } }; });
     g.ui.fade(false, 1.2);
-    g.cine.play([{ dur: 5, from: [h.x, y0 + 5.5, h.z - h.hl - 16], to: [h.x, y0 + 2.4, h.z - h.hl - 4], look: [h.x, y0 + 2, h.z], fov: 44, sub: ['', "On Svartøy, Kettil limps into Håkon's hall. Håkon is eating with his seven champions.", 4.6] }, ...shots], { onEnd: () => this.endHall() });
-  }
-  endHall() {
-    const g = this.g, c = this.c, p = g.player;
-    g.ui.fade(true, 1.2).then(() => {
-      for (const n of Object.values(this.hallCast)) n.visible = false; this.hallSet.visible = false; for (const f of this.hallFires) g.fx.removeFire(f); this.hallFires = [];
-      p.root.visible = true; p.frozen = false; this.hallOn = false; g.ravens.setMode('follow');
-      p.teleport(...c.B(-3, 123), 0.4); g.quests.notify('event', 'a2hall');
-      return g.ui.fade(false, 1.2);
-    });
+    g.cine.play([{ dur: 5, from: [h.x, y0 + 5.5, h.z - h.hl - 16], to: [h.x, y0 + 2.4, h.z - h.hl - 4], look: [h.x, y0 + 2, h.z], fov: 44, sub: ['', "On Svartøy, Kettil limps into Håkon's hall. Håkon is eating with his seven champions.", 4.6] }, ...shots],
+      { onEnd: () => this.hallClose(() => { g.player.teleport(...c.B(-3, 123), 0.4); g.quests.notify('event', 'a2hall'); }) });
   }
 
   // =====================================================================================

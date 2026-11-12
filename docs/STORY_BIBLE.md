@@ -33,7 +33,7 @@ The spring after his tenth birthday, lightning strikes the old birch behind Bjor
 
 **Family.** Eirik Ravensson · Ragnar (father; killed by Håkon, Act I) · Ylva (mother; killed by Kettil helping Eirik escape) · Bjorn (adoptive father; wounded Act IV; dies of old age before the epilogue) · Signe · Freydis (two years older; marries Halvar; son Little Brokk) · Mjöll, the white raven (dies of old age) · Sót, the black raven (survives).
 
-**The six companions.** Leif (captain of the Sea-Raven; the Twins; joins Act II at Kaupang; marries Ingrid) · Astrid (archer; Storm-Yew; her brother Kári was taken; joins Act III) · Brokk (smith; crushed left hand; killed by Bersi, Act VI) · Torvald (hammer and shield; betrays in Act IV; spared; redeems himself in Act VII) · Svanhild (sword; captain of Jarl Jorund's guard; seasick; joins Act V) · Princess Ingrid (healer; daughter of King Hroald; joins Act III).
+**The six companions** (in the game so far: Leif from Act II; Astrid, Brokk, Torvald and Ingrid from Act III; they appear in their scenes and do not yet travel or fight at Eirik's side outside them). Leif (captain of the Sea-Raven; the Twins; joins Act II at Kaupang; marries Ingrid) · Astrid (archer; Storm-Yew; her brother Kári was taken; joins Act III) · Brokk (smith; crushed left hand; killed by Bersi, Act VI) · Torvald (hammer and shield; betrays in Act IV; spared; redeems himself in Act VII) · Svanhild (sword; captain of Jarl Jorund's guard; seasick; joins Act V) · Princess Ingrid (healer; daughter of King Hroald; joins Act III).
 
 **Rulers.** Hroald Ironvein (Jarnøy) · Eystein Goldhand (Solvik) · Ragnvald Stormwake (Kinn) · Hallvard the Lawspeaker (Gulen) · Aslak (Fedje) · Svein (Skorpa) · Jarl Jorund (Vængr) · Queen Thora and Prince Eyvind (Myrholm) · Jarl Gudmund (Skalløy) · Prince Arvid, Halvar, Old Thrand, Old Hrefna, Gisli, Ari Hauksson, Hauk, Grjotgard, Liv, Little Brokk, Old Skeggi the goat.
 
@@ -45,7 +45,7 @@ Bjornstead sits on the mainland coast facing them and grows into Ravenhold, capi
 
 | Island | Ruler | Known for | Side | In the game |
 |---|---|---|---|---|
-| Jarnøy, the Iron Isle | King Hroald | iron | original six | **Built at story scale** (about 700 x 580 m): harbour town, watchtower and granary, the hall, the Iron Shore, furnaces, the burned hamlet |
+| Jarnøy, the Iron Isle | King Hroald | iron | original six | **Built at story scale** (about 700 x 580 m): harbour town with its wall and three gates, the houses outside it, watchtower and granary, the hall, the Iron Shore with the trench and the Stinking Ditch, furnaces, the burned hamlet. Act III plays here |
 | Solvik, the Golden Quay | King Eystein | gold, merchant ships | original six | **Built at story scale**: stone quay and warehouses, the hall, the sea cave, Rurik's ship |
 | Kinn, the Storm Coast | King Ragnvald | sailors | original six | Small sandbox island in the home waters; to be enlarged |
 | Gulen, the Law Isle | King Hallvard | the great Thing | original six | Small sandbox island with the law-rock; to be enlarged |
@@ -85,7 +85,7 @@ These were built before the story arrived. Each needs either a rebuild or the ow
 4. **Sky-iron.** The story's falls on Skalløy two years before Act VI. The game has a black stone propping Bjorn's barn door as an omen.
 5. **Who rules in the sandbox.** The player can be sworn "king" of Gulen and the Skerries by standing alone, and a reeve named Ragnhild holds Kinn. The story has King Hallvard on Gulen and King Ragnvald on Kinn, and Eirik is never king of an island.
 6. **The Left Brother.** A second axe found on Vængr ("two brothers"). Not in the story.
-7. **Sandbox people renamed** so they no longer share a name with someone in the story: Ulf (Kinn) is Bolli, Hauk (Gulen) is Havard, Ketil is Kol, the trader Thora is Gyda, the shepherd Aslak is Eilif, Kari Pilot is Kolbein, Orm Ferryman is Ivar, Old Svein is Old Njal, the pirate Gorm Gull-Feeder is Hroar, and the lawspeaker on Gulen is now Hallvard.
+7. **People renamed** so they no longer share a name with someone in the story: Act I's Hrafnvik smith, who was called Brokk, is Kolbrand. In the sandbox: Ulf (Kinn) is Bolli, Hauk (Gulen) is Havard, Ketil is Kol, the trader Thora is Gyda, the shepherd Aslak is Eilif, Kari Pilot is Kolbein, Orm Ferryman is Ivar, Old Svein is Old Njal, the pirate Gorm Gull-Feeder is Hroar, and the lawspeaker on Gulen is now Hallvard.
 
 ## World rules (Established unless marked)
 

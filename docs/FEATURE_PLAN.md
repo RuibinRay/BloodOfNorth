@@ -65,7 +65,9 @@ Sources are listed at the end.
 
 Built in 0.13: Stormguard by the story's rules, five Stormborn skills, ten champions with named skills and phases, Raven-Feeder's reforgings. See [WEAPONS.md](WEAPONS.md).
 
-Planned, in order: a person plays every champion and the numbers are retuned (the Ghost of Tsushima lesson); companions who fight beside him (Leif first); real shield walls and battles of dozens; weapon-against-weapon contact; mounted and thrown-spear combat; per-weapon animation sets.
+Built in 0.15: a first battle with allies (the Iron Shore). Defenders stand in a line and each holds one attacker, striking him when he closes; attackers who find no one free come for the player, who can also strike the ones being held. It is a stand-in for a shield wall, not one.
+
+Planned, in order: a person plays every champion and the numbers are retuned (the Ghost of Tsushima lesson); companions who fight beside him everywhere, not only in set battles (Leif first); real shield walls and battles of dozens; weapon-against-weapon contact; mounted and thrown-spear combat; per-weapon animation sets.
 
 ## World
 
@@ -77,7 +79,7 @@ Planned, in order: Act I's last chapters moved to the new Bjornstead; the five s
 
 ## How the work is ordered
 
-The owner's story is 59 chapters and a three-part epilogue. By this plan's own targets they come to roughly 17 hours of main missions; side work, travel and battles are what would carry it toward 40. It is being built one chapter at a time in story order, each one checked against the text before it is called done: Act II was done this way in 0.14; Act III is next. Two standards from the game-studio kit the owner pointed to are adopted: gameplay numbers live in data files, and every story fact carries a canon level.
+The owner's story is 59 chapters and a three-part epilogue. By this plan's own targets they come to roughly 17 hours of main missions; side work, travel and battles are what would carry it toward 40. It is being built one chapter at a time in story order, each one checked against the text before it is called done: Act II was done this way in 0.14 and Act III in 0.15; Act IV is next. Two standards from the game-studio kit the owner pointed to are adopted: gameplay numbers live in data files, and every story fact carries a canon level.
 
 ## Sources
 

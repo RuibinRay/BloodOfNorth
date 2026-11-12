@@ -19,23 +19,38 @@ playtests; none are claimed until then.
 | 0.12 | **Faces, motion and combat depth** | From the owner's brief. Animated faces (eyes, blinking, brows, speech-driven mouths, eight expressions, look-at), breathing, cloth and hair sway, foot planting, two-handed grip; Eirik's lightning scar; an Appearance screen. Directional strikes, combo heavy, lunges, sidestep and roll, block impacts, execution camera, bow arc and shoulder swap; the Storm-Ward; raven warnings; twin seaxes and a war maul; enemy move sets, strings, unblockable and area blows, phases, dodging and adapting; the seven elites | Automated playtest: every expression and speech captured in close-up, every new strike, dodge, block, ward and weapon measured, all seven elites fought through their phases by proxy, regression on every chapter and the Act II raid | **Done** |
 | 0.13 | **The story arrives** | The owner's story stored as canon; the story bible and all 89 missions rebuilt from it; the sea widened to carry five great islands at story scale (Jarnøy, Solvik, Myrholm, Skalløy, Svartøy) with the places the story names; the lightning scene (Act I); Stormguard by the story's rules; five Stormborn skills (Thunder Smash first); the real seven champions, two hands and Håkon, each with named skills, fought where they fall; Raven-Feeder's reforgings; camera lock, input buffering and weightier movement; icons; island people with jobs and routes; a researched feature plan | Automated playtest: all ten fights in order, every storm skill measured, Stormguard's rules checked, the lightning scene played through, people counted on four islands, earlier chapters still start | **Done** |
 | 0.14 | **The Farmer's Axe** | Act II as the story tells it, all nine chapters: Bjornstead rebuilt as the coastal village (twenty roofs, harbour, forge, Thing stones, the old birch); a farmer's life (the elk, the red cow, the feast); Kettil's visit; the raid in waves with its set pieces, Kettil in the mud, the Stormguard, the children in the barn; the Hall of Wolves; the peddlers; the speech and the walls, built piece by piece; Kaupang, Leif, the dive on the wreck, the Kaupang Thing, the Sea-Raven; the arm-ring. The mainland coast as terrain; stages that switch parts of a place on and off; three small games (timed work, shouted calls, a dive) | Automated playtest: every step of the act played in order to the end-of-act screen; all 68 steps loaded cold; a mid-act save loaded and continued; a save from the old Act II restarts the act; the sandbox still loads | **Done** |
-| 0.15 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: the raid and Kettil above all, then the champions, the dive, riding, rowing and sailing feel, aim, stealth, camera | Three people finish everything built without help | Next |
-| 0.16 | **Real assets in** | Working Higgsfield credentials; key art; GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
-| 0.17 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or keep growing the web build | A written decision | Planned |
-| 0.18 | **The Wolves of Iron** | Prince Arvid, Brokk, Astrid, Torvald, Ingrid; fifty from Ravenhold; the Battle of Iron Shore; Arne on the watchtower; Act III | Act III plays through against the text | Planned |
-| 0.19 | **Blood Across the Sea** | The treasure voyage, Wessex, six islands burning, Hedeby Sound; Act IV | — | Planned |
+| 0.15 | **The Wolves of Iron** | Act III as the story tells it, all eight chapters: Arvid and the collectors; the Thing; Brokk, Astrid and the ravine camp, Torvald; Ingrid's hospital; the Battle of Iron Shore (the trench and the Stinking Ditch, arrows from the ridge, the charge, a shield wall with allies, the side gate, Grjotgard); Arne Longshot in the tower; Ulf Two-Blades and the boats; the pyres; the gift of iron, the first reforging, Storm-Yew; the Hall of Wolves. Jarnøy's town wall and gates; a skirmish system (defenders hold attackers in pairs; the rest come for Eirik); Start at an Act on the main menu | Automated playtest: every step of the act played in order to the end-of-act screen; all 49 steps (and Act II's 68) loaded cold; started from the menu; the sandbox still loads | **Done** |
+| 0.16 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: the raid, Kettil, the shore battle, Arne and Ulf above all, then the champions, the dive, riding, rowing and sailing feel, aim, stealth, camera | Three people finish everything built without help | Next |
+| 0.17 | **Real assets in** | Working Higgsfield credentials; key art; GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
+| 0.18 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or keep growing the web build | A written decision | Planned |
+| 0.19 | **Blood Across the Sea** | The golden voyage and Rurik, the English court, the Iron Circle, six islands burning, the council, Hedeby Sound, driftwood; Act IV | Act IV plays through against the text | Planned |
 | 0.20 | **The Broken Raven** | Ravenhold rebuilt, the hunger winter, the tannery, the ring, Vængr; Act V | — | Planned |
 | 0.21 | **The Nine Oaths and the Raven King** | Myrholm, Skalløy, the judgment, the wedding, the invasion of Svartøy; Acts VI and VII and the epilogue. One ending: the story's | — | Planned |
 | 1.0 | **Polish** | Side missions, minigames, voiced dialogue, recorded music, performance targets (60 fps at 1440p on suitable hardware as an objective), accessibility pass | Full playthrough signed off | Planned |
 
 ## Immediate next steps
 
-1. Play Act II by hand, from "Continue", and say where it is unfair, unclear, too easy or too slow: the raid, Kettil, the barn and the dive first.
+1. Play Acts II and III by hand (main menu, Start at an Act) and say where they are unfair, unclear, too easy or too slow: the raid, Kettil, the shore battle, Arne, Ulf and the boats first.
 2. Rule on the items under "Under review" in the story bible (Act I's Bjornstead is still the old farm in the dale).
 3. Supply the Higgsfield key ID and secret, run `npm run hf -- auth`, then generate the key art and reference sheets.
-4. Decide where the project lives: a PC that can run UE5, or continue in the browser for Act III.
+4. Decide where the project lives: a PC that can run UE5, or continue in the browser for Act IV.
 
-## Known gaps in 0.14
+## Known gaps in 0.15
+
+- **Nothing in Act III has been played by a person.** Its numbers are first guesses, in one table (`A3` in `src/data/act3.js`).
+- **The battle is a stand-in for the story's.** About sixteen defenders stand at the trench, and attackers arrive in a stream (twenty-two at the wall, eight at the gate) where the story has a hundred and fifty against two hundred. Defenders cannot fall, except Grjotgard, by script; the thirty-one and the nine are told. The eleven ships are ten models and Ulf's.
+- **Not built from Chapter 4:** the town stream and the bridge that collapses under struggling men. The granary burns, but the smoke does not cover the field.
+- **Arne's tower:** the way through the fire is a timed task and the climb is a fade. His tripwires and hook-net are plain patches on the floor that slow and hurt.
+- **Ulf cannot be beaten and Eirik cannot die in their duel**, as the story needs. It ends when the Stormguard has answered twice, when Ulf has lost a little under half his health, or after fifty-five seconds, whichever is first.
+- **The boats are a timed task each**, with a clock. Nobody goes into the water.
+- **Companions are in their scenes, not at Eirik's side.** Astrid shoots at the ravine camp and the defenders fight on the beach; otherwise Brokk, Astrid, Torvald, Ingrid and Leif stand where the story puts them. They do not travel with him, and they are not in the sandbox.
+- **The hospital is laid out before the hall doors**, because buildings cannot be entered.
+- **The fifty are about ten people**, the same villagers as Act II. They get no new helmets or shields to look at; Eirik's mail shirt is a flat fifteen per cent off every blow.
+- The voyages to and from Jarnøy are cards.
+- Jarnøy's new wall and gates stand in the sandbox too. The sandbox's own fight with Arne (the Wolf's Table) is separate from the story's: beating him in one does not count in the other.
+- Act I's village smith was called Brokk before the story arrived. He is now Kolbrand, so that the name belongs to the story's Brokk.
+
+## Known gaps carried over from 0.14
 
 - **Nothing in Act II has been played by a person.** Every number in the raid (how many men, how hard they hit, how long the barn roof holds), the timed tasks and the dive is a first guess, kept in one table (`A2` in `src/data/act2.js`).
 - **Act I still ends at the old Bjornstead**, one farm in a dale beside the Hrafnvik valley. Act II opens in the story's coastal village on the mainland. The two do not join up until Act I's last chapters are moved.

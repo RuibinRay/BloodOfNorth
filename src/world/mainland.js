@@ -12,7 +12,7 @@ import { rng } from '../core/util.js';
 
 /** A switchable part of a place. build(ctx, w, objs) adds geometry to ctx.b, colliders through ctx and w, and whole
  *  objects (a ship) to objs; whatever it returns is kept on the stage. */
-function stage(world, scene, on, build) {
+export function stage(world, scene, on, build) {
   const b = new Builder(), boxes = [], circles = [], decks = [], objs = [];
   const ctx = { b, smoke: [], addBox: (...a) => { const o = world.addBox(...a); boxes.push(o); return o; }, addCircle: (...a) => { const o = world.addCircle(...a); circles.push(o); return o; } };
   const w = { addBox: ctx.addBox, addCircle: ctx.addCircle, addDeck: (d) => { decks.push(d); return world.addDeck(d); } };
@@ -40,7 +40,7 @@ function stall(ctx, x, z, ry, cloth, seed = 1) {
   ctx.addBox(x, z, 1.4, 0.55, ry, 1);
 }
 /** A long trestle table with a bench either side. */
-function table(ctx, x, z, ry, len = 6) {
+export function table(ctx, x, z, ry, len = 6) {
   const y = gy(x, z);
   ctx.b.add(at(box(len, 0.09, 0.95), x, y + 0.8, z, 0, ry, 0), M.plank);
   for (const k of [-1, 1]) { const [px, pz] = P.toWorld(x, z, ry, k * (len / 2 - 0.6), 0); ctx.b.add(at(box(0.1, 0.8, 0.8), px, y + 0.4, pz, 0, ry, 0), M.timber); }
@@ -115,6 +115,7 @@ function bjornstead(ctx, world, scene) {
   for (const k of [-1, 1]) ctx.b.add(tint(at(cyl(0.14, 0.32, 3.8, 6), bi[0] + k * 0.3, by + 1.8, bi[1], 0, 0, -k * 0.17), 0x2a221c, 0.2, 6), M.vcPlain);
   for (const [dx, dy, dz, sc] of [[-1.0, 3.7, 0.2, 1.4], [1.1, 4.0, -0.3, 1.5], [0.1, 4.9, 0.5, 1.2], [-0.3, 2.9, -0.9, 1.0], [1.6, 3.0, 0.8, 0.9]]) ctx.b.add(tint(at(new THREE.IcosahedronGeometry(1, 1), bi[0] + dx, by + dy, bi[1] + dz, 0, dx, 0, sc, sc * 0.8, sc), 0x4a7a3a, 0.3, 7), M.vcPlain);
   ctx.addCircle(bi[0], bi[1], 0.7, 4);
+  for (const [dx, dz, h] of [[0.05, -0.15, 2.4], [0.45, 0.3, 1.5], [-0.4, 0.25, 1.7]]) ctx.b.add(tint(at(cone(0.55, h, 6), bi[0] + dx, by + h / 2 + 0.2, bi[1] + dz), 0x1e3a26, 0.25, 12), M.vcPlain); // the young yew that has grown up through the scorched stump
   // timber in the hills: stumps and felled trunks
   const tm = W('timber'), R = rng(77);
   for (let i = 0; i < 7; i++) { const x = tm[0] + (R() - 0.5) * 22, z = tm[1] + (R() - 0.5) * 18; ctx.b.add(at(cyl(0.3, 0.36, 0.5, 7), x, gy(x, z) + 0.2, z), M.bark); }
@@ -152,6 +153,13 @@ function bjornstead(ctx, world, scene) {
     const m = P.makeShip({ L: 20, B: 4.2, seed: 21, sail: false, mast: 9 }), [x, z] = W('pier', -4.3, 5);
     m.position.set(x, -0.15, z); objs.push(m); w.addDeck({ x, z, yaw: 0, hw: 2.2, hl: 7.6, y: -0.15 + m.userData.deckY });
   });
+  st('raven', false, (c) => { // Bjorn gives up, and carves a raven on the gate
+    const [x, z] = W('gateN'), y = gy(x, z);
+    c.b.add(at(box(7.4, 0.5, 0.5), x, y + 4.9, z), M.timber); c.b.add(at(box(1.9, 1.3, 0.14), x, y + 5.9, z), M.plank);
+    c.b.add(tint(at(sphere(0.34, 7, 6), x, y + 5.85, z - 0.1, 0, 0, 0, 1, 1.2, 0.3), 0x14141a, 0.1, 2), M.vcPlain); c.b.add(tint(at(cone(0.1, 0.34, 4), x + 0.3, y + 6.14, z - 0.1, 0, 0, -1.3), 0x14141a, 0.1, 3), M.vcPlain);
+    for (const k of [-1, 1]) c.b.add(tint(at(box(0.7, 0.3, 0.06), x + k * 0.5, y + 5.75, z - 0.1, 0, 0, k * 0.5), 0x14141a, 0.1, 4), M.vcPlain);
+  });
+  st('forge2', false, (c) => { const f = P.smithy(c, ...B(-64, 150), Math.PI / 2); P.woodpile(c, ...B(-69, 150), Math.PI / 2, 4, 8); P.crate(c, ...B(-62, 145.6), 0.3, 0.8); return { forge: f.forge, anvil: f.anvil }; }); // the second forge, built with Jarnøy's smiths
   const far = new Builder(); range(far, [[980, 60, 230, 330], [1280, 0, 290, 380], [1600, 70, 240, 340], [1880, 200, 200, 300], [760, 180, 170, 260]], 5); scene.add(far.build({ cast: false, receive: false }));
   return { id: 'bjornstead', s, stages, houses, barnDoor: door, forge: sm.forge, anvil: sm.anvil, hallDoor: houses.hall.door, ring: RING };
 }

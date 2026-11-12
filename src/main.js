@@ -163,6 +163,17 @@ class Game {
     this.story.restore();
     this.ui.refreshTracker();
   }
+  /** Start at the opening of a later act, with everything before it taken as played. It is written to a slot of its own and loaded from there. */
+  startAt(first) {
+    const order = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_farm', 'q_smoke', 'q_axe', 'q_wolf', 'q_peddlers', 'q_walls', 'q_captain', 'q_oath', 'q_isle', 'q_fifty', 'q_healer', 'q_shore', 'q_long', 'q_ulf', 'q_iron', 'q_price'];
+    const st = freshState(), act2 = first === 'q_ten';
+    for (const id of order) { if (id === first) break; st.quests[id] = { status: 'done', step: QUESTS[id].steps.length, count: 0 }; }
+    st.quests[first] = { status: 'active', step: 0, count: 0 };
+    Object.assign(st, { stage: 'act2', time: act2 ? 8.6 : 9.2, inventory: act2 ? { bow: 1, arrow: 14, flint: 1 } : { bow: 1, arrow: 14, flint: 1, father_axe: 1, shield: 1, wolf_brooch: 1, arm_ring: 1 } });
+    Object.assign(st.flags, { a2v: 2, axeHidden: act2, lightning: true, spring: true });
+    writeSave('act', st, { quest: QUESTS[first].title, step: QUESTS[first].steps[0].text, playtime: 0 });
+    this.loadGame('act');
+  }
   saveGame(slot) {
     if (!this.started) return false;
     const st = this.state, p = this.player, tr = this.quests.tracked()[0];
@@ -171,7 +182,7 @@ class Game {
     if (this.activity && this.activity.back) st.player = { x: this.activity.back[0], z: this.activity.back[1], yaw: this.activity.back[2] || 0 }; // never save a man in the water: he is on the rock he dived from
     if (this.story.onSave) this.story.onSave();
     st.vitals = { health: p.health, warmth: p.warmth, hunger: p.hunger };
-    return writeSave(slot, st, { quest: tr ? tr.def.title : this.quests.isDone('q_oath') ? 'Act Two complete' : this.quests.isDone('q_wings') ? 'Act One complete' : this.quests.isDone('q_ice') ? 'Chapter Two complete' : 'Chapter One complete', step: tr ? tr.step.text : 'Between chapters', playtime: st.playtime });
+    return writeSave(slot, st, { quest: tr ? tr.def.title : this.quests.isDone('q_price') ? 'Act Three complete' : this.quests.isDone('q_oath') ? 'Act Two complete' : this.quests.isDone('q_wings') ? 'Act One complete' : this.quests.isDone('q_ice') ? 'Chapter Two complete' : 'Chapter One complete', step: tr ? tr.step.text : 'Between chapters', playtime: st.playtime });
   }
   autosave() { this.saveGame('auto'); }
   reloadCheckpoint() { try { sessionStorage.setItem('botn.boot', 'load:auto'); } catch { /* ignore */ } location.reload(); }
@@ -277,7 +288,7 @@ class Game {
       },
       /** Jump straight to a quest step (marks earlier main quests done). */
       jump: (qid, sid) => {
-        const order = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_farm', 'q_smoke', 'q_axe', 'q_wolf', 'q_peddlers', 'q_walls', 'q_captain', 'q_oath', 'q_open', 'q_sea'];
+        const order = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_farm', 'q_smoke', 'q_axe', 'q_wolf', 'q_peddlers', 'q_walls', 'q_captain', 'q_oath', 'q_isle', 'q_fifty', 'q_healer', 'q_shore', 'q_long', 'q_ulf', 'q_iron', 'q_price', 'q_open', 'q_sea'];
         if (!g.started) { g.started = true; g.ui.hideMain(); g.setMode('play'); }
         for (const id of order) {
           if (id === qid) break;
@@ -288,7 +299,7 @@ class Game {
         const oi = order.indexOf(qid);
         if (oi >= 2) for (const [k, n] of [['bow', 1], ['arrow', 12], ['flint', 1]]) if (!g.inventory.has(k)) g.inventory.add(k, n, true);
         if (oi >= 4) if (!g.inventory.has('woodsword')) g.inventory.add('woodsword', 1, true);
-        if (oi >= 8) { g.state.stage = oi >= 21 ? 'open' : oi >= 12 ? 'act2' : oi >= 10 ? 'ch3' : 'ch2'; if (oi >= 12 && oi < 21) g.state.flags.a2v = 2; if (!g.inventory.has('father_axe')) g.inventory.add('father_axe', 1, true); if (qid === 'q_ice' || i >= 6) if (!g.inventory.has('venison')) g.inventory.add('venison', 3, true); }
+        if (oi >= 8) { g.state.stage = oi >= 29 ? 'open' : oi >= 12 ? 'act2' : oi >= 10 ? 'ch3' : 'ch2'; if (oi >= 12 && oi < 29) g.state.flags.a2v = 2; if (!g.inventory.has('father_axe')) g.inventory.add('father_axe', 1, true); if (qid === 'q_ice' || i >= 6) if (!g.inventory.has('venison')) g.inventory.add('venison', 3, true); }
         g.quests.enter(qid, true); g.ui.refreshTracker();
       },
       info: () => ({
