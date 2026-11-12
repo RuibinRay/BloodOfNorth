@@ -22,16 +22,17 @@ Numbers for unbuilt systems are starting points for tuning, not measured values.
 | VI | A jarl among jarls | Faction politics, duels, large battles |
 | VII | A king, of some kind | Army command alongside personal combat |
 
-## Combat **[proto: sparring only]**
+## Combat **[built: core loop, one weapon]**
 
 Stamina gates everything; posture decides who opens up.
 
-- **Light** attacks chain three hits. **Heavy** (hold) breaks guard and costs more. **[light built]**
+- **Light** attacks chain three hits. **Heavy** (hold, then release) cannot be guarded and costs more. **[built]**
 - **Block** (hold) drains stamina per hit. **Parry** (guard raised within 0.26 s of impact) costs nothing and opens a counter. **[built]**
 - **Dodge** roll with 0.32 s of invulnerability, 16 stamina. **[built]**
-- **Posture**: blocked and parried blows fill the defender's posture bar; a full bar staggers and allows an execution. **[planned]**
+- **Guard (posture)**: guarded blows, heavy blows and parries fill the opponent's guard bar; a full bar staggers him and he takes far more damage. **[built]** Executions. **[planned]**
 - **Soft lock**: attacks and guard turn Eirik toward the nearest opponent. **[built]** Hard lock and target switching. **[planned]**
-- Enemies telegraph, flank, feint, retreat when hurt and punish repeated openers. **[planned]**
+- Enemies telegraph, guard, circle while one or two attack, and can be tied up by an ally; a captain enrages at half health. **[built]** Feints, retreats, ranged enemies. **[planned]**
+- Arrows hurt enemies (more to the head); the black raven can be sent at a target to open him up. **[built]**
 - Contextual and environmental finishers, stealth takedowns, mounted combat. **[planned]**
 
 ### Weapons **[planned]**; data in `data/combat.json`

@@ -222,3 +222,12 @@ ul.steps li.cur { font-weight: 700; }
 #ravenhud b { display: block; font-size: 19px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--parch); font-weight: 500; }
 #ravenhud span { display: block; margin-top: 6px; font-size: 12.5px; opacity: 0.88; }
 #ravenhud em { display: block; margin-top: 46vh; font-style: normal; font-size: 18px; min-height: 1.4em; }
+
+#target { position: absolute; left: 50%; top: 96px; width: 300px; margin-left: -150px; text-align: center; display: none; text-shadow: 0 1px 3px #000; }
+#target.on { display: block; }
+#target b { display: block; font-size: 15px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 500; margin-bottom: 5px; }
+#target .tbar { position: relative; height: 8px; background: rgba(10, 8, 6, 0.72); border: 1px solid rgba(231, 217, 187, 0.35); margin-top: 3px; }
+#target .tbar i { position: absolute; left: 0; top: 0; bottom: 0; transition: width 0.1s linear; }
+#target .hp i { background: linear-gradient(#b3443a, #7d251d); }
+#target .gd { height: 5px; } #target .gd i { background: linear-gradient(#e8d08a, #b08a3a); }
+#target.broken .gd i { background: #fff; } #target.broken b { color: #ffd27a; }

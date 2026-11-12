@@ -4,6 +4,10 @@ import { clamp, damp, dampAngle, lerp, angleDiff } from '../core/util.js';
 import { Humanoid, makeItem } from './humanoid.js';
 import { shared } from '../world/geo.js';
 
+export const EIRIK_ADULT = {
+  scale: 1.0, build: 1.08, skin: 0xdcae8e, hair: 0xa87e45, hairStyle: 'long', beard: 'short',
+  tunic: 0x55664a, trim: 0xb0652a, legs: 0x4a3f33, boots: 0x33261a, sleeve: 0x55664a,
+};
 export const EIRIK_CHILD = {
   scale: 0.7, child: true, skin: 0xe2b494, hair: 0xb58a4e, hairStyle: 'short',
   tunic: 0x7f8f66, trim: 0xb0652a, legs: 0x5a4a38, boots: 0x3a2a1c, sleeve: 0x7f8f66,
@@ -21,7 +25,7 @@ export class Player {
     this.crouch = false; this.equipped = 'none'; this.aiming = false; this.draw = 0;
     this.blocking = false; this.blockT = 0; this.combo = 0; this.comboT = 0;
     this.dodgeT = 0; this.dodgeDir = new THREE.Vector3(); this.iframes = 0; this.staminaDelay = 0;
-    this.noise = 0; this.sprinting = false; this.frozen = false;
+    this.noise = 0; this.sprinting = false; this.frozen = false; this.atkHold = 0; this.adult = false; this.mortal = false;
     this.cam = { yaw: Math.PI, pitch: 0.3, dist: 4.1, aimK: 0, target: new THREE.Vector3(), shake: 0, maxDist: 4.1 };
     this.backAxe = null;
     this.h.onStep = () => {
@@ -41,11 +45,37 @@ export class Player {
     if (name !== 'none' && !this.game.inventory.has(name)) return false;
     if (this.equipped === name) return true;
     this.equipped = name; this.aiming = false; this.blocking = false; this.draw = 0;
-    this.h.hold('R', name === 'woodsword' ? 'woodsword' : null);
+    this.h.hold('R', name === 'woodsword' ? (this.adult ? 'woodsword_big' : 'woodsword') : name === 'father_axe' ? 'father_axe' : null);
+    if (this.adult) this.showBackAxe(name !== 'father_axe' && this.game.inventory.has('father_axe') && !this.game.state.flags.axeHidden);
     this.h.hold('L', name === 'bow' ? 'bow' : null);
     this.game.audio.play('page');
     this.game.events.emit('equip', name);
     return true;
+  }
+  isMelee() { return this.equipped === 'woodsword' || this.equipped === 'father_axe'; }
+  /** The melee weapon slot 1 draws: Ragnar's axe once he has taken it up, otherwise the practice blade. */
+  melee() {
+    const g = this.game;
+    if (g.state.stage === 'act2' && g.inventory.has('father_axe') && !g.state.flags.axeHidden) return 'father_axe';
+    return g.inventory.has('woodsword') ? 'woodsword' : null;
+  }
+  swing(heavy) {
+    const g = this.game, h = this.h;
+    if (h.busy || this.blocking || this.stamina < (heavy ? 14 : 6)) return;
+    const n = heavy ? 3 : (this.combo % 3) + 1;
+    this.stamina -= heavy ? 16 : 7; this.staminaDelay = 0.6; this.combo = heavy ? 0 : this.combo + 1; this.comboT = 1.0; this.crouch = false;
+    g.audio.play('whoosh');
+    const tg = this.target; // soft lock: turn to face a nearby opponent
+    if (tg && Math.hypot(tg.pos.x - this.pos.x, tg.pos.z - this.pos.z) < 3.4) this.yaw = Math.atan2(tg.pos.x - this.pos.x, tg.pos.z - this.pos.z);
+    h.play('atk' + n, heavy ? 0.85 : n === 3 ? 0.62 : 0.5, { hitAt: heavy ? 0.45 : 0.4, onHit: () => g.events.emit('playerSwing', n, heavy) });
+  }
+  /** Swap the body (child to grown man) while keeping position, camera and everything that points at the player. */
+  setLook(look, adult) {
+    const nh = new Humanoid(look);
+    this.root.remove(this.h.body); this.root.add(nh.body);
+    nh.root = this.root; nh.onStep = this.h.onStep;
+    this.h = nh; this.adult = adult; this.backAxe = null; this.equipped = 'none';
+    this.speedMul = adult ? 1.28 : 1; this.cam.maxDist = adult ? 4.9 : 4.1;
   }
   showBackAxe(on) {
     if (on && !this.backAxe) {
@@ -85,8 +115,9 @@ export class Player {
       if (this.stamina <= 0) { this.stamina = 0; this.h.play('stagger', 0.6); return 'hit'; }
       return 'blocked';
     }
-    this.health = Math.max(1, this.health - dmg);
+    this.health = Math.max(this.mortal ? 0 : 1, this.health - dmg);
     this.h.play('stagger', 0.5); g.audio.play('hurt'); this.cam.shake = 0.25;
+    if (this.health <= 0) g.events.emit('playerDied');
     return 'hit';
   }
 
@@ -101,7 +132,7 @@ export class Player {
 
     if (ctrl) {
       if (inp.hit('crouch')) this.crouch = !this.crouch;
-      if (inp.hit('weapon1')) this.equip(this.equipped === 'woodsword' ? 'none' : 'woodsword');
+      if (inp.hit('weapon1')) { const m = this.melee(); if (m) this.equip(this.equipped === m ? 'none' : m); }
       if (inp.hit('weapon2')) this.equip(this.equipped === 'bow' ? 'none' : 'bow');
       if (inp.hit('holster')) this.equip('none');
       if (inp.hit('interact')) g.tryInteract();
@@ -109,7 +140,7 @@ export class Player {
     const wantAimOrBlock = ctrl && inp.held('block');
     this.aiming = wantAimOrBlock && this.equipped === 'bow' && !h.busy;
     const wasBlocking = this.blocking;
-    this.blocking = wantAimOrBlock && this.equipped === 'woodsword' && this.dodgeT <= 0;
+    this.blocking = wantAimOrBlock && this.isMelee() && this.dodgeT <= 0;
     this.blockT = this.blocking ? (wasBlocking ? this.blockT + dt : 0) : 0;
 
     // --- actions ---
@@ -120,15 +151,15 @@ export class Player {
       if (dm > 0.2) this.dodgeDir.set(dx, 0, dz); else this.dodgeDir.set(-Math.sin(this.yaw), 0, -Math.cos(this.yaw));
       h.play('dodge', 0.42); g.audio.play('whoosh', { vol: 0.6 }); g.events.emit('dodge');
     }
+    // melee: tap for a light blow; hold and release (or keep holding) for a heavy one that breaks a guard
+    if (ctrl && this.isMelee()) {
+      if (inp.held('attack') && this.atkHold >= 0) this.atkHold += dt;
+      const rel = inp.released('attack') && this.atkHold > 0;
+      if (rel || this.atkHold > 0.62) { this.swing(this.atkHold > 0.36); this.atkHold = rel ? 0 : -1; }
+      if (!inp.held('attack') && this.atkHold < 0) this.atkHold = 0;
+    } else this.atkHold = 0;
     if (ctrl && inp.hit('attack')) {
-      if (this.equipped === 'woodsword' && !h.busy && this.stamina >= 6 && !this.blocking) {
-        const n = (this.combo % 3) + 1;
-        this.stamina -= 7; this.staminaDelay = 0.6; this.combo++; this.comboT = 1.0; this.crouch = false;
-        g.audio.play('whoosh');
-        const tg = this.target; // soft lock: turn to face a nearby opponent
-        if (tg && Math.hypot(tg.pos.x - this.pos.x, tg.pos.z - this.pos.z) < 3.4) this.yaw = Math.atan2(tg.pos.x - this.pos.x, tg.pos.z - this.pos.z);
-        h.play('atk' + n, n === 3 ? 0.62 : 0.5, { hitAt: 0.4, onHit: () => g.events.emit('playerSwing', n) });
-      } else if (this.equipped === 'bow' && this.aiming) {
+      if (this.equipped === 'bow' && this.aiming) {
         if (this.draw >= 0.35 && g.inventory.count('arrow') > 0) {
           g.camera.getWorldDirection(_d);
           h.handWorld('L', _v);
@@ -154,7 +185,7 @@ export class Player {
     this.staminaDelay -= dt;
     if (this.staminaDelay <= 0) this.stamina = Math.min(100, this.stamina + 17 * dt);
     this.stamina = Math.max(0, this.stamina);
-    if (this.health < 100) this.health = Math.min(100, this.health + 1.5 * dt);
+    if (this.health < 100) this.health = Math.min(100, this.health + (g.combat.active && this.mortal ? 0.3 : 1.5) * dt);
 
     const px = this.pos.x, pz = this.pos.z;
     if (this.dodgeT > 0) {

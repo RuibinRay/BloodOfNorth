@@ -1,9 +1,10 @@
 # Blood of the North — Rise of the Raven King
 
-A third-person Viking action RPG. This repository holds **vertical slice 0.3**: all three chapters of
-Act I (Eirik's childhood), plus the design foundation for the full campaign.
+A third-person Viking action RPG. This repository holds **vertical slice 0.4**: all three chapters of
+Act I (Eirik's childhood) and the opening chapter of Act II (Eirik at nineteen, with real combat), plus the
+design foundation for the full campaign.
 
-> **What this is, plainly.** Three real, playable 3D chapters (well over an hour; untimed) that run in a browser.
+> **What this is, plainly.** Four real, playable 3D chapters (well over an hour; untimed) that run in a browser.
 > It is not the 40-hour game, it is not Unreal Engine 5, and it is not photorealistic: every character,
 > prop and sound is generated in code as a placeholder. See [Status](#status) for exactly what exists.
 
@@ -26,10 +27,11 @@ Then open http://localhost:5184. A production build is `npm run build` (output i
 | Move / look | `W A S D` / mouse (arrow keys also turn the camera) | left stick / right stick |
 | Sprint, crouch | `Shift`, `C` | L3, R3 |
 | Interact, dodge | `E`, `Space` | A, B |
-| Attack or loose arrow | left mouse | X or RT |
+| Attack or loose arrow (hold and release for a heavy blow) | left mouse | X or RT |
 | Block / parry, or aim bow | right mouse | LT |
 | Hunter's Sense | hold `Q` | Y |
 | Raven's Eye (from Chapter 3's spring) | `V` | d-pad up |
+| Send the black raven at your target (Act II) | `R` | RB |
 | Wooden sword, bow, put away | `1`, `2`, `X` | d-pad |
 | Journal, inventory, map, pause | `J`, `I`, `M`, `Esc` | Back, Start |
 
@@ -64,17 +66,24 @@ All keyboard and mouse bindings can be changed in Settings.
 3. *Things That Wait* (optional) — five old things around the farm that a boy cannot move. Each is the
    seed of a secret weapon in a later act. One can only be seen from the air.
 
-Then ten winters pass. Dialogue and actions raise four traits (Wisdom, Compassion, Ferocity, Pride); they,
+**Act II, Chapter 1 — "The Farmer's Axe."** Ten winters on; Eirik is nineteen.
+
+1. *Ten Winters* — a drill with Bjorn teaches the adult fighting: light and heavy blows, guard, parry, and breaking an opponent's guard.
+2. *Smoke on the Ridge* — the white raven will not settle. Fly her west and mark the riders on the river road; lift the hearthstone.
+3. *The Farmer's Axe* — hold the yard, stop them firing the barn, and bring down Kettil Red-Hand. Bjorn fights beside you. You can lose.
+   Then decide what to do with a dying man who knows your father's name.
+
+Dialogue and actions raise four traits (Wisdom, Compassion, Ferocity, Pride); they,
 the ravens' names and the omens found are saved for later acts.
 
 ## Status
 
 | | |
 |---|---|
-| **Playable and tested** | All of Act I (chapters 1–3) start to finish; raven companions and Raven's Eye; five hidden omens; hunger and warmth, shelter, cooking, a wolf encounter with two outcomes, thin-ice crossing; movement, camera, stamina; dialogue with choices; quests, journal, tracker, map with waypoint; woodcutting, archery, tracking, fishing, fire-making; sparring; stealth with raider sight and hearing; cold survival; day/night, snow, fire; in-engine cutscenes; save/load with autosave; settings, key rebinding, gamepad |
-| **Prototype** | Procedural characters and animation; procedural audio and score; villager routines; wildlife AI; melee core (sparring only) |
+| **Playable and tested** | All of Act I (chapters 1–3) and Act II chapter 1 start to finish; melee combat against enemies that guard, take turns and flank, with a two-phase captain; an ally who fights; the black raven harrying a target; raven companions and Raven's Eye; five hidden omens; hunger and warmth, shelter, cooking, a wolf encounter with two outcomes, thin-ice crossing; movement, camera, stamina; dialogue with choices; quests, journal, tracker, map with waypoint; woodcutting, archery, tracking, fishing, fire-making; sparring; stealth with raider sight and hearing; cold survival; day/night, snow, fire; in-engine cutscenes; save/load with autosave; settings, key rebinding, gamepad |
+| **Prototype** | Procedural characters and animation; procedural audio and score; villager routines; wildlife AI; combat balance (tuned against scripted players only) |
 | **Blocked** | Higgsfield asset generation — the API needs a key ID *and* a secret; only one value was supplied. See [docs/HIGGSFIELD.md](docs/HIGGSFIELD.md) |
-| **Planned** | Everything else in the brief: Acts II through VII; the open world (about forty islands, horse and ship travel, wolf-mark outlawry, standing up to "my king" — designed in [docs/OPEN_WORLD.md](docs/OPEN_WORLD.md)); adult combat and nine weapons, skill trees, companions, sailing, settlement, factions, 50 side missions, UE5 port. See [docs/ROADMAP.md](docs/ROADMAP.md) |
+| **Planned** | Everything else in the brief: the rest of Act II and Acts III through VII; the open world (about forty islands, horse and ship travel, wolf-mark outlawry, standing up to "my king" — designed in [docs/OPEN_WORLD.md](docs/OPEN_WORLD.md)); adult combat and nine weapons, skill trees, companions, sailing, settlement, factions, 50 side missions, UE5 port. See [docs/ROADMAP.md](docs/ROADMAP.md) |
 
 How it was tested: an automated playtest drives the real game loop through every quest step (see
 `debug` in [src/main.js](src/main.js)). It was verified on an Apple M2 at 60 fps. It has **not** been

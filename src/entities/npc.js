@@ -72,7 +72,7 @@ export class NPC {
   }
 
   update(dt) {
-    if (!this.root.visible || this.mode === 'spar') return; // sparring drives its own NPC
+    if (!this.root.visible || this.mode === 'spar' || this.mode === 'enemy') return; // sparring and combat drive their own NPCs
     const g = this.game, p = g.player, h = this.h;
     let wantSpeed = 0;
     if (this.dead) { /* stay down */ }
@@ -114,6 +114,7 @@ export class NPC {
           const n = 1 + ((Math.random() * 3) | 0);
           h.play('atk' + n, 0.6, { hitAt: 0.4, onHit: () => {
             if (q.dead) return;
+            if (q.cb) { g.combat.hurt(q, this.opts.dmg ?? 12, 10); if (this.dist(p) < 34) g.audio.play('steel', { vol: 0.3 }); return; } // an ally's blow
             const near = this.dist(p) < 34;
             if (this.opts.lethal && Math.random() < this.opts.lethal) { q.die(); if (near) g.audio.play('hurt', { vol: 0.5 }); return; }
             q.h.play(Math.random() < 0.7 ? 'parry' : 'stagger', 0.4);

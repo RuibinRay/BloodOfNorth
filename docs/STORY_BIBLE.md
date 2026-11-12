@@ -42,7 +42,9 @@ So "what the old king gave you" is not a treasure. It is Eirik's mother. Eirik l
   Bjorn recognises the axe (he once stood in a shield-wall beside Ragnar) and has him hide it under the hearthstone.
   In spring the white raven's first flight finds a lost lamb. Five omens around the farm seed later weapons. Ten winters pass. — recovery with the farm family; the choice to tell them his name, or not.
 
-**Act II — The Farmer's Axe** (5 h) **[outline]** — ten years on. Farming, smithing, trade, a rival's
+**Act II — The Farmer's Axe** (5 h) **[opening built; the rest outline]** — *Built:* the drill with Bjorn, the white raven spotting
+the tithe-takers, the axe out from under the hearthstone, the three-wave defence of Bjornstead against Kettil Red-Hand, and the choice
+over the dying Kettil (`sparedKettil` / `killedKettil`, `barnBurned`). *Outline:* ten years on. Farming, smithing, trade, a rival's
 feud, a harvest feast. Håkon's raiders come; Eirik takes the axe from under the floor. First real combat:
 farmhouse, fields, barn, burning village. A dying raider talks. Håkon learns the boy lived.
 

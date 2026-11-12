@@ -126,15 +126,15 @@
    "act": 2,
    "title": "The Farmer's Axe",
    "target_minutes": 300,
-   "built_minutes_estimate": 0,
+   "built_minutes_estimate": 30,
    "missions": [
     {
      "id": "a2m01",
      "title": "Ten Winters",
-     "type": "daily life",
-     "minutes": 35,
-     "summary": "A day on Bjorn's farm at nineteen: plough, feed, mend.",
-     "status": "planned"
+     "type": "combat tutorial",
+     "minutes": 8,
+     "summary": "Nineteen. A drill with Bjorn teaches light and heavy blows, guard, parry and guard-breaking.",
+     "status": "built"
     },
     {
      "id": "a2m02",
@@ -171,34 +171,34 @@
     {
      "id": "a2m06",
      "title": "Smoke on the Ridge",
-     "type": "stealth",
-     "minutes": 25,
-     "summary": "Scout a column of riders flying the wolf banner.",
-     "status": "planned"
+     "type": "raven / scouting",
+     "minutes": 5,
+     "summary": "The white raven finds seven tithe-takers on the river road. Lift the hearthstone.",
+     "status": "built"
     },
     {
      "id": "a2m07",
      "title": "The Farmer's Axe",
      "type": "combat",
-     "minutes": 60,
-     "summary": "The raid: farmhouse, fields, barn, burning village. First real fight.",
-     "status": "planned"
+     "minutes": 12,
+     "summary": "Hold the yard, stop them firing the barn, bring down Kettil Red-Hand. Bjorn fights beside you.",
+     "status": "built"
     },
     {
      "id": "a2m08",
      "title": "What the Dying Say",
-     "type": "story",
-     "minutes": 25,
-     "summary": "A raider names Håkon. Stay and endanger the family, or go.",
-     "status": "planned"
+     "type": "choice",
+     "minutes": 3,
+     "summary": "Kettil names Håkon and the question he asks at every farm. Spare him or finish it.",
+     "status": "built"
     },
     {
      "id": "a2m09",
      "title": "The Wolf Remembers",
      "type": "story",
-     "minutes": 30,
-     "summary": "Håkon learns the boy lived and sets a price.",
-     "status": "planned"
+     "minutes": 2,
+     "summary": "Word reaches Håkon that Ragnar's son is alive.",
+     "status": "built"
     }
    ]
   },

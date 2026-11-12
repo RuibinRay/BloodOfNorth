@@ -234,6 +234,13 @@ export class Wildlife {
             break;
           }
         }
+        if (!ar.stuck && g.combat.active) for (const e of g.combat.alive()) { // arrows hurt people too
+          const top = 1.9 * e.h.scale;
+          if (Math.hypot(pos.x - e.pos.x, pos.z - e.pos.z) < 0.45 && pos.y > e.pos.y && pos.y < e.pos.y + top) {
+            ar.stuck = true; ar.life = 89; ar.m.visible = false; g.audio.play('arrowHit');
+            g.combat.hurt(e, pos.y > e.pos.y + top * 0.8 ? 60 : 28, 20); break;
+          }
+        }
         if (ar.stuck) break;
         if (pos.y < heightAt(pos.x, pos.z) + 0.02) { ar.stuck = true; ar.life = 0; g.audio.play('arrowHit', { vol: 0.35 }); g.events.emit('arrowLand', pos); break; }
         if (pos.y < heightAt(pos.x, pos.z) + 7) {

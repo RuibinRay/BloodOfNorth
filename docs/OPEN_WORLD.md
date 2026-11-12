@@ -101,7 +101,7 @@ that people remember it. They are with Eirik for the whole game.
 | **Raven's Eye**: fly her, look down, mark people, animals and places | White | Act I ch.3 | **[built]** |
 | **Beacon**: he circles Eirik so she, and allies, can find him | Black | Act I ch.3 | **[built]** |
 | **Witness sense**: marked onlookers glow before a crime | White | Act II | planned |
-| **Harry**: he dives at a target to distract, disarm a bowman or spook a horse | Black | Act II | planned |
+| **Harry**: he dives at a target's face; for three seconds the man cannot attack or guard | Black | Act II | **[built]** |
 | **Thief**: he steals a key, a ring, a letter | Black | Act III | planned |
 | **Landfall**: she finds the shore in fog and storm | White | Act III | planned |
 | **Messenger**: carry a token to an ally or the settlement | Either | Act V | planned |

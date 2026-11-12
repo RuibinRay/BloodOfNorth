@@ -82,6 +82,16 @@ export class UI {
     const html = label ? `<kbd>${esc(this.g.input.label('interact'))}</kbd> Mark ${esc(label)}` : '';
     if (this._rp !== html) { this._rp = html; e.innerHTML = html; }
   }
+  /** The opponent Eirik is facing: name, health, and guard. */
+  setTarget(t) {
+    const e = document.getElementById('target');
+    e.classList.toggle('on', !!t);
+    if (!t) return;
+    if (this._tn !== t.name) { this._tn = t.name; e.querySelector('b').textContent = t.name; }
+    e.querySelector('.hp i').style.width = Math.max(0, t.hp) * 100 + '%';
+    e.querySelector('.gd i').style.width = Math.min(1, t.posture) * 100 + '%';
+    e.classList.toggle('broken', !!t.broken);
+  }
   letterbox(on) { this.e.lb.forEach((l) => l.classList.toggle('on', on)); this.e.hud.classList.toggle('hidden', on); }
   skipHint(k) { this.e.skip.classList.toggle('on', k > 0.02); this.e.skip.style.setProperty('--k', Math.min(1, k)); }
   setHUD(on) { this.e.hud.classList.toggle('hidden', !on); }
@@ -184,7 +194,9 @@ export class UI {
 
     // equipment line
     const inv = g.inventory, parts = [];
-    if (inv.has('woodsword')) parts.push(`<kbd>${esc(g.input.label('weapon1'))}</kbd> ${p.equipped === 'woodsword' ? '<b>Wooden sword</b>' : 'Wooden sword'}`);
+    const ml = p.melee(), mn = ml === 'father_axe' ? "Ragnar's axe" : p.adult ? 'Practice blade' : 'Wooden sword';
+    if (ml) parts.push(`<kbd>${esc(g.input.label('weapon1'))}</kbd> ${p.equipped === ml ? `<b>${mn}</b>` : mn}`);
+    if (g.combat.active && g.ravens.mode === 'follow') parts.push(`<kbd>${esc(g.input.label('harry'))}</kbd> ${esc(g.ravens.names()[1])}${g.combat.harryCd > 0 ? ' ' + Math.ceil(g.combat.harryCd) + 's' : ''}`);
     if (inv.has('bow')) parts.push(`<kbd>${esc(g.input.label('weapon2'))}</kbd> ${p.equipped === 'bow' ? '<b>Bow</b>' : 'Bow'} · ${inv.count('arrow')} arrows`);
     if (p.crouch) parts.push('<b>Crouched</b>');
     const eq = parts.join(' &nbsp; ');
@@ -336,7 +348,7 @@ export class UI {
   }
   omensHTML() {
     const st = this.g.state, ids = Object.keys(SECRETS), n = ids.filter((k) => st.secrets[k]).length;
-    if (!n && st.stage !== 'ch3' && st.stage !== 'complete') return '';
+    if (!n && !st.quests.q_hearth) return '';
     return `<h4>Omens · ${n} / ${ids.length}</h4><ul class="steps">${ids.map((k) => (st.secrets[k]
       ? `<li class="done" style="text-decoration:none"><b>${esc(SECRETS[k].name)}</b> — waits for you in ${SECRETS[k].returns}: ${esc(SECRETS[k].weapon)}</li>`
       : '<li>An old thing, not yet found</li>')).join('')}</ul>`;
@@ -379,43 +391,44 @@ export class UI {
     body.querySelectorAll('[data-del]').forEach((b) => (b.onclick = () => { deleteSave(b.dataset.del); this.openPanel('saves', this.tabs); }));
   }
   render_status(body) {
-    body.innerHTML = `<h3>Build status — vertical slice 0.3 (all of Act I)</h3>
+    body.innerHTML = `<h3>Build status — vertical slice 0.4 (Act I and the Act II opening)</h3>
       <p>This is the first playable chapter of a long project, not the finished game. Everything on screen is generated in code; characters, props and sound are placeholders awaiting real assets.</p>
       <div class="status-grid">
-      <div><h4><span class="tag ok">playable</span></h4><ul><li>Act I, Chapter 1: a full day in Hrafnvik and the night raid</li><li>Act I, Chapter 2: winter survival, a wolf, trackers and the river ice</li><li>Act I, Chapter 3: Bjornstead, the raven chicks, the axe under the hearthstone, first flight</li><li>Raven's Eye: fly the white raven, mark what she sees</li><li>Five hidden omens that seed later secret weapons</li><li>Hunger and warmth, shelter, cooking, thin-ice crossing</li><li>Third-person movement, camera, stamina, crouch, dodge</li><li>Dialogue with choices, traits and bonds</li><li>Quests, journal, objective tracker, map with waypoint</li><li>Woodcutting, bow hunting, tracking, fishing, fire-making</li><li>Sparring tutorial: strike, block, parry, dodge</li><li>Stealth escape with raider sight and hearing</li><li>Cold and warmth survival</li><li>Day/night sky, snow, fire, in-engine cutscenes</li><li>Save / load, autosave, settings, key rebinding, gamepad</li></ul></div>
-      <div><h4><span class="tag proto">prototype</span></h4><ul><li>Procedural characters and animation (to be replaced by rigged models)</li><li>Procedural audio and score</li><li>Villager routines (posts and an evening change, not full schedules)</li><li>Wildlife AI: hares, deer, sheep, ravens</li><li>Melee combat core (used only for sparring so far)</li><li>Higgsfield asset client (built, waiting on a valid key ID and secret)</li></ul></div>
+      <div><h4><span class="tag ok">playable</span></h4><ul><li>Act I, Chapter 1: a full day in Hrafnvik and the night raid</li><li>Act I, Chapter 2: winter survival, a wolf, trackers and the river ice</li><li>Act I, Chapter 3: Bjornstead, the raven chicks, the axe under the hearthstone, first flight</li><li>Raven's Eye: fly the white raven, mark what she sees</li><li>Five hidden omens that seed later secret weapons</li><li>Act II, Chapter 1: Eirik at nineteen, the drill with Bjorn, the raid on Bjornstead</li><li>Melee combat: light and heavy blows, block, parry, dodge, guard-breaking, enemies that take turns and flank, a two-phase captain</li><li>The black raven harries your target; arrows work on men</li><li>Hunger and warmth, shelter, cooking, thin-ice crossing</li><li>Third-person movement, camera, stamina, crouch, dodge</li><li>Dialogue with choices, traits and bonds</li><li>Quests, journal, objective tracker, map with waypoint</li><li>Woodcutting, bow hunting, tracking, fishing, fire-making</li><li>Sparring tutorial: strike, block, parry, dodge</li><li>Stealth escape with raider sight and hearing</li><li>Cold and warmth survival</li><li>Day/night sky, snow, fire, in-engine cutscenes</li><li>Save / load, autosave, settings, key rebinding, gamepad</li></ul></div>
+      <div><h4><span class="tag proto">prototype</span></h4><ul><li>Procedural characters and animation (to be replaced by rigged models)</li><li>Procedural audio and score</li><li>Villager routines (posts and an evening change, not full schedules)</li><li>Wildlife AI: hares, deer, sheep, ravens</li><li>Adult Eirik is the same placeholder rig, scaled up</li><li>Higgsfield asset client (built, waiting on a valid key ID and secret)</li></ul></div>
       <div><h4><span class="tag plan">planned</span></h4><ul><li>Acts II – VII (see docs/ROADMAP.md and data/missions.json)</li><li>Open world: islands, horse and ship travel, outlawry (wanted) levels, regional standing up to “my king” (designed in docs/OPEN_WORLD.md)</li><li>Adult Eirik, nine weapon classes, five skill trees</li><li>Enemy combat AI, bosses, mounted and naval combat</li><li>Sailing, settlement, factions, trading, crafting</li><li>50 side missions and tavern games</li><li>Building interiors, voiced dialogue, real music</li><li>Unreal Engine 5 port for photoreal fidelity</li></ul></div></div>`;
   }
   showChapterEnd() {
     const g = this.g, st = g.state, q = g.quests, body = $('#panel-body');
-    const ch = q.isDone('q_wings') ? 3 : q.isDone('q_ice') ? 2 : 1;
+    const ch = q.isDone('q_axe') ? 4 : q.isDone('q_wings') ? 3 : q.isDone('q_ice') ? 2 : 1, i = ch - 1;
     this.locked = true;
     this.e.hud.classList.add('hidden'); this.e.panel.classList.add('on');
-    this.e.tabs.innerHTML = `<button class="on">${['Chapter One Complete', 'Chapter Two Complete', 'Act One Complete'][ch - 1]}</button>`;
+    this.e.tabs.innerHTML = `<button class="on">${['Chapter One Complete', 'Chapter Two Complete', 'Act One Complete', 'Act Two · Chapter One Complete'][i]}</button>`;
     $('#panel-close').style.display = 'none';
     const top = Object.keys(TRAITS).sort((a, b) => st.traits[b] - st.traits[a])[0], max = Math.max(4, ...Object.values(st.traits));
     const wolf = st.flags.wolfFed ? 'He shared his kill with the wolf.' : st.flags.wolfKilled ? 'He killed the wolf that came for his kill.' : '';
     const named = st.flags.toldName ? 'He told them his true name.' : st.flags.liedName ? 'They know him as Orm.' : 'He gave them only half his name.';
     const vow = st.flags.vowHome ? 'He called the farm home.' : st.flags.vowRemember ? 'He stayed, and swore not to forget.' : st.flags.vowLearn ? 'He asked to be taught everything.' : '';
-    const rn = st.ravenNames || ['Mjöll', 'Sót'];
+    const rn = (st.ravenNames || ['Mjöll', 'Sót']).map(esc);
     const summary = [
       "Eirik Ravensson, nine winters old, is alone in the frozen forest with his father's axe.",
       `A farmer named Bjorn found a boy in the snow beyond the river, half frozen, his hand locked around an axe. ${wolf}`,
-      `Bjorn and Signe took him in. ${named} ${vow} The axe lies under the hearthstone. ${esc(rn[0])}, white, and ${esc(rn[1])}, black, came out of a fallen nest and never left him.`,
-    ][ch - 1];
+      `Bjorn and Signe took him in. ${named} ${vow} The axe lies under the hearthstone. ${rn[0]}, white, and ${rn[1]}, black, came out of a fallen nest and never left him.`,
+      `At nineteen he took his father's axe from under the hearthstone and held the farm against seven of Håkon's tithe-takers. ${st.flags.barnBurned ? 'The barn burned.' : 'The barn still stands.'} ${st.flags.sparedKettil ? 'He let Kettil Red-Hand walk away with a message.' : 'Kettil Red-Hand did not leave the yard.'} Håkon knows now that Ragnar's son is alive.`,
+    ][i];
+    const cont = (label) => `<p><button class="btn" id="next">${label}</button> <button class="btn" id="tomenu">Return to main menu</button></p>`;
     const next = [
-      `<h4>Next</h4><p>Chapter Two, “The Long White”: keep the fire, find food, and stay ahead of the men who are still looking for you.</p>
-       <p><button class="btn" id="next">Continue to Chapter Two</button> <button class="btn" id="tomenu">Return to main menu</button></p>`,
-      `<h4>Next</h4><p>Chapter Three, “A Stranger's Hearth”: fever, a farm in a hidden dale, and a girl who has found something in a fallen tree.</p>
-       <p><button class="btn" id="next">Continue to Chapter Three</button> <button class="btn" id="tomenu">Return to main menu</button></p>`,
-      `${this.omensHTML()}<h4>Next <span class="tag plan">planned</span></h4><p>Act II, “The Farmer's Axe”. Eirik is nineteen. The ravens are grown, the fence is mended, and the world beyond the dale opens: islands, horses, ships, and laws that can make a man a wolf.</p>
-       <p class="muted">Everything recorded here is saved. The design for the open world is in docs/OPEN_WORLD.md.</p><p><button class="btn" id="tomenu">Return to main menu</button></p>`,
-    ][ch - 1];
-    body.innerHTML = `<h3>${['The Night of Ashes', 'The Long White', "A Stranger's Hearth"][ch - 1]}</h3><p>${summary}</p>
+      `<h4>Next</h4><p>Chapter Two, “The Long White”: keep the fire, find food, and stay ahead of the men who are still looking for you.</p>${cont('Continue to Chapter Two')}`,
+      `<h4>Next</h4><p>Chapter Three, “A Stranger's Hearth”: fever, a farm in a hidden dale, and a girl who has found something in a fallen tree.</p>${cont('Continue to Chapter Three')}`,
+      `${this.omensHTML()}<h4>Next</h4><p>Act II, “The Farmer's Axe”. Ten winters pass. Eirik is nineteen, the ravens are grown, and somebody is coming up the river road.</p>${cont('Continue to Act II')}`,
+      `${this.omensHTML()}<h4>Next <span class="tag plan">planned</span></h4><p>The world opens: leaving the dale, the first horse and the first boat, the coast and its islands, and a law that can make a man a wolf. The design is in docs/OPEN_WORLD.md.</p>
+       <p class="muted">Everything recorded here is saved.</p><p><button class="btn" id="tomenu">Return to main menu</button></p>`,
+    ][i];
+    body.innerHTML = `<h3>${['The Night of Ashes', 'The Long White', "A Stranger's Hearth", "The Farmer's Axe"][i]}</h3><p>${summary}</p>
       <h4>Your Eirik</h4><p>Time played: ${fmtTime(st.playtime)} · Renown: ${st.xp} · Strongest trait: <b>${TRAITS[top]}</b></p>
       ${Object.keys(TRAITS).map((k) => `<div class="trait"><span>${TRAITS[k]}</span><div class="tb"><i style="width:${(st.traits[k] / max) * 100}%"></i></div><span>${st.traits[k]}</span></div>`).join('')}
       <ul class="steps">${st.choices.map((c) => `<li class="done" style="text-decoration:none">${esc(c.pick)}</li>`).join('')}</ul>${next}`;
     body.querySelector('#tomenu').onclick = () => g.quitToMenu();
-    const nx = body.querySelector('#next'); if (nx) nx.onclick = () => (ch === 1 ? g.story.beginChapter2() : g.story.beginChapter3());
+    const nx = body.querySelector('#next'); if (nx) nx.onclick = () => [() => g.story.beginChapter2(), () => g.story.beginChapter3(), () => g.story.beginAct2()][i]();
   }
 }

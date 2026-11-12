@@ -10,6 +10,7 @@ import { Woodcutting, FireMaking, Fishing, Sparring } from '../systems/activitie
 import { clamp, damp, lerp } from '../core/util.js';
 import { Chapter2 } from './act1_ch2.js';
 import { Chapter3 } from './act1_ch3.js';
+import { Act2Ch1 } from './act2_ch1.js';
 
 const PATH_TO_MEADOW = [[-38, 71.6], [-27, 70.5], [-17, 64.5], [-3, 57], [0, 46], [-7, 14], [-20, -12], [-22, -18], [-24, -22], [-43, -27], [-59, -34]];
 const TRACKS = [[-80, -48], [-98, -54], [-118, -62], [-136, -78], [-146, -100], [-150, -116]];
@@ -18,7 +19,7 @@ const FLEE_PATH = [[-23, 66], [-21, 56], [-21, 50], [-10, 43], [-7, 30], [-8, 12
 const CAMP_SEAT = [POI.camp.x - 1.75, POI.camp.z + 1.0];
 const DUEL = { ragnar: [-15, 70], hakon: [-10.5, 70.4], g1: [-6, 73.2], g2: [-6.5, 67.4] };
 const GATE_PATROL = [[[-13, -9], [-19.5, -13.5]], [[-9, 2], [-14, -7]]];
-const QUESTS_MAIN = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings'];
+const QUESTS_MAIN = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_smoke', 'q_axe'];
 const WEATHER = {
   day: { snow: 0, fog: 0, overcast: 0.08, wind: 1 },
   dusk: { snow: 0.12, fog: 0.02, overcast: 0.3, wind: 1.1 },
@@ -34,6 +35,7 @@ export class Act1 {
     this.houseFires = {}; this.schedT = 0;
     this.ch2 = new Chapter2(game, this);
     this.ch3 = new Chapter3(game, this);
+    this.a2 = new Act2Ch1(game, this);
   }
   hideFactor(p) { return this.st.stage === 'ch2' ? this.ch2.hideFactor(p) : 1; }
   npc(id) { return this.g.npcs.get(id); }
@@ -105,14 +107,14 @@ export class Act1 {
   /** Rebuild the scripted world from a loaded save. */
   restore() {
     const g = this.g, st = this.st;
-    if (st.stage === 'day' || st.stage === 'ch2' || st.stage === 'ch3') g.sky.time = st.time ?? 8;
+    if (['day', 'ch2', 'ch3', 'act2'].includes(st.stage)) g.sky.time = st.time ?? 8;
     if (st.vitals) Object.assign(g.player, st.vitals);
     if (st.player) g.player.teleport(st.player.x, st.player.z, st.player.yaw);
     if (g.inventory.has('father_axe')) g.player.showBackAxe(true);
     for (const id of Object.keys(st.quests)) if (st.quests[id].status === 'active') g.quests.enter(id, true);
     // between chapters, or at the end of what is built: show the chapter summary
     const active = Object.values(st.quests).some((q) => q.status === 'active' && QUESTS_MAIN.includes(Object.keys(st.quests).find((k) => st.quests[k] === q)));
-    if (!active && g.quests.isDone('q_alone')) { st.stage = g.quests.isDone('q_wings') ? 'complete' : g.quests.isDone('q_ice') ? 'ch2done' : 'ch1done'; this.showChapterEnd(); }
+    if (!active && g.quests.isDone('q_alone')) { st.stage = g.quests.isDone('q_axe') ? 'complete' : g.quests.isDone('q_wings') ? 'act1done' : g.quests.isDone('q_ice') ? 'ch2done' : 'ch1done'; this.showChapterEnd(); }
   }
 
   // =====================================================================================
@@ -243,11 +245,13 @@ export class Act1 {
     if (this.steps[key]) this.steps[key].call(this, r);
     else if (this.ch2.steps[key]) this.ch2.steps[key].call(this.ch2, r);
     else if (this.ch3.steps[key]) this.ch3.steps[key].call(this.ch3, r);
+    else if (this.a2.steps[key]) this.a2.steps[key].call(this.a2, r);
   }
   onQuestDone(id) {
     if (id === 'q_alone') this.playEnding();
     if (id === 'q_ice') this.ch2.playEnding();
     if (id === 'q_wings') this.ch3.playEnding();
+    if (id === 'q_axe') this.a2.playEnding();
   }
   steps = {
     'q_morning.ylva'() { this.hint('move'); this.g.after(9, () => { if (this.g.quests.at('q_morning', 'ylva')) this.hint('talk'); }); },
@@ -638,6 +642,13 @@ export class Act1 {
     ], { skippable: false, onEnd: () => { g.ui.fade(true, 2.5).then(() => { this.st.stage = 'ch1done'; g.autosave(); this.showChapterEnd(); }); } }));
   }
   showChapterEnd() { this.g.setMode('ui'); this.g.ui.showChapterEnd(); }
+  /** Start Act II the same way: ten winters on. */
+  beginAct2() {
+    const g = this.g, st = this.st;
+    st.stage = 'act2'; st.quests.q_ten = { status: 'active', step: 0, count: 0 }; st.flags.axeHidden = true;
+    Object.assign(g.player, { health: 100, warmth: 100, hunger: 100 }); g.sky.time = 14.6;
+    g.saveGame('auto'); g.reloadCheckpoint();
+  }
   /** Start Chapter 3 the same way. */
   beginChapter3() {
     const g = this.g, st = this.st;
@@ -676,6 +687,7 @@ export class Act1 {
     else if (st.stage === 'wilderness') this.updateWilderness(dt);
     else if (st.stage === 'ch2') this.ch2.update(dt);
     else if (st.stage === 'ch3') this.ch3.update(dt);
+    else if (st.stage === 'act2') this.a2.update(dt);
     if (this.shipMove) { this.shipK = Math.min(1, this.shipK + dt / 15); this.placeShips(); }
     if (this.spar) this.spar.update(dt);
 
@@ -697,7 +709,7 @@ export class Act1 {
     const dRiver = Math.abs(p.pos.x - riverX(p.pos.z));
     g.audio.setAmbience({
       river: clamp(1 - dRiver / 34, 0, 1) * 0.5, fire: g.fx.fireLoud,
-      birds: (st.stage === 'day' || (st.stage === 'ch3' && st.flags.spring)) && sky.time < 16.4 ? 0.7 : 0,
+      birds: (st.stage === 'day' || (st.stage === 'ch3' && st.flags.spring) || (st.stage === 'act2' && !g.combat.active)) && sky.time < 16.4 ? 0.7 : 0,
       wind: st.stage === 'wilderness' ? 1 : st.stage === 'ch2' ? 0.4 + g.sky.weather.wind * 0.2 : st.stage === 'night' ? 0.5 : 0.2 + clamp((p.pos.y - 6) / 30, 0, 0.5),
     });
     if (st.stage === 'day' && g.mode !== 'menu') g.audio.setMusic('day');

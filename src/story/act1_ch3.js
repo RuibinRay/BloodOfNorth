@@ -186,7 +186,7 @@ export class Chapter3 {
       .then(() => g.ui.card('', 'Ten winters passed.', 3.6))
       .then(() => g.ui.card('', g.fmt('The boy who came out of the snow grew tall. {w} and {b} grew with him, and were never far from his shoulder.'), 6))
       .then(() => g.ui.card('End of Act One', 'Blood of the North', 4.5))
-      .then(() => { this.st.stage = 'complete'; g.autosave(); A.showChapterEnd(); });
+      .then(() => { this.st.stage = 'act1done'; g.autosave(); A.showChapterEnd(); });
   }
 
   // =====================================================================================

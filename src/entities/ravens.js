@@ -22,6 +22,8 @@ export class Ravens {
     this.white.visible = this.black.visible = m === 'follow';
     if (m === 'follow') { const p = this.g.player.pos; this.white.position.set(p.x + 2, p.y + 4, p.z); this.black.position.set(p.x - 1, p.y + 3, p.z); }
   }
+  /** The black raven dives at an enemy for `t` seconds. */
+  harry(e, t) { this.harryT = { e, t }; }
   /** Something the white raven can spot from the air: { id, pos(), r, label, enabled?, onMark }. */
   addMarkable(mk) { this.markables = this.markables.filter((x) => x.id !== mk.id); this.markables.push(mk); }
 
@@ -55,8 +57,15 @@ export class Ravens {
     };
     // the black brother never leaves the boy; while she is away he circles higher, a beacon to find from the air
     const a = this.t * 0.9, br = this.eye ? 4.5 : 2.4, bh = this.eye ? 7 : 2.9;
-    drift(b, p.pos.x + Math.cos(a) * br, p.pos.y + bh + Math.sin(this.t * 1.7) * 0.25, p.pos.z + Math.sin(a) * br, 3);
-    flap(b, 11);
+    const hr = this.harryT;
+    if (hr && hr.t > 0 && !hr.e.dead) { // harrying: all beak and wings in someone's face
+      hr.t -= dt;
+      drift(b, hr.e.pos.x + Math.sin(this.t * 9) * 0.35, hr.e.pos.y + 1.75 * hr.e.h.scale + Math.cos(this.t * 7) * 0.2, hr.e.pos.z + Math.cos(this.t * 9) * 0.35, 9);
+      flap(b, 22);
+    } else {
+      drift(b, p.pos.x + Math.cos(a) * br, p.pos.y + bh + Math.sin(this.t * 1.7) * 0.25, p.pos.z + Math.sin(a) * br, 3);
+      flap(b, 11);
+    }
     if (!this.eye) {
       const a2 = -this.t * 0.6 + 2;
       drift(w, p.pos.x + Math.cos(a2) * 4.5, p.pos.y + 5.2 + Math.sin(this.t * 1.1) * 0.5, p.pos.z + Math.sin(a2) * 4.5, 2.5);
