@@ -10,6 +10,7 @@ export const DEFAULT_BINDINGS = {
   sense: ['KeyQ', 'Pad3'],
   raven: ['KeyV', 'Pad12'],
   harry: ['KeyR', 'Pad5'],
+  whistle: ['KeyH'],
   weapon1: ['Digit1', 'Pad14'], weapon2: ['Digit2', 'Pad15'], holster: ['KeyX', 'Pad13'],
   inventory: ['KeyI', 'Tab'], journal: ['KeyJ', 'Pad8'], map: ['KeyM'],
   pause: ['Escape', 'KeyP', 'Pad9'],
@@ -18,7 +19,7 @@ export const DEFAULT_BINDINGS = {
 export const ACTION_LABELS = {
   forward: 'Move forward', back: 'Move back', left: 'Move left', right: 'Move right',
   sprint: 'Sprint', crouch: 'Crouch / sneak', dodge: 'Dodge', interact: 'Interact',
-  attack: 'Attack / loose arrow', block: 'Block / aim', sense: "Hunter's sense", raven: "Raven's Eye", harry: 'Send the black raven',
+  attack: 'Attack / loose arrow', block: 'Block / aim', sense: "Hunter's sense", raven: "Raven's Eye", harry: 'Send the black raven', whistle: 'Whistle for your horse',
   weapon1: 'Equip wooden sword', weapon2: 'Equip bow', holster: 'Put weapon away',
   inventory: 'Inventory', journal: 'Journal', map: 'Map', pause: 'Pause',
   camLeft: 'Camera left', camRight: 'Camera right', camUp: 'Camera up', camDown: 'Camera down',

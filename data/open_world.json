@@ -227,13 +227,13 @@
   {
    "id": "horse",
    "from": "Act II",
-   "status": "planned",
+   "status": "built (sandbox)",
    "note": "fjord horse; whistle, saddlebags, mounted spear and bow"
   },
   {
    "id": "faering",
    "from": "Act II",
-   "status": "planned",
+   "status": "built (sandbox)",
    "note": "two-oar boat; inner skerries in calm weather"
   },
   {
@@ -307,7 +307,8 @@
    "unwitnessed crimes add nothing",
    "a declared killing is manslaughter; a hidden one is murder (two marks worse)",
    "kin hold a feud separate from the law"
-  ]
+  ],
+  "status": "built (sandbox): marks, witnesses, hue and cry, bounty-hunters, blood-price, hide-duel, decay"
  },
  "standing": [
   {
@@ -435,5 +436,6 @@
    "act": "2-7",
    "note": "Ragnar's axe, reforged three times, never replaced"
   }
- ]
+ ],
+ "standing_status": "built (sandbox): six tiers in one district, greetings, kneeling, oath"
 }

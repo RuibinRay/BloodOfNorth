@@ -73,7 +73,7 @@ export class Player {
   setLook(look, adult) {
     const nh = new Humanoid(look);
     this.root.remove(this.h.body); this.root.add(nh.body);
-    nh.root = this.root; nh.onStep = this.h.onStep;
+    nh.root = this.root; nh.onStep = this.h.onStep; this.look = look;
     this.h = nh; this.adult = adult; this.backAxe = null; this.equipped = 'none';
     this.speedMul = adult ? 1.28 : 1; this.cam.maxDist = adult ? 4.9 : 4.1;
   }
@@ -197,7 +197,7 @@ export class Player {
     }
     world.resolve(this.pos, 0.3);
     if (!world.walkable(this.pos.x, this.pos.z)) { this.pos.x = px; this.pos.z = pz; this.speed *= 0.5; }
-    this.pos.y = damp(this.pos.y, world.groundAt(this.pos.x, this.pos.z), 20, dt);
+    if (!this.riding) this.pos.y = damp(this.pos.y, world.groundAt(this.pos.x, this.pos.z), 20, dt); // a mount carries him
     this.moving = Math.hypot(this.pos.x - px, this.pos.z - pz) > 0.0005;
 
     if (this.blocking && this.target && Math.hypot(this.target.pos.x - this.pos.x, this.target.pos.z - this.pos.z) < 6) this.yaw = dampAngle(this.yaw, Math.atan2(this.target.pos.x - this.pos.x, this.target.pos.z - this.pos.z), 16, dt);

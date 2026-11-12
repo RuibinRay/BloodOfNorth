@@ -192,7 +192,7 @@ export class Humanoid {
     j.elL.rotation.x = c.elL; j.elR.rotation.x = c.elR;
     j.lgL.rotation.set(c.llx, 0, c.llz); j.lgR.rotation.set(c.lrx, 0, c.lrz);
     j.knL.rotation.x = c.knL; j.knR.rotation.x = c.knR;
-    this.body.rotation.x = c.pitch; this.body.position.y = c.by;
+    this.body.rotation.x = c.pitch; this.body.position.y = c.by + (this.lift || 0);
   }
   /** Snap straight to the current target pose (used when teleporting / restoring). */
   snap() { this.update(0.0001); for (const k of POSE_KEYS) this.cur[k] = this.tgt[k]; this.applyPose(); }

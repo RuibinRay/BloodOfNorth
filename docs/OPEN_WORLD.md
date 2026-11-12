@@ -1,6 +1,6 @@
 # The open world (Act II onward)
 
-**Status: design.** Nothing in this document is built except where marked **[built]**. The data version
+**Status: design, with a first sandbox built** (horse, rowing boat, two islands, wolf-marks, standing in one district; see the README). Otherwise nothing in this document is built except where marked **[built]**. The data version
 is `data/open_world.json`. It is written so each system can be built and tested on its own.
 
 ## When Eirik grows up
@@ -39,8 +39,8 @@ island from most shores. About forty islands in nine groups (full list in the da
 |---|---|---|
 | On foot | Act I **[built]** | Sprint, crouch, climb scree |
 | Skis and sledge | Act II | Winter only; skis are fast downhill, a sledge carries a kill or a wounded friend |
-| Horse | Act II | Fjord horses. Whistle to call, saddlebags for trade goods, mounted spear and bow. Horses refuse ice and steep scree |
-| Rowing boat (færing) | Act II | Two oars, any beach, one passenger. Reaches the inner skerries in calm weather |
+| Horse | Act II **[built: one horse]** | Fjord horses. Whistle to call, saddlebags for trade goods, mounted spear and bow. Horses refuse ice and steep scree |
+| Rowing boat (færing) | Act II **[built]** | Two oars, any beach, one passenger. Reaches the inner skerries in calm weather |
 | Small ship (karve) | Act III | Crew of eight, sail and oars, carries a horse. The first vessel that is yours |
 | Longship | Act IV | Crew of thirty, raids, sea battles, storms. Upgradable hull, sail, prow and crew |
 | Passage on a trader (knarr) | Act II | Pay a merchant to carry you between ports. This is the game's fast travel, and it can be boarded by pirates |
@@ -63,6 +63,7 @@ stranger again, unless word, or a ship, got there first.
 
 Rules that make it a system and not a punishment:
 
+- **[built in the sandbox]** marks 1 to 5 from assault and killing, witnesses, hue and cry at two marks, bounty-hunters at three, blood-price, hide-duel, and fading over time. Theft, feuds, safe houses and leaving the district are not built.
 - **Witnesses.** A crime nobody saw adds nothing. The white raven can show who is watching before you act.
 - **Open versus secret.** Killing a man and declaring it at the next farm is manslaughter (payable). Hiding the body is murder (two marks worse).
 - **Ways down.** Pay the blood-price at a Thing; win a holmgang against the accuser's champion; have a jarl who favours you speak for you; lie low until the season turns (one mark per season); or leave the district.
@@ -82,6 +83,8 @@ people call him.
 | Kinsman | "friend", "Ravensson" | Gifts, discounts, men will join a raid, children follow the ravens |
 | Jarl | "lord" | The district pays tribute, musters when called, brings its disputes to you |
 | King | **"my king"** | People kneel or raise a hand as you pass; free lodging and remounts; levy on a horn-call; bards sing your deeds, including the ones you regret |
+
+**[built in the sandbox]** all six tiers in one district, greetings by tier, kneeling for a king, and the oath at the law-rock. Tribute, musters and enemy-held lands are not built.
 
 Standing rises through quests, fair judgments, defending the district, gifts and feasts. It falls through
 outlawry, broken oaths, heavy tribute and abandoning them in a raid. In lands sworn to an enemy jarl the

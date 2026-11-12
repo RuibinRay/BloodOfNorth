@@ -11,6 +11,7 @@ import { clamp, damp, lerp } from '../core/util.js';
 import { Chapter2 } from './act1_ch2.js';
 import { Chapter3 } from './act1_ch3.js';
 import { Act2Ch1 } from './act2_ch1.js';
+import { OpenProto } from './open_proto.js';
 
 const PATH_TO_MEADOW = [[-38, 71.6], [-27, 70.5], [-17, 64.5], [-3, 57], [0, 46], [-7, 14], [-20, -12], [-22, -18], [-24, -22], [-43, -27], [-59, -34]];
 const TRACKS = [[-80, -48], [-98, -54], [-118, -62], [-136, -78], [-146, -100], [-150, -116]];
@@ -19,7 +20,7 @@ const FLEE_PATH = [[-23, 66], [-21, 56], [-21, 50], [-10, 43], [-7, 30], [-8, 12
 const CAMP_SEAT = [POI.camp.x - 1.75, POI.camp.z + 1.0];
 const DUEL = { ragnar: [-15, 70], hakon: [-10.5, 70.4], g1: [-6, 73.2], g2: [-6.5, 67.4] };
 const GATE_PATROL = [[[-13, -9], [-19.5, -13.5]], [[-9, 2], [-14, -7]]];
-const QUESTS_MAIN = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_smoke', 'q_axe'];
+const QUESTS_MAIN = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_smoke', 'q_axe', 'q_open'];
 const WEATHER = {
   day: { snow: 0, fog: 0, overcast: 0.08, wind: 1 },
   dusk: { snow: 0.12, fog: 0.02, overcast: 0.3, wind: 1.1 },
@@ -36,6 +37,7 @@ export class Act1 {
     this.ch2 = new Chapter2(game, this);
     this.ch3 = new Chapter3(game, this);
     this.a2 = new Act2Ch1(game, this);
+    this.open = new OpenProto(game, this);
   }
   hideFactor(p) { return this.st.stage === 'ch2' ? this.ch2.hideFactor(p) : 1; }
   npc(id) { return this.g.npcs.get(id); }
@@ -60,7 +62,7 @@ export class Act1 {
     this.forgeFire = g.fx.addFire(w.smithy.forge.x, w.smithy.forge.y, w.smithy.forge.z, 0.4, { smoke: true });
     this.greenFire = g.fx.addFire(3, heightAt(3, 50) + 0.15, 50, 0.5, { on: false });
     this.campFire = g.fx.addFire(POI.camp.x, heightAt(POI.camp.x, POI.camp.z) + 0.15, POI.camp.z, 0.6, { on: false });
-    this.chimneys = w.smoke.map((s) => g.fx.addSmoke(s.x, s.y, s.z, /barn|boathouse/.test(s.id) ? 0 : 1));
+    this.chimneys = w.smoke.map((s) => g.fx.addSmoke(s.x, s.y, s.z, /barn|boathouse|gulenhall/.test(s.id) ? 0 : 1));
     g.wildlife.addRavens(4, 46, 7, 36, 24);
     for (const [x, z] of [[-34, 17], [-32.5, 19.5], [-35.5, 19], [-31.5, 17]]) g.wildlife.spawn('sheep', x, z, { home: { x: -33.5, z: 18, r: 2.6 } });
 
@@ -107,7 +109,7 @@ export class Act1 {
   /** Rebuild the scripted world from a loaded save. */
   restore() {
     const g = this.g, st = this.st;
-    if (['day', 'ch2', 'ch3', 'act2'].includes(st.stage)) g.sky.time = st.time ?? 8;
+    if (['day', 'ch2', 'ch3', 'act2', 'open'].includes(st.stage)) g.sky.time = st.time ?? 8;
     if (st.vitals) Object.assign(g.player, st.vitals);
     if (st.player) g.player.teleport(st.player.x, st.player.z, st.player.yaw);
     if (g.inventory.has('father_axe')) g.player.showBackAxe(true);
@@ -246,6 +248,7 @@ export class Act1 {
     else if (this.ch2.steps[key]) this.ch2.steps[key].call(this.ch2, r);
     else if (this.ch3.steps[key]) this.ch3.steps[key].call(this.ch3, r);
     else if (this.a2.steps[key]) this.a2.steps[key].call(this.a2, r);
+    else if (this.open.steps[key]) this.open.steps[key].call(this.open, r);
   }
   onQuestDone(id) {
     if (id === 'q_alone') this.playEnding();
@@ -642,6 +645,14 @@ export class Act1 {
     ], { skippable: false, onEnd: () => { g.ui.fade(true, 2.5).then(() => { this.st.stage = 'ch1done'; g.autosave(); this.showChapterEnd(); }); } }));
   }
   showChapterEnd() { this.g.setMode('ui'); this.g.ui.showChapterEnd(); }
+  onSave() { if (this.st.stage === 'open') this.open.onSave(); }
+  /** Start the open-world prototype the same way. */
+  beginOpen() {
+    const g = this.g, st = this.st;
+    st.stage = 'open'; st.quests.q_open = { status: 'active', step: 0, count: 0 }; st.open = null; st.player = null;
+    Object.assign(g.player, { health: 100, warmth: 100, hunger: 100 }); g.sky.time = 9.5; g.player.pos.set(152, 0, -137);
+    g.saveGame('auto'); g.reloadCheckpoint();
+  }
   /** Start Act II the same way: ten winters on. */
   beginAct2() {
     const g = this.g, st = this.st;
@@ -688,6 +699,7 @@ export class Act1 {
     else if (st.stage === 'ch2') this.ch2.update(dt);
     else if (st.stage === 'ch3') this.ch3.update(dt);
     else if (st.stage === 'act2') this.a2.update(dt);
+    else if (st.stage === 'open') this.open.update(dt);
     if (this.shipMove) { this.shipK = Math.min(1, this.shipK + dt / 15); this.placeShips(); }
     if (this.spar) this.spar.update(dt);
 
@@ -709,7 +721,7 @@ export class Act1 {
     const dRiver = Math.abs(p.pos.x - riverX(p.pos.z));
     g.audio.setAmbience({
       river: clamp(1 - dRiver / 34, 0, 1) * 0.5, fire: g.fx.fireLoud,
-      birds: (st.stage === 'day' || (st.stage === 'ch3' && st.flags.spring) || (st.stage === 'act2' && !g.combat.active)) && sky.time < 16.4 ? 0.7 : 0,
+      birds: (st.stage === 'day' || (st.stage === 'ch3' && st.flags.spring) || ((st.stage === 'act2' || st.stage === 'open') && !g.combat.active)) && sky.time < 16.4 ? 0.7 : 0,
       wind: st.stage === 'wilderness' ? 1 : st.stage === 'ch2' ? 0.4 + g.sky.weather.wind * 0.2 : st.stage === 'night' ? 0.5 : 0.2 + clamp((p.pos.y - 6) / 30, 0, 0.5),
     });
     if (st.stage === 'day' && g.mode !== 'menu') g.audio.setMusic('day');
@@ -800,6 +812,7 @@ export class Act1 {
     if (!m) return null;
     if (m.npc) { const n = this.npc(m.npc); return n && n.visible ? { x: n.pos.x, z: n.pos.z, y: n.pos.y + n.h.headHeight() + 0.45 } : null; }
     if (m.dyn === 'deerBody') return this.deerBody && !this.deerBody.harvested ? { x: this.deerBody.pos.x, z: this.deerBody.pos.z, y: this.deerBody.pos.y + 1.2 } : null;
+    if (m.dyn === 'horse' || m.dyn === 'boat') return this.open.dyn(m.dyn);
     if (m.dyn === 'wolf') { const w = this.ch2.wolf; return w && !w.dead ? { x: w.pos.x, z: w.pos.z, y: w.pos.y + 1.3 } : null; }
     if (m.pos) {
       const pl = this.g.player.pos, k = m.pos.join();

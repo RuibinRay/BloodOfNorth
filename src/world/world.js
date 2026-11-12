@@ -225,6 +225,11 @@ export class World {
     const shade = new THREE.Mesh(new THREE.PlaneGeometry(0.14, 3.3), new THREE.MeshBasicMaterial({ color: 0x1c2a36, transparent: true, opacity: 0.6, depthWrite: false }));
     shade.rotation.set(-Math.PI / 2, 0, 0.5); shade.position.set(POI.tarn.x + 0.6, ty + 0.085, POI.tarn.z - 0.4); scene.add(shade);
 
+    // the islands (open-world prototype): Gulen's law-rock and hall, Bulandet's fishing camp
+    P.runestone(ctx, POI.lawRock.x, POI.lawRock.z, -0.3);
+    P.fireRing(ctx, -58, 258, 0.6); P.bench(ctx, -60.2, 256.6, 1.1); P.dryingRack(ctx, -46, 268, 0.8); P.barrel(ctx, -61, 262.4); P.crate(ctx, -49.5, 252.5, 0.4);
+    P.fireRing(ctx, 62, 281, 0.55); P.dryingRack(ctx, 66, 277, -0.4); P.dryingRack(ctx, 57, 284, 1.2); P.leanTo(ctx, 67.5, 284.5, -2.4); P.barrel(ctx, 59.4, 278.6);
+
     const stat = ctx.b.build();
     scene.add(stat);
     this.staticGroup = stat;

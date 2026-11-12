@@ -22,7 +22,7 @@ const RUNNING = new Set(['play', 'dialogue', 'cutscene', 'activity']);
 const freshState = () => ({
   stage: 'day', time: 8.7, flags: {}, traits: { wisdom: 0, compassion: 0, ferocity: 0, pride: 0 }, rel: { ragnar: 0, ylva: 0 },
   inventory: {}, quests: {}, xp: 0, choices: [], playtime: 0, player: null, waypoint: null,
-  secrets: {}, marks: {}, ravenNames: null, alias: null,
+  secrets: {}, marks: {}, ravenNames: null, alias: null, open: null,
 });
 const TRAIT_NAMES = { wisdom: 'Wisdom', compassion: 'Compassion', ferocity: 'Ferocity', pride: 'Pride' };
 
@@ -103,6 +103,7 @@ class Game {
     if (fx.give) for (const k in fx.give) this.inventory.add(k, fx.give[k]);
     if (fx.quest && !st.quests[fx.quest]) this.quests.start(fx.quest);
     if (fx.state) Object.assign(st, fx.state);
+    if (typeof fx.do === 'function') fx.do(); // runtime-built dialogue (open world)
   }
   /** Fill story tokens: {w} white raven, {b} black raven, {n} the name the family uses. */
   fmt(text) {
@@ -161,7 +162,8 @@ class Game {
     if (!this.started) return false;
     const st = this.state, p = this.player, tr = this.quests.tracked()[0];
     st.player = { x: p.pos.x, z: p.pos.z, yaw: p.yaw };
-    if (['day', 'ch2', 'ch3', 'act2'].includes(st.stage)) st.time = this.sky.time;
+    if (['day', 'ch2', 'ch3', 'act2', 'open'].includes(st.stage)) st.time = this.sky.time;
+    if (this.story.onSave) this.story.onSave();
     st.vitals = { health: p.health, warmth: p.warmth, hunger: p.hunger };
     return writeSave(slot, st, { quest: tr ? tr.def.title : this.quests.isDone('q_axe') ? 'Act Two, Chapter One complete' : this.quests.isDone('q_wings') ? 'Act One complete' : this.quests.isDone('q_ice') ? 'Chapter Two complete' : 'Chapter One complete', step: tr ? tr.step.text : 'Between chapters', playtime: st.playtime });
   }
@@ -257,7 +259,7 @@ class Game {
       time: (h) => { g.sky.time = h; },
       /** Jump straight to a quest step (marks earlier main quests done). */
       jump: (qid, sid) => {
-        const order = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_smoke', 'q_axe'];
+        const order = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_smoke', 'q_axe', 'q_open'];
         if (!g.started) { g.started = true; g.ui.hideMain(); g.setMode('play'); }
         for (const id of order) {
           if (id === qid) break;
@@ -268,7 +270,7 @@ class Game {
         const oi = order.indexOf(qid);
         if (oi >= 2) for (const [k, n] of [['bow', 1], ['arrow', 12], ['flint', 1]]) if (!g.inventory.has(k)) g.inventory.add(k, n, true);
         if (oi >= 4) if (!g.inventory.has('woodsword')) g.inventory.add('woodsword', 1, true);
-        if (oi >= 8) { g.state.stage = oi >= 12 ? 'act2' : oi >= 10 ? 'ch3' : 'ch2'; if (!g.inventory.has('father_axe')) g.inventory.add('father_axe', 1, true); if (qid === 'q_ice' || i >= 6) if (!g.inventory.has('venison')) g.inventory.add('venison', 3, true); }
+        if (oi >= 8) { g.state.stage = oi >= 15 ? 'open' : oi >= 12 ? 'act2' : oi >= 10 ? 'ch3' : 'ch2'; if (!g.inventory.has('father_axe')) g.inventory.add('father_axe', 1, true); if (qid === 'q_ice' || i >= 6) if (!g.inventory.has('venison')) g.inventory.add('venison', 3, true); }
         g.quests.enter(qid, true); g.ui.refreshTracker();
       },
       info: () => ({

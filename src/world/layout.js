@@ -33,6 +33,7 @@ export const POI = {
   farm: { x: 150, z: -140, name: 'Bjornstead' },
   farmFire: { x: 146, z: -137 }, farmChop: { x: 158, z: -139 }, farmDoor: { x: 152, z: -142.4 }, pen: { x: 148.5, z: -155.5 },
   nest: { x: 126, z: -151 }, barrow: { x: 178, z: -166 }, axeStone: { x: 139, z: -178 }, yew: { x: 187, z: -121 },
+  gulen: { x: -55, z: 262, name: 'Gulen (law-island)' }, lawRock: { x: -52, z: 256 }, bulandet: { x: 62, z: 282, name: 'Bulandet' },
   tarn: { x: 197, z: -150 }, skyIron: { x: 165.3, z: -133.2 }, lamb: { x: 113, z: -171 }, hunters: { x: 57, z: -150 }, // filled in by terrain.js (depends on the river curve)
 };
 
@@ -47,6 +48,8 @@ export const FLATS = [
   { x: 150, z: -140, r: 34, dh: 0.6, name: 'farm' },
   { x: 178, z: -166, r: 7, dh: 2.4, name: 'barrow' },   // a small plateau reads as a grave mound
   { x: 197, z: -150, r: 12, dh: -0.8, name: 'tarn' },
+  { x: -55, z: 262, r: 46, h: 3.4, name: 'gulen' },      // islands: absolute height, rising out of the fjord
+  { x: 62, z: 282, r: 36, h: 2.8, name: 'bulandet' },
 ];
 
 /** Trodden paths: used for ground colour and to keep trees off the trail. */
@@ -83,7 +86,8 @@ export const HOUSES = [
   { id: 'boathouse', x: -14, z: 104, ry: Math.PI / 2, len: 10, wid: 5, ridge: 3.8, roof: 'thatch', door: 0 },
   { id: 'houseF', x: 12, z: 88, ry: -0.2, len: 10, wid: 5.2, ridge: 3.9, roof: 'turf', door: -1, doorX: 1 },
   { id: 'bjornstead', x: 150, z: -147, ry: 0, len: 13, wid: 6, ridge: 4.4, roof: 'turf', door: 1, doorX: 2 },
+  { id: 'gulenhall', x: -66, z: 266, ry: 0.5, len: 10, wid: 5.2, ridge: 3.9, roof: 'turf', door: 1, doorX: 0 },
   { id: 'bjornbarn', x: 169, z: -135, ry: Math.PI / 2, len: 9, wid: 5.2, ridge: 3.9, roof: 'thatch', door: -1, doorX: 0 },
 ];
 
-export const BOUNDS = { minX: -250, maxX: 250, minZ: -262, maxZ: 200 };
+export const BOUNDS = { minX: -250, maxX: 250, minZ: -262, maxZ: 314 };

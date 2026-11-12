@@ -59,6 +59,25 @@ function wolfModel() {
   }
   return g;
 }
+export function horseModel() {
+  const g = new THREE.Group(), coat = 0x7a5636, dark = 0x2e2018;
+  g.add(mesh([
+    tint(at(capsule(0.31, 1.0, 8), 0, 1.16, 0, Math.PI / 2, 0, 0, 1, 1, 1.05), coat, 0.1, 1),
+    tint(at(capsule(0.15, 0.6, 6), 0, 1.6, 0.74, 0.7, 0, 0), coat, 0.1, 2),
+    tint(at(sphere(0.15, 7, 6), 0, 1.95, 1.08, 0.5, 0, 0, 0.85, 0.9, 1.9), coat, 0.08, 3),
+    tint(at(box(0.07, 0.42, 0.62), 0, 1.86, 0.62, 0.7, 0, 0), dark, 0.1, 4),
+    tint(at(capsule(0.06, 0.6, 5), 0, 1.0, -0.86, -0.5, 0, 0), dark, 0.1, 5),
+    tint(at(cone(0.04, 0.13, 4), 0.08, 2.1, 0.98), coat, 0.05, 6), tint(at(cone(0.04, 0.13, 4), -0.08, 2.1, 0.98), coat, 0.05, 7),
+    tint(at(box(0.5, 0.1, 0.55), 0, 1.5, -0.05), 0x4a3424, 0.1, 8),
+  ]));
+  g.userData.legs = [];
+  for (const [x, z] of [[0.17, 0.52], [-0.17, 0.52], [0.17, -0.55], [-0.17, -0.55]]) {
+    const leg = new THREE.Group(); leg.position.set(x, 1.0, z);
+    leg.add(mesh([tint(at(capsule(0.055, 0.85, 5), 0, -0.48, 0), dark, 0.1, 9)]));
+    g.add(leg); g.userData.legs.push(leg);
+  }
+  return g;
+}
 function sheepModel() {
   const g = new THREE.Group();
   const parts = [tint(at(sphere(0.34, 8, 6), 0, 0.55, 0, 0, 0, 0, 0.9, 0.85, 1.3), 0xd8d2c2, 0.14, 1), tint(at(sphere(0.12, 6, 5), 0, 0.68, 0.45, 0, 0, 0, 0.8, 0.9, 1.3), 0x3a3028, 0.1, 2)];

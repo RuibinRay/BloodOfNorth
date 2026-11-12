@@ -1,8 +1,8 @@
 # Blood of the North — Rise of the Raven King
 
-A third-person Viking action RPG. This repository holds **vertical slice 0.4**: all three chapters of
-Act I (Eirik's childhood) and the opening chapter of Act II (Eirik at nineteen, with real combat), plus the
-design foundation for the full campaign.
+A third-person Viking action RPG. This repository holds **vertical slice 0.5**: all three chapters of
+Act I (Eirik's childhood), the opening chapter of Act II (Eirik at nineteen, with real combat), and a first
+open-world sandbox, plus the design foundation for the full campaign.
 
 > **What this is, plainly.** Four real, playable 3D chapters (well over an hour; untimed) that run in a browser.
 > It is not the 40-hour game, it is not Unreal Engine 5, and it is not photorealistic: every character,
@@ -32,6 +32,7 @@ Then open http://localhost:5184. A production build is `npm run build` (output i
 | Hunter's Sense | hold `Q` | Y |
 | Raven's Eye (from Chapter 3's spring) | `V` | d-pad up |
 | Send the black raven at your target (Act II) | `R` | RB |
+| Whistle for your horse (open world) | `H` | — |
 | Wooden sword, bow, put away | `1`, `2`, `X` | d-pad |
 | Journal, inventory, map, pause | `J`, `I`, `M`, `Esc` | Back, Start |
 
@@ -73,6 +74,18 @@ All keyboard and mouse bindings can be changed in Settings.
 3. *The Farmer's Axe* — hold the yard, stop them firing the barn, and bring down Kettil Red-Hand. Bjorn fights beside you. You can lose.
    Then decide what to do with a dying man who knows your father's name.
 
+**Open-world sandbox — "The Whale Road" (prototype).** Not a story chapter: a place to try the systems.
+
+- **Horse:** mount the bay mare at Bjornstead, gallop on stamina, whistle to call her.
+- **Rowing boat:** board at the Hrafnvik landing, row and steer, step ashore where the hull grounds.
+- **Two islands:** Gulen (the law-rock, a lawspeaker, a merchant) and Bulandet (a fishing camp with a problem).
+- **Wolf-marks (the wanted level):** hurt or kill someone where a living witness can see and you earn up to five
+  marks. Two brings the hue and cry; three brings bounty-hunters. Clear them by paying the blood-price, winning
+  the hide-duel, or lying low until talk dies.
+- **Standing:** the district rates Eirik from Wolf through Stranger, Guest, Kinsman and Jarl to King. Help
+  Bulandet, trade fairly and give to the hall, then ask the lawspeaker to have the folk swear. After that
+  they kneel as you pass and say "My king."
+
 Dialogue and actions raise four traits (Wisdom, Compassion, Ferocity, Pride); they,
 the ravens' names and the omens found are saved for later acts.
 
@@ -81,9 +94,9 @@ the ravens' names and the omens found are saved for later acts.
 | | |
 |---|---|
 | **Playable and tested** | All of Act I (chapters 1–3) and Act II chapter 1 start to finish; melee combat against enemies that guard, take turns and flank, with a two-phase captain; an ally who fights; the black raven harrying a target; raven companions and Raven's Eye; five hidden omens; hunger and warmth, shelter, cooking, a wolf encounter with two outcomes, thin-ice crossing; movement, camera, stamina; dialogue with choices; quests, journal, tracker, map with waypoint; woodcutting, archery, tracking, fishing, fire-making; sparring; stealth with raider sight and hearing; cold survival; day/night, snow, fire; in-engine cutscenes; save/load with autosave; settings, key rebinding, gamepad |
-| **Prototype** | Procedural characters and animation; procedural audio and score; villager routines; wildlife AI; combat balance (tuned against scripted players only) |
+| **Prototype** | The open-world sandbox (one district, two small islands, one horse, one boat); procedural characters and animation; procedural audio and score; villager routines; wildlife AI; combat balance (tuned against scripted players only) |
 | **Blocked** | Higgsfield asset generation — the API needs a key ID *and* a secret; only one value was supplied. See [docs/HIGGSFIELD.md](docs/HIGGSFIELD.md) |
-| **Planned** | Everything else in the brief: the rest of Act II and Acts III through VII; the open world (about forty islands, horse and ship travel, wolf-mark outlawry, standing up to "my king" — designed in [docs/OPEN_WORLD.md](docs/OPEN_WORLD.md)); adult combat and nine weapons, skill trees, companions, sailing, settlement, factions, 50 side missions, UE5 port. See [docs/ROADMAP.md](docs/ROADMAP.md) |
+| **Planned** | Everything else in the brief: the rest of Act II and Acts III through VII; the full sea map (about forty islands, ships and crews, more districts — designed in [docs/OPEN_WORLD.md](docs/OPEN_WORLD.md)); adult combat and nine weapons, skill trees, companions, sailing, settlement, factions, 50 side missions, UE5 port. See [docs/ROADMAP.md](docs/ROADMAP.md) |
 
 How it was tested: an automated playtest drives the real game loop through every quest step (see
 `debug` in [src/main.js](src/main.js)). It was verified on an Apple M2 at 60 fps. It has **not** been
