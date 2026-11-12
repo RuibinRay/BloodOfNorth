@@ -6,6 +6,7 @@
 import { ISLES, DISTRICT_LINE, POI } from '../world/layout.js';
 import { heightAt } from '../world/terrain.js';
 import { RAIDER_LOOKS, QUESTS, ITEMS } from '../data/act1.js';
+import { KINDS } from './open_proto.js';
 
 Object.assign(ITEMS, {
   brother_axe: { name: 'The Left Brother', desc: 'One of two axes forged from a single bloom and buried apart. Carried in the off hand beside Ragnar\'s axe. Its twin is in somebody else\'s fist.', cat: 'Weapon' },
@@ -117,8 +118,8 @@ export class SeaChart {
       use: () => { g.ui.subtitle('Runes', '"Past here I named nothing. Ottar cut this, and turned back."', 5); g.after(5.2, () => g.ui.toast('The Edge lies beyond the chart. It is not built yet.')); } });
 
     this.camps = [
-      { id: 'batalden', x: -415, z: 806, n: 3, name: 'Wrecker', key: 'wrecker', cry: 'A boat! One man. Take him, and take the boat.', loot: 0, fire: this.falseFire },
-      { id: 'horns', x: -456, z: 1296, n: 2, name: "Wolf's-head", key: 'outlaw', cry: 'No law comes out this far. Only us.', loot: 0, fire: this.hornFire },
+      { id: 'batalden', x: -415, z: 806, n: 3, name: 'Wrecker', key: 'wrecker', kinds: [null, 'archer', null], cry: 'A boat! One man. Take him, and take the boat.', loot: 0, fire: this.falseFire },
+      { id: 'horns', x: -456, z: 1296, n: 2, name: "Wolf's-head", key: 'outlaw', kinds: ['berserk', null], cry: 'No law comes out this far. Only us.', loot: 0, fire: this.hornFire },
     ];
     g.events.on('dismounted', (type) => { if (type !== 'horse' && !g.combat.active && this.st.stage === 'open') g.after(0.3, () => g.autosave()); });
   }
@@ -291,8 +292,8 @@ export class SeaChart {
         if (g.mode !== 'play' || o.mounts.on || dist(p.pos, c.x, c.z) > 40) continue;
         c.men = []; c.counted = 0;
         for (let i = 0; i < c.n; i++) {
-          const w = c.who && c.who(i), r = 3.2 + ((i / 3) | 0) * 2.3; // a named man, if the camp has one; a second ring for a big camp
-          c.men.push(o.fighter(c.id + i, w ? w.name : c.name, RAIDER_LOOKS[(i + 1) % 4], c.x + Math.cos(i * 2.1 + 0.4) * r, c.z + Math.sin(i * 2.1 + 0.4) * r, ['axe', 'spear', 'sword'][i % 3], w ? w.opts : { hp: 100 }));
+          const w = c.who && c.who(i), k = !w && c.kinds && KINDS[c.kinds[i]], r = 3.2 + ((i / 3) | 0) * 2.3; // a named man, if the camp has one; a second ring for a big camp
+          c.men.push(o.fighter(c.id + i, w ? w.name : c.name + (k ? k.tag : ''), RAIDER_LOOKS[(i + 1) % 4], c.x + Math.cos(i * 2.1 + 0.4) * r, c.z + Math.sin(i * 2.1 + 0.4) * r, ['axe', 'spear', 'sword'][i % 3], w ? w.opts : k ? { ...k.opts } : { hp: 100 }));
         }
         g.ui.subtitle(c.name, c.cry, 4); g.audio.play('shout'); g.audio.setMusic('raid');
         continue;

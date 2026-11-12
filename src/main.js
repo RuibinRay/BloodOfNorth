@@ -190,7 +190,10 @@ class Game {
   }
   /** Advance the whole game by `real` seconds. Also driven directly by the test harness. */
   frame(real, render = true) {
-    const inp = this.input, m = this.mode, run = RUNNING.has(m), dt = run ? real : 0;
+    const inp = this.input, m = this.mode, run = RUNNING.has(m);
+    let scale = 1; // a landed blow holds the world for an instant; a finishing blow slows it
+    if (this.hitStop > 0) { this.hitStop -= real; scale = 0.04; } else if (this.slowT > 0) { this.slowT -= real; scale = 0.3; }
+    const dt = run ? real * scale : 0;
     inp.pollPad();
 
     if (run) {

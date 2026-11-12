@@ -10,18 +10,21 @@ export class Combat {
   constructor(game) {
     this.g = game; this.enemies = []; this.target = null; this.harryCd = 0; this.active = false;
     game.events.on('playerSwing', (n, heavy) => this.playerSwing(n, heavy));
+    game.events.on('playerBash', () => this.playerBash());
+    this.shots = [];
   }
-  /** Turn an NPC into an opponent. Options: hp, dmg, skill (0..1 chance to guard), boss, training, duel (an ally keeping it busy), job, onDown. */
+  /** Turn an NPC into an opponent. Options: hp, dmg, skill (0..1 chance to guard), boss, training, duel (an ally keeping it busy), job, onDown,
+   *  kind: 'archer' (stands off and shoots), 'shield' (cannot be cut from the front until his guard breaks), 'berserk' (no guard, no waiting his turn). */
   add(npc, o = {}) {
     npc.mode = 'enemy'; npc.talk = null; npc.dead = false;
     npc.cb = Object.assign({ hp: 110, dmg: 15, skill: 0.55, state: 'approach', t: 0, posture: 0, strafe: Math.random() < 0.5 ? 1 : -1, reach: 2.1 }, o);
-    npc.cb.maxHp = npc.cb.hp;
+    npc.cb.maxHp = npc.cb.hp; if (npc.cb.kind === 'berserk') npc.cb.skill = 0;
     npc.h.setLoop('guard');
     this.enemies.push(npc); this.active = true;
     return npc;
   }
   alive() { return this.enemies.filter((e) => !e.dead && !e.cb.out); }
-  clear() { this.enemies = []; this.target = null; this.active = false; this.g.player.target = null; this.g.ui.setTarget(null); }
+  clear() { this.enemies = []; this.target = null; this.active = false; this.g.player.target = null; this.g.ui.setTarget(null); for (const s of this.shots) { s.on = false; s.mesh.visible = false; } }
   attackers() { return this.enemies.filter((e) => !e.dead && (e.cb.state === 'windup' || e.cb.state === 'strike')).length; }
   maxAttackers() { const d = this.g.settings.difficulty; return d === 'hard' ? 2 : d === 'easy' ? 1 : this.alive().length >= 4 ? 2 : 1; }
 
@@ -55,19 +58,27 @@ export class Combat {
     if (!this.active) return;
     const real = p.equipped === 'father_axe';
     const near = this.alive().map((e) => ({ e, d: e.dist(p) })).filter((x) => x.d < 2.45).sort((a, b) => a.d - b.d);
+    const riposte = p.riposteT > 0; // straight after a parry: this one cannot be guarded
+    if (riposte) p.riposteT = 0;
     let hits = 0;
     for (const { e } of near) {
       if (Math.abs(angleDiff(p.yaw, Math.atan2(e.pos.x - p.pos.x, e.pos.z - p.pos.z))) > 1.05) continue;
       const c = e.cb, open = ['stagger', 'harried', 'windup', 'strike', 'duel'].includes(c.state);
-      if (!heavy && !open && Math.random() < c.skill * 0.62) { // guarded: no damage, but it wears the guard down
-        e.h.play('parry', 0.3); g.audio.play(real ? 'steel' : 'clack'); p.cam.shake = 0.08;
-        e.h.handWorld('R', _v); g.fx.burst(real ? 'spark' : 'chips', _v.x, _v.y + 0.2, _v.z, 6);
-        c.posture = Math.min(100, c.posture + 16); this.checkPosture(e);
+      // a shield-bearer facing him turns every blow until his guard is broken or he is caught mid-swing
+      const wall = c.kind === 'shield' && !open && !riposte && Math.abs(angleDiff(e.yaw, Math.atan2(p.pos.x - e.pos.x, p.pos.z - e.pos.z))) < 1.2;
+      if (!riposte && !open && (heavy ? wall : wall || Math.random() < c.skill * 0.62)) { // guarded: no damage, but it wears the guard down
+        e.h.play('parry', 0.3); g.audio.play(real ? 'steel' : 'clack'); p.cam.shake = heavy ? 0.16 : 0.08;
+        e.h.handWorld(wall ? 'L' : 'R', _v); g.fx.burst(real ? 'spark' : 'chips', _v.x, _v.y + 0.2, _v.z, 6);
+        c.posture = Math.min(100, c.posture + (heavy ? 42 : wall ? 10 : 16)); this.checkPosture(e);
       } else {
         let dmg = (real ? 1 : 0.5) * (heavy ? 32 : 12 + n * 2);
-        if (real && g.inventory.has('brother_axe')) dmg *= 1.25; // the Left Brother in the off hand
-        if (c.state === 'stagger') dmg *= 1.8;
-        g.audio.play('arrowHit'); g.audio.play('thud', { vol: 0.5 }); p.cam.shake = heavy ? 0.22 : 0.1;
+        if (real && p.dual()) dmg *= 1.25; // the Left Brother in the off hand
+        if (riposte) dmg *= 1.6;
+        const finish = heavy && c.state === 'stagger'; // a heavy blow on a broken guard ends it
+        if (finish) { dmg = c.boss ? dmg * 3 : c.hp + 1; g.slowT = 0.5; g.audio.play('split'); g.events.emit('finisher', e); }
+        else if (c.state === 'stagger') dmg *= 1.8;
+        g.hitStop = finish ? 0 : heavy ? 0.08 : 0.045;
+        g.audio.play('arrowHit'); g.audio.play('thud', { vol: 0.5 }); p.cam.shake = finish ? 0.4 : heavy ? 0.22 : 0.1;
         const a = Math.atan2(e.pos.x - p.pos.x, e.pos.z - p.pos.z), k = heavy ? 0.7 : 0.3;
         if (!c.keepDry || g.world.walkable(e.pos.x + Math.sin(a) * k, e.pos.z + Math.cos(a) * k)) { e.pos.x += Math.sin(a) * k; e.pos.z += Math.cos(a) * k; }
         g.events.emit('enemyHit', e, heavy);
@@ -87,6 +98,49 @@ export class Combat {
       e.h.action = null; e.h.play('stagger', 0.5); this.checkPosture(e); g.events.emit('parried', e);
     } else if (res === 'blocked') c.posture = Math.min(100, c.posture + 6);
   }
+  /** The shield boss in a man's chest: stops a swing that has started, and wears his guard. */
+  playerBash() {
+    const g = this.g, p = g.player;
+    if (!this.active) return;
+    const e = this.alive().map((x) => ({ x, d: x.dist(p) })).filter((o) => o.d < 2.3 && Math.abs(angleDiff(p.yaw, Math.atan2(o.x.pos.x - p.pos.x, o.x.pos.z - p.pos.z))) < 1.0).sort((a, b) => a.d - b.d)[0];
+    if (!e) return;
+    const c = e.x.cb;
+    g.audio.play('thud'); p.cam.shake = 0.14; g.hitStop = 0.05;
+    if (c.state === 'windup' || c.state === 'strike') { c.state = 'recover'; c.t = 0.9; e.x.h.action = null; }
+    this.hurt(e.x, 4, c.boss ? 14 : 30);
+    const a = Math.atan2(e.x.pos.x - p.pos.x, e.x.pos.z - p.pos.z);
+    if (!c.keepDry || g.world.walkable(e.x.pos.x + Math.sin(a) * 0.5, e.x.pos.z + Math.cos(a) * 0.5)) { e.x.pos.x += Math.sin(a) * 0.5; e.x.pos.z += Math.cos(a) * 0.5; }
+  }
+  /** An archer looses at where Eirik will be in a moment. */
+  shoot(e) {
+    const g = this.g, p = g.player;
+    if (e.dead || !this.active) return;
+    let s = this.shots.find((x) => !x.on);
+    if (!s) {
+      if (this.shots.length >= 12) return;
+      const geo = new THREE.CylinderGeometry(0.014, 0.014, 0.78, 4); geo.rotateX(Math.PI / 2);
+      s = { mesh: new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x2a2018 })), a: new THREE.Vector3(), b: new THREE.Vector3(), on: false };
+      g.scene.add(s.mesh); this.shots.push(s);
+    }
+    e.h.handWorld('L', _v); s.a.copy(_v);
+    const T = e.dist(p) / 24 + 0.2, lead = p.moving ? p.speed * T * 0.75 : 0;
+    s.b.set(p.pos.x + Math.sin(p.yaw) * lead + (Math.random() - 0.5) * 0.7, p.pos.y + 1.1, p.pos.z + Math.cos(p.yaw) * lead + (Math.random() - 0.5) * 0.7);
+    s.t = 0; s.T = T; s.on = true; s.from = e; s.mesh.visible = true;
+    g.audio.play('bow', { vol: 0.6 }); if (e.dist(p) < 30) g.ui.alert();
+  }
+  updateShots(dt) {
+    const g = this.g, p = g.player;
+    for (const s of this.shots) {
+      if (!s.on) continue;
+      s.t += dt;
+      const u = Math.min(1, s.t / s.T), at = (k) => _v.set(s.a.x + (s.b.x - s.a.x) * k, s.a.y + (s.b.y - s.a.y) * k + s.T * 5 * k * (1 - k), s.a.z + (s.b.z - s.a.z) * k);
+      s.mesh.position.copy(at(u)); s.mesh.lookAt(at(Math.min(1.02, u + 0.04)));
+      if (u < 1) continue;
+      s.on = false; s.mesh.visible = false;
+      if (Math.hypot(p.pos.x - s.b.x, p.pos.z - s.b.z) < 0.95) p.receiveArrow(s.from.pos, s.from.cb ? s.from.cb.dmg : 9);
+      else g.fx.burst('chips', s.b.x, s.b.y - 0.9, s.b.z, 3);
+    }
+  }
   /** Send the black raven at the current target's face. */
   harry() {
     const g = this.g, e = this.target;
@@ -105,16 +159,28 @@ export class Combat {
     c.t -= dt;
     if (c.state !== 'stagger') c.posture = Math.max(0, c.posture - 6 * dt);
 
-    if (c.duel && !c.duel.dead && d > 3.2 && c.state !== 'stagger' && c.state !== 'harried') { // busy with an ally
+    const busy = c.duel && !c.duel.dead && !c.duel.wounded;
+    if (c.kind === 'archer' && !busy && d > 5.5 && c.state !== 'stagger' && c.state !== 'harried') { // stands off and shoots; up close he fights like anyone
+      c.state = 'ranged';
+      if (d > 24) { mx = dx / d; mz = dz / d; speed = 3.4; c.aimT = 0; }
+      else if ((c.aimT = (c.aimT || 0) + dt) > 2.7 && !h.busy && !p.frozen) { c.aimT = Math.random() * 0.6; h.play('shoot', 0.4, { hitAt: 0.3, onHit: () => this.shoot(e) }); }
+    } else if (busy && d > 3.2 && c.state !== 'stagger' && c.state !== 'harried') { // busy with an ally
       const q = c.duel, qx = q.pos.x - e.pos.x, qz = q.pos.z - e.pos.z, qd = Math.hypot(qx, qz) || 1;
       c.state = 'duel'; face = Math.atan2(qx, qz);
       if (qd > 2.0) { mx = qx / qd; mz = qz / qd; speed = 3.2; }
       if (c.t <= 0 && qd < 2.6 && !h.busy) {
         c.t = 1.4 + Math.random() * 1.4;
-        h.play('atk' + (1 + ((Math.random() * 3) | 0)), 0.7, { hitAt: 0.4, onHit: () => { if (!q.dead) { q.h.play('parry', 0.3); if (e.dist(p) < 30) g.audio.play('steel', { vol: 0.3 }); } } });
+        h.play('atk' + (1 + ((Math.random() * 3) | 0)), 0.7, { hitAt: 0.4, onHit: () => {
+          if (q.dead || q.wounded) return;
+          const near = e.dist(p) < 30;
+          if (q.hpMax && Math.random() < 0.45) { // an ally who can be hurt (the crew): some blows get through
+            q.hp -= c.dmg * 0.6; q.h.play('stagger', 0.35); if (near) g.audio.play('hurt', { vol: 0.35 });
+            if (q.hp <= 0) g.events.emit('allyDown', q, e);
+          } else { q.h.play('parry', 0.3); if (near) g.audio.play('steel', { vol: 0.3 }); }
+        } });
       }
     } else {
-      if (c.state === 'duel') { c.state = 'circle'; c.t = 0.6; }
+      if (c.state === 'duel' || c.state === 'ranged') { c.state = 'circle'; c.t = 0.6; }
       if (c.state === 'approach') {
         if (c.job && !c.job.done && d > 4.5) { // an errand, e.g. firing the barn
           const jx = c.job.x - e.pos.x, jz = c.job.z - e.pos.z, jd = Math.hypot(jx, jz);
@@ -126,14 +192,14 @@ export class Combat {
         mx = (dx / d) * r * 0.9 - (dz / d) * c.strafe * 0.75; mz = (dz / d) * r * 0.9 + (dx / d) * c.strafe * 0.75; speed = 1.7;
         if (d > 5.5) c.state = 'approach';
         else if (c.t <= 0) {
-          if (this.attackers() < this.maxAttackers() && !p.frozen) { c.state = 'windup'; c.t = 0.9; }
+          if ((this.attackers() < this.maxAttackers() || c.kind === 'berserk') && !p.frozen) { c.state = 'windup'; c.t = c.kind === 'berserk' ? 0.6 : 0.9; } // a berserker does not wait his turn
           else { c.t = 0.4 + Math.random() * 0.8; if (Math.random() < 0.3) c.strafe = -c.strafe; }
         }
       } else if (c.state === 'windup') { // step in, then swing
         if (d > 1.75) { mx = dx / d; mz = dz / d; speed = 3.6; }
         if (d <= 1.9 || c.t <= 0) {
           c.state = 'strike';
-          const dur = (c.boss ? 1.05 : 1.25) / diff / (c.rage ? 1.25 : 1);
+          const dur = (c.boss ? 1.05 : 1.25) / diff / (c.rage || c.kind === 'berserk' ? 1.25 : 1);
           if (e === this.target) g.ui.alert();
           h.play('atk' + (1 + ((Math.random() * 3) | 0)), dur, {
             hitAt: 0.4, onHit: () => this.enemyStrike(e),
@@ -164,13 +230,14 @@ export class Combat {
     e.pos.y = damp(e.pos.y, g.world.groundAt(e.pos.x, e.pos.z), 18, dt);
     e.root.rotation.y = e.yaw;
     h.setLocomotion(e.speed > 0.2 ? e.speed : 0, false);
-    h.setLoop(c.state === 'stagger' || c.state === 'harried' ? null : 'guard');
+    h.setLoop(c.state === 'stagger' || c.state === 'harried' ? null : c.state === 'ranged' ? 'aim' : 'guard'); h.param = c.state === 'ranged' ? Math.min(1, (c.aimT || 0) / 2.7) : 0;
     h.update(dt);
   }
 
   update(dt) {
     const g = this.g, p = g.player;
     if (!this.active) return;
+    this.updateShots(g.mode === 'play' ? dt : 0);
     const alive = this.alive();
     if (g.mode !== 'play') { for (const e of alive) { e.h.setLocomotion(0, false); e.h.update(dt); } return; }
     let best = null, bs = Infinity;

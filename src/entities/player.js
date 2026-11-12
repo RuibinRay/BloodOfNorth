@@ -47,12 +47,48 @@ export class Player {
     this.equipped = name; this.aiming = false; this.blocking = false; this.draw = 0;
     this.h.hold('R', name === 'woodsword' ? (this.adult ? 'woodsword_big' : 'woodsword') : name === 'father_axe' ? 'father_axe' : null);
     if (this.adult) this.showBackAxe(name !== 'father_axe' && this.game.inventory.has('father_axe') && !this.game.state.flags.axeHidden);
-    this.h.hold('L', name === 'bow' ? 'bow' : name === 'father_axe' && this.game.inventory.has('brother_axe') ? 'brother_axe' : null);
+    this.h.hold('L', name === 'bow' ? 'bow' : this.offItem(name));
     this.game.audio.play('page');
     this.game.events.emit('equip', name);
     return true;
   }
   isMelee() { return this.equipped === 'woodsword' || this.equipped === 'father_axe'; }
+  /** What rides in the off hand beside the axe: a shield if he owns one, else the Left Brother; weapon3 swaps them. */
+  offItem(name = this.equipped) {
+    const inv = this.game.inventory, fl = this.game.state.flags;
+    if (name !== 'father_axe') return null;
+    const sh = inv.has('shield'), ax = inv.has('brother_axe');
+    return sh && !(ax && fl.offAxe) ? 'shield' : ax ? 'brother_axe' : null;
+  }
+  hasShield() { return this.offItem() === 'shield'; }
+  /** Both Brothers in hand: every blow lands harder. */
+  dual() { return this.offItem() === 'brother_axe'; }
+  swapOffHand() {
+    const g = this.game, inv = g.inventory, fl = g.state.flags;
+    if (!inv.has('shield') || !inv.has('brother_axe')) return;
+    fl.offAxe = !fl.offAxe; g.audio.play('page');
+    if (this.equipped === 'father_axe') this.h.hold('L', this.offItem());
+    g.ui.toast(fl.offAxe ? 'Off hand: the Left Brother. Harder blows, no shield.' : 'Off hand: shield.');
+  }
+  /** A shove with the shield boss: no wound to speak of, but it breaks a man's rhythm and wears his guard. */
+  bash() {
+    const g = this.game, h = this.h;
+    if (h.busy || this.bashT > 0 || this.stamina < 12) return;
+    this.stamina -= 12; this.staminaDelay = 0.7; this.bashT = 1.1;
+    h.play('shove', 0.42, { hitAt: 0.35, onHit: () => g.events.emit('playerBash') });
+    g.audio.play('whoosh', { vol: 0.5 });
+  }
+  /** An arrow arrives. Only a raised shield stops it. */
+  receiveArrow(from, dmg) {
+    const g = this.game;
+    if (this.iframes > 0) return 'dodged';
+    const facing = Math.abs(angleDiff(this.yaw, Math.atan2(from.x - this.pos.x, from.z - this.pos.z))) < 1.2;
+    if (this.blocking && facing && this.hasShield()) { g.audio.play('clack'); this.stamina = Math.max(0, this.stamina - 4); return 'blocked'; }
+    this.health = Math.max(this.mortal ? 0 : 1, this.health - dmg);
+    this.h.play('stagger', 0.35); g.audio.play('hurt'); this.cam.shake = 0.18;
+    if (this.health <= 0) g.events.emit('playerDied');
+    return 'hit';
+  }
   /** The melee weapon slot 1 draws: Ragnar's axe once he has taken it up, otherwise the practice blade. */
   melee() {
     const g = this.game;
@@ -109,9 +145,10 @@ export class Player {
       if (this.blockT < 0.26) {
         g.audio.play('parry'); this.h.play('parry', 0.3);
         this.h.handWorld('R', _v); g.fx.burst('chips', _v.x, _v.y + 0.2, _v.z, 6);
+        this.riposteT = 1.0; g.hitStop = 0.07; // the next blow inside a second cannot be guarded
         return 'parried';
       }
-      this.stamina -= 14; this.staminaDelay = 0.8; g.audio.play('clack');
+      this.stamina -= this.hasShield() ? 7 : 14; this.staminaDelay = 0.8; g.audio.play('clack');
       if (this.stamina <= 0) { this.stamina = 0; this.h.play('stagger', 0.6); return 'hit'; }
       return 'blocked';
     }
@@ -135,6 +172,7 @@ export class Player {
       if (inp.hit('weapon1')) { const m = this.melee(); if (m) this.equip(this.equipped === m ? 'none' : m); }
       if (inp.hit('weapon2')) this.equip(this.equipped === 'bow' ? 'none' : 'bow');
       if (inp.hit('holster')) this.equip('none');
+      if (inp.hit('weapon3')) this.swapOffHand();
       if (inp.hit('interact')) g.tryInteract();
     }
     const wantAimOrBlock = ctrl && inp.held('block');
@@ -145,6 +183,8 @@ export class Player {
 
     // --- actions ---
     this.comboT -= dt; if (this.comboT <= 0) this.combo = 0;
+    this.riposteT = (this.riposteT || 0) - dt; this.bashT = (this.bashT || 0) - dt;
+    if (ctrl && this.blocking && this.hasShield() && inp.hit('attack')) this.bash();
     this.iframes -= dt;
     if (ctrl && inp.hit('dodge') && this.dodgeT <= 0 && this.stamina >= 16 && !this.aiming) {
       this.dodgeT = 0.42; this.iframes = 0.32; this.stamina -= 16; this.staminaDelay = 0.7; this.crouch = false;
@@ -226,7 +266,7 @@ export class Player {
     const cp = Math.cos(cam.pitch), dirX = -Math.sin(cam.yaw) * cp, dirY = Math.sin(cam.pitch), dirZ = -Math.cos(cam.yaw) * cp;
     const rX = -Math.cos(cam.yaw), rZ = Math.sin(cam.yaw), off = 0.55 * cam.aimK;
     const tx = cam.target.x + rX * off, ty = cam.target.y + 0.1 * cam.aimK, tz = cam.target.z + rZ * off;
-    const want = lerp(cam.maxDist, 1.75, cam.aimK);
+    const want = lerp(cam.maxDist + (g.combat.active && !this.riding ? 1.2 : 0), 1.75, cam.aimK); // a fight is framed wider
     let d = want;
     for (let s = 0.5; s <= want; s += 0.3) {
       if (ty + dirY * s < 5.2 && g.world.pointInBox(tx + dirX * s, tz + dirZ * s, 0.3)) { d = Math.max(0.45, s - 0.45); break; }

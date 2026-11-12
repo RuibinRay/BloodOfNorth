@@ -13,7 +13,7 @@ playtests; none are claimed until then.
 | 0.6 | **The sea chart (sandbox)** | The world grows from one valley to 1.3 km of open water: twelve more islands, a sail, a second law-district, discovery by boat or raven, paid passage between harbours, two hostile camps, the reeve's work, and the first omen paid off (the Left Brother on Vængr) | Automated playtest: sail out of the fjord, land on Kinn, every island found, both side quests, the cairn, passage, outlawry carried and not carried across the district line, save and load under sail, regression on all earlier chapters | **Done** |
 | 0.7 | **Ship and crew (sandbox)** | A karve to buy from the reeve of Kinn; six crew to recruit (standing, favours or silver); rowing speed by hands aboard; crew on the benches; a horn to bring them ashore, where each takes on one enemy; the horse carried by ship; the first crew job (the tithe-ship off Utvær); two trader ships on the sea lanes | Automated playtest: buy, refuse and accept recruits, hire rowers, row and sail, horn out and back, the raid won with crew, chest and reward, horse aboard and ashore, save and load aboard, regression on all earlier content | **Done** |
 | 0.8 | **Sea battles (sandbox)** | Hostile ships that patrol, sight, chase and shoot; volleys and shields from the helm; ramming; grappling and deck-to-deck boarding with the crew; hull damage, foundering and repair; two sea quests (the Skerry-Hound, the Iron Tooth); roaming sea-wolves afterwards | Automated playtest: sighting and chase, volleys both ways, shields, two rams to sink, boarding won and cut loose, loot, repair, foundering, save and load with hull damage, regression on all earlier content | **Done** |
-| 0.9 | **Better battles** | Requested direction: improve fighting on land and at sea before any more story acts | — | Next |
+| 0.9 | **Better battles** | Requested direction: improve fighting before any more story acts. Hit-stop, riposte after a parry, finishing blows on a broken guard, a wider fight camera; archers, shield-bearers and berserkers in the island camps and boarding crews; a shield for the player (blocks arrows, cheaper block, shove); crew who can be wounded and recover | Automated playtest: each new mechanic exercised directly, the Utvær raid and a boarding with the new kinds, crew going down and getting up, regression on every chapter and the Act II raid | **Done** |
 | 0.10 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: combat difficulty above all, then riding, rowing and sailing feel, aim, stealth, camera | Three people finish everything built without help | Next |
 | 0.11 | **Real assets in** | Working Higgsfield credentials; key art; GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
 | 0.12 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or keep growing the web build, which now holds a 1.3 × 2 km world at 60 fps in the test window | A written decision | Planned |
@@ -29,9 +29,10 @@ playtests; none are claimed until then.
 2. Play everything by hand, the raid especially, and note every moment that feels unfair, unclear or slow.
 3. Decide where the project lives: a PC that can run UE5, or continue in the browser for another chapter.
 
-## Known gaps in 0.8
+## Known gaps in 0.9
 
-- Crew cannot be hurt, cannot die and never leave. They are help in a fight, not yet people: no wages, no morale, no names of their own beyond the six.
+- Crew can be wounded but cannot die and never leave: no wages, no morale. How fast they go down (about half a minute unaided) is a guess.
+- The player still has one true weapon (Ragnar's axe, with a shield or the Left Brother in the off hand). No sword, spear or thrown weapons; the story chapters do not use the new enemy kinds.
 - Sea battles are one ship against one. No fleets, no wind, no fire arrows, no enemy ramming; hostile ships ignore the rowing boat and do not land.
 - Hostile ships only block the Sea-Raven; traders can still be sailed through.
 - In a boarding fight both decks are flat rectangles: benches and the mast do not block anyone.

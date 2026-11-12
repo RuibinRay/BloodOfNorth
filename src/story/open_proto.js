@@ -13,7 +13,9 @@ import { Fleet } from './fleet.js';
 import { SeaWar } from './seawar.js';
 import { angleDiff } from '../core/util.js';
 
-Object.assign(ITEMS, { silver: { name: 'Hacksilver', desc: "Cut silver, weighed, not counted. It buys arrows, passage, and a dead man's blood-price.", cat: 'Coin' } });
+Object.assign(ITEMS, {
+  shield: { name: 'Linden shield', desc: 'Carried in the off hand beside the axe. Blocking costs less breath, arrows stop on it, and a shove with the boss breaks a man\'s rhythm.', cat: 'Weapon' },
+  silver: { name: 'Hacksilver', desc: "Cut silver, weighed, not counted. It buys arrows, passage, and a dead man's blood-price.", cat: 'Coin' } });
 Object.assign(QUESTS, {
   q_open: {
     title: 'The Whale Road', kind: 'main', xp: 0, next: null,
@@ -29,6 +31,12 @@ Object.assign(QUESTS, {
   },
 });
 const PRICE = { hare: 4, fish: 3, venison: 6, hide: 10 };
+/** The kinds of fighter beyond the ordinary: what they are called and how they are armed (see systems/combat.js). */
+export const KINDS = {
+  archer: { tag: ' archer', opts: { hp: 60, dmg: 9, skill: 0.2, kind: 'archer' } },
+  shield: { tag: ' shield-bearer', opts: { hp: 120, skill: 0.6, kind: 'shield' } },
+  berserk: { tag: ' berserker', opts: { hp: 70, dmg: 13, kind: 'berserk' } },
+};
 const dist = (p, x, z) => Math.hypot(p.x - x, p.z - z);
 
 export class OpenProto {
@@ -173,12 +181,14 @@ export class OpenProto {
       { s: 'Eirik', t: '', choices: [
         { t: `Sell game and hides (${worth} silver)`, to: worth > 0 ? 'sold' : 'none', fx: worth > 0 ? { do: () => { for (const k in PRICE) if (inv.count(k)) inv.remove(k, 999, true); inv.add('silver', worth); if (!this.traded[this.law.id]) { this.traded[this.law.id] = true; this.law.addStanding(5, 'Fair trade'); } } } : null },
         { t: 'Buy ten arrows (8 silver)', to: silver >= 8 ? 'bought' : 'poor', fx: silver >= 8 ? { do: () => { inv.remove('silver', 8, true); inv.add('arrow', 10); } } : null },
+        ...(inv.has('shield') ? [] : [{ t: 'Buy a linden shield (20 silver)', to: silver >= 20 ? 'shield' : 'poor', fx: silver >= 20 ? { do: () => { inv.remove('silver', 20, true); inv.add('shield', 1); g.after(0.5, () => g.ui.hint('With the axe drawn, hold {block} to raise the shield: it stops arrows and blocking costs less. {attack} while blocking shoves with the boss. {weapon3} swaps shield and second axe.')); } } : null }]),
         { t: "Give 20 silver to the hall's winter stores", to: silver >= 20 ? 'gift' : 'poor', fx: silver >= 20 ? { do: () => { inv.remove('silver', 20, true); this.law.addStanding(12, 'A gift to the hall'); } } : null },
         { t: '"Nothing today."', to: 'end' },
       ] },
       { id: 'sold', s: M, t: 'Fair weight. Come again.', to: 'end' },
       { id: 'none', s: M, t: 'You carry nothing I can sell. Hunt, fish, come back.', to: 'end' },
       { id: 'bought', s: M, t: 'Ash shafts, goose feather. They fly true.', to: 'end' },
+      { id: 'shield', s: M, t: 'Linden boards, a rawhide rim and an iron boss. It will turn an arrow, and it hits harder than it looks.', to: 'end' },
       { id: 'gift', s: M, t: 'That will be remembered, {n}. People here remember.', to: 'end' },
       { id: 'poor', s: M, t: 'Your purse says otherwise.' },
     ], n);
@@ -197,7 +207,9 @@ export class OpenProto {
   // ---- fights -----------------------------------------------------------------------------
   fighter(id, name, look, x, z, weapon, opts) {
     const g = this.g, n = g.npcs.get(id) || g.addNPC(id, { name, look });
-    n.revive(); n.visible = true; n.teleport(x, z, 0); n.h.hold('R', weapon); n.h.hold('L', 'shield');
+    const kind = opts && opts.kind;
+    n.revive(); n.visible = true; n.teleport(x, z, 0);
+    n.h.hold('R', kind === 'archer' ? 'smallaxe' : weapon); n.h.hold('L', kind === 'archer' ? 'bow' : kind === 'berserk' ? null : 'shield');
     g.player.mortal = true;
     return g.combat.add(n, opts);
   }
@@ -217,7 +229,7 @@ export class OpenProto {
     let spot = null;
     for (let a = 0; a < 6.28 && !spot; a += 0.5) { const x = p.x + Math.cos(a) * 20, z = p.z + Math.sin(a) * 20; if (heightAt(x, z) > 0.4) spot = [x, z]; }
     if (!spot) return false;
-    this.hunters = [0, 1].map((i) => this.fighter('hunter' + i, 'Bounty-hunter', RAIDER_LOOKS[(i + 2) % 4], spot[0] + i * 1.5, spot[1], i ? 'sword' : 'axe', { hp: 120, dmg: 15 }));
+    this.hunters = [0, 1].map((i) => this.fighter('hunter' + i, i ? 'Bounty-hunter archer' : 'Bounty-hunter', RAIDER_LOOKS[(i + 2) % 4], spot[0] + i * 1.5, spot[1], i ? 'sword' : 'axe', i ? { ...KINDS.archer.opts } : { hp: 120, dmg: 15 }));
     g.ui.subtitle('Bounty-hunter', "There. The white raven. That's the one worth silver.", 4); g.audio.play('shout'); g.audio.setMusic('raid');
     return true;
   }

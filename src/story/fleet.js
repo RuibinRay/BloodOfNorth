@@ -84,7 +84,7 @@ export class Fleet {
     w.addInteractable({ id: 'tithechest', x: -100.5, z: 1470.5, r: 2.4, priority: 1, label: 'Open the tithe-chest', enabled: () => g.mode === 'play' && !m.on && fl.cleared_utvaer && !fl.titheChest,
       use: () => { fl.titheChest = true; g.player.h.play('pickup', 0.8); g.inventory.add('silver', 120); g.ui.toast('A tenth of every catch in the Skerries, in hacksilver.'); g.quests.notify('event', 'titheChest'); } });
     o.sea.camps.push({
-      id: 'utvaer', x: -104, z: 1473, n: 6, name: 'Tithe-taker', key: 'tither', cry: "Ravensson. The jarl said you would come by sea one day. He did not say you would bring fishermen.", fire: g.fx.addFire(-104, heightAt(-104, 1473) + 0.15, 1473, 0.6, { on: false }),
+      id: 'utvaer', x: -104, z: 1473, n: 6, name: 'Tithe-taker', key: 'tither', kinds: [null, 'shield', 'archer', null, 'shield', null], cry: "Ravensson. The jarl said you would come by sea one day. He did not say you would bring fishermen.", fire: g.fx.addFire(-104, heightAt(-104, 1473) + 0.15, 1473, 0.6, { on: false }),
       when: () => g.quests.isActive('s_tithe') && !g.quests.at('s_tithe', 'chest'), who: (i) => (i ? null : { name: 'Styr the Tithe-Reeve', opts: { hp: 230, dmg: 17, skill: 0.65, boss: true, rageLine: 'A tenth! I will have ten tenths of you!' } }),
     });
     // traders working the sea lanes
@@ -96,6 +96,7 @@ export class Fleet {
       this.traders.push({ name: r.name, model, pos: model.position, pts: r.pts, k: (k + 1) % r.pts.length, yaw: 0, speed: 0, stuck: 0, man });
     });
     g.events.on('mounted', (type) => { if (type !== 'horse' && this.ashore) this.recall(true); });
+    g.events.on('allyDown', (n, by) => this.wound(n, by));
     g.events.on('dismounted', (type) => { if (type === 'ship' && this.crew.length && !this.hornTold) { this.hornTold = true; g.ui.hint('{horn} sounds the horn: the crew come ashore and fight beside you. Sound it again to send them back.'); } });
   }
   onSave() {
@@ -166,7 +167,7 @@ export class Fleet {
     let n = g.npcs.get(id);
     if (!n) { const d = HIRED[id]; n = o.person(id, d.name, d.look, s.pos.x, s.pos.z, 0, { law: false }); }
     o.folk = o.folk.filter((f) => f !== n); // crew stand outside the law of the islands
-    n.role = 'crew'; n.keepDry = true; n.baseLoop = null; n.setLoop(null); n.weapon = n.weapon || (this.crew.length % 2 ? 'spear' : 'axe'); n.h.hold('R', null);
+    n.role = 'crew'; n.keepDry = true; n.hpMax = 60; n.hp = 60; n.wounded = false; n.baseLoop = null; n.setLoop(null); n.weapon = n.weapon || (this.crew.length % 2 ? 'spear' : 'axe'); n.h.hold('R', null);
     n.chat = () => n.say(g.fmt(CREW_LINES[(Math.random() * CREW_LINES.length) | 0]), 3.5); n.talk = n.chat;
     this.crew.push(n);
     if (restoring) { this.board(n); return; }
@@ -178,7 +179,15 @@ export class Fleet {
     else if (!HIRED[id] && land && n.dist(land) < 170 && n.dist(land) > 3) n.goTo(land.x, land.z, { run: true, onArrive: () => this.board(n) }); // he walks down to her
     else this.board(n);
   }
-  board(n) { n.aboard = true; n.mode = 'crew'; n.path = []; n.h.hold('R', null); n.talk = n.chat; }
+  board(n) { n.aboard = true; n.mode = 'crew'; n.path = []; n.h.hold('R', null); n.talk = n.chat; n.wounded = false; n.setLoop(null); }
+  /** A crewman goes down: out of this fight, on his feet again once it is over. */
+  wound(n, by) {
+    const g = this.g;
+    if (!this.crew.includes(n) || n.wounded) return;
+    n.wounded = true; n.recT = 0; n.mode = 'idle'; n.setLoop('kneel');
+    if (by && by.cb && by.cb.duel === n) by.cb.duel = null; // the man who put him down turns on someone else
+    g.ui.toast(`${n.name} is down.`); g.audio.play('hurt', { vol: 0.7 });
+  }
   /** The horn: crew ashore to follow and fight, or back aboard. */
   horn() {
     const g = this.g, p = g.player, s = this.ship;
@@ -246,10 +255,17 @@ export class Fleet {
       n.pos.set(s.pos.x + cy * seat[0] + sy * seat[1], s.pos.y + 0.44, s.pos.z - sy * seat[0] + cy * seat[1]);
       n.yaw = dampAngle(n.yaw, s.yaw + (rowing ? Math.PI : 0), 6, dt); n.root.rotation.y = n.yaw; n.speed = 0;
       n.h.setLocomotion(0, false); n.h.setLoop('sit'); n.h.update(dt);
+      n.hp = Math.min(n.hpMax, n.hp + 1.5 * dt); // rest mends them
     });
+    const out = this.crew.filter((n) => !n.aboard);
+    this.status = out.length ? `crew ${out.filter((n) => !n.wounded).length} of ${out.length} standing` : '';
     // ashore: each free hand takes a man off Eirik's back
     if (this.ashore) for (const n of this.crew) {
       if (n.aboard) continue;
+      if (n.wounded) { // down until the fighting stops, then up again, weak
+        if (!g.combat.active && (n.recT += dt) > 4) { n.wounded = false; n.hp = 30; n.setLoop(null); n.follow(p, { dist: 3 + this.crew.indexOf(n) * 0.9 }); g.ui.toast(`${n.name} is on his feet again.`); }
+        continue;
+      }
       const busy = n.mode === 'fight' && n.partner && !n.partner.dead && n.partner.cb && !n.partner.cb.out;
       if ((n.mode === 'fight' && !busy) || n.mode === 'idle') n.follow(p, { dist: 3 + this.crew.indexOf(n) * 0.9 }); // his man is down: back to Eirik's side
       if (busy || !g.combat.active || n.mode === 'goto') continue;

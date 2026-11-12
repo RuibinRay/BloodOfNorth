@@ -7,6 +7,7 @@ import { heightAt } from '../world/terrain.js';
 import { makeShip } from '../world/props.js';
 import { M } from '../world/geo.js';
 import { RAIDER_LOOKS, QUESTS } from '../data/act1.js';
+import { KINDS } from './open_proto.js';
 import { dampAngle, angleDiff, clamp, lerp } from '../core/util.js';
 
 Object.assign(QUESTS, {
@@ -27,11 +28,11 @@ Object.assign(QUESTS, {
 
 const HOUND_WATER = [[-330, 1150], [-300, 1330], [-180, 1400], [-150, 1160]];
 const FOES = {
-  hound: { name: 'the Skerry-Hound', L: 13.5, B: 3.4, D: 1.15, rise: 1.7, mast: 7.2, seed: 31, hull: 90, men: 7, minMen: 4, fast: 12.2, sight: 140, who: 'Sea-wolf', loot: 70, pts: HOUND_WATER,
+  hound: { name: 'the Skerry-Hound', L: 13.5, B: 3.4, D: 1.15, rise: 1.7, mast: 7.2, seed: 31, hull: 90, men: 7, minMen: 4, fast: 12.2, sight: 140, who: 'Sea-wolf', loot: 70, pts: HOUND_WATER, kinds: [null, 'archer', 'berserk'],
     captain: { name: 'Gorm Gull-Feeder', opts: { hp: 200, dmg: 16, skill: 0.6, boss: true, rageLine: 'I have fed the gulls better men than you!' } }, hail: 'A striped sail, and fat with silver. Out oars! Run her down!' },
-  tooth: { name: 'the Iron Tooth', L: 19, B: 4.0, D: 1.4, rise: 2.3, mast: 9, seed: 41, hull: 170, men: 9, minMen: 6, fast: 13.4, sight: 260, who: "Ironwolf's man", loot: 160, pts: [[60, 640], [150, 900], [40, 1120], [-140, 930], [-120, 700]],
+  tooth: { name: 'the Iron Tooth', L: 19, B: 4.0, D: 1.4, rise: 2.3, mast: 9, seed: 41, hull: 170, men: 9, minMen: 6, fast: 13.4, sight: 260, who: "Ironwolf's man", loot: 160, kinds: [null, 'shield', 'archer', 'shield', 'archer'], pts: [[60, 640], [150, 900], [40, 1120], [-140, 930], [-120, 700]],
     captain: { name: 'Hrut Half-Hand', opts: { hp: 300, dmg: 19, skill: 0.7, boss: true, reach: 2.3, rageLine: 'The jarl wants the bird alive. He said nothing about you!' } }, hail: 'There. The white raven, as the jarl said. Lay us alongside!' },
-  wolf: { name: 'a sea-wolf', L: 12.5, B: 3.1, D: 1.05, rise: 1.5, mast: 6.8, seed: 51, hull: 70, men: 5, minMen: 3, fast: 11.8, sight: 130, who: 'Sea-wolf', loot: 35, pts: HOUND_WATER, hail: 'A sail! Ours now. Pull!' },
+  wolf: { name: 'a sea-wolf', L: 12.5, B: 3.1, D: 1.05, rise: 1.5, mast: 6.8, seed: 51, hull: 70, men: 5, minMen: 3, fast: 11.8, sight: 130, who: 'Sea-wolf', loot: 35, pts: HOUND_WATER, kinds: ['archer'], hail: 'A sail! Ours now. Pull!' },
 };
 const WOLF_NAMES = ['the Grey Gull', 'the Bone-Comb', 'the Wet Hen', 'the Crab-Mother'];
 const cap = (s) => s[0].toUpperCase() + s.slice(1);
@@ -201,7 +202,8 @@ export class SeaWar {
     const fy = Math.sin(f.yaw), fc = Math.cos(f.yaw), n = f.men, order = [...Array(n).keys()].sort((a, b) => Math.abs(a - (n - 1) / 2) - Math.abs(b - (n - 1) / 2));
     order.forEach((slot, i) => {
       const c = i === 0 && f.def.captain, v = n > 1 ? (-1 + (2 * slot) / (n - 1)) * (f.hl - 2.4) : 0, u = (slot % 2 ? 0.5 : -0.5) * f.hw;
-      const e = o.fighter(`${f.kind}_${i}`, c ? c.name : f.def.who, RAIDER_LOOKS[(i + (f.kind === 'tooth' ? 0 : 1)) % 4], f.pos.x + fy * v + fc * u, f.pos.z + fc * v - fy * u, ['axe', 'sword', 'spear'][i % 3], c ? { ...c.opts } : { hp: 95 });
+      const k = !c && f.def.kinds && KINDS[f.def.kinds[i]];
+      const e = o.fighter(`${f.kind}_${i}`, c ? c.name : f.def.who + (k ? k.tag : ''), RAIDER_LOOKS[(i + (f.kind === 'tooth' ? 0 : 1)) % 4], f.pos.x + fy * v + fc * u, f.pos.z + fc * v - fy * u, ['axe', 'sword', 'spear'][i % 3], c ? { ...c.opts } : k ? { ...k.opts } : { hp: 95 });
       e.cb.keepDry = true; L.men.push(e);
     });
     L.phase = 'fight';
@@ -272,7 +274,7 @@ export class SeaWar {
     // the crew patch what they can when nothing is after her; a ferryman does the rest
     const hunted = this.foes.some((f) => f.state === 'chase' || f.state === 'lashed');
     if (fleet.owned && !hunted && s.hull < 50 && Math.abs(s.speed) < 0.3 && (this.patchT += dt) > 4) { this.patchT = 0; s.hull = Math.min(50, s.hull + 1); }
-    o.law.extra = fleet.owned && (helm || s.hull < 100 || this.lash) ? `Sea-Raven · hull ${Math.max(0, Math.ceil(s.hull))}` : '';
+    o.law.extra = [fleet.owned && (helm || s.hull < 100 || this.lash) ? `Sea-Raven · hull ${Math.max(0, Math.ceil(s.hull))}` : '', fleet.status || ''].filter(Boolean).join(' · ');
     if (fleet.owned && s.hull <= 0 && !this.lost) { this.lost = true; g.ui.subtitle('Eirik', 'She is opening up. She is going down!', 3); o.fail(); }
     if (play && helm && g.input.hit('attack')) this.volley();
 
