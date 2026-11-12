@@ -2,26 +2,29 @@
 
 A third-person Viking action RPG that follows the owner's story, *The Rise of the Raven King*
 ([docs/story](docs/story/THE_RISE_OF_THE_RAVEN_KING.md): seven acts and an epilogue). This repository holds
-**slice 0.16**: Act I (Eirik's childhood), Act II (nineteen: Bjornstead, the raid, the walls, Kaupang and the
-Sea-Raven), Act III (twenty: Jarnøy and the Battle of Iron Shore) and Act IV (twenty-two: the treasure voyage,
-Wessex, six islands burning, Hedeby Sound), each as the story tells it, and an open world that runs from the home
-valley across the home waters to five great islands of the story built at full scale.
+**slice 0.17**: Act I (Eirik's childhood), Act II (nineteen: Bjornstead, the raid, the walls, Kaupang and the
+Sea-Raven), Act III (twenty: Jarnøy and the Battle of Iron Shore), Act IV (twenty-two: the treasure voyage,
+Wessex, six islands burning, Hedeby Sound) and Act V (twenty-four: the hunger winter, the tannery yard, the ring,
+Vængr), each as the story tells it, and an open world that runs from the home valley across the home waters to
+five great islands of the story built at full scale.
 
-**New in 0.16.** Act IV, "Blood Across the Sea", all eight chapters in the story's order and words · two quiet
-years at Ravenhold · life aboard the Sea-Raven beside the treasure ship Fafnir's Bed · three longships out of
-the fog, and Rurik Shieldsplitter on the deck · Wessex: a port inside its earth wall, a stone church, King
-Alfred's reeve, a child with a fever, the harbor wall · the sealed chest and the Iron Circle · Kinn, Fedje,
-Skorpa, Gulen and Solvik after the burning · the council of six kings · the third fire at Hedeby Sound, Ari, the
-beach and Torvald · Ravenhold's harbor in ashes, and the old birch. Two new stretches of coast are on the map:
-Wessex and Hedeby Sound.
-Earlier: [0.15](docs/ROADMAP.md) built Act III; 0.14 built Act II, Bjornstead and Kaupang; 0.13 stored the story
-and drew the map.
+**New in 0.17.** Act V, "The Broken Raven", all seven chapters in the story's order and words · Hauk at the
+assembly, and "I'll carry it" · a tower, a harbor and a ship, and what each one cost · the winter of hunger:
+the grain count, Ingrid's rules, Hrefna and the blot, a whale the size of a longship, the first law · the white
+raven taken: the black raven's eyes over Håkon's hunting camp, the tannery pits, eleven prisoners, the cage ·
+the ring inside the collar, and Old Thrand on Gannet Rock · Vængr: Svanhild, the fight in the forest
+settlement, Skarde Bear-Maw and the lie · the ribbon, and Torvald's whole confession · one night when everyone
+in Ravenhold is happy, and a boat from Myrholm. One new stretch of coast is on the map: the hunting camp.
+Also fixed: an autosave made as the story moved between places (the end of a voyage, coming home from Hedeby)
+could reload Eirik where the last chapter ended.
+Earlier: [0.16](docs/ROADMAP.md) built Act IV; 0.15 built Act III; 0.14 built Act II, Bjornstead and Kaupang;
+0.13 stored the story and drew the map.
 
-> **What this is, plainly.** Acts I to IV of seven, and a large sandbox, running in a browser. Of the story's 89
-> missions, 44 are built, 5 partly, 8 as the boss fight alone, and 32 are still to build. It is not the 40-hour
+> **What this is, plainly.** Acts I to V of seven, and a large sandbox, running in a browser. Of the story's 89
+> missions, 55 are built, 5 partly, 7 as the boss fight alone, and 22 are still to build. It is not the 40-hour
 > game, it is not Unreal Engine 5, and it is not photorealistic: every character, prop and sound is generated in
-> code as a placeholder. Everything has been checked by scripted playtest only: no person has played Acts III
-> or IV through. See [Status](#status) for exactly what exists.
+> code as a placeholder. Everything has been checked by scripted playtest only: no person has played Acts III,
+> IV or V through. See [Status](#status) for exactly what exists.
 
 ## Run it
 
@@ -145,8 +148,23 @@ All keyboard and mouse bindings can be changed in Settings.
 7. *The Betrayal at Hedeby Sound* — the letter and the ribbon; the third fire; the trap; Ari; the beach.
 8. *Driftwood* — home.
 
-The main menu has **Start at an Act**, which begins Act I, II, III or IV at its opening with the earlier acts
-taken as played.
+**Act V — "The Broken Raven."** Eirik is twenty-four. Seven chapters, in the story's order and words.
+
+1. *Ashes Again* — the assembly at the Thing stones; then build the watchtower, the harbor and a ship, and hear
+   what each one cost.
+2. *The Winter of Hunger* — count the grain, back Ingrid's rules, dig a latrine away from the well, burn the
+   straw; Hrefna and the blot; Leif's emergency frog; a whale found from the air and cut up on the shore; the
+   whale law; a stranger's debt, and the first law of Ravenhold.
+3. *The Raven Taken* — an arrow in the gate; the black raven's eyes, which are hard to read; in through the
+   tannery yard; up to the chin in the pits while the dogs go by; eleven prisoners and a cage; out by dawn.
+4. *The Ring of Halfdan* — what Brokk finds inside Raven-Feeder's collar; Old Thrand on Gannet Rock.
+5. *The Wing Isle* — Svanhild and Jarl Jorund; the fight in the forest settlement; Skarde Bear-Maw on the
+   holmgang ground, the lie, the mud, and waiting; the voyage home.
+6. *The Letter That Was Never Written* — Astrid's prisoner; the cell; Signe.
+7. *The Feast of Survivors* — Brokk's sea serpent, the archery contest, the harbor wall, and a boat near midnight.
+
+The main menu has **Start at an Act**, which begins Act I, II, III, IV or V at its opening with the earlier
+acts taken as played.
 
 **Open-world sandbox — "The Whale Road" (prototype).** Not a story chapter: a place to try the systems.
 
@@ -250,10 +268,10 @@ the [story bible](docs/STORY_BIBLE.md).
 
 | | |
 |---|---|
-| **Playable and tested** | All of Act I (chapters 1–3), Act II (nine chapters), Act III (eight chapters) and Act IV (eight chapters) start to finish, by scripted playtest; fights on a ship's deck; a duel with scripted turns; a horse to ride in the story; a battle with allies who hold attackers along a line; four companions who join in their scenes; start-at-an-act; a village that burns, is walled and gains a ship as the story goes; timed work, a wrestling and shield-wall game, a dive with breath; melee combat against enemies that guard, take turns and flank, with a two-phase captain; an ally who fights; the black raven harrying a target; raven companions and Raven's Eye; five hidden omens; hunger and warmth, shelter, cooking, a wolf encounter with two outcomes, thin-ice crossing; movement, camera, stamina; dialogue with choices; quests, journal, tracker, map with waypoint; woodcutting, archery, tracking, fishing, fire-making; sparring; stealth with raider sight and hearing; cold survival; day/night, snow, fire; in-engine cutscenes; save/load with autosave; settings, key rebinding, gamepad |
+| **Playable and tested** | All of Act I (chapters 1–3), Act II (nine chapters), Act III (eight chapters), Act IV (eight chapters) and Act V (seven chapters) start to finish, by scripted playtest; a night infiltration with patrols, dogs and hiding places; seeing through the black raven; a duel with a scripted fall and recovery; fights on a ship's deck; a duel with scripted turns; a horse to ride in the story; a battle with allies who hold attackers along a line; four companions who join in their scenes; start-at-an-act; a village that burns, is walled and gains a ship as the story goes; timed work, a wrestling and shield-wall game, a dive with breath; melee combat against enemies that guard, take turns and flank, with a two-phase captain; an ally who fights; the black raven harrying a target; raven companions and Raven's Eye; five hidden omens; hunger and warmth, shelter, cooking, a wolf encounter with two outcomes, thin-ice crossing; movement, camera, stamina; dialogue with choices; quests, journal, tracker, map with waypoint; woodcutting, archery, tracking, fishing, fire-making; sparring; stealth with raider sight and hearing; cold survival; day/night, snow, fire; in-engine cutscenes; save/load with autosave; settings, key rebinding, gamepad |
 | **Prototype** | The open-world sandbox (two law-districts, fourteen islands, one horse, a rowing boat and a crewed ship, sea battles with volleys, ramming and boarding, paid passage, one secret weapon, one crew raid); procedural characters and animation; procedural audio and score; villager routines; wildlife AI; combat balance and the new enemy kinds (tuned against scripted players only) |
 | **Blocked** | Higgsfield asset generation — the API needs a key ID *and* a secret; only one value was supplied. See [docs/HIGGSFIELD.md](docs/HIGGSFIELD.md) |
-| **Planned** | Everything else in the brief: Acts V through VII and the epilogue; the rest of the sea map (about forty islands of which fourteen exist as a sandbox; a longship of your own, fleets and crew who can be hurt; wind and weather at sea; more districts — designed in [docs/OPEN_WORLD.md](docs/OPEN_WORLD.md)); adult combat and nine weapons, skill trees, companions, sailing, settlement, factions, 50 side missions, UE5 port. See [docs/ROADMAP.md](docs/ROADMAP.md) |
+| **Planned** | Everything else in the brief: Acts VI and VII and the epilogue; the rest of the sea map (about forty islands of which fourteen exist as a sandbox; a longship of your own, fleets and crew who can be hurt; wind and weather at sea; more districts — designed in [docs/OPEN_WORLD.md](docs/OPEN_WORLD.md)); adult combat and nine weapons, skill trees, companions, sailing, settlement, factions, 50 side missions, UE5 port. See [docs/ROADMAP.md](docs/ROADMAP.md) |
 
 How it was tested: an automated playtest drives the real game loop through every quest step (see
 `debug` in [src/main.js](src/main.js)). It was verified on an Apple M2 at 60 fps. It has **not** been
@@ -267,7 +285,7 @@ src/world/     terrain, sky and weather, village props, vegetation, effects, col
 src/entities/  character rig and animation, player, NPCs and raiders, wildlife and arrows
 src/systems/   quests, dialogue, inventory, cutscene camera, activities
 src/data/      Act I items, cast, quests, dialogue (pure data)
-src/story/     director scripts: Act I (one per chapter), Acts II to IV (act2*.js, act3*.js, act4*.js), the sandbox, the champions
+src/story/     director scripts: Act I (one per chapter), Acts II to V (act2*.js to act5*.js), the sandbox, the champions
 src/ui/        HUD, menus, panels
 data/          campaign-wide design data (missions, world, combat) — engine-agnostic JSON
 assets/        asset registry and generated assets

@@ -14,6 +14,7 @@ import { goatModel, pigModel, cowModel } from '../entities/beasts.js';
 import { Woodcutting } from '../systems/activities.js';
 import { Knack, Bout } from '../systems/activities2.js';
 import { dampAngle } from '../core/util.js';
+import { mainAt } from '../world/realm.js';
 import { A2Raid } from './act2_raid.js';
 import { A2Winter } from './act2_winter.js';
 import { A2Sea } from './act2_sea.js';
@@ -25,8 +26,11 @@ import { A4Voyage } from './act4_voyage.js';
 import { A4Wessex } from './act4_wessex.js';
 import { A4Six } from './act4_six.js';
 import { A4Sound } from './act4_sound.js';
+import { A5Home } from './act5_home.js';
+import { A5Camp } from './act5_camp.js';
+import { A5Wing } from './act5_wing.js';
 
-const SUMMER = { snow: 0, fog: 0, overcast: 0.06, wind: 0.9 }, MIST = { snow: 0, fog: 0.05, overcast: 0.3, wind: 0.8 }, DUSK = { snow: 0, fog: 0.03, overcast: 0.4, wind: 1.3 }, GREY = { snow: 0, fog: 0.02, overcast: 0.55, wind: 1.2 }, FROST = { snow: 0.08, fog: 0.03, overcast: 0.5, wind: 1.2 }, SMOKE = { snow: 0, fog: 0.06, overcast: 0.6, wind: 1.3 }, FOG = { snow: 0, fog: 0.12, overcast: 0.7, wind: 0.6 };
+const SUMMER = { snow: 0, fog: 0, overcast: 0.06, wind: 0.9 }, MIST = { snow: 0, fog: 0.05, overcast: 0.3, wind: 0.8 }, DUSK = { snow: 0, fog: 0.03, overcast: 0.4, wind: 1.3 }, GREY = { snow: 0, fog: 0.02, overcast: 0.55, wind: 1.2 }, FROST = { snow: 0.08, fog: 0.03, overcast: 0.5, wind: 1.2 }, SMOKE = { snow: 0, fog: 0.06, overcast: 0.6, wind: 1.3 }, FOG = { snow: 0, fog: 0.12, overcast: 0.7, wind: 0.6 }, WINTER = { snow: 0.45, fog: 0.04, overcast: 0.7, wind: 1.3 };
 /** The times of day the act moves through: hour, weather, music, and whether the feast is laid. */
 export const PHASES = {
   morning: { time: 8.6, w: SUMMER, day: true }, hunt: { time: 11.2, w: SUMMER, day: true }, thing: { time: 13.4, w: SUMMER }, feast: { time: 16.72, w: SUMMER, feast: true }, dawn: { time: 7.12, w: MIST, day: true },
@@ -48,6 +52,12 @@ export const PHASES = {
   wday: { time: 11, w: SUMMER, at: 'wessex' }, wherb: { time: 14.2, w: SUMMER, at: 'wessex' }, wmorn: { time: 7.4, w: MIST, at: 'wessex' }, wdusk: { time: 17.8, w: DUSK, at: 'wessex' },
   kinn: { time: 12, w: SMOKE, at: 'six', music: 'raid' }, fedje: { time: 14, w: GREY, at: 'six', music: 'sorrow' }, skorpa: { time: 17, w: DUSK, at: 'six', music: 'raid' }, gulen: { time: 10, w: GREY, at: 'six', music: 'sorrow' },
   solvik: { time: 15, w: SMOKE, at: 'six', music: 'sorrow' }, solviknight: { time: 22.4, w: GREY, at: 'six', music: 'sorrow' }, solvikmorn: { time: 7.6, w: MIST, at: 'six' },
+  // Act V: Ravenhold through a hard year; Håkon's hunting camp; Gannet Rock; Vængr
+  a5thing: { time: 13.4, w: GREY, music: 'sorrow' }, a5fall: { time: 11.5, w: GREY, day: true }, a5winter: { time: 12.2, w: WINTER, snow: 0.7, day: true, music: 'sorrow' }, a5blot: { time: 16.5, w: WINTER, snow: 0.7, feast: true },
+  a5whale: { time: 11, w: FROST, snow: 0.7, music: 'day' }, a5vote: { time: 13.2, w: WINTER, snow: 0.7, music: 'sorrow' }, a5spring: { time: 8.4, w: MIST, day: true, music: 'sorrow' }, a5stink: { time: 9.6, w: SUMMER, day: true },
+  a5forge: { time: 14, w: SUMMER, day: true }, a5summer: { time: 11, w: SUMMER, day: true }, a5cellnight: { time: 22, w: GREY, music: 'sorrow' }, a5feast: { time: 18.2, w: SUMMER, feast: true }, a5mid: { time: 23.3, w: SUMMER, feast: true, music: 'sorrow' },
+  hnight: { time: 23.6, w: GREY, at: 'hunt', music: 'sorrow' }, hdawn: { time: 6.5, w: MIST, at: 'hunt', music: 'sorrow' },
+  gday: { time: 12, w: GREY, at: 'isle5' }, vday: { time: 11, w: SUMMER, at: 'isle5' }, vfight: { time: 13, w: SMOKE, at: 'isle5', music: 'raid' }, vholm: { time: 15, w: SMOKE, at: 'isle5', music: 'raid' }, a5deck: { time: 12, w: SUMMER, at: 'isle5' },
   hsail: { time: 10.2, w: MIST, at: 'hedeby' }, hbattle: { time: 11.4, w: SMOKE, at: 'hedeby', music: 'raid' }, hbeach: { time: 21, w: GREY, at: 'hedeby', music: 'sorrow' },
 };
 /** Where the village stands on an ordinary day: [dx, dz, facing (a yaw, or a point to face), loop, held]. */
@@ -66,8 +76,9 @@ export class Act2 {
     this.raid = new A2Raid(game, this); this.winter = new A2Winter(game, this); this.sea = new A2Sea(game, this);
     this.home3 = new A3Home(game, this); this.isle = new A3Isle(game, this); this.battle = new A3Battle(game, this);
     this.home4 = new A4Home(game, this); this.voy = new A4Voyage(game, this); this.wx = new A4Wessex(game, this); this.six = new A4Six(game, this); this.snd = new A4Sound(game, this);
-    this.parts = [this.raid, this.winter, this.sea, this.home3, this.isle, this.battle, this.home4, this.voy, this.wx, this.six, this.snd]; // in the order they are built
-    this.talkers = [this.snd, this.six, this.wx, this.voy, this.home4, this.home3, this.isle, this.battle, this.raid, this.winter, this.sea]; // the later act answers first
+    this.home5 = new A5Home(game, this); this.cmp = new A5Camp(game, this); this.wing = new A5Wing(game, this);
+    this.parts = [this.raid, this.winter, this.sea, this.home3, this.isle, this.battle, this.home4, this.voy, this.wx, this.six, this.snd, this.home5, this.cmp, this.wing]; // in the order they are built
+    this.talkers = [this.wing, this.cmp, this.home5, this.snd, this.six, this.wx, this.voy, this.home4, this.home3, this.isle, this.battle, this.raid, this.winter, this.sea]; // the later act answers first
     this.steps = {};
     for (const [k, f] of Object.entries(this.own)) this.steps[k] = f.bind(this);
     for (const part of this.parts) for (const [k, f] of Object.entries(part.steps)) this.steps[k] = f.bind(part);
@@ -171,7 +182,10 @@ export class Act2 {
     return { raided: done('q_axe') || step('q_axe') >= 9, armed: done('q_axe') || step('q_axe') >= 2, walls: done('q_walls') || w >= 9 ? 4 : w >= 8 ? 3 : w >= 7 ? 2 : w >= 6 ? 1 : 0,
       seaRaven: done('q_captain'), peddlers: pd >= 0 && pd <= 6, netUp: pd === 5 || pd === 6, frying: pd >= 7 || done('q_peddlers'),
       ravenhold: !!sq.q_fifty, forge2: done('q_iron') || step('q_iron') >= 3,
-      a4: !!sq.q_gold, refugees: done('q_six') || step('q_six') >= 4, fleet: !!sq.q_council && !sq.q_drift, burnt: !!sq.q_drift };
+      a4: !!sq.q_gold, refugees: done('q_six') || step('q_six') >= 4, fleet: (!!sq.q_council && !sq.q_drift) || !!sq.q_feast, burnt: !!sq.q_drift && !(done('q_carry') || step('q_carry') >= 3),
+      a5: !!sq.q_carry, tower2: done('q_carry') || step('q_carry') >= 2, slip: done('q_carry') && !sq.q_feast, sick: step('q_hunger') >= 1, privy2: step('q_hunger') >= 0 && step('q_hunger') <= 2, bedding: step('q_hunger') >= 0 && step('q_hunger') <= 3,
+      whale: (step('q_hunger') === 7 || step('q_hunger') === 8 || (step('q_hunger') === 9 && !sq.q_hunger.count)), whaleCut: (step('q_hunger') === 9 && sq.q_hunger.count > 0) || step('q_hunger') >= 10,
+      feast5: !!sq.q_feast, mboat: step('q_feast') >= 3 || done('q_feast'), taken: !!sq.q_taken && !done('q_taken') && step('q_taken') < 10, sot: step('q_taken') >= 3 && step('q_taken') < 10 };
   }
   applyWorld() {
     const fl = this.prog(), S = this.W.stages, K = this.g.world.main.kaupang.stages, walls = fl.walls;
@@ -180,6 +194,9 @@ export class Act2 {
     S.ditch.set(walls >= 1); S.trench.set(walls >= 2); S.privy.set(walls < 2); S.wall.set(walls >= 3); S.tower.set(walls >= 4);
     S.searaven.set(!!fl.seaRaven); K.ship.set(!fl.seaRaven); S.raven.set(fl.ravenhold); S.forge2.set(fl.forge2);
     S.camp.set(!!fl.peddlers); S.net.set(!!fl.netUp);
+    S.tower2.set(fl.tower2); S.slip.set(fl.slip); S.sick.set(fl.sick); S.privy2.set(fl.privy2); S.bedding.set(fl.bedding); S.whale.set(fl.whale); S.whaleCut.set(fl.whaleCut);
+    S.cell.set(fl.a5); S.hwall.set(fl.a5); S.butts.set(fl.feast5); S.hnef.set(fl.feast5); S.mboat.set(fl.mboat);
+    this.g.ravens.taken = fl.taken; this.g.ravens.sot = fl.sot; // the white raven is gone from early spring until the cage in the mews is opened
     S.market.set(fl.a4); S.heal.set(fl.a4); S.ware.set(fl.a4 && !fl.burnt); S.refugees.set(fl.refugees); S.fleet.set(fl.fleet); S.burnt.set(fl.burnt); S.crowns.set(fl.a4);
     if (fl.frying && !this.pan) { const [x, z] = this.B(-2.6, 117.9), m = new THREE.Mesh(tint(at(cyl(0.17, 0.17, 0.03, 12), 0, 0, 0, Math.PI / 2, 0, 0), 0x1c1c20, 0.1, 2), M.vcPlain); m.position.set(x, this.g.world.groundAt(x, z) + 1.5, z); this.g.scene.add(m); this.pan = m; // Skull-Ringer, on its peg by the door
       this.g.world.addInteractable({ id: 'a2pan', x, z, r: 1.6, label: 'Skull-Ringer', use: () => this.sub('The village laughs about the frying pan for years. Freydis keeps it on a peg by the door and calls it Skull-Ringer.', 6) }); }
@@ -205,7 +222,7 @@ export class Act2 {
     for (const id of this.folk) this.npc(id).visible = false;
     for (const id of ['bjorn', 'signe', 'freydis']) this.npc(id).visible = false;
     for (const part of this.parts) part.clear(name);
-    const host = { kaupang: this.sea, jarnoy: this.isle, sea: this.voy, wessex: this.wx, six: this.six, hedeby: this.snd }[ph.at];
+    const host = { kaupang: this.sea, jarnoy: this.isle, sea: this.voy, wessex: this.wx, six: this.six, hedeby: this.snd, hunt: this.cmp, isle5: this.wing }[ph.at];
     if (host) return host.dress(name, r);
     this.dress(name, r);
   }
@@ -428,6 +445,22 @@ export class Act2 {
   }
   /** What the village is called: Bjornstead, until the sailors name it for its ravens. */
   get townName() { return this.st.quests.q_fifty ? 'Ravenhold' : 'Bjornstead'; }
+  /** Being seen, and being hidden (Act V's hunting camp). */
+  hideFactor() { return this.cmp.hidden() ? 0 : 1; }
+  /** A load of the autosave made as the story changed place: he still stands where the last chapter ended (another shore, a deck that is gone), so he is brought home, where this one begins. */
+  strayHome() {
+    const p = this.g.player, ph = PHASES[this.phase];
+    if (!ph || ph.at) return; // the chapters away from home place him themselves
+    const k = mainAt(p.pos.x, p.pos.z);
+    if (!k || k.id !== 'bjornstead') p.teleport(...this.B(-1, 142), Math.PI);
+  }
+  onCaught() { this.act.stealthActive = false; this.g.ui.setDetection(-1); this.fail('Caught', "Håkon's guards have him. Stay low, keep out of their sight, and be in a pit when the dogs come."); }
+  playEnding5() {
+    const g = this.g, st = this.st;
+    if (this.ending) return;
+    this.ending = true; g.player.frozen = true; g.ravens.exitEye();
+    g.ui.fade(true, 2.4).then(() => g.ui.card('The Broken Raven', 'End of Act Five', 4.5)).then(() => { st.stage = 'complete'; g.autosave(); this.act.showChapterEnd(); });
+  }
   playEnding4() {
     const g = this.g, st = this.st;
     if (this.ending) return;

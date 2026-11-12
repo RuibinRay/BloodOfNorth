@@ -1,7 +1,7 @@
 {
  "about": "Mission breakdown of the owner's story (docs/story/THE_RISE_OF_THE_RAVEN_KING.md), chapter by chapter. status: built (playable; tested by script) | partial (something of it is playable; read the note) | fight_only (the champion fight is playable in its place, without the chapter round it) | planned. Minutes are design targets, not measured playtime: nothing here has been timed with a person playing.",
  "source": "docs/story/THE_RISE_OF_THE_RAVEN_KING.md",
- "updated": "2026-11-12 (0.16)",
+ "updated": "2026-11-12 (0.17)",
  "acts": [
   {
    "act": 1,
@@ -702,7 +702,8 @@
        "type": "choice",
        "target_minutes": 10,
        "summary": "Hauk; choosing who is disappointed.",
-       "status": "planned"
+       "status": "built",
+       "note": "The assembly at the Thing stones (Hauk, then Eirik's answer), then a tower, the harbor and a ship on the slip, each a timed task with the story's cost told after it. The story lists the three costs without a choice, so Eirik does all three; there is nothing to weigh."
       }
      ]
     },
@@ -716,7 +717,8 @@
        "type": "choice",
        "target_minutes": 10,
        "summary": "The flux; the blot; Hrefna and Ingrid.",
-       "status": "planned"
+       "status": "built",
+       "note": "The snowed-in town: the grain count, Ingrid's rules, a latrine dug away from the well, straw burned, the quarrel with Hrefna, the blot at dusk. The quarrel and the blot are scenes; the sacrifice is not shown. Leif's 'emergency frog' is here too."
       },
       {
        "id": "a5c2m2",
@@ -724,7 +726,8 @@
        "type": "activity",
        "target_minutes": 10,
        "summary": "The whale; whale law.",
-       "status": "planned"
+       "status": "built",
+       "note": "Found through the white raven's eyes on the west shore; three timed cuts with the whole town round her; Hallvard recites the whale law. The whale is one large shape with an opened flank."
       },
       {
        "id": "a5c2m3",
@@ -732,7 +735,8 @@
        "type": "choice",
        "target_minutes": 6,
        "summary": "No one who comes for shelter is made a thrall for debt.",
-       "status": "planned"
+       "status": "built",
+       "note": "The creditor, the debtor and his daughter before the hall; Eirik pays, and the vote is told. A scene with one conversation."
       }
      ]
     },
@@ -746,7 +750,8 @@
        "type": "stealth",
        "target_minutes": 25,
        "summary": "Ottar's camp; Sót's eyes; the pits; eleven prisoners; the cage.",
-       "status": "planned"
+       "status": "built",
+       "note": "The arrow in the gate; Astrid; Sót's eyes over the camp (a dark filter and three marks to find); in through the tannery yard; into the pits when the dogs come; the pen and the cage; a fight out through the yard with Leif and Astrid; dawn, the supply ships sailing, and the sea. The story's thirty guards are three who walk, three at the fire and five at the end. Stealth is light: one meter, and the pits. The eleven follow a set path. The ships cannot be burned, as the story has it."
       }
      ]
     },
@@ -760,8 +765,8 @@
        "type": "story",
        "target_minutes": 6,
        "summary": "The oath-ring; Bjorn knew.",
-       "status": "planned",
-       "note": "Raven-Feeder's model has the collar."
+       "status": "built",
+       "note": "Brokk at the forge with the collar open; the ring is carried from then on. 'Bjorn knew' is told in the same scene."
       },
       {
        "id": "a5c4m2",
@@ -769,8 +774,8 @@
        "type": "voyage",
        "target_minutes": 12,
        "summary": "Old Thrand tells him everything.",
-       "status": "planned",
-       "note": "Gannet Rock and Old Thrand are in the sandbox, without this scene."
+       "status": "built",
+       "note": "A card for the voyage, then the turf hut near the top, the puffin, and Thrand's whole account sitting on the floor. Gannet Rock is still the small sandbox island."
       }
      ]
     },
@@ -784,7 +789,8 @@
        "type": "battle",
        "target_minutes": 15,
        "summary": "The forest settlement; Svanhild.",
-       "status": "planned"
+       "status": "built",
+       "note": "Svanhild on the pier, Jarl Jorund at his hall, the march to the third village, and a fight among log houses with ten of Ravenhold, Leif and Astrid's arrows; Svanhild arrives part-way. A dozen berserkers stand for sixty and three guards for her thirty. Vængr is still the small sandbox island, so the march is short."
       },
       {
        "id": "a5c5m2",
@@ -792,8 +798,8 @@
        "type": "boss",
        "target_minutes": 10,
        "summary": "Skarde Bear-Maw; the lie; wait.",
-       "status": "fight_only",
-       "note": "The fight is built on the hazel square on Vængr, with the lie and the tiring."
+       "status": "built",
+       "note": "A real fight on the hazel square. At four-fifths of his health Skarde says the lie; Eirik loses his temper, is thrown in the mud, gets up and waits (about half a minute, not played). Then it can be finished, or lost and retried. Jorund's oath and the voyage home with Svanhild follow."
       }
      ]
     },
@@ -807,7 +813,8 @@
        "type": "story",
        "target_minutes": 8,
        "summary": "The forgery; Torvald's whole confession.",
-       "status": "planned"
+       "status": "built",
+       "note": "Astrid's prisoner in the hills, then the cell and Torvald's whole confession in the story's words, and Signe at night. The cell is a log cage beside the wall, because buildings cannot be entered. The judgment is left for Act VI, as in the story."
       }
      ]
     },
@@ -821,7 +828,8 @@
        "type": "activity",
        "target_minutes": 12,
        "summary": "The archery contest; the thrown sword; the harbour wall; the boat from Myrholm.",
-       "status": "planned"
+       "status": "built",
+       "note": "Brokk's sea serpent; the contest at the butts and the kiss at the harbor wall are cutscenes, not played; near midnight, the boat from Myrholm. Ends the act."
       }
      ]
     }
@@ -1637,10 +1645,10 @@
   "missions": 89,
   "target_minutes": 1015,
   "by_status": {
-   "built": 44,
+   "built": 55,
    "partial": 5,
-   "fight_only": 8,
-   "planned": 32
+   "fight_only": 7,
+   "planned": 22
   }
  }
 }

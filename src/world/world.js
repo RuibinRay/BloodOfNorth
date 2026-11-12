@@ -10,6 +10,7 @@ import { buildRealmProps } from './realm_props.js';
 import { buildMainland } from './mainland.js';
 import { buildJarnoyTown } from './jarnoy_town.js';
 import { buildAct4Places } from './act4_places.js';
+import { buildAct5Places } from './act5_places.js';
 import { mainAt } from './realm.js';
 
 const CELL = 8;
@@ -281,7 +282,8 @@ export class World {
     // the mainland coast: Bjornstead and Kaupang (see mainland.js); what the story changes there is kept in this.main
     this.main = buildMainland(ctx, this, scene);
     this.main.jarnoy = buildJarnoyTown(ctx, this, scene);
-    Object.assign(this.main, buildAct4Places(ctx, this, scene)); // Wessex, Hedeby Sound, the ships at sea, the burned islands
+    Object.assign(this.main, buildAct4Places(ctx, this, scene));
+    Object.assign(this.main, buildAct5Places(ctx, this, scene)); // Håkon's hunting camp, Gannet Rock's hut, Vængr's settlement // Wessex, Hedeby Sound, the ships at sea, the burned islands
 
     const stat = ctx.b.build();
     scene.add(stat);

@@ -20,7 +20,7 @@ const FLEE_PATH = [[-23, 66], [-21, 56], [-21, 50], [-10, 43], [-7, 30], [-8, 12
 const CAMP_SEAT = [POI.camp.x - 1.75, POI.camp.z + 1.0];
 const DUEL = { ragnar: [-15, 70], hakon: [-10.5, 70.4], g1: [-6, 73.2], g2: [-6.5, 67.4] };
 const GATE_PATROL = [[[-13, -9], [-19.5, -13.5]], [[-9, 2], [-14, -7]]];
-const QUESTS_MAIN = ['q_gold', 'q_water', 'q_court', 'q_circle', 'q_six', 'q_council', 'q_sound', 'q_drift', 'q_isle', 'q_fifty', 'q_healer', 'q_shore', 'q_long', 'q_ulf', 'q_iron', 'q_price', 'q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_farm', 'q_smoke', 'q_axe', 'q_wolf', 'q_peddlers', 'q_walls', 'q_captain', 'q_oath', 'q_open', 'q_sea'];
+const QUESTS_MAIN = ['q_carry', 'q_hunger', 'q_taken', 'q_ring', 'q_wing', 'q_ribbon', 'q_feast', 'q_gold', 'q_water', 'q_court', 'q_circle', 'q_six', 'q_council', 'q_sound', 'q_drift', 'q_isle', 'q_fifty', 'q_healer', 'q_shore', 'q_long', 'q_ulf', 'q_iron', 'q_price', 'q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_farm', 'q_smoke', 'q_axe', 'q_wolf', 'q_peddlers', 'q_walls', 'q_captain', 'q_oath', 'q_open', 'q_sea'];
 const WEATHER = {
   day: { snow: 0, fog: 0, overcast: 0.08, wind: 1 },
   dusk: { snow: 0.12, fog: 0.02, overcast: 0.3, wind: 1.1 },
@@ -39,7 +39,7 @@ export class Act1 {
     this.a2 = new Act2(game, this);
     this.open = new OpenProto(game, this);
   }
-  hideFactor(p) { return this.st.stage === 'ch2' ? this.ch2.hideFactor(p) : 1; }
+  hideFactor(p) { return this.st.stage === 'ch2' ? this.ch2.hideFactor(p) : this.st.stage === 'act2' ? this.a2.hideFactor(p) : 1; }
   npc(id) { return this.g.npcs.get(id); }
   /** Ragnar as he is out in the forest: bow in hand, no chopping animation. */
   fieldRagnar(n) { n.setLoop(null); n.crouch = false; n.h.hold('R', null); n.h.hold('L', 'bow_big'); }
@@ -252,7 +252,7 @@ export class Act1 {
     if (this.steps[key]) this.steps[key].call(this, r);
     else if (this.ch2.steps[key]) this.ch2.steps[key].call(this.ch2, r);
     else if (this.ch3.steps[key]) this.ch3.steps[key].call(this.ch3, r);
-    else if (this.a2.steps[key]) this.a2.steps[key].call(this.a2, r);
+    else if (this.a2.steps[key]) { this.a2.steps[key].call(this.a2, r); if (r) this.a2.strayHome(); }
     else if (this.open.steps[key]) this.open.steps[key].call(this.open, r);
   }
   onQuestDone(id) {
@@ -262,6 +262,7 @@ export class Act1 {
     if (id === 'q_oath') this.a2.playEnding();
     if (id === 'q_price') this.a2.playEnding3();
     if (id === 'q_drift') this.a2.playEnding4();
+    if (id === 'q_feast') this.a2.playEnding5();
     if (this.open.built) { this.open.sea.questDone(id); this.open.fleet.questDone(id); this.open.war.questDone(id); this.open.table.questDone(id); }
   }
   steps = {
@@ -618,6 +619,7 @@ export class Act1 {
   onCaught(raider) {
     const g = this.g;
     if (this.failing || !this.stealthActive) return;
+    if (this.st.stage === 'act2') return this.a2.onCaught(raider);
     this.failing = true; this.stealthActive = false; g.player.frozen = true;
     raider.h.play('shove', 0.5); g.player.h.play('stagger', 0.8); g.audio.play('hurt');
     g.ui.fade(true, 1.0).then(() => g.ui.card('Caught', 'The raiders drag you out of the dark.', 2.8)).then(() => g.reloadCheckpoint());
@@ -659,6 +661,13 @@ export class Act1 {
     const g = this.g, st = this.st;
     st.stage = 'open'; st.quests.q_open = { status: 'active', step: 0, count: 0 }; st.open = null; st.player = null;
     Object.assign(g.player, { health: 100, warmth: 100, hunger: 100 }); g.sky.time = 9.5; g.player.pos.set(152, 0, -137);
+    g.saveGame('auto'); g.reloadCheckpoint();
+  }
+  /** Start Act V the same way: the autumn after Hedeby Sound. */
+  beginAct5() {
+    const g = this.g, st = this.st;
+    st.stage = 'act2'; st.quests.q_carry = { status: 'active', step: 0, count: 0 }; st.flags.a2v = 2; st.player = null;
+    Object.assign(g.player, { health: 100, warmth: 100, hunger: 100 }); g.sky.time = 13.4;
     g.saveGame('auto'); g.reloadCheckpoint();
   }
   /** Start Act IV the same way: two quiet years after Iron Shore. */

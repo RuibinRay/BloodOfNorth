@@ -14,7 +14,7 @@ What a weapon is and whose it is comes from the owner's story (`docs/story/`). T
 | **Brokk's forging hammer** | Brokk, then Halvar | in the story; not in play yet | A smith's hammer, forty years in one hand. | Planned (Act VI). |
 | **Star-Fall** | Halvar makes it; Eirik gives it to Torvald | in the story; not in play yet | A war hammer of sky-iron: black, heavy, and it rings like a bell. | Modelled; planned for Act VII. |
 | **Torvald's war hammer** | Torvald Grey-Cloak | in the story; not in play yet | A war hammer slung across the back of a grey cloak. | Planned (Act III). The war maul is its class. |
-| **Svanhild's sword** | Svanhild | in the story; not in play yet | A guard-captain's sword, kept perfect. | Planned (Act V). The sword is its class. |
+| **Svanhild's sword** | Svanhild | in the story; hers, not Eirik's | A guard-captain's sword, kept perfect. | She carries it through Act V (0.17): beside Eirik in the forest settlement, and thrown at the butts in the feast's cutscene. Not a weapon the player holds. |
 | **Bjorn's bearded axe** | Bjorn | in the story; not in play yet | A big bearded axe. | Bjorn fights beside Eirik in the raid with an axe now. |
 | **Skull-Ringer** | Freydis | in the story; not in play yet | Signe's iron frying pan, on a peg by the door. | Planned (Act II, the peddlers). |
 | **Arne's war bow** | Arne Longshot | a champion's: fought against | A long war bow and black-feathered arrows; a seax and throwing knives for when he is cornered. | Black-Feather Volley, Pinning Shot, Cornered Cat. |

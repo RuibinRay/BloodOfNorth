@@ -65,6 +65,8 @@ Sources are listed at the end.
 
 Built in 0.13: Stormguard by the story's rules, five Stormborn skills, ten champions with named skills and phases, Raven-Feeder's reforgings. See [WEAPONS.md](WEAPONS.md).
 
+Built in 0.17: a night infiltration (Håkon's hunting camp: guards who walk and guards who sit, a detection meter, dogs on a round, and pits to hide in until they pass); the skirmish again with companions in it (Leif at the tannery door, ten men and Svanhild on Vængr, Astrid's arrows in both); and a duel with a scripted fall and recovery (Skarde: the lie, the mud, the wait). Stealth is still one meter and a restart; there are no distractions, takedowns or bodies to hide.
+
 Built in 0.16: the same skirmish on a ship's deck (the rail is the edge of the world), and a duel with scripted turns (Rurik: he knows the axe, he waits when Eirik is down). The ships themselves do not move in story fights yet.
 
 Built in 0.15: a first battle with allies (the Iron Shore). Defenders stand in a line and each holds one attacker, striking him when he closes; attackers who find no one free come for the player, who can also strike the ones being held. It is a stand-in for a shield wall, not one.
@@ -77,11 +79,13 @@ Built in 0.13: five great islands at story scale, the open sea to carry them, a 
 
 Built in 0.14: the mainland coast as two pieces of terrain. Bjornstead, the story's coastal village, whose burned houses, ditch, palisade, watchtower and ship are switched on as Act II reaches them; and Kaupang with the Skerries and the wreck.
 
-Planned, in order: Act I's last chapters moved to the new Bjornstead; the five small home islands enlarged to hold their chapters; Hedeby Sound; Wessex as a destination; weather and wind at sea; interiors.
+Built in 0.16 and 0.17: three more pieces of mainland coast (Wessex, Hedeby Sound, Håkon's hunting camp), each walled off from the open world by its own limits; the Sea-Raven's deck as a place at sea; Gannet Rock and Vængr dressed for Act V.
+
+Planned, in order: Act I's last chapters moved to the new Bjornstead; the five small home islands, Gannet Rock and Vængr enlarged to hold their chapters; ships that sail in the story; weather and wind at sea; interiors.
 
 ## How the work is ordered
 
-The owner's story is 59 chapters and a three-part epilogue. By this plan's own targets they come to roughly 17 hours of main missions; side work, travel and battles are what would carry it toward 40. It is being built one chapter at a time in story order, each one checked against the text before it is called done: Act II was done this way in 0.14, Act III in 0.15 and Act IV in 0.16; Act V is next. Two standards from the game-studio kit the owner pointed to are adopted: gameplay numbers live in data files, and every story fact carries a canon level.
+The owner's story is 59 chapters and a three-part epilogue. By this plan's own targets they come to roughly 17 hours of main missions; side work, travel and battles are what would carry it toward 40. It is being built one chapter at a time in story order, each one checked against the text before it is called done: Act II was done this way in 0.14, Act III in 0.15, Act IV in 0.16 and Act V in 0.17; Act VI is next. Two standards from the game-studio kit the owner pointed to are adopted: gameplay numbers live in data files, and every story fact carries a canon level.
 
 ## Sources
 

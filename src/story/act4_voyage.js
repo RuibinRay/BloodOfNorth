@@ -41,7 +41,7 @@ export class A4Voyage extends A4Part {
   }
   clear(phase) {
     const g = this.g, c = this.c, on = SEA.includes(phase);
-    this.SS.set(on);
+    this.SS.set(on); this.SS.knarr.set(on);
     c.npc('solcap').visible = false; this.rurik.visible = false; this.rurik.cb = null;
     for (const s of this.ls) { s.m.visible = false; s.to = null; }
     for (const f of this.fires) g.fx.removeFire(f); this.fires = [];

@@ -14,6 +14,8 @@ export class Ravens {
     for (const m of [this.white, this.black]) { m.visible = false; m.scale.setScalar(1.25); game.scene.add(m); }
     this.yaw = 0; this.pitch = 0.55; this.alt = 20; this.speed = 9; this.markables = []; this.target = null; this.leashT = -10;
   }
+  /** The raven whose eyes he is using: the white one, or (Act V, while she is taken) her black brother. */
+  get flier() { return this.sot ? this.black : this.white; }
   /** [white, black] — chosen by the player in Chapter 3. */
   names() { return this.g.state.ravenNames || ['Mjöll', 'Sót']; }
   /** 'hidden' until they fledge, then 'follow'. */
@@ -31,16 +33,18 @@ export class Ravens {
   enterEye() {
     const g = this.g, p = g.player;
     if (this.mode !== 'follow' || this.eye || (p.frozen && !p.riding) || g.activity || g.mode !== 'play') return false; // from the saddle or the helm is fine: the mount holds its course
+    if (this.taken && !this.sot) { g.events.emit('ravenReach'); return false; } // she is not there to answer
     this.eye = true; this.yaw = p.cam.yaw; this.pitch = 0.55; this.alt = 20; this.speed = 9;
-    this.white.position.set(p.pos.x, p.pos.y + 6, p.pos.z);
-    g.audio.play('raven'); g.ui.ravenHUD(true, this.names()[0]);
+    this.flier.position.set(p.pos.x, p.pos.y + 6, p.pos.z);
+    if (this.sot) g.renderer.domElement.style.filter = 'grayscale(0.75) contrast(1.35) brightness(1.25)'; // his pictures are hard to read
+    g.audio.play('raven'); g.ui.ravenHUD(true, this.names()[this.sot ? 1 : 0]);
     g.events.emit('ravenEye', true);
     return true;
   }
   exitEye() {
     const g = this.g;
     if (!this.eye) return;
-    this.eye = false; this.target = null;
+    this.eye = false; this.target = null; g.renderer.domElement.style.filter = '';
     g.ui.ravenHUD(false); g.audio.play('raven', { vol: 0.6 });
     g.camera.fov = g.baseFov; g.camera.updateProjectionMatrix();
     g.events.emit('ravenEye', false);
@@ -48,8 +52,8 @@ export class Ravens {
 
   update(dt) {
     if (this.mode !== 'follow') return;
-    const g = this.g, p = g.player, w = this.white, b = this.black;
-    this.t += dt;
+    const g = this.g, p = g.player, w = this.sot ? this.black : this.white, b = this.sot ? this.white : this.black;
+    this.t += dt; this.white.visible = !this.taken;
     const flap = (m, rate) => { const f = Math.sin(this.t * rate) * 0.75; m.userData.wings[0].rotation.z = f; m.userData.wings[1].rotation.z = -f; };
     const drift = (m, x, y, z, k) => {
       const px = m.position.x, pz = m.position.z, e = 1 - Math.exp(-k * dt);

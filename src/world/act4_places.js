@@ -116,15 +116,20 @@ function hedeby(ctx, world, scene) {
 function atSea(world, scene) {
   const { x, z } = AT_SEA;
   const st = stage(world, scene, false, (c, w, objs) => {
-    const sr = afloat(w, objs, { ...SR, sail: true }, x, z, 0, 2.2, 7.6), kn = afloat(w, objs, { ...KNARR, sail: true }, x + 13, z, 0, 3.2, 8.6), y = sr.y;
+    const sr = afloat(w, objs, { ...SR, sail: true }, x, z, 0, 2.2, 7.6), y = sr.y;
     c.b.add(at(box(1.0, 0.16, 1.0), x + 0.9, y + 0.08, z + 3.2), M.stone); c.b.add(at(cyl(0.3, 0.26, 0.34, 9), x + 0.9, y + 0.5, z + 3.2), M.iron); // the cooking fire: a box of sand and stones, and the pot
     c.b.add(at(cyl(0.3, 0.26, 0.7, 9), x - 1.3, y + 0.35, z - 3.4), M.plank);                                                                // a tub of seawater
     c.b.add(at(box(0.9, 0.5, 0.55), x - 0.9, y + 0.25, z + 5.4, 0, 0.3, 0), M.timber); c.b.add(at(box(0.94, 0.06, 0.59), x - 0.9, y + 0.52, z + 5.4, 0, 0.3, 0), M.iron); // the sealed chest
     c.b.add(at(cyl(0.28, 0.24, 0.6, 9), x + 1.2, y + 0.3, z - 5.6), M.plank);                                                                // the barrel the dice are thrown on
-    for (let i = 0; i < 8; i++) c.b.add(tint(at(box(1.1, 0.7, 0.8), x + 13 - 2.2 + (i % 4) * 1.5, kn.y + 0.35 + Math.floor(i / 4) * 0.72, z - 3 + (i % 2) * 0.9), [0x6a4a2a, 0x8a6a40, 0x5a3a24][i % 3], 0.15, i), M.vcPlain); // the cargo
     c.addCircle(x, z, 0.3, 3);
-    return { sr, kn, fire: { x: x + 0.9, y: y + 0.6, z: z + 3.2 }, tub: [x - 1.3, z - 3.4], chest: [x - 0.9, z + 5.4], dice: [x + 1.2, z - 5.6] };
+    return { sr, fire: { x: x + 0.9, y: y + 0.6, z: z + 3.2 }, tub: [x - 1.3, z - 3.4], chest: [x - 0.9, z + 5.4], dice: [x + 1.2, z - 5.6] };
   });
+  st.knarr = stage(world, scene, false, (c, w, objs) => { // Fafnir's Bed, a ship's length to port (Act IV only)
+    const kn = afloat(w, objs, { ...KNARR, sail: true }, x + 13, z, 0, 3.2, 8.6);
+    for (let i = 0; i < 8; i++) c.b.add(tint(at(box(1.1, 0.7, 0.8), x + 13 - 2.2 + (i % 4) * 1.5, kn.y + 0.35 + Math.floor(i / 4) * 0.72, z - 3 + (i % 2) * 0.9), [0x6a4a2a, 0x8a6a40, 0x5a3a24][i % 3], 0.15, i), M.vcPlain); // the cargo
+    return { kn };
+  });
+  st.kn = st.knarr.kn;
   return st;
 }
 

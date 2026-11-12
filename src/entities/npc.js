@@ -138,8 +138,8 @@ export class NPC {
   }
 
   // ---- raiders -----------------------------------------------------------------------
-  makeRaider(patrol, { pause = 2.2, busy = false } = {}) {
-    this.raider = { patrol, i: 0, wait: 0, pause, state: busy ? 'busy' : 'patrol', lost: 0, last: null, search: 0 };
+  makeRaider(patrol, { pause = 2.2, busy = false, shout = null } = {}) {
+    this.raider = { patrol, i: 0, wait: 0, pause, shout, state: busy ? 'busy' : 'patrol', lost: 0, last: null, search: 0 };
     this.mode = 'raider'; this.aware = 0;
     return this;
   }
@@ -163,7 +163,7 @@ export class NPC {
     else this.aware -= dt * 0.3;
     this.aware = clamp(this.aware, 0, 1.2);
     if (r.state === 'patrol') {
-      if (this.aware >= 1) { r.state = 'chase'; r.lost = 0; this.say(['There! The boy!', "Ragnar's whelp — take him!", 'I see him!'][(Math.random() * 3) | 0], 2.2); g.audio.play('shout'); g.events.emit('spotted', this); }
+      if (this.aware >= 1) { r.state = 'chase'; r.lost = 0; this.say((r.shout || ['There! The boy!', "Ragnar's whelp — take him!", 'I see him!'])[(Math.random() * 3) | 0], 2.2); g.audio.play('shout'); g.events.emit('spotted', this); }
       else if (this.aware > 0.45) { // suspicious: stop and look
         this.yaw = dampAngle(this.yaw, Math.atan2(p.pos.x - this.pos.x, p.pos.z - this.pos.z), 3, dt);
         this.barkT -= dt;

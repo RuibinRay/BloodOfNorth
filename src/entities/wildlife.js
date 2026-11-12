@@ -42,7 +42,7 @@ function deerModel(stag) {
   }
   return g;
 }
-function wolfModel() {
+export function wolfModel() {
   const g = new THREE.Group(), fur = 0x6e6e72;
   g.add(mesh([
     tint(at(capsule(0.19, 0.6, 8), 0, 0.6, 0, Math.PI / 2, 0, 0, 1, 1, 1.02), fur, 0.14, 1),

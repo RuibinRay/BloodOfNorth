@@ -165,11 +165,11 @@ class Game {
   }
   /** Start at the opening of a later act, with everything before it taken as played. It is written to a slot of its own and loaded from there. */
   startAt(first) {
-    const order = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_farm', 'q_smoke', 'q_axe', 'q_wolf', 'q_peddlers', 'q_walls', 'q_captain', 'q_oath', 'q_isle', 'q_fifty', 'q_healer', 'q_shore', 'q_long', 'q_ulf', 'q_iron', 'q_price', 'q_gold', 'q_water', 'q_court', 'q_circle', 'q_six', 'q_council', 'q_sound', 'q_drift'];
-    const st = freshState(), act2 = first === 'q_ten', act4 = first === 'q_gold';
+    const order = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_farm', 'q_smoke', 'q_axe', 'q_wolf', 'q_peddlers', 'q_walls', 'q_captain', 'q_oath', 'q_isle', 'q_fifty', 'q_healer', 'q_shore', 'q_long', 'q_ulf', 'q_iron', 'q_price', 'q_gold', 'q_water', 'q_court', 'q_circle', 'q_six', 'q_council', 'q_sound', 'q_drift', 'q_carry', 'q_hunger', 'q_taken', 'q_ring', 'q_wing', 'q_ribbon', 'q_feast'];
+    const st = freshState(), act2 = first === 'q_ten', act4 = first === 'q_gold' || first === 'q_carry';
     for (const id of order) { if (id === first) break; st.quests[id] = { status: 'done', step: QUESTS[id].steps.length, count: 0 }; }
     st.quests[first] = { status: 'active', step: 0, count: 0 };
-    Object.assign(st, { stage: 'act2', time: act2 ? 8.6 : 9.2, inventory: act2 ? { bow: 1, arrow: 14, flint: 1 } : { bow: 1, arrow: 14, flint: 1, father_axe: 1, shield: 1, wolf_brooch: 1, arm_ring: 1, ...(act4 ? { mail: 1 } : {}) } });
+    Object.assign(st, { stage: 'act2', time: act2 ? 8.6 : 9.2, inventory: act2 ? { bow: 1, arrow: 14, flint: 1 } : { bow: 1, arrow: 14, flint: 1, father_axe: 1, shield: 1, wolf_brooch: 1, arm_ring: 1, ...(act4 ? { mail: 1 } : {}), ...(first === 'q_carry' ? { token: 1, safe_letter: 1 } : {}) } });
     if (act4) st.flags.reforge = 1;
     Object.assign(st.flags, { a2v: 2, axeHidden: act2, lightning: true, spring: true });
     writeSave('act', st, { quest: QUESTS[first].title, step: QUESTS[first].steps[0].text, playtime: 0 });
@@ -257,7 +257,7 @@ class Game {
     const anim = m === 'paused' ? 0 : real;
     shared.uTime.value += anim;
     this.world.terrain.update(shared.uTime.value);
-    const focus = m === 'menu' ? this.focusMenu || (this.focusMenu = new THREE.Vector3(-4, 5, 48)) : this.ravens.eye ? this.ravens.white.position : this.player.pos;
+    const focus = m === 'menu' ? this.focusMenu || (this.focusMenu = new THREE.Vector3(-4, 5, 48)) : this.ravens.eye ? this.ravens.flier.position : this.player.pos;
     this.sky.update(anim, this.camera, focus);
     this.fx.update(anim, focus, this.sky.isNight);
     this.audio.update(real);
@@ -289,7 +289,7 @@ class Game {
       },
       /** Jump straight to a quest step (marks earlier main quests done). */
       jump: (qid, sid) => {
-        const order = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_farm', 'q_smoke', 'q_axe', 'q_wolf', 'q_peddlers', 'q_walls', 'q_captain', 'q_oath', 'q_isle', 'q_fifty', 'q_healer', 'q_shore', 'q_long', 'q_ulf', 'q_iron', 'q_price', 'q_gold', 'q_water', 'q_court', 'q_circle', 'q_six', 'q_council', 'q_sound', 'q_drift', 'q_open', 'q_sea'];
+        const order = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_farm', 'q_smoke', 'q_axe', 'q_wolf', 'q_peddlers', 'q_walls', 'q_captain', 'q_oath', 'q_isle', 'q_fifty', 'q_healer', 'q_shore', 'q_long', 'q_ulf', 'q_iron', 'q_price', 'q_gold', 'q_water', 'q_court', 'q_circle', 'q_six', 'q_council', 'q_sound', 'q_drift', 'q_carry', 'q_hunger', 'q_taken', 'q_ring', 'q_wing', 'q_ribbon', 'q_feast', 'q_open', 'q_sea'];
         if (!g.started) { g.started = true; g.ui.hideMain(); g.setMode('play'); }
         for (const id of order) {
           if (id === qid) break;
@@ -300,7 +300,7 @@ class Game {
         const oi = order.indexOf(qid);
         if (oi >= 2) for (const [k, n] of [['bow', 1], ['arrow', 12], ['flint', 1]]) if (!g.inventory.has(k)) g.inventory.add(k, n, true);
         if (oi >= 4) if (!g.inventory.has('woodsword')) g.inventory.add('woodsword', 1, true);
-        if (oi >= 8) { const op = order.indexOf('q_open'); g.state.stage = oi >= op ? 'open' : oi >= 12 ? 'act2' : oi >= 10 ? 'ch3' : 'ch2'; if (oi >= 12 && oi < op) g.state.flags.a2v = 2; if (oi >= order.indexOf('q_gold') && oi < op) { g.state.flags.reforge = Math.max(1, g.state.flags.reforge || 0); if (!g.inventory.has('mail')) g.inventory.add('mail', 1, true); if (oi > order.indexOf('q_court') && !g.inventory.has('token')) g.inventory.add('token', 1, true); } if (!g.inventory.has('father_axe')) g.inventory.add('father_axe', 1, true); if (qid === 'q_ice' || i >= 6) if (!g.inventory.has('venison')) g.inventory.add('venison', 3, true); }
+        if (oi >= 8) { const op = order.indexOf('q_open'); g.state.stage = oi >= op ? 'open' : oi >= 12 ? 'act2' : oi >= 10 ? 'ch3' : 'ch2'; if (oi >= 12 && oi < op) g.state.flags.a2v = 2; if (oi >= order.indexOf('q_gold') && oi < op) { g.state.flags.reforge = Math.max(1, g.state.flags.reforge || 0); if (!g.inventory.has('mail')) g.inventory.add('mail', 1, true); if (oi > order.indexOf('q_court') && !g.inventory.has('token')) g.inventory.add('token', 1, true); if (oi > order.indexOf('q_ring') && !g.inventory.has('halfdan_ring')) g.inventory.add('halfdan_ring', 1, true); } if (!g.inventory.has('father_axe')) g.inventory.add('father_axe', 1, true); if (qid === 'q_ice' || i >= 6) if (!g.inventory.has('venison')) g.inventory.add('venison', 3, true); }
         g.quests.enter(qid, true); g.ui.refreshTracker();
       },
       info: () => ({

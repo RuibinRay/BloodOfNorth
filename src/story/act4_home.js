@@ -18,7 +18,7 @@ export class A4Part {
   put(id, x, z, face, loop, hold) {
     const n = typeof id === 'string' ? this.c.npc(id) : id;
     if (n.dead) n.revive();
-    n.visible = true; n.mode = 'idle'; n.cb = null; n.crouch = false; n.held = false; n.pose = null; n.keepDry = false;
+    n.visible = true; n.mode = 'idle'; n.cb = null; n.crouch = false; n.held = false; n.pose = null; n.keepDry = false; n.raider = null;
     n.teleport(x, z, typeof face === 'number' ? face : face ? Math.atan2(face[0] - x, face[1] - z) : n.yaw);
     n.setLoop(loop || null); n.h.hold('R', hold || null); n.h.hold('L', null); n.faceT = null;
     if (typeof id === 'string') n.talk = () => this.c.talkTo(id);

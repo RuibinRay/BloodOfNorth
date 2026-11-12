@@ -161,11 +161,13 @@ export class A3Battle {
   /** Take an attacker from the pool (never one still standing) and put him at a point. */
   foe(x, z) {
     const g = this.g, live = this.sk ? this.sk.live : [];
-    const e = this.foes.find((n) => !n.visible) || this.foes.find((n) => n.dead && !live.includes(n) && this.t - (n.diedAt || 0) > 9) || this.foes.find((n) => n.dead && !live.includes(n));
+    const R = this.R, pool = R.pool || this.foes;
+    const e = pool.find((n) => !n.visible) || pool.find((n) => n.dead && !live.includes(n) && this.t - (n.diedAt || 0) > 9) || pool.find((n) => n.dead && !live.includes(n));
     if (!e) return null;
     g.combat.enemies = g.combat.enemies.filter((n) => n !== e);
     e.revive(); e.visible = true; e.cb = null; e.name = "Håkon's man"; e.partner = null; e.mine = false; e.diedAt = 0; e.crouch = false; e.teleport(x, z, -Math.PI / 2); e.setLoop(null);
-    const i = this.foes.indexOf(e); e.h.hold('R', ['axe', 'sword', 'spear', 'axe'][i % 4]); e.h.hold('L', i % 3 === 2 ? null : 'shield'); e.talk = null;
+    const i = pool.indexOf(e); e.h.hold('R', ['axe', 'sword', 'spear', 'axe'][i % 4]); e.h.hold('L', i % 3 === 2 ? null : 'shield'); e.talk = null; e.raider = null;
+    if (R.name) e.name = R.name; if (R.dress) R.dress(e, i);
     return e;
   }
   /** He has broken through: he comes for Eirik. */

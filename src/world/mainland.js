@@ -177,6 +177,62 @@ function bjornstead(ctx, world, scene) {
     moor(objs, [[-20, 236, 0.9, 14, 62, 1], [16, 238, -0.7, 14, 63, 1], [34, 246, 0.3, 20, 64, 1]]);
     for (let i = 0; i < 7; i++) { const [x, z] = B(-2 + (i % 2) * 4, 236 + i * 2.6); c.b.add(tint(at(cyl(0.12, 0.15, 2.4 + (i % 3) * 0.6, 5), x, 0.9, z, (i % 3 - 1) * 0.3, 0, (i % 2 ? 1 : -1) * 0.25), 0x16120f, 0.3, i), M.vcPlain); } // the charred end of the pier
   });
+  // ---- Act V: ashes again, the winter of hunger, the cell, the feast of survivors ------------------
+  st('tower2', false, (c) => { // a new watchtower by the harbor gate (three refugee families sleep in a barn for it)
+    const [x, z] = B(-15, 201.5), y = gy(x, z);
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) c.b.add(at(cyl(0.16, 0.2, 8.4, 6), x + sx * 1.4, y + 4.1, z + sz * 1.4, sz * 0.05, 0, -sx * 0.05), M.bark);
+    c.b.add(at(box(3.7, 0.2, 3.7, 2), x, y + 6.2, z), M.plank); for (const [dx, dz, lx, lz] of [[0, -1.8, 3.7, 0.1], [0, 1.8, 3.7, 0.1], [-1.8, 0, 0.1, 3.7], [1.8, 0, 0.1, 3.7]]) c.b.add(at(box(lx, 0.1, lz), x + dx, y + 7.2, z + dz), M.timber);
+    c.b.add(at(cone(3.0, 1.7, 4), x, y + 9.2, z, 0, Math.PI / 4, 0), M.thatch); c.b.add(at(box(0.5, 6.4, 0.1), x - 1.1, y + 3.1, z - 1.9, -0.12, 0, 0), M.timber);
+    c.addCircle(x, z, 2.0, 7);
+  });
+  st('slip', false, (c, w, objs) => { // a new ship on the slip (less firewood in the coldest month)
+    const [x, z] = B(-36, 217), y = gy(x, z), m = P.makeShip({ L: 16, B: 3.8, D: 1.3, rise: 2.0, seed: 97, sail: false, shields: false, mast: 0.4 });
+    m.position.set(x, y + 0.75, z); m.rotation.set(0, 0.5, 0); objs.push(m);
+    for (const k of [-5, -1.6, 1.6, 5]) { const [px, pz] = P.toWorld(x, z, 0.5, 0, k); for (const e of [-1, 1]) { const [qx, qz] = P.toWorld(px, pz, 0.5, e * 1.5, 0); c.b.add(at(cyl(0.09, 0.11, 1.5, 5), qx, y + 0.6, qz, 0, 0, e * 0.35), M.bark); } }
+    P.woodpile(c, ...B(-44, 212), 0.5, 4, 8); c.addBox(x, z, 1.9, 7.6, -0.5, 2);
+  });
+  st('sick', false, (c) => { // the sick go into a separate hall: the barn
+    const d = houses.barn.door;
+    for (let i = 0; i < 4; i++) { const x = d.x - 2.6 - (i % 2) * 1.5, z = d.z - 3.4 + i * 2.2; c.b.add(at(box(1.9, 0.18, 0.95), x, gy(x, z) + 0.09, z), M.hay); }
+    c.b.add(tint(at(box(0.06, 1.3, 1.1), d.x - 0.5, gy(d.x, d.z) + 2.3, d.z, 0, 0, 0), 0xd8d2c2, 0.1, 3), M.vcPlain); P.fireRing(c, d.x - 5.6, d.z + 5.2, 0.5); c.b.add(at(cyl(0.32, 0.26, 0.46, 9), d.x - 5.6, gy(d.x - 5.6, d.z + 5.2) + 0.52, d.z + 5.2), M.iron);
+  });
+  st('privy2', false, (c) => { const [x, z] = B(17, 146), y = gy(x, z); for (const [dx, dz, ry] of [[0, -1.2, 0], [-1.2, 0, 1.57], [1.2, 0, 1.57]]) c.b.add(tint(at(box(2.4, 1.5, 0.08), x + dx, y + 0.75, z + dz, 0, ry, 0), 0x6a5a40, 0.25, 3), M.vcPlain); c.b.add(at(box(2, 0.1, 1.6), x, y + 0.03, z + 0.3), M.dark); c.addBox(x, z - 1.2, 1.2, 0.15, 0, 1.5); }); // too near the well, again
+  st('bedding', false, (c) => { const [x, z] = B(113, 150), y = gy(x, z); for (let i = 0; i < 7; i++) c.b.add(tint(at(box(1.3, 0.2, 0.8), x + (i % 3 - 1) * 0.5, y + 0.1 + i * 0.13, z + (i % 2) * 0.4, 0, i * 0.7, 0), [0xcfc6b0, 0x8a7a5a, 0xa89a7a][i % 3], 0.2, i), M.vcPlain); });
+  st('cell', false, (c) => { // where Torvald is held for judgment: logs, a turf roof, bars
+    const [x, z] = B(-88, 160), y = gy(x, z);
+    c.b.add(at(box(3.4, 2.3, 0.3), x, y + 1.15, z - 1.6), M.timber); for (const k of [-1, 1]) c.b.add(at(box(0.3, 2.3, 3.2), x + k * 1.7, y + 1.15, z), M.timber);
+    c.b.add(at(box(4.2, 0.3, 4, 2.4), x, y + 2.45, z), M.turf); c.b.add(at(box(3.4, 0.1, 3.2), x, y + 0.04, z), M.plank);
+    for (let i = 0; i < 9; i++) c.b.add(at(cyl(0.045, 0.045, 2.3, 5), x - 1.6 + i * 0.4, y + 1.15, z + 1.55), M.dark);
+    c.b.add(at(box(3.6, 0.14, 0.14), x, y + 1.3, z + 1.56), M.iron); c.addBox(x, z, 1.85, 1.75, 0, 2.6);
+    return { x, z, front: [x, z + 3.0] };
+  });
+  st('butts', false, (c) => { // two straw targets for the feast
+    const out = [[34, 141], [34.6, 146]].map(([dx, dz]) => { const [x, z] = B(dx, dz), y = gy(x, z);
+      for (const k of [-1, 0, 1]) c.b.add(at(cyl(0.04, 0.05, 1.9, 5), x + 0.3 + (k ? 0.2 : 0.5), y + 0.9, z + k * 0.5, 0, 0, k ? -0.2 : 0.35), M.bark);
+      c.b.add(at(cyl(0.6, 0.6, 0.2, 14), x, y + 1.25, z, 0, 0, Math.PI / 2), M.hay); c.b.add(tint(at(cyl(0.2, 0.2, 0.22, 10), x, y + 1.25, z, 0, 0, Math.PI / 2), 0x8a2a22, 0.1, 2), M.vcPlain);
+      return { x, y: y + 1.25, z }; });
+    return { targets: out, line: B(16, 143.5) };
+  });
+  st('hnef', false, (c) => { for (const [dx, dz] of [[-12, 147], [-8.6, 150]]) { const [x, z] = B(dx, dz), y = gy(x, z); c.b.add(at(box(1.1, 0.03, 1.1), x, y + 0.03, z, 0, 0.3, 0), M.dark); for (let i = 0; i < 9; i++) c.b.add(tint(at(sphere(0.045, 5, 4), x - 0.36 + (i % 3) * 0.36, y + 0.07, z - 0.36 + Math.floor(i / 3) * 0.36), i === 4 ? 0xd8b040 : i % 2 ? 0xe8e4d8 : 0x2a2622, 0.1, i), M.vcPlain); } }); // boards scratched in the dirt
+  st('hwall', false, (c) => { const [x, z] = B(-17, 222.4), y = gy(x, z); c.b.add(at(box(17, 1.0, 0.7, 2.2), x, y + 0.35, z, 0, -0.1, 0), M.stone); c.addBox(x, z, 8.5, 0.35, -0.1, 0.9); return { x, z, y: y + 0.85 }; }); // the harbor wall
+  st('mboat', false, (c, w, objs) => { const b = P.makeShip({ L: 6.2, B: 1.9, D: 0.6, rise: 0.6, seed: 12 }), [x, z] = B(-3.2, 249); b.position.set(x, -0.1, z); b.rotation.y = 0.2; objs.push(b); return { x, z }; }); // from Myrholm, near midnight
+  const wh = B(-153, 207), whRy = 2.56; // along the shoreline, her opened flank toward the land
+  const whale = (objs, cut) => { // a whale the size of a longship, beached along the shore
+    const g2 = new THREE.Group(), add = (geo, col, v = 0.12, sd = 1) => g2.add(new THREE.Mesh(tint(geo, col, v, sd), M.vcPlain));
+    add(at(sphere(1, 16, 10), 0, 1.7, 0, 0, 0, 0, 9.4, 2.3, 2.7), 0x3c4650, 0.1, 2); add(at(sphere(1, 14, 8), 0.4, 1.0, 0, 0, 0, 0, 8.6, 1.5, 2.5), 0x8e959a, 0.1, 3);
+    add(at(cone(1.5, 6.4, 9), -11.2, 1.5, 0, 0, 0, Math.PI / 2, 1, 1, 0.8), 0x3c4650, 0.1, 4);
+    for (const k of [-1, 1]) add(at(sphere(1, 8, 5), -14.6, 1.3, k * 1.5, 0, k * 0.5, 0, 1.3, 0.16, 1.9), 0x343c46, 0.1, 5);
+    add(at(sphere(1, 8, 5), 2.5, 1.0, 2.9, 0.5, 0.3, 0, 1.7, 0.14, 0.9), 0x343c46, 0.1, 6); add(at(sphere(0.1, 6, 5), 7.4, 2.0, 1.75), 0x101014, 0, 7);
+    if (cut) { // the flank opened: red meat, pale blubber, ribs
+      add(at(box(6.4, 2.0, 0.5), -0.6, 1.5, 2.55, 0.12, 0, 0), 0x7a1e1a, 0.25, 8); add(at(box(6.6, 0.3, 0.6), -0.6, 2.6, 2.5, 0.12, 0, 0), 0xe0d4c0, 0.1, 9);
+      for (let i = 0; i < 6; i++) add(at(cyl(0.06, 0.07, 2.1, 5), -3.2 + i * 1.05, 1.5, 2.85, 0.2, 0, 0), 0xe8e2d2, 0.08, i);
+      for (let i = 0; i < 6; i++) add(at(box(0.9, 0.4, 0.7), -4 + i * 1.7, 0.25, 4.6 + (i % 2) * 0.8, 0, i, 0), i % 2 ? 0xe0d4c0 : 0x8a2a24, 0.15, i + 3);
+    }
+    g2.position.set(wh[0], Math.max(-0.3, gy(...wh) - 0.5), wh[1]); g2.rotation.y = whRy; objs.push(g2);
+  };
+  st('whale', false, (c, w, objs) => { whale(objs, false); c.addBox(wh[0], wh[1], 9, 2.5, whRy, 4); return { x: wh[0], z: wh[1], at: (lx, lz) => P.toWorld(wh[0], wh[1], whRy, lx, lz), flank: [0, 1, 2].map((i) => P.toWorld(wh[0], wh[1], whRy, -3 + i * 3, 4.4)) }; });
+  st('whaleCut', false, (c, w, objs) => { whale(objs, true); c.addBox(wh[0], wh[1], 9, 2.5, whRy, 4);
+    for (const [lx, lz, ry] of [[-6, 8.5, 0.4], [1, 9.5, -0.2], [7, 8, 0.9]]) { const [x, z] = P.toWorld(wh[0], wh[1], whRy, lx, lz), y = gy(x, z); c.b.add(at(box(2.2, 0.12, 1.0), x, y + 0.3, z, 0, ry, 0), M.plank); for (const k of [-1, 1]) { const [qx, qz] = P.toWorld(x, z, ry, 0, k * 0.45); c.b.add(at(box(2.6, 0.1, 0.08), qx, y + 0.1, qz, 0, ry, 0), M.timber); } c.b.add(tint(at(box(1.4, 0.5, 0.8), x, y + 0.6, z, 0, ry, 0), 0x8a2a24, 0.2, 4), M.vcPlain); } }); // sledges, loaded
   st('crowns', false, (c) => { // the lightning-split trunk has grown two new crowns, one on each side
     for (const k of [-1, 1]) {
       c.b.add(tint(at(cyl(0.07, 0.12, 2.8, 5), bi[0] + k * 1.25, by + 4.3, bi[1], 0, 0, -k * 0.8), 0xd9d5c8, 0.18, 10), M.vcPlain);

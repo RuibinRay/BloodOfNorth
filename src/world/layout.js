@@ -198,6 +198,14 @@ export const MAIN = [
     roads: [[[-72, 160], [-76, 134], [-80, 114], [-82, 100]]],
     woods: [[60, -100, 120, 0.3], [60, 120, 120, 0.3]],
     isles: [[-150, -200, 18, 4], [-166, -150, 22, 5], [-174, -85, 26, 6], [-176, -10, 28, 7], [-174, 65, 27, 6], [-164, 132, 25, 5], [-150, 200, 20, 4], [-100, 196, 11, 3]] },
+  // Act V: Håkon's hunting camp on the mainland, between Hedeby Sound and Kaupang
+  { id: 'hunt', name: "Håkon's hunting camp", title: 'on the mainland coast', x: 1740, z: 2760, half: 200, o: [400, 0], r: 560, k: 1, a: 0, wob: 0.03, shore: [0.92, 0.95], h: 5, rough: 2.2, ground: 'home',
+    lim: { maxX: 1900, minZ: 2578, maxZ: 2942 },
+    bays: [[-124, -34, 30]],
+    hills: [[70, -120, 30, 150], [90, 120, 34, 160], [160, 0, 40, 160]],
+    flats: [[-52, 6, 80, 3.6]],
+    roads: [[[-112, -34], [-90, -10], [-84, -4], [-50, -2]], [[-53, 30], [-53, 56], [-58, 96]]],
+    woods: [[40, -110, 90, 0.3], [50, 110, 90, 0.3], [-66, 112, 44, 0.5], [-60, -96, 40, 0.5]] },
 ];
 /** Where the treasure ship and her escort are when the story is out of sight of land. */
 export const AT_SEA = { x: -950, z: 2200 };
@@ -212,6 +220,7 @@ export const PLACES = {
   bjornstead: { yard: [0, 140], hall: [-6, 114], well: [9, 139], chop: [-23, 130], barn: [36, 118], sty: [50, 150], smithy: [-52, 158], smoke: [-40.6, 158], lane: [-46.6, 158], thing: [-92, 92], birch: [-20, 10],
     pier: [0, 232], strand: [0, 212], field: [-150, 96], pasture: [100, 36], bridge: [121, 140], camp: [-150, 150], timber: [-60, -62], elk: [146, -52], latrine: [70, 100], trench: [58, 30], drill: [98, 38], gateE: [106, 131], gateW: [-108, 146], gateN: [-9, 58], gateS: [0, 208], road: [150, -60], ravine: [178, -148] },
   wessex: { quay: [134, 20], pier: [156, 0], ship: [158, -5], pier2: [156, 42], knarr: [157, 36.8], market: [80, 20], church: [30, -34], hall: [62, 58], gate: [-14, 20], farm: [-62, 34], wall: [152, 72] },
+  hunt: { camp: [-52, 0], tannery: [-53, 42], door: [-53, 30], gate: [-84, -4], harbor: [-112, -34], lodge: [-30, -18], mews: [-64, -22], pen: [-70, 13], kennel: [-34, 16], land: [-58, 92] },
   hedeby: { h1: [-70, -150], h2: [-90, -30], h3: [-82, 96], beach: [-80, 150], ship: [-120, 150], north: [-140, -50] },
   kaupang: { quay: [-134, 20], market: [-80, 20], pen: [-104, 74], tavern: [-62, 56], thing: [-30, -100], pier: [-156, 0], ship: [-158, -5], barrel: [-130, -6], pier2: [-156, 42], boat: [-152, 46.5], skerry: [-225, -228], wreck: [-225, -247] },
 };
