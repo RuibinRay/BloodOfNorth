@@ -3,6 +3,7 @@
 // above and mark what she sees. Later acts build on this: see docs/OPEN_WORLD.md.
 import { ravenModel } from './wildlife.js';
 import { clamp, damp } from '../core/util.js';
+import { mainAt } from '../world/realm.js';
 
 const LEASH = 170, MIN_ALT = 9, MAX_ALT = 60;
 
@@ -88,7 +89,9 @@ export class Ravens {
       x = p.pos.x + (dx / d) * leash; z = p.pos.z + (dz / d) * leash;
       if (this.t - this.leashT > 6) { this.leashT = this.t; g.ui.toast(`${this.names()[0]} will not fly further from you`); }
     }
-    const lim = z > 640 ? 1960 : z > 322 ? 628 : 305; x = clamp(x, -lim, lim); z = clamp(z, -305, 3560);
+    const ml = z < 640 ? mainAt(x, z) : null;
+    if (ml) { x = clamp(x, ml.x - ml.half + 8, ml.x + ml.half - 8); z = Math.max(z, ml.z - ml.half + 8); } // over the mainland shore
+    else { const lim = z > 640 ? 1960 : z > 322 ? 628 : 305; x = clamp(x, -lim, lim); z = clamp(z, -305, 3560); }
     const y = damp(w.position.y, Math.max(g.world.groundAt(x, z), 0) + this.alt, 3, dt);
     w.position.set(x, y, z); w.rotation.set(0, this.yaw, -mv.x * 0.35);
     flap(w, this.speed > 12 ? 13 : 8);

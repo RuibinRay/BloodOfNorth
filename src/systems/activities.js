@@ -8,7 +8,7 @@ const diffMul = (g) => (g.settings.difficulty === 'easy' ? 1.35 : g.settings.dif
 const _v = new THREE.Vector3();
 
 /** Shared base: an activity owns input while game.mode === 'activity'. */
-class Activity {
+export class Activity {
   constructor(game) { this.game = game; this.done = false; }
   begin() { this.game.activity = this; this.game.setMode('activity'); this.game.player.equip('none'); }
   finish(completed) {

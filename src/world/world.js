@@ -7,6 +7,8 @@ import { scatterVegetation } from './vegetation.js';
 import * as P from './props.js';
 import { HOUSES, POI, FIELDS, BOUNDS } from './layout.js';
 import { buildRealmProps } from './realm_props.js';
+import { buildMainland } from './mainland.js';
+import { mainAt } from './realm.js';
 
 const CELL = 8;
 const key = (ix, iz) => (ix + 512) * 2048 + (iz + 512); // cells of 8 m: good for 4 km either way
@@ -30,6 +32,8 @@ export class World {
     if (r >= 1.0 && h < 7) (this.cover ||= []).push(c); // hay stacks, boulders: things you can hide behind
     return c;
   }
+  /** Put back a circle that removeCircle took out. */
+  putCircle(c) { const k = key(Math.floor(c.x / CELL), Math.floor(c.z / CELL)); if (!this.grid.has(k)) this.grid.set(k, []); const a = this.grid.get(k); if (!a.includes(c)) a.push(c); }
   removeCircle(c) {
     const a = this.grid.get(key(Math.floor(c.x / CELL), Math.floor(c.z / CELL)));
     if (a) { const i = a.indexOf(c); if (i >= 0) a.splice(i, 1); }
@@ -60,9 +64,12 @@ export class World {
       }
     }
     // the home valley, then the wider home waters, then (south of realmZ) the open sea of the ten islands
+    const m = pos.z < BOUNDS.realmZ ? mainAt(pos.x, pos.z, 3) : null;
+    if (m) { pos.x = clamp(pos.x, m.x - m.half + 6, m.x + m.half - 6); pos.z = Math.max(pos.z, m.lim.minZ || m.z - m.half + 6); return; } // a mainland shore north of the open sea
     if (Math.abs(pos.x) > BOUNDS.seaX && pos.z < BOUNDS.realmZ) pos.z = BOUNDS.realmZ; // no way back north except through the home waters
     const bx = pos.z >= BOUNDS.realmZ ? BOUNDS.realmX : pos.z > 322 ? BOUNDS.seaX : BOUNDS.maxX;
     pos.x = clamp(pos.x, -bx, bx); pos.z = clamp(pos.z, BOUNDS.minZ, BOUNDS.maxZ);
+    const k = pos.z > 2900 ? mainAt(pos.x, pos.z) : null; if (k && k.lim.maxZ && pos.z > k.lim.maxZ) pos.z = k.lim.maxZ; // the coast road runs on south, out of the story
   }
   pointInBox(x, z, margin = 0) {
     for (const b of this.boxes) {
@@ -268,6 +275,8 @@ export class World {
 
     // the great islands of the open sea (see realm_props.js); the places champions are fought are kept in this.realm
     this.realm = buildRealmProps(ctx, this, scene);
+    // the mainland coast: Bjornstead and Kaupang (see mainland.js); what the story changes there is kept in this.main
+    this.main = buildMainland(ctx, this, scene);
 
     const stat = ctx.b.build();
     scene.add(stat);

@@ -3,14 +3,15 @@
 // chapters set on it need. heightAt() in terrain.js asks realmAt() for anything outside the valley and the chart.
 import * as THREE from 'three';
 import { fbm, noise2, smoothstep, lerp, distToPolyline } from '../core/util.js';
-import { GREAT } from './layout.js';
+import { GREAT, MAIN } from './layout.js';
 import { patch, TEX } from './geo.js';
 
-const C = 5, SEA = -13, DEEP = [58, 70, 76];
+const C = 5, SEA = -13, DEEP = [58, 70, 76], SHORE = [0.8, 0.93];
+const ALL = [...GREAT, ...MAIN]; // the great islands, then the two stretches of mainland coast
 
-for (const s of GREAT) {
+for (const s of ALL) {
   s.ca = Math.cos(s.a || 0); s.sa = Math.sin(s.a || 0);
-  s.half = Math.ceil((s.r * (s.k || 1) * 1.22) / C) * C; // half the side of its square patch
+  s.half = s.half || Math.ceil((s.r * (s.k || 1) * 1.22) / C) * C; // half the side of its square patch
   s.n = (2 * s.half) / C; s.x0 = s.x - s.half; s.z0 = s.z - s.half;
   s.H = new Float32Array((s.n + 1) * (s.n + 1));
 }
@@ -18,11 +19,22 @@ for (const s of GREAT) {
 /** The shape of one island: a stretched, turned, wobbly-edged shelf with bays bitten out of it, hills, level
  *  ground where the story needs it, ravines and channels, a beach and shallows. */
 function rawAt(s, x, z) {
-  const dx = x - s.x, dz = z - s.z;
-  const u = (dx * s.ca + dz * s.sa) / (s.k || 1), v = -dx * s.sa + dz * s.ca;
-  let d = Math.hypot(u, v) * (1 + 0.2 * fbm(x * 0.0055 + s.x * 0.013, z * 0.0055 - s.z * 0.013, 3));
-  for (const b of s.bays || []) { const bd = Math.hypot(dx - b[0], dz - b[1]); if (bd < b[2]) d = Math.max(d, s.r * (0.8 + 0.27 * (1 - bd / b[2]))); }
-  if (d >= s.r) return SEA;
+  const dx = x - s.x, dz = z - s.z, ex = dx - (s.o ? s.o[0] : 0), ez = dz - (s.o ? s.o[1] : 0), sh = s.shore || SHORE;
+  const u = (ex * s.ca + ez * s.sa) / (s.k || 1), v = -ex * s.sa + ez * s.ca;
+  let d = Math.hypot(u, v) * (1 + (s.wob ?? 0.2) * fbm(x * 0.0055 + s.x * 0.013, z * 0.0055 - s.z * 0.013, 3));
+  for (const b of s.bays || []) { const bd = Math.hypot(dx - b[0], dz - b[1]); if (bd < b[2]) d = Math.max(d, s.r * (sh[0] + (1.07 - sh[0]) * (1 - bd / b[2]))); }
+  return offshore(s, x, z, dx, dz, d >= s.r ? SEA : shelf(s, x, z, dx, dz, d, sh));
+}
+/** Skerries off the coast, and pools where the sea floor is set (a wreck a man can dive to). */
+function offshore(s, x, z, dx, dz, h) {
+  for (const i of s.isles || []) {
+    const id = Math.hypot(dx - i[0], dz - i[1]) * (1 + 0.14 * noise2(x * 0.07 + 3, z * 0.07 - 5));
+    if (id < i[2]) h = Math.max(h, lerp(lerp(i[3] + noise2(x * 0.2, z * 0.2) * 0.5, -2.2, smoothstep(i[2] * 0.6, i[2] * 0.86, id)), SEA, smoothstep(i[2] * 0.86, i[2], id)));
+  }
+  for (const p of s.pools || []) { const pd = Math.hypot(dx - p[0], dz - p[1]); if (pd < p[2]) h = lerp(p[3] + noise2(x * 0.3, z * 0.3) * 0.25, h, smoothstep(p[2] * 0.6, p[2], pd)); }
+  return h;
+}
+function shelf(s, x, z, dx, dz, d, sh) {
   let top = s.h + fbm(x * 0.012 + s.x, z * 0.012 - s.z, 3) * s.rough + fbm(x * 0.05, z * 0.05, 2) * 0.3;
   for (const p of s.hills || []) top += p[2] * (1 - smoothstep(0, p[3], Math.hypot(dx - p[0], dz - p[1])));
   if (s.marsh) { // reed flats a hand above the water, shallows a man can wade, and pools he cannot
@@ -31,22 +43,24 @@ function rawAt(s, x, z) {
     if (n < -0.16) top = Math.min(top, -0.22 - (-0.16 - n) * 2.2);
     top = Math.max(top, -0.68); // every pool can be waded; only the channels need a boat or a bridge
   }
-  for (const c of s.cuts || []) { const cd = distToPolyline(dx, dz, c.pts); if (cd < c.w) top = Math.min(top, lerp(c.y, top, smoothstep(c.w * 0.4, c.w, cd))); }
+  const cut = (c) => { const cd = distToPolyline(dx, dz, c.pts); if (cd < c.w) top = Math.min(top, lerp(c.y, top, smoothstep(c.w * 0.4, c.w, cd))); };
+  for (const c of s.cuts || []) if (!c.late) cut(c);
   if (s.marsh) for (const r of s.roads || []) { const rd = distToPolyline(dx, dz, r); if (rd < 6) top = Math.max(top, lerp(0.5, top, smoothstep(2.5, 6, rd))); } // causeways
   for (const f of s.flats || []) { const fd = Math.hypot(dx - f[0], dz - f[1]); if (fd < f[2]) top = lerp(f[3], top, smoothstep(f[2] * 0.62, f[2], fd)); }
-  const land = lerp(top, -2.2, smoothstep(s.r * 0.8, s.r * 0.93, d));
-  return lerp(land, SEA, smoothstep(s.r * 0.93, s.r, d));
+  for (const c of s.cuts || []) if (c.late) cut(c); // a river keeps its bed through level ground
+  const land = lerp(top, -2.2, smoothstep(s.r * sh[0], s.r * sh[1], d));
+  return lerp(land, SEA, smoothstep(s.r * sh[1], s.r, d));
 }
 
 export function buildRealmHeights() {
-  for (const s of GREAT) for (let j = 0; j <= s.n; j++) for (let i = 0; i <= s.n; i++) {
+  for (const s of ALL) for (let j = 0; j <= s.n; j++) for (let i = 0; i <= s.n; i++) {
     const edge = i === 0 || j === 0 || i === s.n || j === s.n;
     s.H[j * (s.n + 1) + i] = edge ? SEA : rawAt(s, s.x0 + i * C, s.z0 + j * C);
   }
 }
 /** Height on a great island's grid, or the open sea floor. */
 export function realmAt(x, z) {
-  for (const s of GREAT) {
+  for (const s of ALL) {
     const fx = (x - s.x0) / C, fz = (z - s.z0) / C;
     if (fx < 0 || fz < 0 || fx >= s.n || fz >= s.n) continue;
     const ix = fx | 0, iz = fz | 0, tx = fx - ix, tz = fz - iz, i = iz * (s.n + 1) + ix, H = s.H;
@@ -59,13 +73,21 @@ export function greatAt(x, z, pad = 0) {
   for (const s of GREAT) if (Math.abs(x - s.x) < s.half + pad && Math.abs(z - s.z) < s.half + pad) return s;
   return null;
 }
+/** Which stretch of mainland coast (x, z) lies on, or null. */
+export function mainAt(x, z, pad = 0) {
+  for (const s of MAIN) if (Math.abs(x - s.x) < s.half + pad && Math.abs(z - s.z) < s.half + pad) return s;
+  return null;
+}
 /** How near (x, z) is to level ground or a road on its island: trees and boulders keep off these. */
 export function realmClear(s, x, z) {
   const dx = x - s.x, dz = z - s.z;
   for (const f of s.flats || []) if (Math.hypot(dx - f[0], dz - f[1]) < f[2] * 0.95) return false;
   for (const r of s.roads || []) if (distToPolyline(dx, dz, r) < 5) return false;
+  for (const f of s.fields || []) if (inField(f, dx, dz, 3)) return false;
   return true;
 }
+
+const inField = (f, dx, dz, pad = 0) => { const c = Math.cos(f[4] || 0), sn = Math.sin(f[4] || 0), lx = (dx - f[0]) * c - (dz - f[1]) * sn, lz = (dx - f[0]) * sn + (dz - f[1]) * c; return Math.abs(lx) < f[2] / 2 + pad && Math.abs(lz) < f[3] / 2 + pad; };
 
 // what each kind of ground is painted in: [grass a, grass b, heather, shore, rock, worn earth]
 const GROUND = {
@@ -74,6 +96,7 @@ const GROUND = {
   black: [[66, 72, 50], [84, 84, 64], [70, 62, 62], [44, 42, 46], [56, 54, 58], [78, 70, 62]],
   marsh: [[98, 108, 54], [124, 124, 62], [92, 84, 52], [80, 70, 48], [98, 94, 84], [84, 70, 50]],
   stone: [[94, 104, 58], [120, 116, 66], [112, 100, 88], [150, 144, 128], [146, 144, 138], [128, 116, 98]],
+  home: [[84, 112, 54], [118, 132, 64], [108, 104, 66], [156, 144, 114], [112, 108, 102], [122, 100, 74]],
 };
 
 function buildIsle(s) {
@@ -98,7 +121,8 @@ function buildIsle(s) {
     d[o] = lerp(P[0][0], P[1][0], nn); d[o + 1] = lerp(P[0][1], P[1][1], nn); d[o + 2] = lerp(P[0][2], P[1][2], nn); d[o + 3] = 255;
     mix(o, P[2], smoothstep(0.5, 0.8, n2) * 0.6);                                   // heather, or ash, or reed-brown
     if (s.ground === 'iron') mix(o, [150, 66, 44], smoothstep(0.72, 0.9, noise2(x * 0.016 - 3, z * 0.05 + 11) * 0.5 + 0.5) * 0.75); // ore stains the streams red
-    for (const f of s.flats || []) { const fd = Math.hypot(dx - f[0], dz - f[1]); if (fd < f[2]) mix(o, P[5], (1 - smoothstep(f[2] * 0.35, f[2], fd)) * 0.55 * (0.6 + nn * 0.4)); }
+    for (const f of s.flats || []) { if (f[4]) continue; const fd = Math.hypot(dx - f[0], dz - f[1]); if (fd < f[2]) mix(o, P[5], (1 - smoothstep(f[2] * 0.35, f[2], fd)) * 0.55 * (0.6 + nn * 0.4)); }
+    for (const f of s.fields || []) if (inField(f, dx, dz)) mix(o, (Math.floor((dx * Math.cos(f[4] || 0) - dz * Math.sin(f[4] || 0)) / 1.6) & 1) ? [182, 156, 74] : [168, 140, 62], 0.9); // barley, in rows
     for (const r of s.roads || []) { const rd = distToPolyline(dx, dz, r); if (rd < 4) mix(o, P[5], (1 - smoothstep(1.2, 4, rd)) * 0.85); }
     mix(o, P[3], 1 - smoothstep(0.3, s.marsh ? 0.5 : 1.6, h));                       // the shore
     mix(o, P[4], smoothstep(0.42, 0.85, sl));                                       // rock where it is steep
@@ -112,7 +136,7 @@ function buildIsle(s) {
   return m;
 }
 export function buildRealm(scene) {
-  for (const s of GREAT) scene.add(buildIsle(s));
+  for (const s of ALL) scene.add(buildIsle(s));
   // one floor under the whole open sea, the colour every island's shallows fade to
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(10000, 10000), new THREE.MeshStandardMaterial({ color: new THREE.Color(DEEP[0] / 255, DEEP[1] / 255, DEEP[2] / 255).convertSRGBToLinear().multiplyScalar(1.1), roughness: 1, metalness: 0 }));
   floor.rotation.x = -Math.PI / 2; floor.position.set(0, SEA - 3, 1600); scene.add(floor);

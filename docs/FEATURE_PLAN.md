@@ -27,7 +27,7 @@ Sources are listed at the end.
 | Walk key (hold `Alt`) | **Built** | |
 | Vault and climb | Planned | Low walls, fences, ledges to head height. Needs obstacle tags on props and two animations. |
 | Jump | Not planned | Dodge has that button. A jump only earns its place with places to jump to. |
-| Swimming | Planned | Today deep water is a wall. Short swims with a breath bar; drowning in mail. |
+| Swimming | Partly built | A dive with breath and depth exists over the wreck off Kaupang (Act II). Everywhere else deep water is still a wall. To do: short swims anywhere, drowning in mail. |
 | Auto-recentre and camera collision polish | Planned | Recentres behind him when moving with no mouse input; fade bodies that touch the lens. |
 | Horse feel | Planned | Gallop stamina, jumping fences, fighting from the saddle. |
 | Gamepad for the new keys | Planned | Lock on R3 is the convention. |
@@ -44,7 +44,7 @@ Sources are listed at the end.
 | Memory | Planned | Greeting changes with what he did last time and with standing. |
 | Reactions | Planned | Flee a drawn weapon, gather at a fight, shelter from rain, look at the white raven. |
 | Svartøy | Planned | Håkon's men patrol; thralls work. Hostile, so it needs the wanted rules to cover it. |
-| Home waters and Bjornstead | Planned | The same system on Kinn, Gulen, Fedje, Skorpa, Vængr, and the village once it is rebuilt as the story has it. |
+| Home waters and Bjornstead | Planned | The same system on Kinn, Gulen, Fedje, Skorpa and Vængr. Bjornstead (built in 0.14) has its own people in Act II, placed by time of day; it and Kaupang are empty in the sandbox. |
 | Animals and trades | Planned | Sheep driven on roads, carts, boats working the bays. |
 | Path-finding | Planned | People walk straight lines along roads now. A navigation grid per island lets them go round things. |
 
@@ -71,11 +71,13 @@ Planned, in order: a person plays every champion and the numbers are retuned (th
 
 Built in 0.13: five great islands at story scale, the open sea to carry them, a common sea floor.
 
-Planned, in order: Bjornstead as the story's coastal village, then its walls (Act II); the five small home islands enlarged to hold their chapters; Kaupang; Hedeby Sound; Wessex as a destination; weather and wind at sea; interiors.
+Built in 0.14: the mainland coast as two pieces of terrain. Bjornstead, the story's coastal village, whose burned houses, ditch, palisade, watchtower and ship are switched on as Act II reaches them; and Kaupang with the Skerries and the wreck.
+
+Planned, in order: Act I's last chapters moved to the new Bjornstead; the five small home islands enlarged to hold their chapters; Hedeby Sound; Wessex as a destination; weather and wind at sea; interiors.
 
 ## How the work is ordered
 
-The owner's story is 59 chapters and a three-part epilogue. By this plan's own targets they come to roughly 17 hours of main missions; side work, travel and battles are what would carry it toward 40. It will be built one chapter at a time, in story order from Act II, each one checked against the text before it is called done. Two standards from the game-studio kit the owner pointed to are adopted: gameplay numbers live in data files, and every story fact carries a canon level.
+The owner's story is 59 chapters and a three-part epilogue. By this plan's own targets they come to roughly 17 hours of main missions; side work, travel and battles are what would carry it toward 40. It is being built one chapter at a time in story order, each one checked against the text before it is called done: Act II was done this way in 0.14; Act III is next. Two standards from the game-studio kit the owner pointed to are adopted: gameplay numbers live in data files, and every story fact carries a canon level.
 
 ## Sources
 

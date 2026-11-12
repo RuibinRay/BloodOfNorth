@@ -1,7 +1,7 @@
 {
  "about": "Mission breakdown of the owner's story (docs/story/THE_RISE_OF_THE_RAVEN_KING.md), chapter by chapter. status: built (playable; tested by script) | partial (something of it is playable; read the note) | fight_only (the champion fight is playable in its place, without the chapter round it) | planned. Minutes are design targets, not measured playtime: nothing here has been timed with a person playing.",
  "source": "docs/story/THE_RISE_OF_THE_RAVEN_KING.md",
- "updated": "2026-11-12",
+ "updated": "2026-11-12 (0.14)",
  "acts": [
   {
    "act": 1,
@@ -174,8 +174,8 @@
        "type": "tutorial",
        "target_minutes": 12,
        "summary": "Splitting wood with Bjorn; Old Skeggi eats the boot; Freydis.",
-       "status": "partial",
-       "note": "Built as the ten-years-on morning and the sparring. The goat is not in."
+       "status": "built",
+       "note": "Splitting wood with Bjorn, Old Skeggi and the boot (he ends on the longhouse roof), Freydis."
       }
      ]
     },
@@ -189,7 +189,8 @@
        "type": "hunt",
        "target_minutes": 12,
        "summary": "Mjöll's pictures: water, blood, broken branch.",
-       "status": "planned"
+       "status": "built",
+       "note": "Raven's Eye marks water, blood and the broken branch; the elk lies at the stream."
       },
       {
        "id": "a2c2m2",
@@ -197,7 +198,8 @@
        "type": "choice",
        "target_minutes": 8,
        "summary": "Hauk against Grjotgard at the Thing.",
-       "status": "planned"
+       "status": "built",
+       "note": "Both men are heard; Bjorn gives the story's judgment. There is no choice to make: the story makes it."
       },
       {
        "id": "a2c2m3",
@@ -205,7 +207,8 @@
        "type": "activity",
        "target_minutes": 12,
        "summary": "Kaestur, the wrestling match, the ache in the scar.",
-       "status": "planned"
+       "status": "built",
+       "note": "Kaestur (a timed straight face), the wrestling match (he lets Bjorn throw him), the birch at night."
       }
      ]
     },
@@ -219,8 +222,8 @@
        "type": "story",
        "target_minutes": 8,
        "summary": "Seven riders. Kettil Red-Hand demands tribute and two girls; he knows the scar.",
-       "status": "partial",
-       "note": "Built as the tithe-takers' visit; needs a pass against the story's words."
+       "status": "built",
+       "note": "Raven's Eye on the river road; Kettil on the black horse; the story's words in the yard."
       }
      ]
     },
@@ -234,7 +237,8 @@
        "type": "story",
        "target_minutes": 3,
        "summary": "He lifts the flat stone.",
-       "status": "built"
+       "status": "built",
+       "note": "The flat stone, the memory, Bjorn's spare shield, 'The boy who survived.'"
       },
       {
        "id": "a2c4m2",
@@ -242,8 +246,8 @@
        "type": "battle",
        "target_minutes": 20,
        "summary": "Waves through the yard; the barn door, the pigsty, the narrow lane; Sót and the helmet strap.",
-       "status": "partial",
-       "note": "Built as a three-wave raid with Bjorn beside him. The set pieces are not in."
+       "status": "built",
+       "note": "Four waves (25 men) and Kettil's escort of four: the barn door, the pigsty mud, the lane, Sót and the helmet strap, Freydis and the bucket. Balance is untested by hand."
       },
       {
        "id": "a2c4m3",
@@ -251,8 +255,8 @@
        "type": "boss",
        "target_minutes": 8,
        "summary": "Kettil: the buckler, the mud, Stormguard; the children in the barn; the wolf brooch in the mud.",
-       "status": "partial",
-       "note": "Kettil is fought and can be spared or not. In the story Eirik turns his back to save six children: that choice is fixed and must be rebuilt."
+       "status": "built",
+       "note": "The buckler, the mud, Stormguard, the shield rim; he turns his back for the six children; the brooch; Freydis at the well. No spare-or-kill choice."
       }
      ]
     },
@@ -266,7 +270,8 @@
        "type": "cutscene",
        "target_minutes": 4,
        "summary": "Håkon cuts the wolf from Kettil's cloak; the bounty.",
-       "status": "planned"
+       "status": "built",
+       "note": "Played in the Hall of Wolves on Svartøy with the story's lines. Figures are stand-ins; the hall has no roof."
       }
      ]
     },
@@ -280,7 +285,8 @@
        "type": "stealth",
        "target_minutes": 12,
        "summary": "Mjöll at their camp; the net across the path; Skull-Ringer; outlawry.",
-       "status": "planned"
+       "status": "built",
+       "note": "The camp watched from the air, the net strung, Skull-Ringer at midnight, the Thing, the leaky boat, Bjorn by the fire."
       }
      ]
     },
@@ -294,7 +300,8 @@
        "type": "choice",
        "target_minutes": 8,
        "summary": "The vote at the Thing stones.",
-       "status": "planned"
+       "status": "built",
+       "note": "Three views heard, then the story's speech. The vote is told, not played."
       },
       {
        "id": "a2c7m2",
@@ -302,8 +309,8 @@
        "type": "building",
        "target_minutes": 25,
        "summary": "Timber, ditch, palisade, the watchtower by the old birch; the latrine trench.",
-       "status": "planned",
-       "note": "Settlement building is not built."
+       "status": "built",
+       "note": "Felling, hauling with the horse, the ditch, the latrine trench, the palisade, the watchtower, Bjorn's shield wall: each a short timed task. The ditch is drawn on the ground, not dug; the palisade has no fighting walk."
       }
      ]
     },
@@ -317,8 +324,8 @@
        "type": "story",
        "target_minutes": 12,
        "summary": "The market, the thrall pen, Leif and Orm the reeve.",
-       "status": "planned",
-       "note": "Kaupang is not on the map yet."
+       "status": "built",
+       "note": "Kaupang on the map: quay, market, thrall pen, tavern. The list is bought; Leif and Orm; the drunk sailor."
       },
       {
        "id": "a2c8m2",
@@ -326,7 +333,8 @@
        "type": "dive",
        "target_minutes": 15,
        "summary": "The tide, the silver, Gisli under the beam.",
-       "status": "planned"
+       "status": "built",
+       "note": "A dive with breath and depth: silver from the wreck, then Gisli under the beam and the basket let go. Swimming exists only here."
       },
       {
        "id": "a2c8m3",
@@ -334,8 +342,8 @@
        "type": "choice",
        "target_minutes": 8,
        "summary": "The Kaupang Thing; Leif pays his debts; the Sea-Raven.",
-       "status": "planned",
-       "note": "A ship called the Sea-Raven can be bought in the sandbox; Leif is not built."
+       "status": "built",
+       "note": "Three pieces of evidence put to the Thing in the right order; the Sea-Raven comes home to Bjornstead's pier."
       }
      ]
     },
@@ -349,7 +357,8 @@
        "type": "story",
        "target_minutes": 6,
        "summary": "The feast; Bjorn's ring; smoke in the west.",
-       "status": "planned"
+       "status": "built",
+       "note": "Leif's story with Gisli correcting it, the goat's trial, the arm-ring, the smoke in the west."
       }
      ]
     }
@@ -1615,10 +1624,10 @@
   "missions": 89,
   "target_minutes": 1015,
   "by_status": {
-   "built": 6,
-   "partial": 10,
+   "built": 21,
+   "partial": 6,
    "fight_only": 10,
-   "planned": 63
+   "planned": 52
   }
  }
 }

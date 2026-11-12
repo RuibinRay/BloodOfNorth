@@ -154,17 +154,48 @@ export const GREAT = [
     flats: [[-140, -26, 60, 3.5], [-40, -20, 60, 9], [-58, 86, 30, 10], [158, 62, 34, 30]],
     roads: [[[-196, -34], [-140, -26], [-40, -20], [40, 10], [110, 44], [158, 62]], [[-40, -20], [-58, 86]]] },
 ];
-/** Places on the great islands the story names (offsets from the island's centre, as above). The world builder puts
- *  the buildings here, the champions wait here, and the map labels these. */
+/** The mainland coast of the story: Bjornstead, the village that becomes Ravenhold, and the market town of Kaupang
+ *  four days' sail down the coast. Each is a patch like a great island's, but only one shore of its land is in the
+ *  world: o = where the centre of the outline lies from the centre of the patch, half = half the side of the patch,
+ *  wob = how far the coast wanders, shore = where the beach starts and ends (fractions of r), lim = how far north a
+ *  man may go. cuts marked late are rivers (carved after the level ground); a flat with a fifth value keeps its
+ *  grass; fields [dx, dz, w, d, ry] are painted as barley; woods [dx, dz, r, share of birch]; isles [dx, dz, r, h]
+ *  are skerries off the coast; pools [dx, dz, r, y] set the sea floor (a wreck a man can dive to). */
+export const MAIN = [
+  { id: 'bjornstead', name: 'Bjornstead', title: 'the village on the mainland coast', x: 1300, z: 560, half: 330, o: [0, -70], r: 330, k: 0.95, a: 0, wob: 0.07, shore: [0.9, 0.96], h: 5, rough: 2, ground: 'home',
+    lim: { minZ: 336 },
+    bays: [[8, 282, 78]],
+    hills: [[-20, 10, 12, 60], [-180, -270, 80, 165], [150, -300, 95, 175], [-10, -345, 70, 170], [262, -40, 20, 100], [-262, -10, 24, 110]],
+    flats: [[0, 135, 112, 3.4], [-92, 92, 15, 5.4], [100, 36, 26, 3.4, 1], [-20, 10, 9, 16.5, 1], [-150, 96, 42, 3.6, 1], [-150, 150, 12, 3.4, 1], [-60, -62, 16, 9.5, 1]],
+    cuts: [{ late: true, pts: [[235, -290], [200, -170], [160, -70], [132, 30], [124, 120], [118, 200], [110, 300]], w: 7, y: -0.72 }],
+    roads: [[[0, 214], [0, 150], [-4, 100], [-9, 58], [-16, 36], [-20, 26]], [[-230, 170], [-150, 158], [-110, 146], [-40, 146], [0, 150]],
+      [[0, 150], [60, 146], [100, 132], [110, 134], [112, 140], [131, 140], [150, 152], [220, 170], [300, 160]], [[110, 134], [118, 60], [140, -40], [176, -150], [206, -260]], [[-40, 146], [-70, 112], [-92, 92]], [[-10, 50], [-40, 0], [-60, -62]]],
+    fields: [[-150, 96, 50, 56, 0.1]],
+    woods: [[-150, -70, 95, 0.75], [165, -150, 70, 0.7], [-40, -160, 80, 0.15], [230, 40, 60, 0.5], [-240, 60, 55, 0.5]] },
+  { id: 'kaupang', name: 'Kaupang', title: 'the great market', x: 1790, z: 3260, half: 280, o: [110, 30], r: 300, k: 1, a: 0, wob: 0.07, shore: [0.9, 0.96], h: 5, rough: 2, ground: 'stone',
+    lim: { maxZ: 3470 },
+    bays: [[-190, 20, 70]],
+    hills: [[60, 130, 40, 190], [190, -100, 50, 200], [140, 250, 60, 200], [-70, 290, 50, 120]],
+    flats: [[-70, 20, 80, 3.2], [-30, -100, 16, 5, 1]],
+    roads: [[[-126, -52], [-126, 92]], [[-126, 20], [-70, 20], [-8, 24]], [[-70, 20], [-52, -50], [-30, -100]], [[-70, 20], [-74, 80], [-60, 130]]],
+    woods: [[90, -40, 90, 0.4], [40, 170, 80, 0.3]],
+    isles: [[-225, -205, 36, 5.5], [-268, -158, 12, 2.4], [-176, -256, 13, 3], [-292, -232, 10, 2]],
+    pools: [[-225, -247, 19, -6.6]] },
+];
+/** Places on the great islands and the mainland that the story names (offsets from the centre of the island or
+ *  patch, as above). The world builder puts the buildings here, the story waits here, and the map labels these. */
 export const PLACES = {
   jarnoy: { town: [170, -22], shore: [176, 96], hall: [78, -14], tower: [118, -62], furnaces: [-10, 62], hamlet: [40, 236], landing: [236, -22] },
   solvik: { quay: [-150, 26], hall: [-64, -34], cave: [0, 188], landing: [-206, 38], ship: [-226, 44] },
   svartoy: { harbor: [0, -205], bend: [14, -150], bridgeN: [0, -106], bridgeS: [0, -54], town: [0, 4], gate: [0, 76], hall: [0, 116], pens: [30, 222], cove: [104, 250], landing: [0, -246], flagship: [30, -304] },
   myrholm: { hall: [6, -36], landing: [34, -210], tower: [-70, 186], stiltsW: [-150, 30], stiltsE: [128, 96], peat: [170, -70] },
   skalloy: { harbor: [-140, -26], forge: [-40, -20], hall: [-58, 86], quarry: [158, 62], landing: [-202, -34] },
+  bjornstead: { yard: [0, 140], hall: [-6, 114], well: [9, 139], chop: [-23, 130], barn: [36, 118], sty: [50, 150], smithy: [-52, 158], smoke: [-40.6, 158], lane: [-46.6, 158], thing: [-92, 92], birch: [-20, 10],
+    pier: [0, 232], strand: [0, 212], field: [-150, 96], pasture: [100, 36], bridge: [121, 140], camp: [-150, 150], timber: [-60, -62], elk: [146, -52], latrine: [70, 100], trench: [58, 30], drill: [98, 38], gateE: [106, 131], gateW: [-108, 146], gateN: [-9, 58], gateS: [0, 208], road: [150, -60] },
+  kaupang: { quay: [-134, 20], market: [-80, 20], pen: [-104, 74], tavern: [-62, 56], thing: [-30, -100], pier: [-156, 0], ship: [-158, -5], barrel: [-130, -6], pier2: [-156, 42], boat: [-152, 46.5], skerry: [-225, -228], wreck: [-225, -247] },
 };
 /** World position of a named place: place('svartoy', 'bridgeN') -> { x, z }. */
 export function place(isle, name, dx = 0, dz = 0) {
-  const s = GREAT.find((g) => g.id === isle), p = PLACES[isle][name];
+  const s = GREAT.find((g) => g.id === isle) || MAIN.find((g) => g.id === isle), p = PLACES[isle][name];
   return { x: s.x + p[0] + dx, z: s.z + p[1] + dz };
 }

@@ -10,7 +10,7 @@ import { Woodcutting, FireMaking, Fishing, Sparring } from '../systems/activitie
 import { clamp, damp, lerp } from '../core/util.js';
 import { Chapter2 } from './act1_ch2.js';
 import { Chapter3 } from './act1_ch3.js';
-import { Act2Ch1 } from './act2_ch1.js';
+import { Act2 } from './act2.js';
 import { OpenProto } from './open_proto.js';
 
 const PATH_TO_MEADOW = [[-38, 71.6], [-27, 70.5], [-17, 64.5], [-3, 57], [0, 46], [-7, 14], [-20, -12], [-22, -18], [-24, -22], [-43, -27], [-59, -34]];
@@ -20,7 +20,7 @@ const FLEE_PATH = [[-23, 66], [-21, 56], [-21, 50], [-10, 43], [-7, 30], [-8, 12
 const CAMP_SEAT = [POI.camp.x - 1.75, POI.camp.z + 1.0];
 const DUEL = { ragnar: [-15, 70], hakon: [-10.5, 70.4], g1: [-6, 73.2], g2: [-6.5, 67.4] };
 const GATE_PATROL = [[[-13, -9], [-19.5, -13.5]], [[-9, 2], [-14, -7]]];
-const QUESTS_MAIN = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_smoke', 'q_axe', 'q_open', 'q_sea'];
+const QUESTS_MAIN = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_farm', 'q_smoke', 'q_axe', 'q_wolf', 'q_peddlers', 'q_walls', 'q_captain', 'q_oath', 'q_open', 'q_sea'];
 const WEATHER = {
   day: { snow: 0, fog: 0, overcast: 0.08, wind: 1 },
   dusk: { snow: 0.12, fog: 0.02, overcast: 0.3, wind: 1.1 },
@@ -36,7 +36,7 @@ export class Act1 {
     this.houseFires = {}; this.schedT = 0;
     this.ch2 = new Chapter2(game, this);
     this.ch3 = new Chapter3(game, this);
-    this.a2 = new Act2Ch1(game, this);
+    this.a2 = new Act2(game, this);
     this.open = new OpenProto(game, this);
   }
   hideFactor(p) { return this.st.stage === 'ch2' ? this.ch2.hideFactor(p) : 1; }
@@ -109,6 +109,11 @@ export class Act1 {
   /** Rebuild the scripted world from a loaded save. */
   restore() {
     const g = this.g, st = this.st;
+    if (st.quests.q_ten && st.flags.a2v !== 2 && st.stage !== 'open') { // a save from before Act II was rebuilt from the owner's story: the act starts again
+      for (const id of ['q_ten', 'q_smoke', 'q_axe']) delete st.quests[id];
+      for (const k of ['sparedKettil', 'killedKettil', 'barnBurned']) delete st.flags[k];
+      st.flags.axeHidden = true; st.stage = 'act1done';
+    }
     if (['day', 'ch2', 'ch3', 'act2', 'open'].includes(st.stage)) g.sky.time = st.time ?? 8;
     if (st.vitals) Object.assign(g.player, st.vitals);
     if (st.player) g.player.teleport(st.player.x, st.player.z, st.player.yaw);
@@ -116,7 +121,7 @@ export class Act1 {
     for (const id of Object.keys(st.quests)) if (st.quests[id].status === 'active') g.quests.enter(id, true);
     // between chapters, or at the end of what is built: show the chapter summary
     const active = Object.values(st.quests).some((q) => q.status === 'active' && QUESTS_MAIN.includes(Object.keys(st.quests).find((k) => st.quests[k] === q)));
-    if (!active && g.quests.isDone('q_alone')) { st.stage = g.quests.isDone('q_axe') ? 'complete' : g.quests.isDone('q_wings') ? 'act1done' : g.quests.isDone('q_ice') ? 'ch2done' : 'ch1done'; this.showChapterEnd(); }
+    if (!active && g.quests.isDone('q_alone')) { st.stage = g.quests.isDone('q_oath') ? 'complete' : g.quests.isDone('q_wings') ? 'act1done' : g.quests.isDone('q_ice') ? 'ch2done' : 'ch1done'; this.showChapterEnd(); }
   }
 
   // =====================================================================================
@@ -254,7 +259,7 @@ export class Act1 {
     if (id === 'q_alone') this.playEnding();
     if (id === 'q_ice') this.ch2.playEnding();
     if (id === 'q_wings') this.ch3.playEnding();
-    if (id === 'q_axe') this.a2.playEnding();
+    if (id === 'q_oath') this.a2.playEnding();
     if (this.open.built) { this.open.sea.questDone(id); this.open.fleet.questDone(id); this.open.war.questDone(id); this.open.table.questDone(id); }
   }
   steps = {
@@ -657,7 +662,7 @@ export class Act1 {
   /** Start Act II the same way: ten winters on. */
   beginAct2() {
     const g = this.g, st = this.st;
-    st.stage = 'act2'; st.quests.q_ten = { status: 'active', step: 0, count: 0 }; st.flags.axeHidden = true;
+    st.stage = 'act2'; st.quests.q_ten = { status: 'active', step: 0, count: 0 }; st.flags.axeHidden = true; st.flags.a2v = 2; st.player = null;
     Object.assign(g.player, { health: 100, warmth: 100, hunger: 100 }); g.sky.time = 14.6;
     g.saveGame('auto'); g.reloadCheckpoint();
   }
@@ -811,6 +816,7 @@ export class Act1 {
   markerFor(step) {
     const m = step && step.marker;
     if (!m) return null;
+    if (m.dyn && this.st.stage === 'act2') return this.a2.dyn(m.dyn);
     if (m.npc) { const n = this.npc(m.npc); return n && n.visible ? { x: n.pos.x, z: n.pos.z, y: n.pos.y + n.h.headHeight() + 0.45 } : null; }
     if (m.dyn === 'deerBody') return this.deerBody && !this.deerBody.harvested ? { x: this.deerBody.pos.x, z: this.deerBody.pos.z, y: this.deerBody.pos.y + 1.2 } : null;
     if (m.dyn === 'horse' || m.dyn === 'boat' || m.dyn === 'ship' || m.dyn === 'hound' || m.dyn === 'tooth') return this.open.dyn(m.dyn);

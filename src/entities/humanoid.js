@@ -52,6 +52,9 @@ const LOOPS = {
   cower: (p, t) => { p.crx = 0.4; p.nrx = 0.25; p.slx = p.srx = -0.95; p.elL = p.elR = -2.0; p.hy = -0.12 + Math.sin(t * 9) * 0.004; p.knL = p.knR = 0.5; },
   fish: (p, t) => { p.srx = -0.95 + Math.sin(t * 0.8) * 0.03; p.elR = -0.7; p.slx = -0.6; p.elL = -0.95; },
   dead: (p) => { p.pitch = -1.5; p.by = 0.16; p.slz = 1.0; p.srz = -1.0; p.llx = 0.08; p.lrx = -0.1; p.nry = 0.5; p.elL = -0.3; p.elR = -0.5; },
+  swim: (p, t) => { const k = Math.sin(t * 3.2); p.pitch = 1.25; p.by = 0.35; p.slx = -2.75 + k * 0.5; p.srx = -2.75 - k * 0.5; p.elL = p.elR = -0.25; p.llx = k * 0.4; p.lrx = -k * 0.4; p.knL = 0.2 + k * 0.2; p.knR = 0.2 - k * 0.2; p.nrx = -0.7; },
+  tread: (p, t) => { const k = Math.sin(t * 2.6); p.slx = -1.2; p.srx = -1.2; p.slz = 0.9 + k * 0.25; p.srz = -0.9 - k * 0.25; p.elL = p.elR = -0.5; p.llx = k * 0.3; p.lrx = -k * 0.3; p.knL = p.knR = 0.4; },
+  lie: (p) => { p.pitch = -1.5; p.by = 0.16; p.slx = -2.6; p.srx = -2.6; p.elL = -0.9; p.elR = -0.9; p.llx = 0.1; p.lrx = -0.08; },
   mourn: (p) => { p.hy = -0.43; p.llx = -1.4; p.knL = 1.5; p.lrx = 0.15; p.knR = 1.55; p.crx = 0.7; p.nrx = 0.45; p.slx = p.srx = -0.8; p.elL = p.elR = -0.9; },
 };
 // ---- one-shot actions: keyframes [startFraction, poseOverrides] ----------------------

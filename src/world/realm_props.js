@@ -10,11 +10,11 @@ import { rng, noise2 } from '../core/util.js';
 
 let N = 0;
 const quiet = (ctx) => ({ ...ctx, smoke: [] }); // most roofs do not smoke: a hundred chimneys is a lot of particles
-function house(ctx, x, z, ry, len = 11, o = {}) {
+export function house(ctx, x, z, ry, len = 11, o = {}) {
   return P.longhouse(o.smoke ? ctx : quiet(ctx), { id: 'r' + N++, x, z, ry, len, wid: o.wid || 5.4, ridge: o.ridge || 4.0, roof: o.roof || 'turf', door: o.door ?? 1, doorX: o.doorX || 0 });
 }
 /** A wall of upright logs along a polyline. */
-function palisade(ctx, pts, h = 3.3) {
+export function palisade(ctx, pts, h = 3.3) {
   for (let i = 0; i < pts.length - 1; i++) {
     const [ax, az] = pts[i], [bx, bz] = pts[i + 1], len = Math.hypot(bx - ax, bz - az), ry = Math.atan2(-(bz - az), bx - ax);
     const mx = (ax + bx) / 2, mz = (az + bz) / 2, y = Math.min(heightAt(ax, az), heightAt(bx, bz), heightAt(mx, mz));
@@ -25,7 +25,7 @@ function palisade(ctx, pts, h = 3.3) {
   }
 }
 /** A plank pier or bridge: a walkable deck with rails, on posts that reach the ground. Its long axis runs along yaw. */
-function deck(ctx, world, x, z, yaw, hl, { hw = 1.6, y = 1.2, rails = false, mat = M.plank } = {}) {
+export function deck(ctx, world, x, z, yaw, hl, { hw = 1.6, y = 1.2, rails = false, mat = M.plank } = {}) {
   const s = Math.sin(yaw), c = Math.cos(yaw);
   ctx.b.add(at(box(hw * 2, 0.2, hl * 2, 2.2), x, y - 0.1, z, 0, yaw, 0), mat);
   for (let t = -hl + 0.6; t <= hl - 0.5; t += 4.5) for (const k of [-1, 1]) {
@@ -41,7 +41,7 @@ function deck(ctx, world, x, z, yaw, hl, { hw = 1.6, y = 1.2, rails = false, mat
   return world.addDeck({ x, z, yaw, hw, hl, y });
 }
 /** A square stone tower with a fighting top. Hollow in plan: four walls, and a deck inside them at the top. */
-function tower(ctx, world, x, z, half = 4.2, h = 9) {
+export function tower(ctx, world, x, z, half = 4.2, h = 9) {
   const y0 = heightAt(x, z) - 0.3, w = 0.8;
   for (const [dx, dz, lx, lz] of [[0, -half, half * 2 + w, w], [0, half, half * 2 + w, w], [-half, 0, w, half * 2 + w], [half, 0, w, half * 2 + w]]) {
     ctx.b.add(at(box(lx, h + 1.5, lz, 2.2), x + dx, y0 + (h + 1.5) / 2, z + dz), M.stone);
@@ -58,7 +58,7 @@ function tower(ctx, world, x, z, half = 4.2, h = 9) {
   return { x, z, y: y0 + h, half: half - w / 2 - 0.4, foot: { x, z: z + half + 2 } };
 }
 /** A burned-out building: a stone footing and what is left of the posts. */
-function ruin(ctx, x, z, ry, len = 10, wid = 5) {
+export function ruin(ctx, x, z, ry, len = 10, wid = 5) {
   const y = heightAt(x, z), r = rng((x * 13 + z * 7) | 0);
   ctx.b.add(at(box(len, 0.5, wid), x, y + 0.1, z, 0, ry, 0), M.stone);
   for (let i = 0; i < 7; i++) { const [px, pz] = P.toWorld(x, z, ry, (r() - 0.5) * len, (r() < 0.5 ? -1 : 1) * wid / 2); ctx.b.add(tint(at(cyl(0.11, 0.14, 0.8 + r() * 2.2, 5), px, y + 1, pz, (r() - 0.5) * 0.5, 0, (r() - 0.5) * 0.5), 0x16120f, 0.3, i), M.vcPlain); }
@@ -73,7 +73,7 @@ function furnace(ctx, x, z) {
   ctx.addCircle(x, z, 0.9, 1.6);
 }
 /** Sharpened stakes along a line, leaning the way an enemy would come from. */
-function stakes(ctx, ax, az, bx, bz, lean = 0.6, step = 1.0) {
+export function stakes(ctx, ax, az, bx, bz, lean = 0.6, step = 1.0) {
   const len = Math.hypot(bx - ax, bz - az), n = Math.max(2, Math.round(len / step)), ry = Math.atan2(bx - ax, bz - az) + Math.PI / 2;
   for (let k = 0; k <= n; k++) { const t = k / n, x = ax + (bx - ax) * t, z = az + (bz - az) * t; ctx.b.add(at(cyl(0.015, 0.075, 1.7, 5), x, heightAt(x, z) + 0.55, z, lean, ry, 0), M.bark); }
 }
@@ -92,12 +92,12 @@ function stilt(ctx, world, x, z, ry) {
   return world.addDeck({ x, z, yaw: ry, hw: 3.7, hl: 3.7, y });
 }
 /** A moored longship that can be walked on. */
-function mooredShip(scene, world, x, z, yaw, L = 21, seed = 5) {
+export function mooredShip(scene, world, x, z, yaw, L = 21, seed = 5) {
   const m = P.makeShip({ L, B: 4.4, seed, sail: false, mast: 9 });
   m.position.set(x, -0.15, z); m.rotation.y = yaw; scene.add(m);
   return world.addDeck({ x, z, yaw, hw: 2.35, hl: L / 2 - 2.4, y: -0.15 + m.userData.deckY });
 }
-const pole = (ctx, x, z, h, cloth) => { // a banner on a pole
+export const pole = (ctx, x, z, h, cloth) => { // a banner on a pole
   const y = heightAt(x, z);
   ctx.b.add(at(cyl(0.06, 0.08, h, 5), x, y + h / 2, z), M.timber);
   ctx.b.add(tint(at(box(0.05, 1.7, 1.1), x, y + h - 1.0, z + 0.6), cloth, 0.15, 4), M.vcPlain);

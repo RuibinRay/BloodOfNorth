@@ -5,13 +5,15 @@ import { listSaves, saveSettings, deleteSave, latestSave, DEFAULT_SETTINGS } fro
 import { ITEMS, QUESTS } from '../data/act1.js';
 import { SECRETS } from '../data/act1_ch3.js';
 import { TREES, POINT_EVERY } from '../systems/skills.js';
-import { POI, ISLES, DISTRICT_LINE, GREAT } from '../world/layout.js';
+import { POI, ISLES, DISTRICT_LINE, GREAT, MAIN, PLACES } from '../world/layout.js';
+import { mainAt } from '../world/realm.js';
 import { icon, itemIcon, questIcon, ARTS } from './icons.js';
 import { heightAt, riverX, riverSurfaceY, SIZE, HALF } from '../world/terrain.js';
 /** The part of the world the sea chart shows: from the landing beach south to the edge of the chart. */
 const SEA_VIEW = { x0: -640, z0: 160, w: 1280, h: 1440 };
 /** The whole open sea: the home waters in the north, the five great islands round and beyond them. */
 const REALM_VIEW = { x0: -1960, z0: 140, w: 3920, h: 3480 };
+const TOWN_LABELS = { bjornstead: { hall: "Bjorn's hall", thing: 'Thing stones', birch: 'The old birch', pier: 'Harbour', smithy: 'Smithy', field: 'Barley', pasture: 'Pasture', bridge: 'Bridge', timber: 'Timber' }, kaupang: { quay: 'Quay', market: 'Market', pen: 'Thrall pen', tavern: 'Tavern', thing: 'Thing', skerry: 'The Skerries' } };
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -126,7 +128,7 @@ export class UI {
     this.e.tracker.innerHTML = list.map(({ def, q, step }) => {
       const n = step.count > 1 ? ` <em>${Math.min(q.count, step.count)} / ${step.count}</em>` : '';
       const id = Object.keys(QUESTS).find((k) => QUESTS[k] === def);
-      return `<div class="q ${def.kind}"><b>${icon(questIcon(id, def.kind))}${esc(def.title)}</b><span>${esc(step.text)}${n}</span></div>`;
+      return `<div class="q ${def.kind}"><b>${icon(questIcon(id, def.kind))}${esc(def.title)}</b><span>${esc(this.g.fmt(step.text))}${n}</span></div>`;
     }).join('');
   }
 
@@ -312,10 +314,10 @@ export class UI {
     if (!ids.includes(this.sel.quest)) this.sel.quest = ids[0];
     const cur = this.sel.quest, def = QUESTS[cur], q = st[cur];
     body.innerHTML = `<div class="cols"><div class="list">${ids.map((id) => `<button data-id="${id}" class="${id === cur ? 'on' : ''}"><small>${QUESTS[id].kind === 'main' ? 'Main quest' : 'Side quest'} · ${st[id].status === 'done' ? 'complete' : 'active'}</small>${icon(questIcon(id, QUESTS[id].kind))}${esc(QUESTS[id].title)}</button>`).join('')}</div>
-      <div><h3>${esc(def.title)}</h3><p>${esc(def.desc)}</p><h4>Objectives</h4><ul class="steps">${def.steps.map((s, i) => {
+      <div><h3>${esc(def.title)}</h3><p>${esc(g.fmt(def.desc))}</p><h4>Objectives</h4><ul class="steps">${def.steps.map((s, i) => {
         const done = q.status === 'done' || i < q.step, here = q.status === 'active' && i === q.step;
         if (!done && !here) return '';
-        return `<li class="${done ? 'done' : 'cur'}">${esc(s.text)}${here && s.count > 1 ? ` (${q.count} / ${s.count})` : ''}</li>`;
+        return `<li class="${done ? 'done' : 'cur'}">${esc(g.fmt(s.text))}${here && s.count > 1 ? ` (${q.count} / ${s.count})` : ''}</li>`;
       }).join('')}</ul></div></div>`;
     body.querySelectorAll('.list button').forEach((b) => (b.onclick = () => { this.sel.quest = b.dataset.id; this.openPanel('journal', this.tabs); }));
   }
@@ -360,22 +362,29 @@ export class UI {
   }
   render_map(body) {
     const g = this.g, open = g.state.stage === 'open' && g.story.open.built ? g.story.open : null;
-    const pp = g.player.pos, pick = !open ? 'valley' : this.mapPick || (pp.z > 1600 || Math.abs(pp.x) > 640 ? 'realm' : pp.z > 300 ? 'sea' : 'valley'), realm = pick === 'realm', sea = pick !== 'valley';
-    const V = realm ? REALM_VIEW : sea ? SEA_VIEW : { x0: -HALF, z0: -HALF, w: SIZE, h: SIZE }, H = 840, W = Math.round((H * V.w) / V.h);
-    if (realm) { if (!this.realmBase) this.realmBase = this.buildSeaMap(REALM_VIEW); } else if (sea ? !this.seaBase : !this.mapBase) { if (sea) this.seaBase = this.buildSeaMap(); else this.mapBase = this.buildMap(); }
+    const pp = g.player.pos, town = mainAt(pp.x, pp.z), away = pp.z > 1600 || Math.abs(pp.x) > 640;
+    const pick = this.mapPick && (open || town) ? this.mapPick : town ? 'town' : !open ? (away ? 'realm' : 'valley') : away ? 'realm' : pp.z > 300 ? 'sea' : 'valley', local = pick === 'town' && town, realm = pick === 'realm' || (pick === 'town' && !town), sea = pick !== 'valley';
+    const V = local ? { x0: town.x - town.half, z0: town.z - town.half, w: town.half * 2, h: town.half * 2 } : realm ? REALM_VIEW : sea ? SEA_VIEW : { x0: -HALF, z0: -HALF, w: SIZE, h: SIZE }, H = 840, W = Math.round((H * V.w) / V.h);
+    if (local) { this.townBase ||= {}; this.townBase[town.id] ||= this.buildSeaMap(V); }
+    else if (realm) { if (!this.realmBase) this.realmBase = this.buildSeaMap(REALM_VIEW); } else if (sea ? !this.seaBase : !this.mapBase) { if (sea) this.seaBase = this.buildSeaMap(); else this.mapBase = this.buildMap(); }
     const greatSeen = GREAT.filter((s) => open && g.state.open.seen[s.id]).length;
     const named = ISLES.filter((s) => s.name), seen = open ? g.state.open.seen : {}, found = named.filter((s) => seen[s.id]).length;
-    body.innerHTML = `${open ? `<div class="maptabs"><button data-v="valley" class="${sea ? '' : 'on'}">Hrafnvik valley</button><button data-v="sea" class="${sea && !realm ? 'on' : ''}">Home waters</button><button data-v="realm" class="${realm ? 'on' : ''}">The ten islands</button></div>` : ''}
+    body.innerHTML = `${open || town ? `<div class="maptabs">${town ? `<button data-v="town" class="${local ? 'on' : ''}">${town.name}</button>` : ''}<button data-v="valley" class="${sea ? '' : 'on'}">Hrafnvik valley</button>${open ? `<button data-v="sea" class="${sea && !realm && !local ? 'on' : ''}">Home waters</button>` : ''}<button data-v="realm" class="${realm ? 'on' : ''}">The ten islands</button></div>` : ''}
       <div id="map-wrap" style="aspect-ratio:${W}/${H};width:min(${Math.round((560 * W) / H)}px,100%)"><canvas width="${W}" height="${H}"></canvas></div>
-      <p class="muted" style="text-align:center">${realm ? `The ten islands · ${greatSeen} of ${GREAT.length} great islands found · the home waters are the box in the north` : sea ? `The Whale Road · ${found} of ${named.length} islands found` : 'The Hrafnvik valley'} · click to set or clear a waypoint · north is up</p>`;
+      <p class="muted" style="text-align:center">${local ? `${town.name}, ${town.title}` : realm ? `The ten islands · ${greatSeen} of ${GREAT.length} great islands found · the home waters are the box in the north` : sea ? `The Whale Road · ${found} of ${named.length} islands found` : 'The Hrafnvik valley'} · click to set or clear a waypoint · north is up</p>`;
     body.querySelectorAll('.maptabs button').forEach((b) => { b.onclick = () => { this.mapPick = b.dataset.v; g.audio.play('ui'); this.render_map(body); }; });
     const cv = body.querySelector('canvas'), x = cv.getContext('2d'), X = (v) => ((v - V.x0) / V.w) * W, Z = (v) => ((v - V.z0) / V.h) * H;
     const label = (t, px, pz, dy = -8) => { x.strokeStyle = 'rgba(236,224,196,0.85)'; x.lineWidth = 3; x.strokeText(t, X(px), Z(pz) + dy); x.fillText(t, X(px), Z(pz) + dy); };
     const draw = () => {
-      x.drawImage(realm ? this.realmBase : sea ? this.seaBase : this.mapBase, 0, 0, W, H);
+      x.drawImage(local ? this.townBase[town.id] : realm ? this.realmBase : sea ? this.seaBase : this.mapBase, 0, 0, W, H);
       x.fillStyle = 'rgba(46,34,20,0.16)'; x.fillRect(0, 0, W, H);
       x.textAlign = 'center'; x.font = 'italic 15px Georgia'; x.lineWidth = 3;
-      if (!sea) {
+      if (local) {
+        x.strokeStyle = 'rgba(96,70,44,0.55)'; x.lineWidth = 2.2; for (const r of town.roads || []) { x.beginPath(); r.forEach(([dx, dz], i) => x[i ? 'lineTo' : 'moveTo'](X(town.x + dx), Z(town.z + dz))); x.stroke(); }
+        x.font = 'italic 14px Georgia';
+        for (const [k, n] of Object.entries(TOWN_LABELS[town.id])) { const pt = PLACES[town.id][k]; x.fillStyle = '#2a1c12'; x.beginPath(); x.arc(X(town.x + pt[0]), Z(town.z + pt[1]), 3, 0, 6.3); x.fill(); label(n, town.x + pt[0], town.z + pt[1]); }
+        x.font = '600 22px Georgia'; x.fillStyle = '#3a1c14'; label(town.name.toUpperCase(), town.x + PLACES[town.id][town.id === 'kaupang' ? 'market' : 'yard'][0], town.z + PLACES[town.id][town.id === 'kaupang' ? 'market' : 'yard'][1] + 34, 0);
+      } else if (!sea) {
         for (const k in POI) {
           const p = POI[k]; if (!p.name) continue;
           x.fillStyle = '#2a1c12'; x.beginPath(); x.arc(X(p.x), Z(p.z), 3.2, 0, 6.3); x.fill(); label(p.name, p.x, p.z);
@@ -386,7 +395,7 @@ export class UI {
         x.save(); x.setLineDash([6, 6]); x.strokeStyle = 'rgba(42,28,18,0.5)'; x.lineWidth = 1.4; x.strokeRect(X(-640), Z(160), X(640) - X(-640), Z(1600) - Z(160)); x.restore(); // the home waters
         x.font = 'italic 13px Georgia'; x.fillStyle = '#2a1c12';
         for (const [n, px, pz] of [['Gulen', -55, 262], ['Fedje', 210, 600], ['Kinn', -40, 760], ['Skorpa', -230, 1040], ['Vængr', -60, 1260], ['Gannet Rock', 470, 1130]]) label(n, px, pz, 22);
-        x.font = '600 15px Georgia'; x.fillStyle = '#3a1c14'; label('BJORNSTEAD', 150, 190, 0);
+        x.font = '600 15px Georgia'; x.fillStyle = '#3a1c14'; for (const m of MAIN) label(m.name.toUpperCase(), m.x, m.z + (m.id === 'kaupang' ? 0 : 200), m.id === 'kaupang' ? -150 : 46);
         for (const s of GREAT) {
           const k = seen[s.id];
           x.font = k ? '600 17px Georgia' : '600 20px Georgia'; x.fillStyle = k ? '#3a1c14' : 'rgba(42,28,18,0.45)'; label(k ? s.name.toUpperCase() : '?', s.x, s.z + s.half * 0.82, 0);
@@ -550,19 +559,19 @@ export class UI {
     body.querySelectorAll('[data-del]').forEach((b) => (b.onclick = () => { deleteSave(b.dataset.del); this.openPanel('saves', this.tabs); }));
   }
   render_status(body) {
-    body.innerHTML = `<h3>Build status — vertical slice 0.5 (Act I, the Act II opening, open-world sandbox)</h3>
-      <p>This is the first playable chapter of a long project, not the finished game. Everything on screen is generated in code; characters, props and sound are placeholders awaiting real assets.</p>
+    body.innerHTML = `<h3>Build status — slice 0.14 (Act I, Act II, open-world sandbox)</h3>
+      <p>These are the first two acts of a long project, not the finished game. Nothing here has been played through by a person yet: it was checked by scripted playtest. Everything on screen is generated in code; characters, props and sound are placeholders awaiting real assets.</p>
       <div class="status-grid">
-      <div><h4><span class="tag ok">playable</span></h4><ul><li>Act I, Chapter 1: a full day in Hrafnvik and the night raid</li><li>Act I, Chapter 2: winter survival, a wolf, trackers and the river ice</li><li>Act I, Chapter 3: Bjornstead, the raven chicks, the axe under the hearthstone, first flight</li><li>The lightning: the storm, the old birch, the scar, the white raven's first words</li><li>Raven's Eye: fly the white raven, mark what she sees</li><li>Five hidden omens that seed later secret weapons</li><li>Act II, Chapter 1: Eirik at nineteen, the drill with Bjorn, the raid on Bjornstead</li><li>Melee combat: light and heavy blows, block, parry and riposte, dodge, guard-breaking and finishing blows, enemies that take turns and flank, a two-phase captain</li><li>The black raven harries your target; arrows work on men</li><li>Hunger and warmth, shelter, cooking, thin-ice crossing</li><li>Third-person movement, camera, stamina, crouch, dodge</li><li>Dialogue with choices, traits and bonds</li><li>Quests, journal, objective tracker, map with waypoint</li><li>Woodcutting, bow hunting, tracking, fishing, fire-making</li><li>Sparring tutorial: strike, block, parry, dodge</li><li>Stealth escape with raider sight and hearing</li><li>Cold and warmth survival</li><li>Day/night sky, snow, fire, in-engine cutscenes</li><li>Save / load, autosave, settings, key rebinding, gamepad</li></ul></div>
+      <div><h4><span class="tag ok">playable</span></h4><ul><li>Act I, Chapter 1: a full day in Hrafnvik and the night raid</li><li>Act I, Chapter 2: winter survival, a wolf, trackers and the river ice</li><li>Act I, Chapter 3: Bjornstead, the raven chicks, the axe under the hearthstone, first flight</li><li>The lightning: the storm, the old birch, the scar, the white raven's first words</li><li>Raven's Eye: fly the white raven, mark what she sees</li><li>Five hidden omens that seed later secret weapons</li><li>Act II, all nine chapters as the story tells them: Bjornstead the coastal village, the hunt, the Thing and the feast, Kettil's visit, the raid and the barn, the Hall of Wolves, the peddlers, the walls, Kaupang and the wreck, the arm-ring</li><li>Melee combat: light and heavy blows, block, parry and riposte, dodge, guard-breaking and finishing blows, enemies that take turns and flank, a two-phase captain</li><li>The black raven harries your target; arrows work on men</li><li>Hunger and warmth, shelter, cooking, thin-ice crossing</li><li>Third-person movement, camera, stamina, crouch, dodge</li><li>Dialogue with choices, traits and bonds</li><li>Quests, journal, objective tracker, map with waypoint</li><li>Woodcutting, bow hunting, tracking, fishing, fire-making</li><li>Sparring tutorial: strike, block, parry, dodge</li><li>Stealth escape with raider sight and hearing</li><li>Cold and warmth survival</li><li>Day/night sky, snow, fire, in-engine cutscenes</li><li>Save / load, autosave, settings, key rebinding, gamepad</li></ul></div>
       <div><h4><span class="tag proto">prototype</span></h4><ul><li>Procedural characters and animation (to be replaced by rigged models), now with animated faces, expressions, speech mouths, breathing, cloth and hair sway, foot planting</li><li>Appearance screen for the grown Eirik; the lightning scar</li><li>Directional strikes, sidestep and roll, raven warnings, camera lock, twin blades and war maul</li><li>Stormguard by the story's rules (only when calm; it costs more each time), Thunder Smash and four more storm skills</li><li>The Wolf's Table: the story's seven champions, the two hands and Håkon, each with named skills, fought where the story has them fall. The fights only: the chapters round them are not built</li><li>Five great islands of the story at full scale (Jarnøy, Solvik, Myrholm, Skalløy, Svartøy), with people who work at a task or walk a road and appear round you on dry land</li><li>Raven-Feeder's three reforgings; icons for items, weapons and missions</li><li>Procedural audio and score</li><li>Villager routines (posts and an evening change, not full schedules)</li><li>Wildlife AI: hares, deer, sheep, ravens</li><li>Adult Eirik is the same placeholder rig, scaled up</li><li>Open world sandbox: horse, boat with a sail, a ship to buy and six crew to recruit, a horn that brings them ashore to fight, sea battles (volleys, shields, ramming, boarding across two decks), archers, shield-bearers and berserkers, a shield with a shove, four melee weapons and throwing axes, five skill trees bought with renown, crew who can be wounded, fourteen islands on a sea chart, two law-districts, wolf-mark outlawry (witnesses, hue and cry, bounty-hunters, blood-price, hide-duel), standing up to “my king”, trade, paid passage between harbours, the first secret weapon</li><li>Higgsfield asset client (built, waiting on a valid key ID and secret)</li></ul></div>
-      <div><h4><span class="tag plan">planned</span></h4><ul><li>Acts II – VII as the owner's story tells them: 63 of its 89 missions are still to build (data/missions.json)</li><li>The six companions</li><li>Bjornstead as the story's coastal village; the five small home islands enlarged; Kaupang, Hedeby Sound, Wessex</li><li>A longship of your own, fleets, battles of dozens</li><li>The rest of nine weapon classes (four are built)</li><li>Enemy combat AI, bosses, mounted and naval combat</li><li>Sailing, settlement, factions, trading, crafting</li><li>50 side missions and tavern games</li><li>Building interiors, voiced dialogue, real music</li><li>Unreal Engine 5 port for photoreal fidelity</li></ul></div></div>`;
+      <div><h4><span class="tag plan">planned</span></h4><ul><li>Acts III – VII as the owner's story tells them: 52 of its 89 missions are still to build (data/missions.json)</li><li>The six companions</li><li>Act I's last chapters moved to the new Bjornstead; the five small home islands enlarged; Hedeby Sound, Wessex</li><li>A longship of your own, fleets, battles of dozens</li><li>The rest of nine weapon classes (four are built)</li><li>Enemy combat AI, bosses, mounted and naval combat</li><li>Sailing, settlement, factions, trading, crafting</li><li>50 side missions and tavern games</li><li>Building interiors, voiced dialogue, real music</li><li>Unreal Engine 5 port for photoreal fidelity</li></ul></div></div>`;
   }
   showChapterEnd() {
     const g = this.g, st = g.state, q = g.quests, body = $('#panel-body');
-    const ch = q.isDone('q_axe') ? 4 : q.isDone('q_wings') ? 3 : q.isDone('q_ice') ? 2 : 1, i = ch - 1;
+    const ch = q.isDone('q_oath') ? 4 : q.isDone('q_wings') ? 3 : q.isDone('q_ice') ? 2 : 1, i = ch - 1;
     this.locked = true;
     this.e.hud.classList.add('hidden'); this.e.panel.classList.add('on');
-    this.e.tabs.innerHTML = `<button class="on">${['Chapter One Complete', 'Chapter Two Complete', 'Act One Complete', 'Act Two · Chapter One Complete'][i]}</button>`;
+    this.e.tabs.innerHTML = `<button class="on">${['Chapter One Complete', 'Chapter Two Complete', 'Act One Complete', 'Act Two Complete'][i]}</button>`;
     $('#panel-close').style.display = 'none';
     const top = Object.keys(TRAITS).sort((a, b) => st.traits[b] - st.traits[a])[0], max = Math.max(4, ...Object.values(st.traits));
     const wolf = st.flags.wolfFed ? 'He shared his kill with the wolf.' : st.flags.wolfKilled ? 'He killed the wolf that came for his kill.' : '';
@@ -573,19 +582,19 @@ export class UI {
       "Eirik Ravensson, nine winters old, is alone in the frozen forest with his father's axe.",
       `A farmer named Bjorn found a boy in the snow beyond the river, half frozen, his hand locked around an axe. ${wolf}`,
       `Bjorn and Signe took him in. ${named} ${vow} The axe lies under the hearthstone. ${rn[0]}, white, and ${rn[1]}, black, came out of a fallen nest and never left him.`,
-      `At nineteen he took his father's axe from under the hearthstone and held the farm against seven of Håkon's tithe-takers. ${st.flags.barnBurned ? 'The barn burned.' : 'The barn still stands.'} ${st.flags.sparedKettil ? 'He let Kettil Red-Hand walk away with a message.' : 'Kettil Red-Hand did not leave the yard.'} Håkon knows now that Ragnar's son is alive.`,
+      `At nineteen he lifted the flat stone by the hearth and took up Raven-Feeder against thirty of Håkon's men. He had Kettil Red-Hand on his back in the mud, and turned away from him to bring six children out of a burning barn. Bjornstead voted to stay, and built its walls before the first frost. From Kaupang he brought home a captain, a crew and a ship called the Sea-Raven. Bjorn put a silver ring on his arm. And far to the west, on an island he has only heard of, smoke is rising.`,
     ][i];
     const cont = (label) => `<p><button class="btn" id="next">${label}</button> <button class="btn" id="tomenu">Return to main menu</button></p>`;
     const next = [
       `<h4>Next</h4><p>Chapter Two, “The Long White”: keep the fire, find food, and stay ahead of the men who are still looking for you.</p>${cont('Continue to Chapter Two')}`,
       `<h4>Next</h4><p>Chapter Three, “A Stranger's Hearth”: fever, a farm in a hidden dale, and a girl who has found something in a fallen tree.</p>${cont('Continue to Chapter Three')}`,
-      `${this.omensHTML()}<h4>Next</h4><p>Act II, “The Farmer's Axe”. Ten winters pass. Eirik is nineteen, the ravens are grown, and somebody is coming up the river road.</p>${cont('Continue to Act II')}`,
-      `${this.omensHTML()}<h4>Next <span class="tag proto">prototype</span></h4><p>The world opens. This is a sandbox, not a story chapter: a horse, a boat with a sail, a fjord and the islands beyond it, a ship that wants a crew, a law that can make a man a wolf, and a people who may one day call him king.</p>${cont('Try the open world (prototype)')}`,
+      `${this.omensHTML()}<h4>Next</h4><p>Act II, “The Farmer's Axe”. Ten winters pass. Eirik is nineteen, the ravens are grown, and somebody is coming along the river road.</p>${cont('Continue to Act II')}`,
+      `<h4>Act III is not built yet</h4><p>“The Wolves of Iron”: the island prince, fifty from Ravenhold, the Battle of Iron Shore. Until it is, there is the sandbox below.</p><h4>Next <span class="tag proto">prototype</span></h4><p>The world opens. This is a sandbox, not a story chapter: a horse, a boat with a sail, a fjord and the islands beyond it, a ship that wants a crew, a law that can make a man a wolf, and a people who may one day call him king.</p>${cont('Try the open world (prototype)')}`,
     ][i];
     body.innerHTML = `<h3>${['The Night of Ashes', 'The Long White', "A Stranger's Hearth", "The Farmer's Axe"][i]}</h3><p>${summary}</p>
-      <h4>Your Eirik</h4><p>Time played: ${fmtTime(st.playtime)} · Renown: ${st.xp} · Strongest trait: <b>${TRAITS[top]}</b></p>
-      ${Object.keys(TRAITS).map((k) => `<div class="trait"><span>${TRAITS[k]}</span><div class="tb"><i style="width:${(st.traits[k] / max) * 100}%"></i></div><span>${st.traits[k]}</span></div>`).join('')}
-      <ul class="steps">${st.choices.map((c) => `<li class="done" style="text-decoration:none">${esc(c.pick)}</li>`).join('')}</ul>${next}`;
+      <h4>Your Eirik</h4><p>Time played: ${fmtTime(st.playtime)} · Renown: ${st.xp}${i < 3 ? ` · Strongest trait: <b>${TRAITS[top]}</b>` : ''}</p>
+      ${i === 3 ? '' : Object.keys(TRAITS).map((k) => `<div class="trait"><span>${TRAITS[k]}</span><div class="tb"><i style="width:${(st.traits[k] / max) * 100}%"></i></div><span>${st.traits[k]}</span></div>`).join('')}
+      ${i === 3 ? '' : `<ul class="steps">${st.choices.map((c) => `<li class="done" style="text-decoration:none">${esc(c.pick)}</li>`).join('')}</ul>`}${next}`;
     body.querySelector('#tomenu').onclick = () => g.quitToMenu();
     const nx = body.querySelector('#next'); if (nx) nx.onclick = () => [() => g.story.beginChapter2(), () => g.story.beginChapter3(), () => g.story.beginAct2(), () => g.story.beginOpen()][i]();
   }

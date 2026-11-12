@@ -2,23 +2,24 @@
 
 A third-person Viking action RPG that follows the owner's story, *The Rise of the Raven King*
 ([docs/story](docs/story/THE_RISE_OF_THE_RAVEN_KING.md): seven acts and an epilogue). This repository holds
-**slice 0.13**: Act I (Eirik's childhood, now with the lightning that scars him), the opening of Act II
-(Eirik at nineteen, with real combat), and an open world that runs from the home valley across the home
-waters to five great islands of the story built at full scale, where the Ironwolf's seven champions, his
-two hands and the Ironwolf himself can be fought in the places the story has them fall.
+**slice 0.14**: Act I (Eirik's childhood), all of Act II as the story tells it (Eirik at nineteen: the village
+of Bjornstead, the raid, the walls, Kaupang and the Sea-Raven), and an open world that runs from the home
+valley across the home waters to five great islands of the story built at full scale, where the Ironwolf's
+seven champions, his two hands and the Ironwolf himself can be fought in the places the story has them fall.
 
-**New in 0.13.** The story stored and made canon ([story bible](docs/STORY_BIBLE.md), [89 missions with their
-state](data/missions.json)) · Jarnøy, Solvik, Myrholm, Skalløy and Svartøy on the map · ten champion fights,
-each with named skills ([weapons and skills](docs/WEAPONS.md)) · Stormguard by the story's rules, Thunder
-Smash and four more storm skills · Raven-Feeder's three reforgings · camera lock, weightier movement, a walk
-key · icons for items, weapons and missions · people on the islands who work, walk their roads and appear
-round you on dry land · [the feature plan](docs/FEATURE_PLAN.md), with what was learned from how the big
-games are made.
+**New in 0.14.** Act II, "The Farmer's Axe", rebuilt from the story's nine chapters and played in its words ·
+Bjornstead as the coastal village of twenty roofs, with a harbour, a forge, Thing stones and the old birch on
+the hill · the raid in waves, with the barn door, the pigsty and the narrow lane · Kettil in the mud, the
+Stormguard, and the children in the barn (the story's choice, not the player's) · the Hall of Wolves scene ·
+the peddlers and Skull-Ringer · walls that go up as you build them · Kaupang, Leif, a dive on a wreck, the
+Kaupang Thing · the arm-ring. Earlier: [0.13](docs/ROADMAP.md) stored the story, drew the ten-island map and
+built the champions and storm skills.
 
-> **What this is, plainly.** Four real, playable 3D chapters and a large sandbox that run in a browser. Of the
-> story's 89 missions, 6 are built, 10 partly, 10 as the boss fight alone, and 63 are still to build.
-> It is not the 40-hour game, it is not Unreal Engine 5, and it is not photorealistic: every character,
-> prop and sound is generated in code as a placeholder. See [Status](#status) for exactly what exists.
+> **What this is, plainly.** Act I (three chapters), Act II (nine chapters) and a large sandbox that run in a
+> browser. Of the story's 89 missions, 21 are built, 6 partly, 10 as the boss fight alone, and 52 are still to
+> build. It is not the 40-hour game, it is not Unreal Engine 5, and it is not photorealistic: every character,
+> prop and sound is generated in code as a placeholder. Everything has been checked by scripted playtest only:
+> no person has played it through. See [Status](#status) for exactly what exists.
 
 ## Run it
 
@@ -59,6 +60,7 @@ Then open http://localhost:5184. A production build is `npm run build` (output i
 | Throw an axe | `F` | — |
 | Off hand: shield or second axe | `3` | — |
 | Shove with the shield (while blocking) | left mouse | X or RT |
+| Diving on the wreck (Act II): down, up, take silver | `C`, `Space`, `E` | — |
 | Journal, inventory, map, skills, pause | `J`, `I`, `M`, `K`, `Esc` | Back, Start |
 
 All keyboard and mouse bindings can be changed in Settings.
@@ -92,12 +94,23 @@ All keyboard and mouse bindings can be changed in Settings.
 3. *Things That Wait* (optional) — five old things around the farm that a boy cannot move. Each is the
    seed of a secret weapon in a later act. One can only be seen from the air.
 
-**Act II, Chapter 1 — "The Farmer's Axe."** Ten winters on; Eirik is nineteen.
+**Act II — "The Farmer's Axe."** Ten winters on; Eirik is nineteen. Nine chapters, in the story's order and words.
 
-1. *Ten Winters* — a drill with Bjorn teaches the adult fighting: light and heavy blows, guard, parry, and breaking an opponent's guard.
-2. *Smoke on the Ridge* — the white raven will not settle. Fly her west and mark the riders on the river road; lift the hearthstone.
-3. *The Farmer's Axe* — hold the yard, stop them firing the barn, and bring down Kettil Red-Hand. Bjorn fights beside you. You can lose.
-   Then decide what to do with a dying man who knows your father's name.
+1. *Ten Winters* — split wood with Bjorn, head off Old Skeggi the goat, be insulted by Freydis.
+2. *A Farmer's Life* — find a wounded elk through the white raven's eyes; hear Hauk and Grjotgard out over a
+   red cow; the harvest feast, the kaestur, and the wrestling match Eirik lets Bjorn win.
+3. *Smoke on the Ridge* — "Wolves." Seven armed men on the river road, and Kettil Red-Hand on a black horse.
+4. *The Farmer's Axe* — the flat stone by the hearth; four waves through the yard (slam the barn door on
+   three of them, draw them into the pigsty mud, hold the lane by the smithy); Kettil; the Stormguard; and a
+   barn with six children in it. You can lose the fight, and you can be too slow to the barn.
+5. *The Wolf Remembers* — the Hall of Wolves on Svartøy (a scene).
+6. *The Peddlers* — watch their camp from the air, string a net across the street, wait for midnight.
+7. *Walls Before Winter* — speak at the Thing stones; then fell timber, lead the horse down, dig the ditch
+   and the latrine trench, raise the palisade and the watchtower, and stand in Bjorn's shield wall. The
+   village changes as each is done.
+8. *The Captain Without a Ship* — Kaupang: the market, the thrall pen, Leif and Orm the reeve; a dive on a
+   wreck with one breath at a time; a man under a beam; the Kaupang Thing; the Sea-Raven.
+9. *The First Oath* — the feast, the goat's trial, Bjorn's arm-ring, and smoke in the west.
 
 **Open-world sandbox — "The Whale Road" (prototype).** Not a story chapter: a place to try the systems.
 
@@ -193,17 +206,18 @@ All keyboard and mouse bindings can be changed in Settings.
   Bulandet, trade fairly and give to the hall, then ask the lawspeaker to have the folk swear. After that
   they kneel as you pass and say "My king."
 
-Dialogue and actions raise four traits (Wisdom, Compassion, Ferocity, Pride); they,
-the ravens' names and the omens found are saved for later acts.
+In Act I, dialogue and actions raise four traits (Wisdom, Compassion, Ferocity, Pride). Act II does not use
+them: the story makes Eirik's choices. Whether the traits stay is one of the questions under "Under review" in
+the [story bible](docs/STORY_BIBLE.md).
 
 ## Status
 
 | | |
 |---|---|
-| **Playable and tested** | All of Act I (chapters 1–3) and Act II chapter 1 start to finish; melee combat against enemies that guard, take turns and flank, with a two-phase captain; an ally who fights; the black raven harrying a target; raven companions and Raven's Eye; five hidden omens; hunger and warmth, shelter, cooking, a wolf encounter with two outcomes, thin-ice crossing; movement, camera, stamina; dialogue with choices; quests, journal, tracker, map with waypoint; woodcutting, archery, tracking, fishing, fire-making; sparring; stealth with raider sight and hearing; cold survival; day/night, snow, fire; in-engine cutscenes; save/load with autosave; settings, key rebinding, gamepad |
+| **Playable and tested** | All of Act I (chapters 1–3) and all of Act II (nine chapters) start to finish, by scripted playtest; a village that burns, is walled and gains a ship as the story goes; timed work, a wrestling and shield-wall game, a dive with breath; melee combat against enemies that guard, take turns and flank, with a two-phase captain; an ally who fights; the black raven harrying a target; raven companions and Raven's Eye; five hidden omens; hunger and warmth, shelter, cooking, a wolf encounter with two outcomes, thin-ice crossing; movement, camera, stamina; dialogue with choices; quests, journal, tracker, map with waypoint; woodcutting, archery, tracking, fishing, fire-making; sparring; stealth with raider sight and hearing; cold survival; day/night, snow, fire; in-engine cutscenes; save/load with autosave; settings, key rebinding, gamepad |
 | **Prototype** | The open-world sandbox (two law-districts, fourteen islands, one horse, a rowing boat and a crewed ship, sea battles with volleys, ramming and boarding, paid passage, one secret weapon, one crew raid); procedural characters and animation; procedural audio and score; villager routines; wildlife AI; combat balance and the new enemy kinds (tuned against scripted players only) |
 | **Blocked** | Higgsfield asset generation — the API needs a key ID *and* a secret; only one value was supplied. See [docs/HIGGSFIELD.md](docs/HIGGSFIELD.md) |
-| **Planned** | Everything else in the brief: the rest of Act II and Acts III through VII; the rest of the sea map (about forty islands of which fourteen exist as a sandbox; a longship of your own, fleets and crew who can be hurt; wind and weather at sea; more districts — designed in [docs/OPEN_WORLD.md](docs/OPEN_WORLD.md)); adult combat and nine weapons, skill trees, companions, sailing, settlement, factions, 50 side missions, UE5 port. See [docs/ROADMAP.md](docs/ROADMAP.md) |
+| **Planned** | Everything else in the brief: Acts III through VII and the epilogue; the rest of the sea map (about forty islands of which fourteen exist as a sandbox; a longship of your own, fleets and crew who can be hurt; wind and weather at sea; more districts — designed in [docs/OPEN_WORLD.md](docs/OPEN_WORLD.md)); adult combat and nine weapons, skill trees, companions, sailing, settlement, factions, 50 side missions, UE5 port. See [docs/ROADMAP.md](docs/ROADMAP.md) |
 
 How it was tested: an automated playtest drives the real game loop through every quest step (see
 `debug` in [src/main.js](src/main.js)). It was verified on an Apple M2 at 60 fps. It has **not** been
@@ -217,7 +231,7 @@ src/world/     terrain, sky and weather, village props, vegetation, effects, col
 src/entities/  character rig and animation, player, NPCs and raiders, wildlife and arrows
 src/systems/   quests, dialogue, inventory, cutscene camera, activities
 src/data/      Act I items, cast, quests, dialogue (pure data)
-src/story/     Act I director scripts (one per chapter)
+src/story/     director scripts: Act I (one per chapter), Act II (act2*.js), the sandbox, the champions
 src/ui/        HUD, menus, panels
 data/          campaign-wide design data (missions, world, combat) — engine-agnostic JSON
 assets/        asset registry and generated assets

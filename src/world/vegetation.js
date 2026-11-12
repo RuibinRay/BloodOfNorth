@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { rng, noise2, clamp } from '../core/util.js';
 import { M, at, cyl, cone, tint, merge, patch } from './geo.js';
 import { heightAt, slopeAt, forestDensity, distToPaths, inField, riverX, HALF } from './terrain.js';
-import { VILLAGE, POI, ISLES, SEA_CLEAR, GREAT } from './layout.js';
+import { VILLAGE, POI, ISLES, SEA_CLEAR, GREAT, MAIN } from './layout.js';
 import { realmClear } from './realm.js';
 
 function pineGeo() {
@@ -171,6 +171,23 @@ export function scatterVegetation(scene, world, quality) {
       if (h < -0.5 || !realmClear(il, x, z)) continue;
       const big = R3() < 0.18 || slopeAt(x, z) > 0.5, sc = big ? 1.2 + R3() * 2.2 : 0.3 + R3() * 0.6;
       ir.push({ x, z, y: h - sc * 0.2, sc, sx: 0.8 + R3() * 0.6, sy: 0.7 + R3() * 0.5, sz: 0.8 + R3() * 0.6, ry: R3() * 6.28, big: sc > 1.05 });
+    }
+  }
+  // the mainland coast: woods where the story hunts and cuts timber, a thin scatter elsewhere (a fourth stream)
+  const R4 = rng(9127);
+  for (const il of MAIN) {
+    const put = (x, z, birch) => {
+      const h = heightAt(x, z);
+      if (h < 2.2 || h > 60 || slopeAt(x, z) > 0.7 || !realmClear(il, x, z)) return;
+      (R4() < birch ? ib : ip).push({ x, z, y: h - 0.15, sc: 0.7 + R4() * 0.7, ry: R4() * 6.28 });
+    };
+    for (const w of il.woods || []) for (let i = 0, n = Math.round(w[2] * w[2] * 0.02); i < n; i++) { const a = R4() * 6.28, d = Math.sqrt(R4()) * w[2]; put(il.x + w[0] + Math.cos(a) * d, il.z + w[1] + Math.sin(a) * d, w[3]); }
+    for (let i = 0; i < 260; i++) put(il.x + (R4() - 0.5) * 2 * il.half, il.z + (R4() - 0.5) * 2 * il.half, 0.35);
+    for (let i = 0; i < 150; i++) {
+      const x = il.x + (R4() - 0.5) * 2 * il.half, z = il.z + (R4() - 0.5) * 2 * il.half, h = heightAt(x, z);
+      if (h < -0.5 || !realmClear(il, x, z)) continue;
+      const big = R4() < 0.15 || slopeAt(x, z) > 0.5, sc = big ? 1.2 + R4() * 2 : 0.3 + R4() * 0.6;
+      ir.push({ x, z, y: h - sc * 0.2, sc, sx: 0.8 + R4() * 0.6, sy: 0.7 + R4() * 0.5, sz: 0.8 + R4() * 0.6, ry: R4() * 6.28, big: sc > 1.05 });
     }
   }
   instanced(pineGeo(), treeMat, ip, { collide: 0.36 });

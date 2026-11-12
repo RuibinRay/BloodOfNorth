@@ -23,9 +23,9 @@ The spring after his tenth birthday, lightning strikes the old birch behind Bjor
 | Gift | The story's rule | In the game |
 |---|---|---|
 | The scar | A pale forked line through the left eyebrow, across the lid, to the cheekbone. The eye turns silver-grey in cold light. Never fades. | Appears in the lightning scene and stays. The silver eye is not drawn. |
-| Raven's Voice | He speaks to his two ravens in thought. They answer in short words, smells, pictures. Mjöll: fish, cold, man, danger, home. Sót: mostly rude. | Mjöll's first words are spoken in the lightning scene. No further raven speech yet. |
+| Raven's Voice | He speaks to his two ravens in thought. They answer in short words, smells, pictures. Mjöll: fish, cold, man, danger, home. Sót: mostly rude. | Mjöll's first words are spoken in the lightning scene. In Act II she speaks as the story has her: "Water. Blood. Broken branch.", "Wolves.", "Smell wrong. Iron under cloth." Sót does not speak yet. |
 | Raven's Eye | He sees what the white raven sees, as far as she can fly in a quarter of an hour. Rain, darkness and fear blur it; holding it too long hurts. | Playable (key V). The blur and the headache are not built. |
-| Stormguard | When death is a heartbeat away the scar burns, time slows, he sees the blow and blocks it. Only when calm. It leaves him shaking and drained. It cannot stop arrows from every side or save anyone but himself. In the last fight it runs out. | Built to those rules: see [WEAPONS.md](WEAPONS.md). |
+| Stormguard | When death is a heartbeat away the scar burns, time slows, he sees the blow and blocks it. Only when calm. It leaves him shaking and drained. It cannot stop arrows from every side or save anyone but himself. In the last fight it runs out. | Built to those rules: see [WEAPONS.md](WEAPONS.md). Its moment against Kettil in Act II is played as the story writes it: the world slows, he catches the blow, and the shield rim goes into the knee. |
 
 **Provisional:** the *Stormborn* skills (Thunder Smash, Storm-Step, the Turning Blow, Storm-Cry, Stormbreak) are the game's extension, asked for by the owner. The Turning Blow is the story's own last move (meet the blow with the collar, turn with it, strike from the right).
 
@@ -41,7 +41,7 @@ The spring after his tenth birthday, lightning strikes the old birch behind Bjor
 
 ## The ten islands (Established) and where they are in the game
 
-Bjornstead sits on the mainland coast facing them and grows into Ravenhold, capital of the alliance.
+Bjornstead sits on the mainland coast facing them and grows into Ravenhold, capital of the alliance. **Built in 0.14** as that coastal village, north-east of the open sea: twenty roofs round Bjorn's hall, a harbour and pier, a forge and smokehouse, the Thing stones, the barley field, the stream and its bridge, and the old birch on the hill behind. The raid's ashes, the ditch, palisade and watchtower, and the Sea-Raven at the pier appear as Act II reaches them. **Kaupang** is built at the far south-east of the map: a quay, a market street, a thrall pen, a tavern, a Thing place, and the Skerries with the wreck offshore.
 
 | Island | Ruler | Known for | Side | In the game |
 |---|---|---|---|---|
@@ -56,7 +56,7 @@ Bjornstead sits on the mainland coast facing them and grows into Ravenhold, capi
 | Skalløy, the Forge Isle | Jarl Gudmund | quarries, smithing | joins Act VI | **Built at story scale**: harbour, forge street, the jarl's hall, the quarry above the sea |
 | Svartøy, the Black Isle | Jarl Håkon | war harbour, fortress | the enemy | **Built at story scale** (about 750 x 680 m): harbour, the road and its bend, the ravine and the long bridge, the palisaded upper town, the Hall of Wolves, the thrall pens, the hidden cove |
 
-Not on the map yet: Bjornstead as a coastal village with a harbour (it is one farm in a dale), Ravenhold's walls, Hrafnvik's place half a day north of it, Kaupang, Hedeby Sound, Wessex.
+Not on the map yet: Hedeby Sound and Wessex. Hrafnvik is not yet "half a day north" of Bjornstead by any road: the two are separate pieces of land, and Act I still uses the old farm (see Under review, 3).
 
 ## Acts (Established)
 
@@ -79,9 +79,9 @@ The spine: *"A blade may save your life, but wisdom decides when to draw it."* R
 
 These were built before the story arrived. Each needs either a rebuild or the owner's ruling.
 
-1. **Choices the story has already made.** The game lets the player feed or kill the wolf, give a false name, spare or kill Kettil in Act II, and tracks four traits toward "endings". The story has one course of events and one ending. The choices that contradict it should go, or be kept only where the story leaves room.
-2. **Kettil in Act II.** In the story Eirik has him down, hears the children in the burning barn, and turns his back. The game's version is a boss fight with a spare-or-kill choice.
-3. **Bjornstead.** The story's is a coastal village of twenty houses with a harbour and a forge, half a day south of Hrafnvik. The game's is one farm in a dale beside the Hrafnvik valley.
+1. **Choices the story has already made.** In Act I the game lets the player feed or kill the wolf and give a false name, and it tracks four traits toward "endings". The story has one course of events and one ending. Those choices should go, or be kept only where the story leaves room. (Act II was rebuilt in 0.14 with no choices of its own: the only things the player picks are which evidence to show the Kaupang Thing, where a wrong pick is simply sent back.)
+2. ~~Kettil in Act II.~~ **Settled in 0.14 by following the story:** Eirik has him down, the barn roof cracks, and he turns his back for the six children. Kettil is gone when he comes out; the brooch is in the mud.
+3. **Bjornstead in Act I.** Act II now plays in the story's coastal village. Act I's last chapters (The Bear's House, Two Ravens, The Lightning) still play at the old Bjornstead, one farm in a dale beside the Hrafnvik valley, with its own old birch. They need moving to the village, and the five omens round the old farm with them.
 4. **Sky-iron.** The story's falls on Skalløy two years before Act VI. The game has a black stone propping Bjorn's barn door as an omen.
 5. **Who rules in the sandbox.** The player can be sworn "king" of Gulen and the Skerries by standing alone, and a reeve named Ragnhild holds Kinn. The story has King Hallvard on Gulen and King Ragnvald on Kinn, and Eirik is never king of an island.
 6. **The Left Brother.** A second axe found on Vængr ("two brothers"). Not in the story.
