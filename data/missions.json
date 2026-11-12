@@ -1,7 +1,7 @@
 {
  "about": "Mission breakdown of the owner's story (docs/story/THE_RISE_OF_THE_RAVEN_KING.md), chapter by chapter. status: built (playable; tested by script) | partial (something of it is playable; read the note) | fight_only (the champion fight is playable in its place, without the chapter round it) | planned. Minutes are design targets, not measured playtime: nothing here has been timed with a person playing.",
  "source": "docs/story/THE_RISE_OF_THE_RAVEN_KING.md",
- "updated": "2026-11-12 (0.15)",
+ "updated": "2026-11-12 (0.16)",
  "acts": [
   {
    "act": 1,
@@ -555,8 +555,8 @@
        "type": "voyage",
        "target_minutes": 15,
        "summary": "The treasure ship; life aboard; Ingrid and the dice.",
-       "status": "planned",
-       "note": "Solvik is on the map with its quay and King Eystein."
+       "status": "built",
+       "note": "Two quiet years at Ravenhold (the market, the healing house, Torvald's drill), the ship from Solvik, Ari, then the days aboard: the sunstone, Gisli's belt, Ingrid's seawater, Leif's dice. The decks stand still in open water: the ships do not sail."
       }
      ]
     },
@@ -570,8 +570,8 @@
        "type": "sea battle",
        "target_minutes": 15,
        "summary": "Rurik's ships surround the knarr.",
-       "status": "planned",
-       "note": "Sea battles exist in the sandbox."
+       "status": "built",
+       "note": "The white raven finds three longships in the fog; Rurik's offer; then boarders over the Sea-Raven's rail, with six men of Ravenhold holding their own. Astrid at the masthead, Leif snapping oars, the buckets and Torvald on the knarr are seen and told, not played."
       },
       {
        "id": "a4c2m2",
@@ -579,8 +579,8 @@
        "type": "boss",
        "target_minutes": 10,
        "summary": "Rurik Shieldsplitter on the deck of the Sea-Raven.",
-       "status": "fight_only",
-       "note": "The fight is built on his own deck at the Solvik jetty."
+       "status": "built",
+       "note": "On the deck of the Sea-Raven, in the story's words. He knows the axe partway through; when Eirik slips on the wet oar he waits. It can be lost and tried again. His men's surrender is told."
       }
      ]
     },
@@ -594,8 +594,8 @@
        "type": "story",
        "target_minutes": 15,
        "summary": "The burh, Wulfstan, the token; the fever; the harbour wall.",
-       "status": "planned",
-       "note": "Wessex is not on the map."
+       "status": "built",
+       "note": "A small port inside an earth bank, a stone church with a bell, monks who run, Wulfstan, the token and the letter. The girl lies on a pallet by the farm door because buildings cannot be entered; the herbs are three stops while Leif haggles; the harbor wall is a scene."
       }
      ]
     },
@@ -609,7 +609,8 @@
        "type": "story",
        "target_minutes": 6,
        "summary": "The letters; the bloodline; Torvald at the cooking fire.",
-       "status": "planned"
+       "status": "built",
+       "note": "The chest on the deck; the letters as the story tells them; the night scene from above the ship."
       }
      ]
     },
@@ -623,8 +624,8 @@
        "type": "missions",
        "target_minutes": 30,
        "summary": "Kinn, Fedje, Skorpa, Gulen, Solvik: survivors, raiders, the signal tower, the boy in the sea cave.",
-       "status": "planned",
-       "note": "The sea cave stands on Solvik."
+       "status": "built",
+       "note": "Kinn (three pulled from the water), Fedje (a trail and five looters, with Astrid), the refugees at Ravenhold's pier, Skorpa (the signal tower held with four defenders), Gulen (three wounded carried on Bjorn's grey horse), Solvik (the dig, the boy in the sea cave), Leif on the floor. Kinn, Fedje, Skorpa and Gulen are still the small sandbox islands, so each is a short scene."
       }
      ]
     },
@@ -638,7 +639,8 @@
        "type": "choice",
        "target_minutes": 10,
        "summary": "Six kings in Bjorn's longhouse; the token.",
-       "status": "planned"
+       "status": "built",
+       "note": "Before the doors of Bjorn's longhouse, not inside. Each king says where he stands in the story's sentence; Eirik's speech; the token. There is no choice to make: the story makes it."
       }
      ]
     },
@@ -652,8 +654,8 @@
        "type": "sea battle",
        "target_minutes": 20,
        "summary": "The trap; Ari; Astrid's shoulder.",
-       "status": "planned",
-       "note": "Hedeby Sound is not on the map."
+       "status": "built",
+       "note": "The letter and the ribbon; the fire read through the raven's eyes; then the trap from the Sea-Raven's deck: two burning ropes, three rocks marked from the air, three hauled from the water, boarders, Ari. The convoy is half a dozen boats, the deck does not move, and the ramming is a shake and a fade."
       },
       {
        "id": "a4c7m2",
@@ -661,7 +663,8 @@
        "type": "choice",
        "target_minutes": 6,
        "summary": "The axe a finger from Ingrid's face.",
-       "status": "planned"
+       "status": "built",
+       "note": "The story's words. One key swings and one lowers the axe: there is no choice, because the story has none."
       }
      ]
     },
@@ -675,7 +678,8 @@
        "type": "story",
        "target_minutes": 8,
        "summary": "Kettil's raid on Ravenhold; Bjorn's leg; the birch with two crowns.",
-       "status": "planned"
+       "status": "built",
+       "note": "Kettil's raid is told at the gate by what it left: the harbor, three warehouses, Bjorn's leg. Hauk on the pier; the birch with two new crowns."
       }
      ]
     }
@@ -1633,10 +1637,10 @@
   "missions": 89,
   "target_minutes": 1015,
   "by_status": {
-   "built": 34,
+   "built": 44,
    "partial": 5,
-   "fight_only": 9,
-   "planned": 41
+   "fight_only": 8,
+   "planned": 32
   }
  }
 }

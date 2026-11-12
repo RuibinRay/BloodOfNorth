@@ -33,7 +33,7 @@ The spring after his tenth birthday, lightning strikes the old birch behind Bjor
 
 **Family.** Eirik Ravensson · Ragnar (father; killed by Håkon, Act I) · Ylva (mother; killed by Kettil helping Eirik escape) · Bjorn (adoptive father; wounded Act IV; dies of old age before the epilogue) · Signe · Freydis (two years older; marries Halvar; son Little Brokk) · Mjöll, the white raven (dies of old age) · Sót, the black raven (survives).
 
-**The six companions** (in the game so far: Leif from Act II; Astrid, Brokk, Torvald and Ingrid from Act III; they appear in their scenes and do not yet travel or fight at Eirik's side outside them). Leif (captain of the Sea-Raven; the Twins; joins Act II at Kaupang; marries Ingrid) · Astrid (archer; Storm-Yew; her brother Kári was taken; joins Act III) · Brokk (smith; crushed left hand; killed by Bersi, Act VI) · Torvald (hammer and shield; betrays in Act IV; spared; redeems himself in Act VII) · Svanhild (sword; captain of Jarl Jorund's guard; seasick; joins Act V) · Princess Ingrid (healer; daughter of King Hroald; joins Act III).
+**The six companions** (in the game so far: Leif from Act II; Astrid, Brokk, Torvald and Ingrid from Act III; Act IV carries Torvald to Hedeby Sound, where he is taken prisoner. They appear in their scenes and do not yet travel or fight at Eirik's side outside them). Leif (captain of the Sea-Raven; the Twins; joins Act II at Kaupang; marries Ingrid) · Astrid (archer; Storm-Yew; her brother Kári was taken; joins Act III) · Brokk (smith; crushed left hand; killed by Bersi, Act VI) · Torvald (hammer and shield; betrays in Act IV; spared; redeems himself in Act VII) · Svanhild (sword; captain of Jarl Jorund's guard; seasick; joins Act V) · Princess Ingrid (healer; daughter of King Hroald; joins Act III).
 
 **Rulers.** Hroald Ironvein (Jarnøy) · Eystein Goldhand (Solvik) · Ragnvald Stormwake (Kinn) · Hallvard the Lawspeaker (Gulen) · Aslak (Fedje) · Svein (Skorpa) · Jarl Jorund (Vængr) · Queen Thora and Prince Eyvind (Myrholm) · Jarl Gudmund (Skalløy) · Prince Arvid, Halvar, Old Thrand, Old Hrefna, Gisli, Ari Hauksson, Hauk, Grjotgard, Liv, Little Brokk, Old Skeggi the goat.
 
@@ -47,16 +47,16 @@ Bjornstead sits on the mainland coast facing them and grows into Ravenhold, capi
 |---|---|---|---|---|
 | Jarnøy, the Iron Isle | King Hroald | iron | original six | **Built at story scale** (about 700 x 580 m): harbour town with its wall and three gates, the houses outside it, watchtower and granary, the hall, the Iron Shore with the trench and the Stinking Ditch, furnaces, the burned hamlet. Act III plays here |
 | Solvik, the Golden Quay | King Eystein | gold, merchant ships | original six | **Built at story scale**: stone quay and warehouses, the hall, the sea cave, Rurik's ship |
-| Kinn, the Storm Coast | King Ragnvald | sailors | original six | Small sandbox island in the home waters; to be enlarged |
-| Gulen, the Law Isle | King Hallvard | the great Thing | original six | Small sandbox island with the law-rock; to be enlarged |
-| Fedje, the Wind Isle | King Aslak | timber, shipwrights | original six | Small sandbox island; to be enlarged |
-| Skorpa, the Beacon Isle | King Svein | grain, beacons | original six | Small sandbox island with the beacon; to be enlarged |
+| Kinn, the Storm Coast | King Ragnvald | sailors | original six | Small sandbox island in the home waters; Act IV's burning harbor is a short scene here; to be enlarged |
+| Gulen, the Law Isle | King Hallvard | the great Thing | original six | Small sandbox island with the law-rock; Act IV's ride with the wounded is a short scene here; to be enlarged |
+| Fedje, the Wind Isle | King Aslak | timber, shipwrights | original six | Small sandbox island; Act IV's hunt for the looters is a short scene here; to be enlarged |
+| Skorpa, the Beacon Isle | King Svein | grain, beacons | original six | Small sandbox island with the beacon; Act IV's signal tower is defended here; to be enlarged |
 | Vængr, the Wing Isle | Jarl Jorund | swordsmen | joins Act V | Small sandbox island; the holmgang ground is there; to be enlarged |
 | Myrholm, the Marsh Isle | Queen Thora | healers, hidden waterways | joins Act VI | **Built at story scale**: reeds, pools, channels, causeways, stilt villages, the queen's hall, the drowned watchtower, the peat cutting |
 | Skalløy, the Forge Isle | Jarl Gudmund | quarries, smithing | joins Act VI | **Built at story scale**: harbour, forge street, the jarl's hall, the quarry above the sea |
 | Svartøy, the Black Isle | Jarl Håkon | war harbour, fortress | the enemy | **Built at story scale** (about 750 x 680 m): harbour, the road and its bend, the ravine and the long bridge, the palisaded upper town, the Hall of Wolves, the thrall pens, the hidden cove |
 
-Not on the map yet: Hedeby Sound and Wessex. Hrafnvik is not yet "half a day north" of Bjornstead by any road: the two are separate pieces of land, and Act I still uses the old farm (see Under review, 3).
+**Built in 0.16:** Wessex (the port where the River Itchen meets the sea: a burh's earth wall, a stone church, the reeve's hall, a farm outside the gate; about 250 m of shore at the far south-west of the map) and Hedeby Sound (three signal headlands, a chain of skerries, the narrow eastern channel and the beach; on the mainland coast between Solvik and Skalløy). The six kings of the first alliance are all in the game from Act IV's council. Hrafnvik is not yet "half a day north" of Bjornstead by any road: the two are separate pieces of land, and Act I still uses the old farm (see Under review, 3).
 
 ## Acts (Established)
 

@@ -169,18 +169,20 @@ export class A3Battle {
     return e;
   }
   /** He has broken through: he comes for Eirik. */
-  mine(e) { const g = this.g, R = A3.battle; e.mine = true; g.player.mortal = true; g.combat.add(e, { hp: R.hp, dmg: R.dmg, skill: R.skill }); }
+  mine(e) { const g = this.g, R = this.R; e.mine = true; g.player.mortal = true; g.combat.add(e, { hp: R.hp, dmg: R.dmg, skill: R.skill, ...(R.opt || {}) }); }
+  /** The numbers of the fight in hand: Act III's battle, unless a later act brought its own. */
+  get R() { return (this.sk && this.sk.R) || A3.battle; }
   /** He is held by a defender (who strikes him when he closes), unless Eirik comes within reach. */
-  pair(e, a) { const g = this.g, R = A3.battle; e.mine = false; a.busy = e; a.engaged = false; a.busyT = 0; g.combat.add(e, { hp: R.hp, dmg: R.dmg, skill: R.skill, duel: a }); }
+  pair(e, a) { const g = this.g, R = this.R; e.mine = false; a.busy = e; a.engaged = false; a.busyT = 0; g.combat.add(e, { hp: R.hp, dmg: R.dmg, skill: R.skill, duel: a, ...(R.opt || {}) }); }
   engage(a) {
-    const R = A3.battle, e = a.busy;
+    const R = this.R, e = a.busy;
     a.engaged = true;
     a.fight(e, { lethal: 0, dmg: R.allyDmg * (a.id === 'torvald' || a.id === 'arvid' ? 1.7 : 1), onWin: (x) => { x.busy = null; x.engaged = false; x.setLoop('guard'); if (x.home && this.sk) x.goTo(x.home[0], x.home[1], { onArrive: (y) => { y.yaw = x.home[2]; } }); } });
   }
-  startSkirmish(allies, from, budget, atOnce, done) {
+  startSkirmish(allies, from, budget, atOnce, done, R = null) {
     const c = this.c;
     for (const id of allies) { const n = c.npc(id); n.busy = null; n.engaged = false; n.home = [n.pos.x, n.pos.z, n.yaw]; }
-    this.sk = { allies: allies.map((id) => c.npc(id)), from, budget, atOnce, done, spawned: 0, live: [], t: 1.2, said: 0, T: 0 };
+    this.sk = { allies: allies.map((id) => c.npc(id)), from, budget, atOnce, done, R, spawned: 0, live: [], t: 1.2, said: 0, T: 0 };
   }
   updateSkirmish(dt) {
     const g = this.g, k = this.sk;

@@ -181,7 +181,26 @@ export const MAIN = [
     woods: [[90, -40, 90, 0.4], [40, 170, 80, 0.3]],
     isles: [[-225, -205, 36, 5.5], [-268, -158, 12, 2.4], [-176, -256, 13, 3], [-292, -232, 10, 2]],
     pools: [[-225, -247, 19, -6.6]] },
+  // Act IV: the English shore where the River Itchen meets the sea, and the narrow channel the convoy is led into
+  { id: 'wessex', name: 'Wessex', title: 'the English shore', x: -1700, z: 2200, half: 250, o: [-110, 30], r: 300, k: 1, a: 0, wob: 0.06, shore: [0.9, 0.96], h: 4.6, rough: 1.5, ground: 'green',
+    lim: { minX: -1884, minZ: 1996, maxZ: 2414 },
+    bays: [[190, 20, 70]],
+    hills: [[-170, -150, 18, 170], [-190, 150, 22, 180], [-70, 70, 6, 90]],
+    flats: [[62, 22, 96, 3.2], [-62, 34, 26, 3.8, 1]],
+    cuts: [{ late: true, pts: [[-250, -150], [-150, -130], [-50, -126], [40, -120], [120, -104], [196, -86]], w: 9, y: -0.72 }],
+    roads: [[[126, 20], [70, 20], [8, 22], [-14, 20], [-62, 28], [-140, 40], [-240, 62]], [[70, 20], [52, -8], [32, -26]], [[70, 20], [66, 44], [62, 50]]],
+    fields: [[-74, 74, 46, 40, 0.1], [-66, -22, 40, 34, -0.1]],
+    woods: [[-160, -50, 80, 0.2], [-180, 150, 80, 0.3], [20, 170, 60, 0.3]] },
+  { id: 'hedeby', name: 'Hedeby Sound', title: 'the narrow channel', x: 1720, z: 2300, half: 240, o: [440, 0], r: 600, k: 1, a: 0, wob: 0.02, shore: [0.92, 0.95], h: 6, rough: 2.5, ground: 'stone',
+    lim: { maxX: 1904, minZ: 2086, maxZ: 2514 },
+    hills: [[-70, -150, 22, 56], [-90, -30, 24, 54], [-82, 96, 28, 58], [90, 0, 40, 220]],
+    flats: [[-70, -150, 8, 20, 1], [-90, -30, 8, 22, 1], [-82, 96, 8, 24, 1], [-84, 150, 26, 0.9]],
+    roads: [[[-72, 160], [-76, 134], [-80, 114], [-82, 100]]],
+    woods: [[60, -100, 120, 0.3], [60, 120, 120, 0.3]],
+    isles: [[-150, -200, 18, 4], [-166, -150, 22, 5], [-174, -85, 26, 6], [-176, -10, 28, 7], [-174, 65, 27, 6], [-164, 132, 25, 5], [-150, 200, 20, 4], [-100, 196, 11, 3]] },
 ];
+/** Where the treasure ship and her escort are when the story is out of sight of land. */
+export const AT_SEA = { x: -950, z: 2200 };
 /** Places on the great islands and the mainland that the story names (offsets from the centre of the island or
  *  patch, as above). The world builder puts the buildings here, the story waits here, and the map labels these. */
 export const PLACES = {
@@ -192,6 +211,8 @@ export const PLACES = {
   skalloy: { harbor: [-140, -26], forge: [-40, -20], hall: [-58, 86], quarry: [158, 62], landing: [-202, -34] },
   bjornstead: { yard: [0, 140], hall: [-6, 114], well: [9, 139], chop: [-23, 130], barn: [36, 118], sty: [50, 150], smithy: [-52, 158], smoke: [-40.6, 158], lane: [-46.6, 158], thing: [-92, 92], birch: [-20, 10],
     pier: [0, 232], strand: [0, 212], field: [-150, 96], pasture: [100, 36], bridge: [121, 140], camp: [-150, 150], timber: [-60, -62], elk: [146, -52], latrine: [70, 100], trench: [58, 30], drill: [98, 38], gateE: [106, 131], gateW: [-108, 146], gateN: [-9, 58], gateS: [0, 208], road: [150, -60], ravine: [178, -148] },
+  wessex: { quay: [134, 20], pier: [156, 0], ship: [158, -5], pier2: [156, 42], knarr: [157, 36.8], market: [80, 20], church: [30, -34], hall: [62, 58], gate: [-14, 20], farm: [-62, 34], wall: [152, 72] },
+  hedeby: { h1: [-70, -150], h2: [-90, -30], h3: [-82, 96], beach: [-80, 150], ship: [-120, 150], north: [-140, -50] },
   kaupang: { quay: [-134, 20], market: [-80, 20], pen: [-104, 74], tavern: [-62, 56], thing: [-30, -100], pier: [-156, 0], ship: [-158, -5], barrel: [-130, -6], pier2: [-156, 42], boat: [-152, 46.5], skerry: [-225, -228], wreck: [-225, -247] },
 };
 /** World position of a named place: place('svartoy', 'bridgeN') -> { x, z }. */

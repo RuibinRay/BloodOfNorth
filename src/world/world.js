@@ -9,6 +9,7 @@ import { HOUSES, POI, FIELDS, BOUNDS } from './layout.js';
 import { buildRealmProps } from './realm_props.js';
 import { buildMainland } from './mainland.js';
 import { buildJarnoyTown } from './jarnoy_town.js';
+import { buildAct4Places } from './act4_places.js';
 import { mainAt } from './realm.js';
 
 const CELL = 8;
@@ -70,7 +71,8 @@ export class World {
     if (Math.abs(pos.x) > BOUNDS.seaX && pos.z < BOUNDS.realmZ) pos.z = BOUNDS.realmZ; // no way back north except through the home waters
     const bx = pos.z >= BOUNDS.realmZ ? BOUNDS.realmX : pos.z > 322 ? BOUNDS.seaX : BOUNDS.maxX;
     pos.x = clamp(pos.x, -bx, bx); pos.z = clamp(pos.z, BOUNDS.minZ, BOUNDS.maxZ);
-    const k = pos.z > 2900 ? mainAt(pos.x, pos.z) : null; if (k && k.lim.maxZ && pos.z > k.lim.maxZ) pos.z = k.lim.maxZ; // the coast road runs on south, out of the story
+    const k = pos.z >= BOUNDS.realmZ ? mainAt(pos.x, pos.z) : null, L = k && k.lim; // a mainland shore in the open sea: the land runs on, out of the story
+    if (L) { if (L.maxZ && pos.z > L.maxZ) pos.z = L.maxZ; if (L.minX && pos.x < L.minX) pos.x = L.minX; if (L.maxX && pos.x > L.maxX) pos.x = L.maxX; if (L.minZ && pos.z >= BOUNDS.realmZ && pos.z < L.minZ && k.z - k.half > BOUNDS.realmZ) pos.z = L.minZ; }
   }
   pointInBox(x, z, margin = 0) {
     for (const b of this.boxes) {
@@ -279,6 +281,7 @@ export class World {
     // the mainland coast: Bjornstead and Kaupang (see mainland.js); what the story changes there is kept in this.main
     this.main = buildMainland(ctx, this, scene);
     this.main.jarnoy = buildJarnoyTown(ctx, this, scene);
+    Object.assign(this.main, buildAct4Places(ctx, this, scene)); // Wessex, Hedeby Sound, the ships at sea, the burned islands
 
     const stat = ctx.b.build();
     scene.add(stat);

@@ -31,7 +31,7 @@ export function stage(world, scene, on, build) {
 }
 const gy = (x, z) => heightAt(x, z);
 /** A market stall: four posts, a board, a coloured awning. */
-function stall(ctx, x, z, ry, cloth, seed = 1) {
+export function stall(ctx, x, z, ry, cloth, seed = 1) {
   const y = gy(x, z), r = rng(seed);
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) { const [px, pz] = P.toWorld(x, z, ry, sx * 1.3, sz * 0.8); ctx.b.add(at(cyl(0.05, 0.06, sz > 0 ? 2.3 : 1.9, 5), px, y + (sz > 0 ? 1.15 : 0.95), pz), M.timber); }
   ctx.b.add(at(box(2.7, 0.08, 1.0), x, y + 0.85, z, 0, ry, 0), M.plank);
@@ -49,7 +49,7 @@ export function table(ctx, x, z, ry, len = 6) {
   ctx.addBox(x, z, len / 2, 0.5, ry, 0.9);
 }
 /** Far mountains: the land goes on beyond what can be walked. */
-function range(b, pts, seed) {
+export function range(b, pts, seed) {
   const r = rng(seed);
   for (const [x, z, h, w] of pts) b.add(tint(at(cone(w, h, 7), x, h / 2 - 14, z, 0, r() * 3, 0, 1, 1, 0.8 + r() * 0.5), [0x5c6a58, 0x66705e, 0x545f56][(r() * 3) | 0], 0.2, (x + z) | 0), M.vcPlain);
 }
@@ -160,6 +160,29 @@ function bjornstead(ctx, world, scene) {
     for (const k of [-1, 1]) c.b.add(tint(at(box(0.7, 0.3, 0.06), x + k * 0.5, y + 5.75, z - 0.1, 0, 0, k * 0.5), 0x14141a, 0.1, 4), M.vcPlain);
   });
   st('forge2', false, (c) => { const f = P.smithy(c, ...B(-64, 150), Math.PI / 2); P.woodpile(c, ...B(-69, 150), Math.PI / 2, 4, 8); P.crate(c, ...B(-62, 145.6), 0.3, 0.8); return { forge: f.forge, anvil: f.anvil }; }); // the second forge, built with Jarnøy's smiths
+  // ---- Act IV: two quiet years, then the council, then Kettil ---------------------------------
+  st('market', false, (c) => { [[-6, 197, 0x8a2a22], [6, 197, 0x2f4a5c], [-6, 187, 0xc9b27a], [6, 187, 0x3a6a4a]].forEach(([dx, dz, col], i) => stall(c, ...B(dx, dz), dx < 0 ? Math.PI / 2 : -Math.PI / 2, col, i + 11)); P.barrel(c, ...B(-7.4, 192)); P.crate(c, ...B(7.6, 192), 0.3, 0.8); }); // Freydis's market by the harbor
+  st('heal', false, (c) => { houses.heal = house(c, ...B(-34, 113), 0.2, 9, { roof: 'thatch', door: 1, smoke: true }); P.dryingRack(c, ...B(-33, 120.6), 0.2); P.bench(c, ...B(-27.6, 119.4), 0.2); P.barrel(c, ...B(-39, 118.6)); }); // Ingrid's healing house
+  const WARE = [[50, 215, 0.2], [64, 212, 0.15], [78, 207, 0.4]];
+  st('ware', false, (c) => { WARE.forEach(([dx, dz, ry], i) => house(c, ...B(dx, dz), ry, 9, { wid: 5.6, roof: 'thatch', door: -1 })); P.barrel(c, ...B(57, 209)); P.crate(c, ...B(71, 206.4), 0.4, 0.9); P.cart(c, ...B(44, 209), 0.3); });
+  const moor = (objs, list) => list.forEach(([dx, dz, ry, L, sd, burnt]) => { const m = P.makeShip({ L, B: L > 16 ? 4.2 : 3.2, D: L > 16 ? 1.55 : 1.1, rise: L > 16 ? 2.5 : 1.6, seed: sd, sail: false, shields: L > 16 && !burnt, mast: L > 16 ? 9 : 6.5 }), [x, z] = B(dx, dz); m.position.set(x, burnt ? -0.75 : -0.15, z); m.rotation.set(burnt ? 0.08 : 0, ry, burnt ? 0.5 : 0); objs.push(m); });
+  st('fleet', false, (c, w, objs) => moor(objs, [[-50, 246, 0.4, 14, 51], [-37, 252, 0.3, 20, 52], [-24, 258, 0.2, 14, 53], [-12, 264, 0.1, 20, 54], [13, 264, -0.1, 14, 55], [25, 258, -0.2, 20, 56], [37, 252, -0.3, 14, 57], [50, 246, -0.4, 20, 58], [0, 278, 0, 20, 59], [62, 240, -0.5, 14, 60], [-62, 240, 0.5, 14, 61]])); // twelve ships, with the Sea-Raven
+  st('refugees', false, (c) => { // more camped outside the walls
+    [[-128, 152, 0.4], [-136, 160, 1.2], [-146, 166, 2.0], [-132, 170, -0.6], [-150, 140, 0.2], [-158, 156, 1.6], [-142, 176, 2.6], [-124, 164, -1.2]].forEach(([dx, dz, ry]) => P.leanTo(c, ...B(dx, dz), ry));
+    for (const [dx, dz] of [[-134, 156], [-148, 160], [-136, 172]]) P.fireRing(c, ...B(dx, dz), 0.5);
+    P.cart(c, ...B(-122, 156), 1.0); P.crate(c, ...B(-140, 150), 0.3, 0.7); P.barrel(c, ...B(-152, 150));
+  });
+  st('burnt', false, (c, w, objs) => { // what Kettil's three ships left: the harbor, three warehouses and the food stored for winter
+    for (const [dx, dz, ry] of WARE) { ruin(c, ...B(dx, dz), ry, 9, 5.6); const [x, z] = B(dx, dz); c.b.add(tint(at(box(13, 0.06, 9.5), x, gy(x, z) + 0.05, z, 0, ry, 0), 0x1a1612, 0.3, 5), M.vcPlain); } // scorched ground
+    moor(objs, [[-20, 236, 0.9, 14, 62, 1], [16, 238, -0.7, 14, 63, 1], [34, 246, 0.3, 20, 64, 1]]);
+    for (let i = 0; i < 7; i++) { const [x, z] = B(-2 + (i % 2) * 4, 236 + i * 2.6); c.b.add(tint(at(cyl(0.12, 0.15, 2.4 + (i % 3) * 0.6, 5), x, 0.9, z, (i % 3 - 1) * 0.3, 0, (i % 2 ? 1 : -1) * 0.25), 0x16120f, 0.3, i), M.vcPlain); } // the charred end of the pier
+  });
+  st('crowns', false, (c) => { // the lightning-split trunk has grown two new crowns, one on each side
+    for (const k of [-1, 1]) {
+      c.b.add(tint(at(cyl(0.07, 0.12, 2.8, 5), bi[0] + k * 1.25, by + 4.3, bi[1], 0, 0, -k * 0.8), 0xd9d5c8, 0.18, 10), M.vcPlain);
+      for (const [dx, dy, dz, sc] of [[2.4, 5.6, 0.2, 1.5], [3.0, 4.6, -0.6, 1.1], [1.9, 6.5, 0.6, 1.0]]) c.b.add(tint(at(new THREE.IcosahedronGeometry(1, 1), bi[0] + k * dx, by + dy, bi[1] + dz, 0, dx, 0, sc, sc * 0.8, sc), 0x5a8a40, 0.3, 9), M.vcPlain);
+    }
+  });
   const far = new Builder(); range(far, [[980, 60, 230, 330], [1280, 0, 290, 380], [1600, 70, 240, 340], [1880, 200, 200, 300], [760, 180, 170, 260]], 5); scene.add(far.build({ cast: false, receive: false }));
   return { id: 'bjornstead', s, stages, houses, barnDoor: door, forge: sm.forge, anvil: sm.anvil, hallDoor: houses.hall.door, ring: RING };
 }
