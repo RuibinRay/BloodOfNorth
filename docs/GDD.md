@@ -51,7 +51,7 @@ Stamina gates everything; posture decides who opens up.
 
 Two melee sets and one ranged slot are carried; switching takes a short animation.
 
-### Skill trees **[planned]**
+### Skill trees **[built: 25 skills, see `src/systems/skills.js`]**
 
 Berserker, Shieldmaster, Hunter, Warlord, Wayfarer. Skills unlock abilities, not flat damage (examples:
 *Hooking Beard* pulls a shield down; *Raven's Eye* marks tracks without holding the button; *Shield Wall*

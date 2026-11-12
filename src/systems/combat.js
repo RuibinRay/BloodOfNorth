@@ -49,6 +49,7 @@ export class Combat {
     const c = e.cb;
     if (this.target === e) this.target = null;
     if (c.onDown) { c.out = true; c.onDown(e); } else e.die();
+    if (!c.training) this.g.state.xp += c.boss ? 25 : 6; // renown for the fallen
     this.g.events.emit('enemyDown', e);
   }
 
@@ -56,7 +57,7 @@ export class Combat {
   playerSwing(n, heavy) {
     const g = this.g, p = g.player;
     if (!this.active) return;
-    const W = p.weaponDef(), real = W.real;
+    const W = p.weaponDef(), real = W.real, sk = g.skills;
     const near = this.alive().map((e) => ({ e, d: e.dist(p) })).filter((x) => x.d < W.reach).sort((a, b) => a.d - b.d);
     const riposte = p.riposteT > 0; // straight after a parry: this one cannot be guarded
     if (riposte) p.riposteT = 0;
@@ -70,13 +71,16 @@ export class Combat {
         e.h.play('parry', 0.3); g.audio.play(real ? 'steel' : 'clack'); p.cam.shake = heavy ? 0.16 : 0.08;
         e.h.handWorld(wall ? 'L' : 'R', _v); g.fx.burst(real ? 'spark' : 'chips', _v.x, _v.y + 0.2, _v.z, 6);
         c.posture = Math.min(100, c.posture + (heavy && W.breaker ? 100 : (heavy ? 42 : wall ? 10 : 16) * W.posture)); this.checkPosture(e); // a long axe goes through a shield
+        if (heavy && wall && sk.has('b_cleave')) this.hurt(e, W.dmg * 16, 0); // Cleave: half of it gets through
       } else {
         let dmg = W.dmg * (heavy ? 32 : 12 + n * 2);
         if (p.dual()) dmg *= 1.25; // the Left Brother in the off hand
-        if (riposte) dmg *= W.riposte;
+        if (riposte) dmg *= W.riposte * (sk.has('s_answer') ? 1.2 : 1);
+        if (p.mist()) dmg *= 1.3;
+        if (sk.has('b_warm')) p.stamina = Math.min(100, p.stamina + 3);
         if (W.stop && !heavy && c.state === 'windup' && !c.boss) { c.state = 'recover'; c.t = 0.8; e.h.action = null; } // a spear point stops a swing that has started
         const finish = heavy && c.state === 'stagger'; // a heavy blow on a broken guard ends it
-        if (finish) { dmg = c.boss ? dmg * 3 : c.hp + 1; g.slowT = 0.5; g.audio.play('split'); g.events.emit('finisher', e); }
+        if (finish) { dmg = c.boss ? dmg * 3 : c.hp + 1; g.slowT = 0.5; g.audio.play('split'); g.events.emit('finisher', e); if (sk.has('b_harvest')) { p.stamina = Math.min(100, p.stamina + 30); p.health = Math.min(100, p.health + 12); } }
         else if (c.state === 'stagger') dmg *= 1.8;
         g.hitStop = finish ? 0 : heavy ? 0.08 : 0.045;
         g.audio.play('arrowHit'); g.audio.play('thud', { vol: 0.5 }); p.cam.shake = finish ? 0.4 : heavy ? 0.22 : 0.1;
@@ -85,7 +89,7 @@ export class Combat {
         g.events.emit('enemyHit', e, heavy);
         this.hurt(e, dmg, (heavy ? (c.boss ? 26 : 38) : c.boss ? 4 : 9) * W.posture);
       }
-      if (++hits >= W.sweep[heavy ? 1 : 0]) break;
+      if (++hits >= W.sweep[heavy ? 1 : 0] + (heavy && sk.has('b_arc') ? 1 : 0)) break;
     }
   }
   enemyStrike(e) {
@@ -108,7 +112,7 @@ export class Combat {
     const c = e.x.cb;
     g.audio.play('thud'); p.cam.shake = 0.14; g.hitStop = 0.05;
     if (c.state === 'windup' || c.state === 'strike') { c.state = 'recover'; c.t = 0.9; e.x.h.action = null; }
-    this.hurt(e.x, 4, c.boss ? 14 : 30);
+    this.hurt(e.x, 4, (c.boss ? 14 : 30) * (g.skills.has('s_boss') ? 1.7 : 1));
     const a = Math.atan2(e.x.pos.x - p.pos.x, e.x.pos.z - p.pos.z);
     if (!c.keepDry || g.world.walkable(e.x.pos.x + Math.sin(a) * 0.5, e.x.pos.z + Math.cos(a) * 0.5)) { e.x.pos.x += Math.sin(a) * 0.5; e.x.pos.z += Math.cos(a) * 0.5; }
   }
@@ -147,8 +151,9 @@ export class Combat {
     const g = this.g, e = this.target;
     if (g.ravens.mode !== 'follow' || g.ravens.eye || !e) return;
     if (this.harryCd > 0) { g.ui.toast(`${g.ravens.names()[1]} is not ready`); return; }
-    this.harryCd = 14; e.cb.state = 'harried'; e.cb.t = 3.2; e.h.action = null;
-    g.ravens.harry(e, 3.2); g.audio.play('raven'); g.events.emit('harried', e);
+    const lord = g.skills.has('w_raven'), hold = lord ? 5 : 3.2;
+    this.harryCd = lord ? 8 : 14; e.cb.state = 'harried'; e.cb.t = hold; e.h.action = null;
+    g.ravens.harry(e, hold); g.audio.play('raven'); g.events.emit('harried', e);
   }
 
   think(e, dt) {

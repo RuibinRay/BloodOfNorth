@@ -4,6 +4,7 @@ import { codeLabel, ACTION_LABELS, DEFAULT_BINDINGS } from '../core/input.js';
 import { listSaves, saveSettings, deleteSave, latestSave, DEFAULT_SETTINGS } from '../core/save.js';
 import { ITEMS, QUESTS } from '../data/act1.js';
 import { SECRETS } from '../data/act1_ch3.js';
+import { TREES, POINT_EVERY } from '../systems/skills.js';
 import { POI, ISLES, DISTRICT_LINE } from '../world/layout.js';
 import { heightAt, riverX, riverSurfaceY, SIZE, HALF } from '../world/terrain.js';
 /** The part of the world the sea chart shows: from the landing beach south to the edge of the chart. */
@@ -237,7 +238,7 @@ export class UI {
   }
   hideMain() { this.e.menu.classList.remove('on'); this.e.hud.classList.remove('hidden'); }
   showPause() {
-    const g = this.g, all = ['journal', 'inventory', 'map', 'saga', 'settings', 'saves', 'status'];
+    const g = this.g, all = ['journal', 'inventory', 'map', 'saga', 'skills', 'settings', 'saves', 'status'];
     this.e.pause.classList.add('on');
     this.buttons($('#pause-buttons'), [
       { label: 'Resume', act: () => g.resume() },
@@ -245,6 +246,7 @@ export class UI {
       { label: 'Inventory', act: () => this.openPanel('inventory', all) },
       { label: 'Map', act: () => this.openPanel('map', all) },
       { label: 'Saga', act: () => this.openPanel('saga', all) },
+      { label: 'Skills', act: () => this.openPanel('skills', all) },
       { label: 'Settings', act: () => this.openPanel('settings', all) },
       { label: 'Save / Load', act: () => this.openPanel('saves', all) },
       { label: 'Quit to Main Menu', act: () => g.quitToMenu() },
@@ -252,8 +254,8 @@ export class UI {
   }
   hidePause() { this.e.pause.classList.remove('on'); }
 
-  openPanel(tab, tabs = ['journal', 'inventory', 'map', 'saga', 'settings', 'saves', 'status']) {
-    const names = { journal: 'Journal', inventory: 'Inventory', map: 'Map', saga: 'Saga', settings: 'Settings', saves: 'Saves', status: 'Build Status' };
+  openPanel(tab, tabs = ['journal', 'inventory', 'map', 'saga', 'skills', 'settings', 'saves', 'status']) {
+    const names = { journal: 'Journal', inventory: 'Inventory', map: 'Map', saga: 'Saga', skills: 'Skills', settings: 'Settings', saves: 'Saves', status: 'Build Status' };
     this.tabs = tabs; this.tab = tab;
     this.e.panel.classList.add('on'); this.e.pause.classList.remove('on');
     this.e.tabs.innerHTML = '';
@@ -391,6 +393,17 @@ export class UI {
       g.audio.play('ui'); draw();
     };
   }
+  render_skills(body) {
+    const g = this.g, sk = g.skills, xp = g.state.xp, pts = sk.points();
+    if (!sk.open()) { body.innerHTML = `<h3>Skills</h3><p class="muted">A boy learns by doing. The five paths open when Eirik is grown, and the renown he earns now (${xp} so far) will count then.</p>`; return; }
+    const label = { has: 'learned', locked: 'learn the one above first' };
+    body.innerHTML = `<h3>Skills</h3><p class="muted">Renown ${xp} · <b>${pts}</b> skill point${pts === 1 ? '' : 's'} to spend · the next in ${POINT_EVERY - (xp % POINT_EVERY)} renown. Renown comes from quests, islands found, ships taken and enemies felled.</p>
+      <div class="trees">${TREES.map((t) => `<div class="tree"><h4>${esc(t.name)}</h4><p class="muted">${esc(t.blurb)}</p>${t.skills.map((k) => {
+        const st = sk.state(k.id);
+        return `<button class="skill ${st}" data-id="${k.id}" ${st === 'can' ? '' : 'disabled'}><b>${esc(k.name)}</b><span>${label[st] || `${k.cost} point${k.cost > 1 ? 's' : ''}`}</span><small>${esc(k.desc)}</small></button>`;
+      }).join('')}</div>`).join('')}</div>`;
+    body.querySelectorAll('.skill.can').forEach((b) => (b.onclick = () => { if (sk.learn(b.dataset.id)) this.openPanel('skills', this.tabs); }));
+  }
   render_saga(body) {
     const st = this.g.state, max = Math.max(4, ...Object.values(st.traits));
     const relName = { ragnar: 'Ragnar, your father', ylva: 'Ylva, your mother', bjorn: 'Bjorn', signe: 'Signe' };
@@ -453,8 +466,8 @@ export class UI {
       <p>This is the first playable chapter of a long project, not the finished game. Everything on screen is generated in code; characters, props and sound are placeholders awaiting real assets.</p>
       <div class="status-grid">
       <div><h4><span class="tag ok">playable</span></h4><ul><li>Act I, Chapter 1: a full day in Hrafnvik and the night raid</li><li>Act I, Chapter 2: winter survival, a wolf, trackers and the river ice</li><li>Act I, Chapter 3: Bjornstead, the raven chicks, the axe under the hearthstone, first flight</li><li>Raven's Eye: fly the white raven, mark what she sees</li><li>Five hidden omens that seed later secret weapons</li><li>Act II, Chapter 1: Eirik at nineteen, the drill with Bjorn, the raid on Bjornstead</li><li>Melee combat: light and heavy blows, block, parry and riposte, dodge, guard-breaking and finishing blows, enemies that take turns and flank, a two-phase captain</li><li>The black raven harries your target; arrows work on men</li><li>Hunger and warmth, shelter, cooking, thin-ice crossing</li><li>Third-person movement, camera, stamina, crouch, dodge</li><li>Dialogue with choices, traits and bonds</li><li>Quests, journal, objective tracker, map with waypoint</li><li>Woodcutting, bow hunting, tracking, fishing, fire-making</li><li>Sparring tutorial: strike, block, parry, dodge</li><li>Stealth escape with raider sight and hearing</li><li>Cold and warmth survival</li><li>Day/night sky, snow, fire, in-engine cutscenes</li><li>Save / load, autosave, settings, key rebinding, gamepad</li></ul></div>
-      <div><h4><span class="tag proto">prototype</span></h4><ul><li>Procedural characters and animation (to be replaced by rigged models)</li><li>Procedural audio and score</li><li>Villager routines (posts and an evening change, not full schedules)</li><li>Wildlife AI: hares, deer, sheep, ravens</li><li>Adult Eirik is the same placeholder rig, scaled up</li><li>Open world sandbox: horse, boat with a sail, a ship to buy and six crew to recruit, a horn that brings them ashore to fight, sea battles (volleys, shields, ramming, boarding across two decks), archers, shield-bearers and berserkers, a shield with a shove, four melee weapons and throwing axes, crew who can be wounded, fourteen islands on a sea chart, two law-districts, wolf-mark outlawry (witnesses, hue and cry, bounty-hunters, blood-price, hide-duel), standing up to “my king”, trade, paid passage between harbours, the first secret weapon</li><li>Higgsfield asset client (built, waiting on a valid key ID and secret)</li></ul></div>
-      <div><h4><span class="tag plan">planned</span></h4><ul><li>Acts II – VII (see docs/ROADMAP.md and data/missions.json)</li><li>The rest of the sea map (about forty islands; fourteen are built), a longship of your own, fleets, more districts (docs/OPEN_WORLD.md)</li><li>The rest of nine weapon classes (four are built), five skill trees</li><li>Enemy combat AI, bosses, mounted and naval combat</li><li>Sailing, settlement, factions, trading, crafting</li><li>50 side missions and tavern games</li><li>Building interiors, voiced dialogue, real music</li><li>Unreal Engine 5 port for photoreal fidelity</li></ul></div></div>`;
+      <div><h4><span class="tag proto">prototype</span></h4><ul><li>Procedural characters and animation (to be replaced by rigged models)</li><li>Procedural audio and score</li><li>Villager routines (posts and an evening change, not full schedules)</li><li>Wildlife AI: hares, deer, sheep, ravens</li><li>Adult Eirik is the same placeholder rig, scaled up</li><li>Open world sandbox: horse, boat with a sail, a ship to buy and six crew to recruit, a horn that brings them ashore to fight, sea battles (volleys, shields, ramming, boarding across two decks), archers, shield-bearers and berserkers, a shield with a shove, four melee weapons and throwing axes, five skill trees bought with renown, crew who can be wounded, fourteen islands on a sea chart, two law-districts, wolf-mark outlawry (witnesses, hue and cry, bounty-hunters, blood-price, hide-duel), standing up to “my king”, trade, paid passage between harbours, the first secret weapon</li><li>Higgsfield asset client (built, waiting on a valid key ID and secret)</li></ul></div>
+      <div><h4><span class="tag plan">planned</span></h4><ul><li>Acts II – VII (see docs/ROADMAP.md and data/missions.json)</li><li>The rest of the sea map (about forty islands; fourteen are built), a longship of your own, fleets, more districts (docs/OPEN_WORLD.md)</li><li>The rest of nine weapon classes (four are built)</li><li>Enemy combat AI, bosses, mounted and naval combat</li><li>Sailing, settlement, factions, trading, crafting</li><li>50 side missions and tavern games</li><li>Building interiors, voiced dialogue, real music</li><li>Unreal Engine 5 port for photoreal fidelity</li></ul></div></div>`;
   }
   showChapterEnd() {
     const g = this.g, st = g.state, q = g.quests, body = $('#panel-body');

@@ -283,7 +283,7 @@ export class SeaChart {
       for (const s of NAMED) {
         if (this.seen[s.id]) continue;
         if (dist(p.pos, s.x, s.z) < s.r + 35) this.discover(s, 'self');
-        else if (eye && dist(eye, s.x, s.z) < s.r + 70) this.discover(s, 'raven');
+        else if (eye && dist(eye, s.x, s.z) < s.r + (g.skills.has('h_far') ? 140 : 70)) this.discover(s, 'raven');
       }
     }
     for (const c of this.camps) { // men who fight whoever lands

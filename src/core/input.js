@@ -14,7 +14,7 @@ export const DEFAULT_BINDINGS = {
   horn: ['KeyG'],
   throw: ['KeyF'],
   weapon1: ['Digit1', 'Pad14'], weapon2: ['Digit2', 'Pad15'], weapon3: ['Digit3'], holster: ['KeyX', 'Pad13'],
-  inventory: ['KeyI', 'Tab'], journal: ['KeyJ', 'Pad8'], map: ['KeyM'],
+  inventory: ['KeyI', 'Tab'], journal: ['KeyJ', 'Pad8'], map: ['KeyM'], skills: ['KeyK'],
   pause: ['Escape', 'KeyP', 'Pad9'],
   camLeft: ['ArrowLeft'], camRight: ['ArrowRight'], camUp: ['ArrowUp'], camDown: ['ArrowDown'],
 };
@@ -23,7 +23,7 @@ export const ACTION_LABELS = {
   sprint: 'Sprint', crouch: 'Crouch / sneak', dodge: 'Dodge', interact: 'Interact',
   attack: 'Attack / loose arrow', block: 'Block / aim', sense: "Hunter's sense", raven: "Raven's Eye", harry: 'Send the black raven', whistle: 'Whistle for your horse', horn: 'Sound the horn (crew ashore / back aboard)',
   weapon1: 'Draw, or change, melee weapon', throw: 'Throw an axe', weapon2: 'Equip bow', weapon3: 'Off hand: shield or second axe', holster: 'Put weapon away',
-  inventory: 'Inventory', journal: 'Journal', map: 'Map', pause: 'Pause',
+  inventory: 'Inventory', journal: 'Journal', map: 'Map', skills: 'Skills', pause: 'Pause',
   camLeft: 'Camera left', camRight: 'Camera right', camUp: 'Camera up', camDown: 'Camera down',
 };
 

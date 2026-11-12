@@ -29,7 +29,7 @@ export class Ravens {
 
   enterEye() {
     const g = this.g, p = g.player;
-    if (this.mode !== 'follow' || this.eye || p.frozen || g.activity || g.mode !== 'play') return false;
+    if (this.mode !== 'follow' || this.eye || (p.frozen && !p.riding) || g.activity || g.mode !== 'play') return false; // from the saddle or the helm is fine: the mount holds its course
     this.eye = true; this.yaw = p.cam.yaw; this.pitch = 0.55; this.alt = 20; this.speed = 9;
     this.white.position.set(p.pos.x, p.pos.y + 6, p.pos.z);
     g.audio.play('raven'); g.ui.ravenHUD(true, this.names()[0]);
@@ -83,8 +83,9 @@ export class Ravens {
     const sy = Math.sin(this.yaw), cy = Math.cos(this.yaw);
     let x = w.position.x + sy * this.speed * dt, z = w.position.z + cy * this.speed * dt;
     const dx = x - p.pos.x, dz = z - p.pos.z, d = Math.hypot(dx, dz);
-    if (d > LEASH) {
-      x = p.pos.x + (dx / d) * LEASH; z = p.pos.z + (dz / d) * LEASH;
+    const leash = g.skills.has('h_far') ? 270 : LEASH;
+    if (d > leash) {
+      x = p.pos.x + (dx / d) * leash; z = p.pos.z + (dz / d) * leash;
       if (this.t - this.leashT > 6) { this.leashT = this.t; g.ui.toast(`${this.names()[0]} will not fly further from you`); }
     }
     const lim = z > 322 ? 628 : 305; x = clamp(x, -lim, lim); z = clamp(z, -305, 1590);

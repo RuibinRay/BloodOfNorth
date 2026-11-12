@@ -35,6 +35,7 @@ export class Law {
   tier() { const s = this.s; if (s.marks >= 4) return TIERS[0]; let t = TIERS[0]; for (const x of TIERS) if (s.standing >= x.min) t = x; return t; }
   addStanding(n, why) {
     const s = this.s, before = this.tier().name;
+    if (n > 0 && this.g.skills.has('w_hand')) n = Math.round(n * 1.25); // Open Hand
     s.standing = clamp(s.standing + n, 0, 100);
     if (why) this.g.ui.toast(`${why} (${n > 0 ? '+' : ''}${n} standing)`);
     const now = this.tier().name;
@@ -166,7 +167,7 @@ export class Mounts {
   hint(key, text) { if (this.hintKey !== key) { this.hintKey = key; this.g.ui.hint(text); } }
 
   update(dt) {
-    const g = this.g, p = g.player, inp = g.input, live = g.mode === 'play', h = this.horse, m = this.on;
+    const g = this.g, p = g.player, inp = g.input, live = g.mode === 'play' && !g.ravens.eye, h = this.horse, m = this.on; // while he looks through the raven the keys fly her, and a set sail keeps drawing
     this.t += dt;
     if (live && inp.hit('whistle')) this.whistle();
     if (h && h.aboard) { const v = h.aboard; h.pos.set(v.pos.x - Math.sin(v.yaw) * 2.1, v.pos.y + v.model.userData.deckY, v.pos.z - Math.cos(v.yaw) * 2.1); h.yaw = v.yaw; h.speed = 0; } // stands abaft the mast
@@ -207,13 +208,14 @@ export class Mounts {
       if (act) this.dismount();
     } else {
       // a ship answers to her crew: two hands to move her at all, six to row her well
-      const ship = m.type === 'ship', manned = !ship || m.hands >= 2, row = ship ? (manned ? 2.2 + 0.75 * Math.min(6, m.hands) : 0) : 4.8;
+      const legs = g.skills.has('y_legs'); // Sea Legs: both boats faster under oar and sail
+      const ship = m.type === 'ship', manned = !ship || m.hands >= 2, row = (ship ? (manned ? 2.2 + 0.75 * Math.min(6, m.hands) : 0) : 4.8) * (legs ? 1.2 : 1);
       if (live && inp.hit('sprint')) {
         if (!manned) g.ui.toast('She needs two at the oars before she will answer.');
         else { m.sailUp = !m.sailUp; g.audio.play('page'); g.ui.toast(m.sailUp ? 'The sail is set.' : 'Sail down. Oars out.'); }
       }
       // under sail she runs on her own; the oars are slower but will go anywhere
-      const want = m.sailUp ? (mv.y < -0.1 ? 3.2 : m.sailSpeed) : mv.y > 0.1 ? row : mv.y < -0.1 ? -row / 3 : 0;
+      const want = m.sailUp ? (mv.y < -0.1 ? 3.2 : m.sailSpeed * (legs ? 1.12 : 1)) : mv.y > 0.1 ? row : mv.y < -0.1 ? -row / 3 : 0;
       m.speed = damp(m.speed, want, m.sailUp ? 0.55 : 0.9, dt);
       m.yaw -= mv.x * (m.sailUp ? m.sailTurn : m.turn) * dt * clamp(Math.abs(m.speed) / 2 + 0.35, 0.35, 1);
       const nx = m.pos.x + Math.sin(m.yaw) * m.speed * dt, nz = m.pos.z + Math.cos(m.yaw) * m.speed * dt;

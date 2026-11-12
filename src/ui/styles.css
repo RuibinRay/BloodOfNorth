@@ -209,6 +209,19 @@ ul.steps li.cur { font-weight: 700; }
 .maptabs { display: flex; gap: 8px; justify-content: center; margin: 0 0 10px; }
 .maptabs button { font: 600 13px var(--serif); letter-spacing: 0.06em; padding: 5px 14px; background: transparent; border: 1px solid #8a7248; border-radius: 3px; cursor: pointer; color: var(--ink-soft); }
 .maptabs button.on { background: var(--wood); color: var(--parch); border-color: var(--wood); }
+.trees { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; align-items: start; }
+.tree h4 { margin: 0 0 2px; }
+.tree > p { margin: 0 0 8px; font-size: 12.5px; min-height: 2.6em; }
+.skill { display: block; width: 100%; text-align: left; margin: 0 0 7px; padding: 7px 9px 8px; font: inherit; color: var(--ink); background: #f3e8cf; border: 1px solid #8a7248; border-left-width: 4px; border-radius: 3px; cursor: pointer; }
+.skill b { display: block; font-size: 14px; }
+.skill span { display: block; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); margin: 1px 0 3px; }
+.skill small { display: block; font-size: 12.5px; line-height: 1.35; }
+.skill.can { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold-hi) inset; }
+.skill.can:hover { background: #fbf3dd; }
+.skill.has { background: var(--wood); color: var(--parch); border-color: var(--wood); cursor: default; }
+.skill.has span { color: var(--gold-hi); }
+.skill.locked, .skill.poor { opacity: 0.55; cursor: default; }
+@media (max-width: 900px) { .trees { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .status-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
 .status-grid ul { margin: 4px 0; padding-left: 18px; font-size: 14.5px; line-height: 1.5; }
 .tag { display: inline-block; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; padding: 2px 7px; border: 1px solid currentColor; margin-right: 6px; }

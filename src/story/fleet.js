@@ -179,7 +179,7 @@ export class Fleet {
     else if (!HIRED[id] && land && n.dist(land) < 170 && n.dist(land) > 3) n.goTo(land.x, land.z, { run: true, onArrive: () => this.board(n) }); // he walks down to her
     else this.board(n);
   }
-  board(n) { n.aboard = true; n.mode = 'crew'; n.path = []; n.h.hold('R', null); n.talk = n.chat; n.wounded = false; n.setLoop(null); }
+  board(n) { n.aboard = true; n.mode = 'crew'; n.path = []; n.h.hold('R', null); n.talk = n.chat; n.talkLabel = null; n.wounded = false; n.setLoop(null); }
   /** A crewman goes down: out of this fight, on his feet again once it is over. */
   wound(n, by) {
     const g = this.g;
@@ -187,6 +187,14 @@ export class Fleet {
     n.wounded = true; n.recT = 0; n.mode = 'idle'; n.setLoop('kneel');
     if (by && by.cb && by.cb.duel === n) by.cb.duel = null; // the man who put him down turns on someone else
     g.ui.toast(`${n.name} is down.`); g.audio.play('hurt', { vol: 0.7 });
+    if (g.skills.has('w_rally')) { n.talkLabel = `Help ${n.name} up`; n.talk = () => this.rally(n); } // Rally: he can be got to his feet now
+  }
+  rally(n) {
+    const g = this.g, p = g.player;
+    if (!n.wounded) return;
+    n.wounded = false; n.hp = Math.round(n.hpMax / 2); n.talk = null; n.talkLabel = null; n.setLoop(null); n.h.hold('R', n.weapon);
+    n.follow(p, { dist: 3 + this.crew.indexOf(n) * 0.9 }); p.h.play('pickup', 0.6); g.audio.play('chime');
+    g.ui.toast(`${n.name} is on his feet again.`);
   }
   /** The horn: crew ashore to follow and fight, or back aboard. */
   horn() {
@@ -255,6 +263,7 @@ export class Fleet {
       n.pos.set(s.pos.x + cy * seat[0] + sy * seat[1], s.pos.y + 0.44, s.pos.z - sy * seat[0] + cy * seat[1]);
       n.yaw = dampAngle(n.yaw, s.yaw + (rowing ? Math.PI : 0), 6, dt); n.root.rotation.y = n.yaw; n.speed = 0;
       n.h.setLocomotion(0, false); n.h.setLoop('sit'); n.h.update(dt);
+      n.hpMax = g.skills.has('w_brothers') ? 90 : 60; // Shield-Brothers
       n.hp = Math.min(n.hpMax, n.hp + 1.5 * dt); // rest mends them
     });
     const out = this.crew.filter((n) => !n.aboard);
@@ -263,7 +272,7 @@ export class Fleet {
     if (this.ashore) for (const n of this.crew) {
       if (n.aboard) continue;
       if (n.wounded) { // down until the fighting stops, then up again, weak
-        if (!g.combat.active && (n.recT += dt) > 4) { n.wounded = false; n.hp = 30; n.setLoop(null); n.follow(p, { dist: 3 + this.crew.indexOf(n) * 0.9 }); g.ui.toast(`${n.name} is on his feet again.`); }
+        if (!g.combat.active && (n.recT += dt) > 4) { n.wounded = false; n.talk = null; n.talkLabel = null; n.hp = 30; n.setLoop(null); n.follow(p, { dist: 3 + this.crew.indexOf(n) * 0.9 }); g.ui.toast(`${n.name} is on his feet again.`); }
         continue;
       }
       const busy = n.mode === 'fight' && n.partner && !n.partner.dead && n.partner.cb && !n.partner.cb.out;
@@ -271,7 +280,7 @@ export class Fleet {
       if (busy || !g.combat.active || n.mode === 'goto') continue;
       // nearest man nobody else has taken; a captain is left for Eirik unless he is all that is left
       const free = g.combat.alive().filter((e) => !e.cb.duel || e.cb.duel.dead || e.cb.duel.partner !== e || e.cb.duel.mode !== 'fight').sort((a, b) => (a.cb.boss ? 1000 : 0) + n.dist(a) - (b.cb.boss ? 1000 : 0) - n.dist(b))[0];
-      if (free && n.dist(free) < 45 && (!free.cb.boss || g.combat.alive().length === 1)) { free.cb.duel = n; n.fight(free, { lethal: 0, dmg: 6 }); }
+      if (free && n.dist(free) < 45 && (!free.cb.boss || g.combat.alive().length === 1)) { free.cb.duel = n; n.fight(free, { lethal: 0, dmg: g.skills.has('w_hands') ? 9 : 6 }); }
     }
     // traders: steer for the next mark, keep off the shallows, hail whoever passes
     this.hailT -= dt;

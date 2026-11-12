@@ -132,7 +132,7 @@ export class SeaWar {
       const k = (Math.random() * 2 - 1) * s.hl + s.speed * T * (0.7 + Math.random() * 0.5), w = (Math.random() * 2 - 1) * s.hw * 2.4, o = (Math.random() * 2 - 1) * f.hl * 0.7;
       this.loose(f.pos.x + fy * o, 1.6, f.pos.z + fc * o, s.pos.x + sy * k + cy * w, 0.6, s.pos.z + cy * k - sy * w, (b) => {
         if (!this.onHull(s, b)) { g.fx.burst('splash', b.x, 0.05, b.z, 3); return; }
-        s.hull -= shields ? 0.8 : 2; g.audio.play('clack', { vol: 0.5 }); g.fx.burst('chips', b.x, 0.9, b.z, 4);
+        s.hull -= (shields ? 0.8 : 2) * (g.skills.has('y_rail') ? 0.6 : 1); g.audio.play('clack', { vol: 0.5 }); g.fx.burst('chips', b.x, 0.9, b.z, 4);
         if (!shields && !hurt && this.open.mounts.on === s && Math.random() < 0.3) { hurt = true; p.health = Math.max(0, p.health - 6); g.audio.play('hurt'); p.cam.shake = 0.2; if (p.health <= 0) g.events.emit('playerDied'); }
       });
     }
@@ -158,7 +158,8 @@ export class SeaWar {
   }
   ram(f) {
     const g = this.g, s = this.ship, sy = Math.sin(s.yaw), cy = Math.cos(s.yaw);
-    this.ramCd = 5; f.hull -= 45; s.hull -= 10; f.stun = 3; f.speed = 0; s.speed = -1.5;
+    const stem = g.skills.has('y_stem'); // Iron Stem
+    this.ramCd = 5; f.hull -= stem ? 65 : 45; s.hull -= stem ? 5 : 10; f.stun = 3; f.speed = 0; s.speed = -1.5;
     if (f.men > f.def.minMen) f.men--;
     if (heightAt(f.pos.x + sy * 2.2, f.pos.z + cy * 2.2) < -1.5) { f.pos.x += sy * 2.2; f.pos.z += cy * 2.2; }
     g.audio.play('thud'); g.audio.play('split'); g.player.cam.shake = 0.5;
@@ -185,6 +186,7 @@ export class SeaWar {
     const side = (f.pos.x - s.pos.x) * cy - (f.pos.z - s.pos.z) * sy >= 0 ? 1 : -1; // is she to starboard or to port
     const w = s.hw + f.hw + 0.05, same = Math.abs(angleDiff(f.yaw, s.yaw)) < Math.PI / 2;
     f.state = 'lashed'; f.speed = 0; s.speed = 0; s.sailUp = false; this.ramCd = 0;
+    if (g.ravens.eye) g.ravens.exitEye(); // no time for birds
     this.lash = { f, phase: 'closing', t: 0, men: [], decks: [], from: [f.pos.x, f.pos.z, f.yaw], to: [s.pos.x + cy * side * w, s.pos.z - sy * side * w, same ? s.yaw : s.yaw + Math.PI] };
     g.audio.play('thud'); g.audio.setMusic('raid');
     g.ui.subtitle(f.def.captain ? f.def.captain.name : 'Sea-wolf steersman', 'Hooks! Make fast! Over the rail!', 3.5);
@@ -275,7 +277,8 @@ export class SeaWar {
     }
     // the crew patch what they can when nothing is after her; a ferryman does the rest
     const hunted = this.foes.some((f) => f.state === 'chase' || f.state === 'lashed');
-    if (fleet.owned && !hunted && s.hull < 50 && Math.abs(s.speed) < 0.3 && (this.patchT += dt) > 4) { this.patchT = 0; s.hull = Math.min(50, s.hull + 1); }
+    const patch = g.skills.has('y_wright') ? 80 : 50; // Shipwright's Eye
+    if (fleet.owned && !hunted && s.hull < patch && Math.abs(s.speed) < 0.3 && (this.patchT += dt) > 4) { this.patchT = 0; s.hull = Math.min(patch, s.hull + 1); }
     o.law.extra = [fleet.owned && (helm || s.hull < 100 || this.lash) ? `Sea-Raven · hull ${Math.max(0, Math.ceil(s.hull))}` : '', fleet.status || ''].filter(Boolean).join(' · ');
     if (fleet.owned && s.hull <= 0 && !this.lost) { this.lost = true; g.ui.subtitle('Eirik', 'She is opening up. She is going down!', 3); o.fail(); }
     if (play && helm && g.input.hit('attack')) this.volley();

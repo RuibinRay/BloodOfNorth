@@ -65,6 +65,8 @@ export class Player {
     return sh && !(ax && fl.offAxe) ? 'shield' : ax ? 'brother_axe' : null;
   }
   hasShield() { return this.offItem() === 'shield'; }
+  /** Red Mist (Berserker): badly hurt, and the better for it. */
+  mist() { return this.health < 35 && this.game.skills.has('b_mist'); }
   /** Both Brothers in hand: every blow lands harder. */
   dual() { return this.offItem() === 'brother_axe'; }
   swapOffHand() {
@@ -78,7 +80,7 @@ export class Player {
   bash() {
     const g = this.game, h = this.h;
     if (h.busy || this.bashT > 0 || this.stamina < 12) return;
-    this.stamina -= 12; this.staminaDelay = 0.7; this.bashT = 1.1;
+    this.stamina -= 12; this.staminaDelay = 0.7; this.bashT = g.skills.has('s_boss') ? 0.7 : 1.1;
     h.play('shove', 0.42, { hitAt: 0.35, onHit: () => g.events.emit('playerBash') });
     g.audio.play('whoosh', { vol: 0.5 });
   }
@@ -87,7 +89,7 @@ export class Player {
     const g = this.game;
     if (this.iframes > 0) return 'dodged';
     const facing = Math.abs(angleDiff(this.yaw, Math.atan2(from.x - this.pos.x, from.z - this.pos.z))) < 1.2;
-    if (this.blocking && facing && this.hasShield()) { g.audio.play('clack'); this.stamina = Math.max(0, this.stamina - 4); return 'blocked'; }
+    if (this.blocking && facing && this.hasShield()) { g.audio.play('clack'); if (!g.skills.has('s_wall')) this.stamina = Math.max(0, this.stamina - 4); return 'blocked'; }
     this.health = Math.max(this.mortal ? 0 : 1, this.health - dmg);
     this.h.play('stagger', 0.35); g.audio.play('hurt'); this.cam.shake = 0.18;
     if (this.health <= 0) g.events.emit('playerDied');
@@ -108,7 +110,7 @@ export class Player {
     if (inv.count('throwaxe') <= 0) { if (inv.has('father_axe')) g.ui.toast('No throwing axes'); return; }
     const tg = this.target && !this.target.dead && this.target.dist(this) < 24 ? this.target : null;
     if (tg) this.yaw = Math.atan2(tg.pos.x - this.pos.x, tg.pos.z - this.pos.z);
-    this.throwT = 0.9; this.stamina = Math.max(0, this.stamina - 6); this.staminaDelay = 0.5;
+    this.throwT = g.skills.has('h_axe') ? 0.5 : 0.9; this.stamina = Math.max(0, this.stamina - 6); this.staminaDelay = 0.5;
     h.play('atk1', 0.42, { hitAt: 0.36, onHit: () => {
       if (inv.count('throwaxe') <= 0) return;
       inv.remove('throwaxe', 1, true);
@@ -116,7 +118,7 @@ export class Player {
       let dir;
       if (tg && !tg.dead) { const d = tg.dist(this), t = d / 19; dir = new THREE.Vector3(tg.pos.x - _v.x, tg.pos.y + 1.15 * tg.h.scale + 3.25 * t * t - _v.y, tg.pos.z - _v.z).normalize(); } // lift for the drop
       else { g.camera.getWorldDirection(_d); dir = this.aimPoint(_d).sub(_v).normalize(); dir.y += 0.06; dir.normalize(); }
-      g.wildlife.shoot(_v, dir, 19, this, { kind: 'axe', dmg: 30, posture: 32 });
+      g.wildlife.shoot(_v, dir, 19, this, { kind: 'axe', dmg: g.skills.has('h_axe') ? 40 : 30, posture: 32 });
       g.audio.play('whoosh'); g.events.emit('throw');
     } });
   }
@@ -168,18 +170,20 @@ export class Player {
     if (this.iframes > 0) return 'dodged';
     const facing = Math.abs(angleDiff(this.yaw, Math.atan2(attacker.pos.x - this.pos.x, attacker.pos.z - this.pos.z))) < 1.2;
     if (this.blocking && facing) {
-      if (this.blockT < this.weaponDef().parry) {
+      if (this.blockT < this.weaponDef().parry + (g.skills.has('s_turn') ? 0.1 : 0)) {
         g.audio.play('parry'); this.h.play('parry', 0.3);
         this.h.handWorld('R', _v); g.fx.burst('chips', _v.x, _v.y + 0.2, _v.z, 6);
-        this.riposteT = 1.0; g.hitStop = 0.07; // the next blow inside a second cannot be guarded
+        this.riposteT = g.skills.has('s_answer') ? 1.7 : 1.0; g.hitStop = 0.07; // the next blow inside a second cannot be guarded
         return 'parried';
       }
-      this.stamina -= this.hasShield() ? 7 : this.weaponDef().block; this.staminaDelay = 0.8; g.audio.play('clack');
-      if (this.stamina <= 0) { this.stamina = 0; this.h.play('stagger', 0.6); return 'hit'; }
+      const iron = this.hasShield() && g.skills.has('s_iron');
+      this.stamina -= this.hasShield() ? (iron ? 3.5 : 7) : this.weaponDef().block; this.staminaDelay = 0.8; g.audio.play('clack');
+      if (this.stamina <= 0) { this.stamina = 0; if (!iron) { this.h.play('stagger', 0.6); return 'hit'; } }
       return 'blocked';
     }
     this.health = Math.max(this.mortal ? 0 : 1, this.health - dmg);
-    this.h.play('stagger', 0.5); g.audio.play('hurt'); this.cam.shake = 0.25;
+    if (!this.mist()) this.h.play('stagger', 0.5); // the red mist: a blow no longer breaks his swing
+    g.audio.play('hurt'); this.cam.shake = 0.25;
     if (this.health <= 0) g.events.emit('playerDied');
     return 'hit';
   }
@@ -241,17 +245,17 @@ export class Player {
         } else if (g.inventory.count('arrow') <= 0) g.ui.toast('No arrows left');
       }
     }
-    if (this.aiming) this.draw = Math.min(1, this.draw + dt / 0.75); else this.draw = 0;
+    if (this.aiming) this.draw = Math.min(1, this.draw + dt / (g.skills.has('h_still') ? 0.5 : 0.75)); else this.draw = 0;
     h.param = this.draw;
     h.setLoop(this.aiming ? 'aim' : this.blocking ? 'block' : this.loopOverride || null);
 
     // --- locomotion ---
     this.sprinting = ctrl && inp.held('sprint') && mv.mag > 0.5 && this.stamina > 1 && !this.crouch && !this.aiming && !this.blocking;
-    let top = this.crouch ? SPEED.crouch : this.aiming ? SPEED.aim : this.blocking ? SPEED.block : this.sprinting ? SPEED.sprint : SPEED.jog;
+    let top = this.crouch ? SPEED.crouch : this.aiming ? SPEED.aim : this.blocking ? (this.hasShield() && g.skills.has('s_wall') ? SPEED.jog : SPEED.block) : this.sprinting ? SPEED.sprint : SPEED.jog;
     if (h.busy && this.dodgeT <= 0) top *= 0.35;
     top *= this.speedMul ?? 1;
     this.speed = damp(this.speed, mv.mag * top, 10, dt);
-    if (this.sprinting) { this.stamina -= 10 * dt; this.staminaDelay = 0.9; }
+    if (this.sprinting) { this.stamina -= (g.skills.has('y_road') ? 6 : 10) * dt; this.staminaDelay = 0.9; }
     this.staminaDelay -= dt;
     if (this.staminaDelay <= 0) this.stamina = Math.min(100, this.stamina + 17 * dt);
     this.stamina = Math.max(0, this.stamina);

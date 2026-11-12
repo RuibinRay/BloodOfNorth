@@ -185,7 +185,7 @@ export class OpenProto {
   }
   merchantTalk(n) {
     const g = this.g, inv = g.inventory, M = n.name, silver = inv.count('silver');
-    const worth = Object.keys(PRICE).reduce((a, k) => a + inv.count(k) * PRICE[k], 0);
+    const worth = Math.ceil(Object.keys(PRICE).reduce((a, k) => a + inv.count(k) * PRICE[k], 0) * (g.skills.has('h_skin') ? 1.5 : 1)); // Skinner's Price
     const gear = (STOCK[n.id] || STOCK.merchant).filter((k) => !WARES[k].once || !inv.has(k)); // what this trader keeps, less what he already owns
     this.say([
       { s: M, t: `${M}. I buy what the land gives and sell what it cannot. What have you?` },

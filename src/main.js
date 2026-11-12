@@ -14,6 +14,7 @@ import { Wildlife } from './entities/wildlife.js';
 import { Ravens } from './entities/ravens.js';
 import { Quests, Inventory, Dialogue, Cine } from './systems/systems.js';
 import { Combat } from './systems/combat.js';
+import { Skills } from './systems/skills.js';
 import { ITEMS, QUESTS, DIALOGUE } from './data/act1.js';
 import { Act1 } from './story/act1.js';
 import { UI } from './ui/ui.js';
@@ -22,7 +23,7 @@ const RUNNING = new Set(['play', 'dialogue', 'cutscene', 'activity']);
 const freshState = () => ({
   stage: 'day', time: 8.7, flags: {}, traits: { wisdom: 0, compassion: 0, ferocity: 0, pride: 0 }, rel: { ragnar: 0, ylva: 0 },
   inventory: {}, quests: {}, xp: 0, choices: [], playtime: 0, player: null, waypoint: null,
-  secrets: {}, marks: {}, ravenNames: null, alias: null, open: null,
+  secrets: {}, marks: {}, ravenNames: null, alias: null, open: null, skills: {},
 });
 const TRAIT_NAMES = { wisdom: 'Wisdom', compassion: 'Compassion', ferocity: 'Ferocity', pride: 'Pride' };
 
@@ -58,6 +59,7 @@ class Game {
     this.scene.add(this.player.root);
     this.ravens = new Ravens(this);
     this.combat = new Combat(this);
+    this.skills = new Skills(this);
     this.quests = new Quests(this, QUESTS);
     this.inventory = new Inventory(this, ITEMS);
     this.dialogue = new Dialogue(this, DIALOGUE);
@@ -206,6 +208,7 @@ class Game {
         else if (inp.hit('journal')) this.openPanelFromPlay('journal');
         else if (inp.hit('inventory')) this.openPanelFromPlay('inventory');
         else if (inp.hit('map')) this.openPanelFromPlay('map');
+        else if (inp.hit('skills')) this.openPanelFromPlay('skills');
       } else if (m === 'dialogue') this.dialogue.update(dt);
       else if (m === 'activity' && this.activity) this.activity.update(dt);
       if (this.mode !== 'paused') {
@@ -215,6 +218,7 @@ class Game {
         this.wildlife.update(dt);
         this.ravens.update(dt);
         this.story.update(dt);
+        this.skills.update();
         this.cine.update(dt);
         this.interaction = this.mode === 'play' && !this.ravens.eye ? this.findInteraction() : null;
         this.sense = damp(this.sense, this.mode === 'play' && inp.held('sense') ? 1 : 0, 6, dt);

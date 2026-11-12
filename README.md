@@ -1,6 +1,6 @@
 # Blood of the North — Rise of the Raven King
 
-A third-person Viking action RPG. This repository holds **vertical slice 0.10**: all three chapters of
+A third-person Viking action RPG. This repository holds **vertical slice 0.11**: all three chapters of
 Act I (Eirik's childhood), the opening chapter of Act II (Eirik at nineteen, with real combat), and an
 open-world sandbox that runs from the home valley out to a sea chart of islands, with a ship of your own, a
 crew to row her and enemies to fight at sea, plus the design foundation for the full campaign.
@@ -42,7 +42,7 @@ Then open http://localhost:5184. A production build is `npm run build` (output i
 | Throw an axe | `F` | — |
 | Off hand: shield or second axe | `3` | — |
 | Shove with the shield (while blocking) | left mouse | X or RT |
-| Journal, inventory, map, pause | `J`, `I`, `M`, `Esc` | Back, Start |
+| Journal, inventory, map, skills, pause | `J`, `I`, `M`, `K`, `Esc` | Back, Start |
 
 All keyboard and mouse bindings can be changed in Settings.
 
@@ -136,6 +136,17 @@ All keyboard and mouse bindings can be changed in Settings.
   | Ash spear | 13 in 0.5 s, at 3.5 m | 29, one man | Reach; a light thrust stops an attack that is winding up |
   | Long axe | 21 in 0.7 s, three men | 48, four men | Two hands, no shield, half again the breath; a heavy blow breaks a shield-bearer's guard outright |
   | Throwing axe | 30 at range | | Stops a swing and shakes a guard; a miss can be picked up |
+- **Skill trees (0.11):** renown (from quests, islands found, ships taken and enemies felled) earns a skill point
+  every 150. Five trees of five skills each, learned in order, from when Eirik is grown. `K` opens them.
+
+  | Tree | What it does |
+  |---|---|
+  | Berserker | Breath back on every landed blow, a wider heavy blow, half damage through a shield wall, health and breath from a finishing blow, and hitting harder and unstaggered when badly hurt |
+  | Shieldmaster | A longer parry, a stronger shove, a longer and harder riposte, jogging with the shield up, and half-cost blocking that never breaks |
+  | Hunter | Faster draw, deadlier arrows, better thrown axes, better prices for game, and a white raven that ranges much further |
+  | Warlord | More standing from every deed, tougher crew, harder-hitting crew, helping a wounded crewman up mid-fight, and a black raven that harries longer and more often |
+  | Wayfarer | Cheaper sprinting, faster boats, a hull that shrugs off arrows, a harder ram, and crew who can patch the hull most of the way |
+- **The raven from the helm:** `V` now works at the steering oar and in the saddle; the ship holds her course under sail while you look ahead.
 - **Traders:** two merchant ships work the sea lanes and hail you by what the district thinks of you.
 - **Two laws:** marks and standing are kept separately in the Vestland and the Skerries. Cross the water and you
   are a stranger again, unless you carried three marks or more, in which case word arrives before you do.

@@ -261,7 +261,7 @@ export class Wildlife {
           if (Math.hypot(pos.x - e.pos.x, pos.z - e.pos.z) < 0.45 && pos.y > e.pos.y && pos.y < e.pos.y + top) {
             ar.stuck = true; ar.life = 89; ar.m.visible = false; g.audio.play('arrowHit');
             if (ar.kind === 'axe') { if ((e.cb.state === 'windup' || e.cb.state === 'strike') && !e.cb.boss) { e.cb.state = 'recover'; e.cb.t = 0.9; e.h.action = null; } g.audio.play('thud', { vol: 0.6 }); g.hitStop = 0.05; }
-            g.combat.hurt(e, ar.dmg ?? (pos.y > e.pos.y + top * 0.8 ? 60 : 28), ar.posture ?? 20); break;
+            g.combat.hurt(e, ar.dmg ?? (pos.y > e.pos.y + top * 0.8 ? 60 : 28) * (g.skills.has('h_broad') ? 1.4 : 1), ar.posture ?? 20); break;
           }
         }
         if (ar.stuck) break;
