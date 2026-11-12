@@ -1,0 +1,286 @@
+// Act I, Chapter 1 — "The Night of Ashes": items, cast, quests and dialogue. Pure data.
+
+export const ITEMS = {
+  firewood: { name: 'Firewood', desc: 'Split birch and pine. Enough of this is the difference between a hard winter and a last one.', cat: 'Resource' },
+  arrow: { name: 'Arrows', desc: 'Ash shafts fletched with goose feather. Retrieve the ones that miss.', cat: 'Ammunition' },
+  bow: { name: "Boy's Hunting Bow", desc: 'A short yew bow your father cut and restrung for you.', cat: 'Weapon' },
+  woodsword: { name: 'Wooden Sword', desc: 'It bruises, which is how it teaches.', cat: 'Weapon' },
+  hare: { name: 'Hare', desc: 'Lean meat for the pot and a pelt for mittens.', cat: 'Game' },
+  venison: { name: 'Venison', desc: 'Haunch and backstrap, wrapped in the hide.', cat: 'Game' },
+  hide: { name: 'Deer Hide', desc: 'Scraped and stretched, it will be a winter cloak.', cat: 'Resource' },
+  fish: { name: 'River Trout', desc: 'Silver-sided, still cold from the river.', cat: 'Game' },
+  stick: { name: 'Dry Stick', desc: 'Dead wood that snaps clean. Good kindling.', cat: 'Resource' },
+  bark: { name: 'Birch Bark', desc: 'Papery and full of oil. It takes a spark even when damp.', cat: 'Resource' },
+  flint: { name: 'Flint and Steel', desc: "Your father's fire-striker. He says a man who can make fire is never truly alone.", cat: 'Tool' },
+  father_axe: { name: "Ragnar's Axe", desc: 'A bearded axe, older than you are, its haft worn smooth by your father\'s hand. Keep it hidden. Keep it sharp.', cat: 'Keepsake' },
+};
+
+export const CAST = {
+  ragnar: { name: 'Ragnar', role: 'Father', look: { scale: 1.04, build: 1.12, hair: 0x9a7a48, hairStyle: 'long', beard: 'short', tunic: 0x4f6272, trim: 0xb89a4a, legs: 0x4a4034, sleeve: 0x4f6272 } },
+  ylva: { name: 'Ylva', role: 'Mother', look: { scale: 0.96, female: true, build: 0.92, hair: 0x8a4a2a, hairStyle: 'braid', tunic: 0x5f7a56, trim: 0xc9a24a, apron: 0xd8cfb8, sleeve: 0xd8cfb8 } },
+  hrolf: { name: 'Hrolf the Skald', role: 'Village skald', look: { scale: 0.97, hair: 0xb8b4ac, hairStyle: 'long', beard: 'long', tunic: 0x6a5a70, trim: 0x8a7a4a, cloak: 0x4a4458, sleeve: 0x6a5a70 } },
+  brokk: { name: 'Brokk', role: 'Smith', look: { scale: 1.02, build: 1.26, hairStyle: 'bald', beard: 'short', hair: 0x3a2a1c, tunic: 0x5a4a3a, apron: 0x3a2e24, skin: 0xc8946e } },
+  odd: { name: 'Odd', role: 'Fisherman', look: { hair: 0x5a4a3a, beard: 'short', tunic: 0x6a6a5a, trim: 0x3a5a6a, sleeve: 0x6a6a5a } },
+  thyra: { name: 'Thyra', role: 'Village girl', look: { scale: 0.72, child: true, female: true, hair: 0xd8b86a, hairStyle: 'braids', tunic: 0x9a5a4a, trim: 0xd8c890 } },
+  gunnar: { name: 'Gunnar the Elder', role: 'Village elder', look: { build: 1.08, hair: 0x8a8680, hairStyle: 'long', beard: 'short', tunic: 0x7a3a2e, trim: 0xc9a24a, cloak: 0x3a4a5a, sleeve: 0x7a3a2e } },
+  asa: { name: 'Asa', role: 'Weaver', look: { female: true, scale: 0.95, build: 0.92, hair: 0x4a3a2a, hairStyle: 'bun', tunic: 0x6a5a7a, apron: 0xcfc6ae } },
+  farmer1: { name: 'Ketil', role: 'Farmer', look: { hair: 0x7a5a3a, tunic: 0x7a6a4a, beard: 'short' } },
+  farmer2: { name: 'Dagny', role: 'Farmer', look: { female: true, scale: 0.94, build: 0.92, hair: 0xb89a5a, hairStyle: 'braids', tunic: 0x8a6a4a, apron: 0xbfb49a } },
+  hakon: { name: 'Jarl Håkon Ironwolf', role: 'Antagonist', look: { scale: 1.12, build: 1.26, hair: 0x2a2420, hairStyle: 'long', beard: 'short', tunic: 0x2e2e34, trim: 0x8a8a90, legs: 0x24221f, cloak: 0x34343a, fur: true, helmet: true, sleeve: 0x2e2e34 } },
+};
+export const RAIDER_LOOKS = [
+  { build: 1.15, tunic: 0x3a2e2a, trim: 0x6a1a14, legs: 0x2a2420, helmet: true, beard: 'short', hair: 0x4a3a2a, cloak: 0x2a2a2e, sleeve: 0x3a2e2a },
+  { build: 1.1, tunic: 0x4a3a30, trim: 0x2a2a2a, legs: 0x2e2a24, hairStyle: 'long', beard: 'long', hair: 0x8a5a2a, sleeve: 0x4a3a30 },
+  { build: 1.2, scale: 1.05, tunic: 0x2e3438, trim: 0x6a1a14, legs: 0x26221e, helmet: true, beard: 'short', hair: 0x2a2018, fur: true, sleeve: 0x2e3438 },
+  { build: 1.08, tunic: 0x54402e, trim: 0x1e1e1e, legs: 0x2a2620, hairStyle: 'bald', beard: 'short', hair: 0x6a4a2a, cloak: 0x3a2a22, sleeve: 0x54402e },
+];
+
+export const QUESTS = {
+  q_morning: {
+    title: 'The Last Good Day', kind: 'main', xp: 20, next: 'q_wood',
+    desc: 'Late autumn in Hrafnvik. Frost on the turf roofs, and work to be done before the snows.',
+    steps: [
+      { id: 'ylva', text: 'Speak with your mother', type: 'talk', key: 'ylva', marker: { npc: 'ylva' } },
+      { id: 'ragnar', text: 'Find your father at the chopping block', type: 'talk', key: 'ragnar', marker: { npc: 'ragnar' } },
+    ],
+  },
+  q_wood: {
+    title: 'Wood for Winter', kind: 'main', xp: 30, next: 'q_hunt',
+    desc: '"Don\'t fight the wood. Let the weight do the work, and strike when the moment is right."',
+    steps: [
+      { id: 'chop', text: 'Split logs at the chopping block', type: 'activity', key: 'chop', count: 5, marker: { poi: 'chop' } },
+      { id: 'talk', text: 'Speak with your father', type: 'talk', key: 'ragnar', marker: { npc: 'ragnar' } },
+    ],
+  },
+  q_hunt: {
+    title: 'The Quiet Foot', kind: 'main', xp: 60, next: 'q_fire',
+    desc: 'Winter does not care how much wood is stacked if the smokehouse is empty. Father is taking you hunting.',
+    steps: [
+      { id: 'follow', text: 'Follow your father to the hare meadow', type: 'reach', key: 'meadow', marker: { npc: 'ragnar' } },
+      { id: 'target', text: 'Equip the bow and hit the target stump', type: 'event', key: 'targetHit', marker: { poi: 'target' } },
+      { id: 'hares', text: 'Hunt hares in the meadow', type: 'kill', key: 'hare', count: 2, marker: { poi: 'meadow' } },
+      { id: 'talk', text: 'Speak with your father', type: 'talk', key: 'ragnar', marker: { npc: 'ragnar' } },
+      { id: 'track', text: "Use Hunter's Sense to follow the deer tracks", type: 'reach', key: 'deer', marker: { poi: 'trackStart', until: 14 } },
+      { id: 'deer', text: 'Stalk and bring down a deer', type: 'kill', key: 'deer' },
+      { id: 'harvest', text: 'Harvest the deer', type: 'event', key: 'harvestDeer', marker: { dyn: 'deerBody' } },
+      { id: 'talk2', text: 'Speak with your father', type: 'talk', key: 'ragnar', marker: { npc: 'ragnar' } },
+    ],
+  },
+  q_fire: {
+    title: 'Fire Before Dark', kind: 'main', xp: 40, next: 'q_sword',
+    desc: 'Father keeps a hunting camp by the old birch. There he will teach you the thing that matters most in the cold.',
+    steps: [
+      { id: 'camp', text: 'Follow your father to his camp by the old birch', type: 'reach', key: 'camp', marker: { npc: 'ragnar' } },
+      { id: 'gather', text: 'Gather 3 dry sticks and a strip of birch bark', type: 'event', key: 'tinderReady', marker: { poi: 'camp' } },
+      { id: 'light', text: 'Light the fire in the stone ring', type: 'activity', key: 'fire', marker: { poi: 'camp' } },
+      { id: 'talk', text: 'Sit with your father', type: 'talk', key: 'ragnar', marker: { npc: 'ragnar' } },
+    ],
+  },
+  q_sword: {
+    title: 'Wooden Swords', kind: 'main', xp: 50, next: 'q_supper',
+    desc: 'A promise is a promise. In the yard behind the longhouse, your father hands you a wooden sword.',
+    steps: [
+      { id: 'talk', text: 'Speak with your father in the training yard', type: 'talk', key: 'ragnar', marker: { npc: 'ragnar' } },
+      { id: 'strike', text: 'Land strikes on your father', type: 'spar', key: 'strike', count: 3 },
+      { id: 'block', text: 'Block his blows', type: 'spar', key: ['blocked', 'parried'], count: 3 },
+      { id: 'parry', text: 'Parry: raise your guard at the last instant', type: 'spar', key: 'parried', count: 2 },
+      { id: 'dodge', text: 'Dodge his blows', type: 'spar', key: 'dodged', count: 2 },
+      { id: 'talk2', text: 'Speak with your father', type: 'talk', key: 'ragnar', marker: { npc: 'ragnar' } },
+    ],
+  },
+  q_supper: {
+    title: 'Supper', kind: 'main', xp: 20, next: 'q_ashes',
+    desc: 'The light is going. Mother is at the cooking fire, and the first snow is in the air.',
+    steps: [
+      { id: 'ylva', text: "Bring the day's catch to your mother", type: 'talk', key: 'ylva', marker: { npc: 'ylva' } },
+      { id: 'sleep', text: 'Go to bed', type: 'event', key: 'sleep', marker: { poi: 'homeDoor' } },
+    ],
+  },
+  q_ashes: {
+    title: 'The Night of Ashes', kind: 'main', xp: 100, next: 'q_alone',
+    desc: 'Sails on the fjord. Fire on the roofs.',
+    steps: [
+      { id: 'wake', text: 'Wake up', type: 'event', key: 'duelDone' },
+      { id: 'flee', text: 'Follow your mother to the north gate', type: 'reach', key: 'gate', marker: { npc: 'ylva' } },
+      { id: 'escape', text: 'Stay low. Slip past the raiders and reach the forest', type: 'reach', key: 'forest', marker: { poi: 'forestEdge' } },
+    ],
+  },
+  q_alone: {
+    title: 'Alone', kind: 'main', xp: 100, next: null,
+    desc: '"If you are ever lost in these woods, find this tree."',
+    steps: [
+      { id: 'birch', text: 'Find the old birch before the cold takes you', type: 'reach', key: 'camp2', marker: { poi: 'camp' } },
+      { id: 'gather', text: 'Gather 3 dry sticks and a strip of birch bark', type: 'event', key: 'tinderReady', marker: { poi: 'camp' } },
+      { id: 'light', text: 'Light a fire', type: 'activity', key: 'fire', marker: { poi: 'camp' } },
+    ],
+  },
+  s_fish: {
+    title: 'Silver in the River', kind: 'side', xp: 25,
+    desc: 'Mother asked for a fish or two for the pot. Odd says they are biting past the big rock.',
+    steps: [{ id: 'catch', text: 'Catch trout at the fishing rock', type: 'event', key: 'fishCaught', count: 2, marker: { poi: 'fishing' } }],
+  },
+  s_skald: {
+    title: 'Whispers of the Ironwolf', kind: 'side', xp: 15,
+    desc: 'Old Hrolf has heard something from a northern trader, and he is bursting to tell it.',
+    steps: [{ id: 'talk', text: 'Hear what Hrolf the skald has to say', type: 'talk', key: 'hrolf', marker: { npc: 'hrolf' } }],
+  },
+  s_stone: {
+    title: 'The Raven Stone', kind: 'side', xp: 15,
+    desc: 'Thyra says there is an old carved stone on the knoll west of the village. Nobody will say who raised it.',
+    steps: [{ id: 'find', text: 'Find the carved stone on the western knoll', type: 'event', key: 'runestone', marker: { poi: 'runestone' } }],
+  },
+};
+
+const E = 'Eirik';
+export const DIALOGUE = {
+  ylva_morning: [
+    { s: 'Ylva', t: 'There you are, little raven. Frost on the roof already. Winter is coming early this year.' },
+    { s: 'Ylva', t: 'Your father is at the chopping block. Go and help him, and mind your fingers.' },
+    { s: E, t: '', choices: [
+      { t: '"I could chop a whole tree by myself."', to: 'a', fx: { trait: { pride: 1 } } },
+      { t: '"Can I go hunting with Father after?"', to: 'b' },
+      { t: '"Did you sleep, Mother? You look tired."', to: 'c', fx: { trait: { compassion: 1 }, rel: { ylva: 1 } } },
+    ] },
+    { id: 'a', s: 'Ylva', t: 'Then chop it into pieces small enough for my hearth, mighty one.', to: 'fish' },
+    { id: 'b', s: 'Ylva', t: 'If the wood is stacked. He has been restringing your bow all week and thinks I have not noticed.', to: 'fish' },
+    { id: 'c', s: 'Ylva', t: 'Hm. You see too much. A dream kept me up. Ships in fog. It is nothing. Go on.', to: 'fish' },
+    { id: 'fish', s: 'Ylva', t: 'And Eirik, if you pass the river today, bring me a fish or two for the pot.', fx: { quest: 's_fish' } },
+  ],
+  ylva_idle: [{ s: 'Ylva', t: 'Go on, your father is waiting. I will have something hot when you are back.' }],
+  ragnar_chop: [
+    { s: 'Ragnar', t: 'Ha. The boy lives. I thought the blankets had eaten you.' },
+    { s: 'Ragnar', t: "Take the hatchet. Don't fight the wood. Let the weight do the work, and strike when the moment is right." },
+  ],
+  ragnar_chop_wait: [{ s: 'Ragnar', t: 'The block is right there. The logs will not split themselves, more is the pity.' }],
+  ragnar_wood_done: [
+    { s: 'Ragnar', t: 'Clean cuts. Your grandfather split wood like he was angry at it. You listen to it.' },
+    { s: 'Ragnar', t: 'Winter does not care how much wood we have if the smokehouse is empty.' },
+    { s: 'Ragnar', t: 'We go to the hare meadow, past the north gate. Stay close, and stay quiet.' },
+  ],
+  ragnar_meadow: [
+    { s: 'Ragnar', t: 'Here. Your bow. I restrung it. Twelve arrows. Lose them and you will whittle your own.', fx: { give: { bow: 1, arrow: 12 } } },
+    { s: 'Ragnar', t: 'Hold your aim, breathe out, loose. Put one in that stump before you point it at anything with a heartbeat.' },
+  ],
+  ragnar_tracks: [
+    { s: 'Ragnar', t: 'Two hares. Your mother will pretend she is not proud.' },
+    { s: 'Ragnar', t: 'Now look here. Prints. A deer came through at dawn.' },
+    { s: 'Ragnar', t: 'Still your breath and look, the way I showed you. The ground will tell you where it went.' },
+    { s: 'Ragnar', t: 'I will be behind you. This one is yours.' },
+  ],
+  ragnar_hunt_wait: [{ s: 'Ragnar', t: 'Low and slow. They hear a careless foot from across the meadow.' }],
+  ragnar_deer: [
+    { s: 'Ragnar', t: 'A clean kill. One arrow, and it never knew.', if: 'cleanKill' },
+    { s: 'Ragnar', t: 'It ran, but you finished it. Remember how that felt, and aim truer next time.', if: '!cleanKill' },
+    { s: 'Ragnar', t: 'Before the knife goes in. What do you say to the deer, Eirik?' },
+    { s: E, t: '', choices: [
+      { t: '"Thank you. We will waste nothing."', to: 'a', fx: { trait: { compassion: 1, wisdom: 1 } } },
+      { t: '"I was quieter than you, Father!"', to: 'b', fx: { trait: { pride: 1, ferocity: 1 } } },
+      { t: '"...I did not think it would be so quiet."', to: 'c', fx: { trait: { compassion: 1 } } },
+    ] },
+    { id: 'a', s: 'Ragnar', t: 'Good. The gods gave it legs to run and gave us hunger. Neither is a sin.', to: 'z' },
+    { id: 'b', s: 'Ragnar', t: 'Ha! Today. Pride is a fine cloak, boy. Just do not mistake it for armour.', to: 'z' },
+    { id: 'c', s: 'Ragnar', t: 'It should be quiet. The day killing feels like nothing is the day to put the bow down.', to: 'z' },
+    { id: 'z', s: 'Ragnar', t: 'Come. My camp is close, by the old birch. You will learn fire before we go home.' },
+  ],
+  ragnar_camp: [
+    { s: 'Ragnar', t: 'The old birch. My father brought me here, and his before him.' },
+    { s: 'Ragnar', t: 'If you are ever lost in these woods, Eirik, find this tree.', fx: { flag: 'knowsBirch' } },
+    { s: 'Ragnar', t: 'A fire needs three things: dry sticks, birch bark to catch the spark, and patience. Take my flint. Find me three sticks and a strip of bark.', fx: { give: { flint: 1 } } },
+  ],
+  ragnar_camp_wait: [{ s: 'Ragnar', t: 'Dead wood, off the ground. If it bends, leave it. If it snaps, it burns.' }],
+  ragnar_fire: [
+    { s: 'Ragnar', t: 'There. A man who can make fire in the cold is never truly alone.' },
+    { s: E, t: 'Father... Hrolf says you were a warrior once. In a king\'s hall.' },
+    { s: 'Ragnar', t: 'Hrolf talks too much.' },
+    { s: 'Ragnar', t: 'I carried a shield for old King Halfdan, yes. I saw what jarls do to each other for a chair. So I chose a farm, and your mother, and you.' },
+    { s: E, t: '', choices: [
+      { t: '"Will you teach me to fight like you did?"', to: 'a', fx: { trait: { ferocity: 1 } } },
+      { t: '"Why did you leave?"', to: 'b', fx: { trait: { wisdom: 1 }, flag: 'askedWhy' } },
+      { t: '"I am glad you chose us."', to: 'c', fx: { trait: { compassion: 1 }, rel: { ragnar: 1 } } },
+    ] },
+    { id: 'a', s: 'Ragnar', t: 'I will teach you to fight so that you do not have to. Starting today, with sticks.', to: 'z' },
+    { id: 'b', s: 'Ragnar', t: 'Because the old king asked me to keep something safe, far from his hall. One day I will tell you what.', to: 'z' },
+    { id: 'c', s: 'Ragnar', t: '...So am I, little raven. Every morning.', to: 'z' },
+    { id: 'z', s: 'Ragnar', t: 'Now eat. Then home. I promised you a sword lesson, and I keep my promises.' },
+  ],
+  ragnar_yard: [
+    { s: 'Ragnar', t: 'Take the wooden sword. It bruises, which is how it teaches.', fx: { give: { woodsword: 1 } } },
+    { s: 'Ragnar', t: 'First, come at me. Three good strikes.' },
+  ],
+  ragnar_quote: [
+    { s: 'Ragnar', t: 'Enough. You will be sore tomorrow, and better the day after.' },
+    { s: 'Ragnar', t: 'Listen to me, Eirik. This matters more than any of it.' },
+    { s: 'Ragnar', t: 'A blade may save your life, but wisdom decides when to draw it.' },
+    { s: E, t: '', choices: [
+      { t: '"I will remember."', to: 'a', fx: { trait: { wisdom: 1 } } },
+      { t: '"And if someone draws on us first?"', to: 'b', fx: { trait: { ferocity: 1 } } },
+      { t: '"I do not want to hurt anyone."', to: 'c', fx: { trait: { compassion: 1 } } },
+    ] },
+    { id: 'a', s: 'Ragnar', t: 'See that you do.', to: 'z' },
+    { id: 'b', s: 'Ragnar', t: 'Then be the one still standing. But be sure, boy. Be very sure.', to: 'z' },
+    { id: 'c', s: 'Ragnar', t: 'Good. Keep that. It is the rarest thing a strong man owns.', to: 'z' },
+    { id: 'z', s: 'Ragnar', t: 'Go on. Take the meat to your mother before she comes looking for us both.' },
+  ],
+  ragnar_evening: [{ s: 'Ragnar', t: 'Smell that? Snow by morning. Go to your mother, I will bank the fire.' }],
+  ylva_supper: [
+    { s: 'Ylva', t: 'Hares and venison! Who is this hunter, and what has he done with my son?' },
+    { s: 'Ylva', t: 'And trout. You remembered.', if: { item: 'fish', n: 2 }, fx: { rel: { ylva: 1 }, flag: 'broughtFish' } },
+    { s: 'Ylva', t: 'No fish? Well. The river will still be there tomorrow.', if: { noItem: 'fish', n: 2 } },
+    { s: 'Ylva', t: 'Sit. Tell me. When you are grown, what will you be?' },
+    { s: E, t: '', choices: [
+      { t: '"A farmer, like Father."', to: 'a', fx: { trait: { compassion: 1 }, flag: 'dreamFarmer' } },
+      { t: '"A warrior. The greatest in the North."', to: 'b', fx: { trait: { ferocity: 1, pride: 1 }, flag: 'dreamWarrior' } },
+      { t: '"I want to see what is across the sea."', to: 'c', fx: { trait: { wisdom: 1 }, flag: 'dreamWayfarer' } },
+    ] },
+    { id: 'a', s: 'Ylva', t: 'Then you will be a rich man. Richer than jarls, who never sleep.', to: 'z' },
+    { id: 'b', s: 'Ylva', t: 'Then be a warrior who comes home. That is the hard kind to be.', to: 'z' },
+    { id: 'c', s: 'Ylva', t: "Of course you do. You have my father's eyes. Always on the horizon.", to: 'z' },
+    { id: 'z', s: 'Ylva', t: 'Whatever you become, you are ours. Remember that, Eirik Ravensson.' },
+    { s: 'Ylva', t: 'Now, bed. The first snow is coming tonight. I can smell it.' },
+  ],
+  ylva_bed: [{ s: 'Ylva', t: 'Bed, little raven. I will not say it a third time.' }],
+  hrolf_rumor: [
+    { s: 'Hrolf the Skald', t: "Ah, Ragnar's boy. Sit. An old man's tongue needs an ear." },
+    { s: 'Hrolf the Skald', t: 'A trader came through from the north. Says Jarl Håkon, the one they call Ironwolf, has taken three valleys since midsummer.' },
+    { s: 'Hrolf the Skald', t: 'He asks each village the same question. Those who answer well pay tribute. Those who answer badly... the trader did not finish his ale.' },
+    { s: E, t: 'What question?' },
+    { s: 'Hrolf the Skald', t: 'That is the thing, boy. Nobody who heard it will say.' },
+    { s: 'Hrolf the Skald', t: 'Do not trouble your father with it. He has heard already. I saw his face.', fx: { flag: 'heardRumor', trait: { wisdom: 1 } } },
+  ],
+  hrolf_idle: [{ s: 'Hrolf the Skald', t: 'Three valleys since midsummer. Mark me, boy. Wolves do not stop at three.' }],
+  brokk: [{ s: 'Brokk', t: "Tell your father his axe-head is mended. And tell him it is the last time. That iron is older than I am." }],
+  odd: [{ s: 'Odd', t: 'River is running silver today. Cast past the big rock, where it is deep, and do not strike until the float goes under.' }],
+  thyra: [
+    { s: 'Thyra', t: 'Eirik! There is a carved stone up on the western knoll. A raven on it, and runes.' },
+    { s: 'Thyra', t: 'My mother says nobody knows who raised it. I think she knows and will not say.', fx: { quest: 's_stone' } },
+  ],
+  thyra_idle: [{ s: 'Thyra', t: 'Race you to the well tomorrow. Bring your fast legs.' }],
+  gunnar: [{ s: 'Gunnar the Elder', t: "Ragnar's boy. Tell your father the Thing meets at the new moon. There is a matter of tribute to discuss." }],
+  asa: [{ s: 'Asa', t: "Your mother's weaving puts mine to shame, and you may tell her I said so. Once." }],
+  farmer: [{ s: 'Ketil', t: 'Ground is hard as a shield already. Early winter. Mark it.' }],
+  runestone: [
+    { s: 'The Raven Stone', t: 'The carving is worn smooth, but you can make out a raven with spread wings.' },
+    { s: 'The Raven Stone', t: 'Beneath it, runes your father taught you to read: HALFDAN RAISED THIS STONE FOR HIS SHIELD-BROTHERS. WHAT IS SWORN IS KEPT.', fx: { trait: { wisdom: 1 }, flag: 'readStone' } },
+    { s: E, t: 'Halfdan. The old king. Father never said he had been here.' },
+  ],
+};
+
+/** Onboarding hints shown in the top-left box. {key} tokens are replaced with the current binding. */
+export const HINTS = {
+  move: 'Move with {forward}{left}{back}{right}. Look with the mouse or arrow keys. Hold {sprint} to sprint.',
+  talk: 'Walk up to someone and press {interact} to talk.',
+  chop: 'Press {interact} at the chopping block.',
+  follow: 'Stay close to your father. He will wait if you fall behind.',
+  bow: 'Press {weapon2} to equip the bow. Hold {block} to aim, then {attack} to loose. A longer draw flies truer.',
+  hares: 'Press {crouch} to crouch. Hares bolt if you walk up on them; creep close, or shoot from range.',
+  sense: "Hold {sense} for Hunter's Sense: tracks glow on the ground and animals stand out.",
+  deer: 'Deer spook far sooner than hares. Stay crouched, keep your distance, and aim for the head or neck for a clean kill.',
+  gather: 'Look for dry sticks on the ground near the camp, and peel bark from a birch.',
+  sword: 'Press {weapon1} to draw the wooden sword. {attack} strikes; chain up to three.',
+  block: 'Hold {block} to raise your guard. Blocking costs stamina.',
+  parry: 'Press {block} just before the blow lands to parry. It costs nothing.',
+  dodge: 'Press {dodge} as he swings to roll clear.',
+  free: 'The village is yours until supper: talk to neighbours, fish at the river ({map} for the map), or go to your mother.',
+  stealth: 'Crouch with {crouch}. Stay behind hay and carts. The eye fills when a raider can see you.',
+  cold: 'The cold is draining your warmth. Keep moving. Find the old birch.',
+};

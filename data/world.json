@@ -1,0 +1,200 @@
+{
+ "about": "Regions, factions and endings. Only 'hrafnvik' exists in the build.",
+ "regions": [
+  {
+   "id": "hrafnvik",
+   "name": "Hrafnvik valley",
+   "inspired_by": "Western Norway fjords",
+   "status": "built",
+   "size": "640 m square",
+   "features": [
+    "turf longhouse village",
+    "fjord shore and dock",
+    "river",
+    "pine and birch forest",
+    "father's camp",
+    "the Raven Stone"
+   ],
+   "wildlife": [
+    "hare",
+    "red deer",
+    "raven",
+    "sheep"
+   ]
+  },
+  {
+   "id": "vestland",
+   "name": "Vestland",
+   "inspired_by": "Norwegian fjords and uplands",
+   "status": "planned",
+   "features": [
+    "waterfalls",
+    "coastal villages",
+    "Bjorn's farm",
+    "Kaupang market"
+   ],
+   "wildlife": [
+    "deer",
+    "wolf",
+    "bear",
+    "eagle",
+    "salmon"
+   ]
+  },
+  {
+   "id": "forests",
+   "name": "The Ashwood",
+   "inspired_by": "Scandinavian boreal forest",
+   "status": "planned",
+   "features": [
+    "outlaw camps",
+    "hunting grounds",
+    "charcoal burners"
+   ],
+   "wildlife": [
+    "boar",
+    "wolf",
+    "fox",
+    "elk"
+   ]
+  },
+  {
+   "id": "highlands",
+   "name": "The White Passes",
+   "inspired_by": "Mountain passes and frozen lakes",
+   "status": "planned",
+   "features": [
+    "snowbound passes",
+    "ice lake",
+    "a mountain hall"
+   ],
+   "wildlife": [
+    "reindeer",
+    "wolverine",
+    "eagle"
+   ]
+  },
+  {
+   "id": "denmark",
+   "name": "The Belts",
+   "inspired_by": "Danish coast and Hedeby",
+   "status": "planned",
+   "features": [
+    "Hedeby",
+    "toll straits",
+    "bogs",
+    "saltmarsh"
+   ],
+   "wildlife": [
+    "seal",
+    "goose",
+    "boar"
+   ]
+  },
+  {
+   "id": "svealand",
+   "name": "Svealand",
+   "inspired_by": "Swedish lake country and Uppsala",
+   "status": "planned",
+   "features": [
+    "sacred grove",
+    "lake settlements",
+    "burial mounds"
+   ],
+   "wildlife": [
+    "bear",
+    "elk",
+    "lynx"
+   ]
+  },
+  {
+   "id": "northumbria",
+   "name": "Northumbria",
+   "inspired_by": "Anglo-Saxon England",
+   "status": "planned",
+   "features": [
+    "Jorvik",
+    "burhs",
+    "minsters",
+    "farmland",
+    "Roman road"
+   ],
+   "wildlife": [
+    "boar",
+    "deer",
+    "fox"
+   ]
+  },
+  {
+   "id": "islands",
+   "name": "The Outer Skerries",
+   "inspired_by": "Orkney, Shetland, Faroes",
+   "status": "planned",
+   "features": [
+    "ruins",
+    "hoards",
+    "barrows",
+    "hermitage"
+   ],
+   "wildlife": [
+    "gannet",
+    "seal",
+    "whale"
+   ]
+  },
+  {
+   "id": "sea",
+   "name": "The Whale Road",
+   "inspired_by": "North Sea and Skagerrak",
+   "status": "planned",
+   "features": [
+    "storms",
+    "shipping lanes",
+    "naval battles"
+   ],
+   "wildlife": [
+    "whale",
+    "cod",
+    "gull"
+   ]
+  }
+ ],
+ "factions": [
+  {
+   "id": "ravens",
+   "name": "Eirik's following",
+   "status": "planned"
+  },
+  {
+   "id": "ironwolf",
+   "name": "Håkon's host",
+   "status": "appears in build (scripted)"
+  },
+  {
+   "id": "iron_circle",
+   "name": "The Iron Circle",
+   "leader": "Jarl Sigurd Stonehand",
+   "status": "planned"
+  },
+  {
+   "id": "vestland_farmers",
+   "name": "Free farmers of the Vestland",
+   "status": "planned"
+  },
+  {
+   "id": "danes",
+   "name": "Kings of the Belts",
+   "status": "planned"
+  },
+  {
+   "id": "svear",
+   "name": "The Svear of Uppsala",
+   "status": "planned"
+  },
+  {
+   "id": "northumbrians",
+   "name": "Ealdormen of Northumbria",
+   "status": "planned"
+  }
+ ]
+}

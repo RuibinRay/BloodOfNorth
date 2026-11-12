@@ -1,0 +1,207 @@
+{
+  "about": "Every art slot the game knows about. 'replaces' names the procedural placeholder a finished asset swaps in for. status: pending | generated | imported.",
+  "pipeline": [
+    "generate reference image (official API: tools/higgsfield.mjs)",
+    "image to 3D (Higgsfield app / MCP: Meshy, Tripo or Hunyuan3D; not exposed by the public API)",
+    "clean up, collision and LODs in Blender",
+    "drop the GLB in assets/models/ and set status to imported"
+  ],
+  "slots": [
+    {
+      "id": "keyart_menu",
+      "kind": "image",
+      "use": "Main menu backdrop and store key art",
+      "replaces": null,
+      "model": "higgsfield-ai/soul/v2/standard",
+      "request": {
+        "prompt": "A boy of nine stands at the edge of a frozen pine forest holding a bearded axe too big for him, a fjord village burning far below under the first snow. Viking Age western Norway, 9th century, historically grounded (no horned helmets), natural overcast light, muted earth palette, photorealistic, 35mm film still"
+      },
+      "status": "pending",
+      "files": []
+    },
+    {
+      "id": "env_hrafnvik_day",
+      "kind": "image",
+      "use": "Environment concept: village by day",
+      "replaces": null,
+      "model": "higgsfield-ai/soul/v2/standard",
+      "request": {
+        "prompt": "A small farming village of turf-roofed longhouses with crossed gable finials on a shelf above a fjord, late autumn, birch in gold, smoke rising, wide establishing shot. Viking Age western Norway, 9th century, historically grounded (no horned helmets), natural overcast light, muted earth palette, photorealistic, 35mm film still"
+      },
+      "status": "pending",
+      "files": []
+    },
+    {
+      "id": "env_hrafnvik_raid",
+      "kind": "image",
+      "use": "Environment concept: the raid",
+      "replaces": null,
+      "model": "higgsfield-ai/soul/v2/standard",
+      "request": {
+        "prompt": "Three longships with striped sails beached on a fjord shore at night, raiders with torches running toward burning turf-roofed longhouses, snow falling, fire glow in fog. Viking Age western Norway, 9th century, historically grounded (no horned helmets), natural overcast light, muted earth palette, photorealistic, 35mm film still"
+      },
+      "status": "pending",
+      "files": []
+    },
+    {
+      "id": "env_forest_camp",
+      "kind": "image",
+      "use": "Environment concept: father's hunting camp",
+      "replaces": null,
+      "model": "higgsfield-ai/soul/v2/standard",
+      "request": {
+        "prompt": "A lean-to shelter and a ring of fire stones beneath a huge old birch in a dark pine forest, first snow on the ground, a small fire, pre-dawn blue light. Viking Age western Norway, 9th century, historically grounded (no horned helmets), natural overcast light, muted earth palette, photorealistic, 35mm film still"
+      },
+      "status": "pending",
+      "files": []
+    },
+    {
+      "id": "char_eirik_sheet",
+      "kind": "image",
+      "use": "Character sheet: Eirik at 9, 19, 30 and 45",
+      "replaces": "characters/eirik",
+      "model": "higgsfield-ai/soul/v2/standard",
+      "request": {
+        "prompt": "Character turnaround sheet of the same man at four ages on a neutral grey background: a sandy-haired boy of nine in a moss-green wool tunic; at nineteen, lean, in a farmer's tunic with an old bearded axe; at thirty, a scarred war leader in mail and a wolf-grey cloak; at forty-five, a king with a plain iron circlet. Consistent face, front and side views. Viking Age western Norway, 9th century, historically grounded (no horned helmets), natural overcast light, muted earth palette, photorealistic, 35mm film still"
+      },
+      "status": "pending",
+      "files": []
+    },
+    {
+      "id": "char_ragnar",
+      "kind": "image",
+      "use": "Character reference: Ragnar",
+      "replaces": "characters/ragnar",
+      "model": "higgsfield-ai/soul/v2/standard",
+      "request": {
+        "prompt": "Full-body reference of a broad-shouldered Norse farmer in his late thirties, dark blond hair to the shoulders, short beard, blue-grey wool tunic with a woven trim, a former royal guard's bearing, neutral grey background, A-pose. Viking Age western Norway, 9th century, historically grounded (no horned helmets), natural overcast light, muted earth palette, photorealistic, 35mm film still"
+      },
+      "status": "pending",
+      "files": []
+    },
+    {
+      "id": "char_ylva",
+      "kind": "image",
+      "use": "Character reference: Ylva",
+      "replaces": "characters/ylva",
+      "model": "higgsfield-ai/soul/v2/standard",
+      "request": {
+        "prompt": "Full-body reference of a Norse woman in her early thirties, auburn hair in a long braid, green wool apron-dress with bronze brooches, calm watchful eyes, neutral grey background, A-pose. Viking Age western Norway, 9th century, historically grounded (no horned helmets), natural overcast light, muted earth palette, photorealistic, 35mm film still"
+      },
+      "status": "pending",
+      "files": []
+    },
+    {
+      "id": "char_hakon",
+      "kind": "image",
+      "use": "Character reference: Jarl Håkon Ironwolf",
+      "replaces": "characters/hakon",
+      "model": "higgsfield-ai/soul/v2/standard",
+      "request": {
+        "prompt": "Full-body reference of a tall Norse jarl in his forties, black hair, iron spangenhelm with nasal guard, dark wool and mail, a grey wolf pelt across the shoulders, a long sword, cold patient expression, neutral grey background, A-pose. Viking Age western Norway, 9th century, historically grounded (no horned helmets), natural overcast light, muted earth palette, photorealistic, 35mm film still"
+      },
+      "status": "pending",
+      "files": []
+    },
+    {
+      "id": "prop_longhouse",
+      "kind": "image",
+      "use": "Prop reference: turf longhouse",
+      "replaces": "props/longhouse",
+      "model": "higgsfield-ai/soul/v2/standard",
+      "request": {
+        "prompt": "A single Norse turf-roofed timber longhouse with bowed walls and crossed carved gable boards, isolated on a plain grey background, three-quarter view, even studio light. Viking Age western Norway, 9th century, historically grounded (no horned helmets), natural overcast light, muted earth palette, photorealistic, 35mm film still"
+      },
+      "status": "pending",
+      "files": []
+    },
+    {
+      "id": "prop_longship",
+      "kind": "image",
+      "use": "Prop reference: longship",
+      "replaces": "props/longship",
+      "model": "higgsfield-ai/soul/v2/standard",
+      "request": {
+        "prompt": "A clinker-built Viking longship with a dragon-head prow, furled striped sail and round shields along the gunwale, isolated on a plain grey background, three-quarter view, even studio light. Viking Age western Norway, 9th century, historically grounded (no horned helmets), natural overcast light, muted earth palette, photorealistic, 35mm film still"
+      },
+      "status": "pending",
+      "files": []
+    },
+    {
+      "id": "prop_father_axe",
+      "kind": "image",
+      "use": "Prop reference: Ragnar's bearded axe",
+      "replaces": "items/father_axe",
+      "model": "higgsfield-ai/soul/v2/standard",
+      "request": {
+        "prompt": "An old Norse bearded axe with a worn ash haft wrapped in two bands of red-dyed leather, isolated on a plain grey background, even studio light. Viking Age western Norway, 9th century, historically grounded (no horned helmets), natural overcast light, muted earth palette, photorealistic, 35mm film still"
+      },
+      "status": "pending",
+      "files": []
+    },
+    {
+      "id": "mesh_longhouse",
+      "kind": "3d",
+      "use": "GLB: longhouse",
+      "replaces": "props/longhouse",
+      "model": "app:meshy_v7_image_to_3d",
+      "request": {
+        "source_slot": "prop_longhouse",
+        "should_texture": true,
+        "enable_pbr": true,
+        "target_polycount": 30000,
+        "note": "Game-ready longhouse; add collision and two LODs in Blender"
+      },
+      "status": "pending",
+      "files": []
+    },
+    {
+      "id": "mesh_longship",
+      "kind": "3d",
+      "use": "GLB: longship",
+      "replaces": "props/longship",
+      "model": "app:meshy_v7_image_to_3d",
+      "request": {
+        "source_slot": "prop_longship",
+        "should_texture": true,
+        "enable_pbr": true,
+        "target_polycount": 30000,
+        "note": "Game-ready longship; separate sail and oars"
+      },
+      "status": "pending",
+      "files": []
+    },
+    {
+      "id": "mesh_father_axe",
+      "kind": "3d",
+      "use": "GLB: Ragnar's axe",
+      "replaces": "items/father_axe",
+      "model": "app:meshy_v7_image_to_3d",
+      "request": {
+        "source_slot": "prop_father_axe",
+        "should_texture": true,
+        "enable_pbr": true,
+        "target_polycount": 30000,
+        "note": "Hand-held weapon; origin at the grip"
+      },
+      "status": "pending",
+      "files": []
+    },
+    {
+      "id": "mesh_eirik_child",
+      "kind": "3d",
+      "use": "GLB: Eirik aged nine, rigged",
+      "replaces": "characters/eirik",
+      "model": "app:meshy_v7_image_to_3d",
+      "request": {
+        "source_slot": "char_eirik_sheet",
+        "should_texture": true,
+        "enable_pbr": true,
+        "target_polycount": 30000,
+        "note": "Rig with the humanoid skeleton (height 1.26 m); retarget to the game's joint set"
+      },
+      "status": "pending",
+      "files": []
+    }
+  ]
+}

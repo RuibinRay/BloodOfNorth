@@ -1,0 +1,984 @@
+{
+ "about": "Campaign mission database. status: built (playable and tested) | planned | outline. Minutes are design targets, not measured playtime.",
+ "main_story_target_minutes": 2400,
+ "acts": [
+  {
+   "act": 1,
+   "title": "The Night of Ashes",
+   "target_minutes": 240,
+   "built_minutes_estimate": 80,
+   "missions": [
+    {
+     "id": "a1m01",
+     "title": "The Last Good Day",
+     "type": "tutorial",
+     "minutes": 12,
+     "summary": "Talk with Ylva, find Ragnar at the chopping block.",
+     "status": "built"
+    },
+    {
+     "id": "a1m02",
+     "title": "Wood for Winter",
+     "type": "activity",
+     "minutes": 6,
+     "summary": "Split five logs.",
+     "status": "built"
+    },
+    {
+     "id": "a1m03",
+     "title": "The Quiet Foot",
+     "type": "hunt",
+     "minutes": 18,
+     "summary": "Bow lesson, hares, track and stalk a deer; first trait choice.",
+     "status": "built"
+    },
+    {
+     "id": "a1m04",
+     "title": "Fire Before Dark",
+     "type": "survival",
+     "minutes": 8,
+     "summary": "Gather tinder at the old birch and strike a fire; Ragnar hints at his past.",
+     "status": "built"
+    },
+    {
+     "id": "a1m05",
+     "title": "Wooden Swords",
+     "type": "combat tutorial",
+     "minutes": 8,
+     "summary": "Strike, block, parry, dodge. The lesson of the blade.",
+     "status": "built"
+    },
+    {
+     "id": "a1m06",
+     "title": "Supper",
+     "type": "free roam",
+     "minutes": 10,
+     "summary": "Fishing, neighbours, the Raven Stone; Ylva's question.",
+     "status": "built"
+    },
+    {
+     "id": "a1m07",
+     "title": "The Night of Ashes",
+     "type": "set piece",
+     "minutes": 12,
+     "summary": "Longships, the duel, the flight, the gate, a stealth escape.",
+     "status": "built"
+    },
+    {
+     "id": "a1m08",
+     "title": "Alone",
+     "type": "survival",
+     "minutes": 6,
+     "summary": "A blizzard, a draining warmth meter, the first fire alone.",
+     "status": "built"
+    },
+    {
+     "id": "a1m09",
+     "title": "The Long White",
+     "type": "survival",
+     "minutes": 45,
+     "summary": "Three days alone: snares, shelter, hunger.",
+     "status": "planned"
+    },
+    {
+     "id": "a1m10",
+     "title": "Teeth in the Dark",
+     "type": "stealth/combat",
+     "minutes": 25,
+     "summary": "A wolf contests the carcass; drive it off with fire or lose the meat.",
+     "status": "planned"
+    },
+    {
+     "id": "a1m11",
+     "title": "Thin Ice",
+     "type": "traversal",
+     "minutes": 20,
+     "summary": "Cross the frozen river while Håkon's trackers search the bank.",
+     "status": "planned"
+    },
+    {
+     "id": "a1m12",
+     "title": "A Stranger's Hearth",
+     "type": "story",
+     "minutes": 40,
+     "summary": "Bjorn finds him. Recovery; tell them his name, or not.",
+     "status": "planned"
+    },
+    {
+     "id": "a1m13",
+     "title": "The Axe Under the Floor",
+     "type": "story",
+     "minutes": 30,
+     "summary": "Hide Ragnar's axe; first winter on the farm. Ten years pass.",
+     "status": "planned"
+    }
+   ]
+  },
+  {
+   "act": 2,
+   "title": "The Farmer's Axe",
+   "target_minutes": 300,
+   "built_minutes_estimate": 0,
+   "missions": [
+    {
+     "id": "a2m01",
+     "title": "Ten Winters",
+     "type": "daily life",
+     "minutes": 35,
+     "summary": "A day on Bjorn's farm at nineteen: plough, feed, mend.",
+     "status": "planned"
+    },
+    {
+     "id": "a2m02",
+     "title": "Iron and Charcoal",
+     "type": "crafting",
+     "minutes": 30,
+     "summary": "Forge a sickle, then quietly re-haft the old axe.",
+     "status": "planned"
+    },
+    {
+     "id": "a2m03",
+     "title": "Market Day",
+     "type": "trade",
+     "minutes": 35,
+     "summary": "Sell the harvest at Kaupang; a rival's son picks a fight.",
+     "status": "planned"
+    },
+    {
+     "id": "a2m04",
+     "title": "The Boar of Ashwood",
+     "type": "hunt",
+     "minutes": 30,
+     "summary": "Hunt with Freydis; she asks about the scars he will not explain.",
+     "status": "planned"
+    },
+    {
+     "id": "a2m05",
+     "title": "Harvest Feast",
+     "type": "social",
+     "minutes": 30,
+     "summary": "Drinking contest, a wrestling bout, a first dance.",
+     "status": "planned"
+    },
+    {
+     "id": "a2m06",
+     "title": "Smoke on the Ridge",
+     "type": "stealth",
+     "minutes": 25,
+     "summary": "Scout a column of riders flying the wolf banner.",
+     "status": "planned"
+    },
+    {
+     "id": "a2m07",
+     "title": "The Farmer's Axe",
+     "type": "combat",
+     "minutes": 60,
+     "summary": "The raid: farmhouse, fields, barn, burning village. First real fight.",
+     "status": "planned"
+    },
+    {
+     "id": "a2m08",
+     "title": "What the Dying Say",
+     "type": "story",
+     "minutes": 25,
+     "summary": "A raider names Håkon. Stay and endanger the family, or go.",
+     "status": "planned"
+    },
+    {
+     "id": "a2m09",
+     "title": "The Wolf Remembers",
+     "type": "story",
+     "minutes": 30,
+     "summary": "Håkon learns the boy lived and sets a price.",
+     "status": "planned"
+    }
+   ]
+  },
+  {
+   "act": 3,
+   "title": "The Hunted Wolf",
+   "target_minutes": 360,
+   "built_minutes_estimate": 0,
+   "missions": [
+    {
+     "id": "a3m01",
+     "title": "A Price on a Name",
+     "type": "stealth",
+     "minutes": 35,
+     "summary": "Bounty hunters in the forest; turn their traps on them.",
+     "status": "planned"
+    },
+    {
+     "id": "a3m02",
+     "title": "Shield and Scorn",
+     "type": "companion",
+     "minutes": 40,
+     "summary": "Meet Astrid defending a ford; fight beside her, or over her.",
+     "status": "planned"
+    },
+    {
+     "id": "a3m03",
+     "title": "The Thing at Borre",
+     "type": "politics",
+     "minutes": 45,
+     "summary": "Answer a false murder charge before the assembly.",
+     "status": "planned"
+    },
+    {
+     "id": "a3m04",
+     "title": "Leif's Bad Bargain",
+     "type": "heist",
+     "minutes": 40,
+     "summary": "Free Leif's ship from a harbour reeve who holds it for debt.",
+     "status": "planned"
+    },
+    {
+     "id": "a3m05",
+     "title": "Old Scars",
+     "type": "mentor",
+     "minutes": 35,
+     "summary": "Torvald teaches the shield wall and tells half the truth about Ragnar.",
+     "status": "planned"
+    },
+    {
+     "id": "a3m06",
+     "title": "Knives in the Hall",
+     "type": "stealth",
+     "minutes": 35,
+     "summary": "An assassin among the guests at a wedding feast.",
+     "status": "planned"
+    },
+    {
+     "id": "a3m07",
+     "title": "The Healer's Road",
+     "type": "escort",
+     "minutes": 35,
+     "summary": "Bring Ingrid through a plague-struck valley.",
+     "status": "planned"
+    },
+    {
+     "id": "a3m08",
+     "title": "Why Hrafnvik",
+     "type": "investigation",
+     "minutes": 40,
+     "summary": "Follow the tribute rolls to learn who else was asked the question.",
+     "status": "planned"
+    },
+    {
+     "id": "a3m09",
+     "title": "Two-Blades",
+     "type": "boss",
+     "minutes": 55,
+     "summary": "Ulf Two-Blades in a burning boathouse.",
+     "status": "planned"
+    }
+   ]
+  },
+  {
+   "act": 4,
+   "title": "Blood Across the Sea",
+   "target_minutes": 360,
+   "built_minutes_estimate": 0,
+   "missions": [
+    {
+     "id": "a4m01",
+     "title": "First Wind",
+     "type": "sailing",
+     "minutes": 35,
+     "summary": "Learn the ship: sail, oars, reading the sky.",
+     "status": "planned"
+    },
+    {
+     "id": "a4m02",
+     "title": "The Belt Storm",
+     "type": "naval survival",
+     "minutes": 30,
+     "summary": "Ride out a storm in the Danish belts.",
+     "status": "planned"
+    },
+    {
+     "id": "a4m03",
+     "title": "Hedeby",
+     "type": "trade/politics",
+     "minutes": 45,
+     "summary": "A port of every tongue; buy an ally or a spy.",
+     "status": "planned"
+    },
+    {
+     "id": "a4m04",
+     "title": "The Sacred Grove",
+     "type": "diplomacy",
+     "minutes": 40,
+     "summary": "Win a Svear chieftain at Uppsala without profaning the grove.",
+     "status": "planned"
+    },
+    {
+     "id": "a4m05",
+     "title": "Lindisfarne Tide",
+     "type": "moral choice",
+     "minutes": 40,
+     "summary": "A minster on a tidal island: raid it, guard it, or bargain.",
+     "status": "planned"
+    },
+    {
+     "id": "a4m06",
+     "title": "The Burh at Jorvik",
+     "type": "siege",
+     "minutes": 55,
+     "summary": "Take a walled town by ladder, gate or treachery.",
+     "status": "planned"
+    },
+    {
+     "id": "a4m07",
+     "title": "The Iron Circle",
+     "type": "investigation",
+     "minutes": 35,
+     "summary": "Captured letters name the jarls behind Håkon.",
+     "status": "planned"
+    },
+    {
+     "id": "a4m08",
+     "title": "Hedeby Sound",
+     "type": "set piece",
+     "minutes": 50,
+     "summary": "Torvald's signal fires; the fleet is cut apart.",
+     "status": "planned"
+    },
+    {
+     "id": "a4m09",
+     "title": "Driftwood",
+     "type": "survival",
+     "minutes": 30,
+     "summary": "Wash ashore with whoever is left.",
+     "status": "planned"
+    }
+   ]
+  },
+  {
+   "act": 5,
+   "title": "The Broken Raven",
+   "target_minutes": 420,
+   "built_minutes_estimate": 0,
+   "missions": [
+    {
+     "id": "a5m01",
+     "title": "Ashes Again",
+     "type": "story",
+     "minutes": 35,
+     "summary": "The settlement burned in his absence.",
+     "status": "planned"
+    },
+    {
+     "id": "a5m02",
+     "title": "Those Who Stayed",
+     "type": "recruit",
+     "minutes": 45,
+     "summary": "Gather the scattered: each asks a price.",
+     "status": "planned"
+    },
+    {
+     "id": "a5m03",
+     "title": "Timber and Trust",
+     "type": "settlement",
+     "minutes": 50,
+     "summary": "Raise the hall, the smithy, the palisade.",
+     "status": "planned"
+    },
+    {
+     "id": "a5m04",
+     "title": "Grain for Spears",
+     "type": "logistics",
+     "minutes": 40,
+     "summary": "Secure a winter's supply by trade, tribute or theft.",
+     "status": "planned"
+    },
+    {
+     "id": "a5m05",
+     "title": "The Ring",
+     "type": "story",
+     "minutes": 35,
+     "summary": "Ylva's ring surfaces. The truth about Halfdan's line.",
+     "status": "planned"
+    },
+    {
+     "id": "a5m06",
+     "title": "Three Fords",
+     "type": "strategy",
+     "minutes": 50,
+     "summary": "Take the river crossings that feed Håkon's hall.",
+     "status": "planned"
+    },
+    {
+     "id": "a5m07",
+     "title": "Ingrid's Counsel",
+     "type": "choice",
+     "minutes": 30,
+     "summary": "A patient siege or a night assault. One of them costs her life.",
+     "status": "planned"
+    },
+    {
+     "id": "a5m08",
+     "title": "The Wolf's Hall",
+     "type": "assault",
+     "minutes": 60,
+     "summary": "Fight through Håkon's hall.",
+     "status": "planned"
+    },
+    {
+     "id": "a5m09",
+     "title": "Shield-Brothers",
+     "type": "boss",
+     "minutes": 45,
+     "summary": "Håkon, in three phases, with Ragnar's lesson as the last prompt.",
+     "status": "planned"
+    },
+    {
+     "id": "a5m10",
+     "title": "What Killing Solves",
+     "type": "story",
+     "minutes": 30,
+     "summary": "He names the Circle and dies. Nothing ends.",
+     "status": "planned"
+    }
+   ]
+  },
+  {
+   "act": 6,
+   "title": "War of the Jarls",
+   "target_minutes": 360,
+   "built_minutes_estimate": 0,
+   "missions": [
+    {
+     "id": "a6m01",
+     "title": "The Captive",
+     "type": "rescue",
+     "minutes": 45,
+     "summary": "Break a captured ally out of a sea-fort.",
+     "status": "planned"
+    },
+    {
+     "id": "a6m02",
+     "title": "Against the Tide",
+     "type": "defence",
+     "minutes": 50,
+     "summary": "Hold the settlement against five times its number.",
+     "status": "planned"
+    },
+    {
+     "id": "a6m03",
+     "title": "Guest-Right",
+     "type": "infiltration",
+     "minutes": 45,
+     "summary": "Enter a rival's great hall as a guest and leave with his secrets.",
+     "status": "planned"
+    },
+    {
+     "id": "a6m04",
+     "title": "Two Clans, One River",
+     "type": "negotiation",
+     "minutes": 40,
+     "summary": "End a three-generation feud, or pick a side.",
+     "status": "planned"
+    },
+    {
+     "id": "a6m05",
+     "title": "Holmgang",
+     "type": "duel",
+     "minutes": 35,
+     "summary": "Ritual combat on a hide with a jarl's champion.",
+     "status": "planned"
+    },
+    {
+     "id": "a6m06",
+     "title": "The Long Siege",
+     "type": "command",
+     "minutes": 60,
+     "summary": "Direct engines, sappers and a relief ambush.",
+     "status": "planned"
+    },
+    {
+     "id": "a6m07",
+     "title": "The Oathbreaker",
+     "type": "hunt",
+     "minutes": 45,
+     "summary": "Run Torvald to ground. Kill him, judge him or hear him.",
+     "status": "planned"
+    },
+    {
+     "id": "a6m08",
+     "title": "The High Seat Question",
+     "type": "politics",
+     "minutes": 40,
+     "summary": "The jarls ask what he means to be.",
+     "status": "planned"
+    }
+   ]
+  },
+  {
+   "act": 7,
+   "title": "The Raven King",
+   "target_minutes": 360,
+   "built_minutes_estimate": 0,
+   "missions": [
+    {
+     "id": "a7m01",
+     "title": "The Coalition",
+     "type": "story",
+     "minutes": 30,
+     "summary": "Sigurd Stonehand gathers every jarl who fears a king.",
+     "status": "planned"
+    },
+    {
+     "id": "a7m02",
+     "title": "Fire on the Water",
+     "type": "naval battle",
+     "minutes": 55,
+     "summary": "Break the blockade.",
+     "status": "planned"
+    },
+    {
+     "id": "a7m03",
+     "title": "The Pass",
+     "type": "land battle",
+     "minutes": 55,
+     "summary": "Hold the mountain road while the fleet turns.",
+     "status": "planned"
+    },
+    {
+     "id": "a7m04",
+     "title": "Every Hand",
+     "type": "command",
+     "minutes": 45,
+     "summary": "Spend what was built: allies answer according to how they were treated.",
+     "status": "planned"
+    },
+    {
+     "id": "a7m05",
+     "title": "Stonehand",
+     "type": "boss",
+     "minutes": 50,
+     "summary": "The last duel, in the ring of standing stones.",
+     "status": "planned"
+    },
+    {
+     "id": "a7m06",
+     "title": "The Crown",
+     "type": "ending",
+     "minutes": 35,
+     "summary": "One of four endings.",
+     "status": "planned"
+    },
+    {
+     "id": "a7m07",
+     "title": "The Old Birch",
+     "type": "epilogue",
+     "minutes": 30,
+     "summary": "Family, companions, and what the North remembers.",
+     "status": "planned"
+    }
+   ]
+  }
+ ],
+ "side_missions": [
+  {
+   "id": "s01",
+   "title": "Silver in the River",
+   "region": "Hrafnvik",
+   "type": "fishing",
+   "premise": "Catch trout for the pot.",
+   "status": "built"
+  },
+  {
+   "id": "s02",
+   "title": "Whispers of the Ironwolf",
+   "region": "Hrafnvik",
+   "type": "lore",
+   "premise": "Hrolf's rumour about the question Håkon asks.",
+   "status": "built"
+  },
+  {
+   "id": "s03",
+   "title": "The Raven Stone",
+   "region": "Hrafnvik",
+   "type": "exploration",
+   "premise": "Read Halfdan's stone on the knoll.",
+   "status": "built"
+  },
+  {
+   "id": "s04",
+   "title": "Thyra's Race",
+   "region": "Hrafnvik",
+   "type": "minigame",
+   "premise": "Foot-race to the well; she cheats.",
+   "status": "outline"
+  },
+  {
+   "id": "s05",
+   "title": "The Missing Ewe",
+   "region": "Vestland",
+   "type": "tracking",
+   "premise": "Follow tracks to a wolf den; kill, drive off or let be.",
+   "status": "outline"
+  },
+  {
+   "id": "s06",
+   "title": "Brokk's Last Iron",
+   "region": "Vestland",
+   "type": "crafting",
+   "premise": "Find bog iron for a smith who will not last the winter.",
+   "status": "outline"
+  },
+  {
+   "id": "s07",
+   "title": "The Drowned Bell",
+   "region": "Fjords",
+   "type": "diving/treasure",
+   "premise": "A church bell lost by raiders lies in the shallows.",
+   "status": "outline"
+  },
+  {
+   "id": "s08",
+   "title": "Two Brothers, One Boat",
+   "region": "Fjords",
+   "type": "dispute",
+   "premise": "Judge an inheritance; both versions are half true.",
+   "status": "outline"
+  },
+  {
+   "id": "s09",
+   "title": "The Widow's Field",
+   "region": "Vestland",
+   "type": "farming",
+   "premise": "Bring in a harvest before the frost, alone or by rousing neighbours.",
+   "status": "outline"
+  },
+  {
+   "id": "s10",
+   "title": "Wolf-Head",
+   "region": "Forests",
+   "type": "bounty",
+   "premise": "An outlaw with a price turns out to be wrongly named.",
+   "status": "outline"
+  },
+  {
+   "id": "s11",
+   "title": "The White Stag",
+   "region": "Forests",
+   "type": "hunt",
+   "premise": "A stag the hunters say is sacred. Shoot it and the village remembers.",
+   "status": "outline"
+  },
+  {
+   "id": "s12",
+   "title": "Rune-Carver's Debt",
+   "region": "Vestland",
+   "type": "fetch/lore",
+   "premise": "Carry a memorial stone commission between feuding families.",
+   "status": "outline"
+  },
+  {
+   "id": "s13",
+   "title": "Dice at the Bent Oar",
+   "region": "Kaupang",
+   "type": "minigame",
+   "premise": "Win a ship's share at dice, or catch the weighted die.",
+   "status": "outline"
+  },
+  {
+   "id": "s14",
+   "title": "Arm of the North",
+   "region": "Kaupang",
+   "type": "minigame",
+   "premise": "An arm-wrestling ladder with a champion who throws matches.",
+   "status": "outline"
+  },
+  {
+   "id": "s15",
+   "title": "Mead and Memory",
+   "region": "Kaupang",
+   "type": "minigame",
+   "premise": "A drinking contest that ends in a rooftop chase.",
+   "status": "outline"
+  },
+  {
+   "id": "s16",
+   "title": "The Straight Shaft",
+   "region": "Kaupang",
+   "type": "contest",
+   "premise": "Archery tournament with wind and moving marks.",
+   "status": "outline"
+  },
+  {
+   "id": "s17",
+   "title": "Bearded Luck",
+   "region": "Kaupang",
+   "type": "contest",
+   "premise": "Axe-throwing for a silver arm-ring.",
+   "status": "outline"
+  },
+  {
+   "id": "s18",
+   "title": "The Honest Thief",
+   "region": "Kaupang",
+   "type": "stealth",
+   "premise": "Recover a stolen cargo without the reeve learning who took it.",
+   "status": "outline"
+  },
+  {
+   "id": "s19",
+   "title": "Amber Road",
+   "region": "Denmark",
+   "type": "trade",
+   "premise": "Run amber to Hedeby ahead of a rival trader.",
+   "status": "outline"
+  },
+  {
+   "id": "s20",
+   "title": "The Toll at Limfjord",
+   "region": "Denmark",
+   "type": "naval",
+   "premise": "Pay, sneak past or break a chieftain's toll chain.",
+   "status": "outline"
+  },
+  {
+   "id": "s21",
+   "title": "A Thrall's Name",
+   "region": "Denmark",
+   "type": "moral",
+   "premise": "A thrall claims to be a jarl's son. Buy him, free him or prove it.",
+   "status": "outline"
+  },
+  {
+   "id": "s22",
+   "title": "The Bog Offering",
+   "region": "Denmark",
+   "type": "mystery",
+   "premise": "Weapons surface in a bog; someone is digging them up to sell.",
+   "status": "outline"
+  },
+  {
+   "id": "s23",
+   "title": "Saltmarsh Ghosts",
+   "region": "Denmark",
+   "type": "mystery",
+   "premise": "Lights on the marsh are wreckers, not spirits.",
+   "status": "outline"
+  },
+  {
+   "id": "s24",
+   "title": "The Grove Keeper",
+   "region": "Svealand",
+   "type": "diplomacy",
+   "premise": "Earn passage through a sacred grove by labour, not silver.",
+   "status": "outline"
+  },
+  {
+   "id": "s25",
+   "title": "Nine Nights",
+   "region": "Svealand",
+   "type": "mystery",
+   "premise": "A man hangs himself in a tree for wisdom; his kin want him cut down.",
+   "status": "outline"
+  },
+  {
+   "id": "s26",
+   "title": "The Bear-Shirt",
+   "region": "Svealand",
+   "type": "boss",
+   "premise": "A berserker challenges every traveller on the lake ice.",
+   "status": "outline"
+  },
+  {
+   "id": "s27",
+   "title": "Iron Under the Lake",
+   "region": "Svealand",
+   "type": "crafting",
+   "premise": "Dredge lake ore for the first pattern-welded blade.",
+   "status": "outline"
+  },
+  {
+   "id": "s28",
+   "title": "Sister's Loom",
+   "region": "Svealand",
+   "type": "family",
+   "premise": "Freydis asks for dye plants from three regions.",
+   "status": "outline"
+  },
+  {
+   "id": "s29",
+   "title": "The Runaway Bride",
+   "region": "Svealand",
+   "type": "escort",
+   "premise": "A marriage alliance, and a bride who would rather sail.",
+   "status": "outline"
+  },
+  {
+   "id": "s30",
+   "title": "Minster Bread",
+   "region": "Northumbria",
+   "type": "moral",
+   "premise": "Starving farmers ask you to take the monks' grain.",
+   "status": "outline"
+  },
+  {
+   "id": "s31",
+   "title": "The Scribe's Eye",
+   "region": "Northumbria",
+   "type": "lore",
+   "premise": "A monk will write Eirik's saga, if told the truth.",
+   "status": "outline"
+  },
+  {
+   "id": "s32",
+   "title": "King's Peace",
+   "region": "Northumbria",
+   "type": "politics",
+   "premise": "Carry terms between an English ealdorman and a Norse camp.",
+   "status": "outline"
+  },
+  {
+   "id": "s33",
+   "title": "The Roman Road",
+   "region": "Northumbria",
+   "type": "exploration",
+   "premise": "Follow a ruined road to a buried hoard.",
+   "status": "outline"
+  },
+  {
+   "id": "s34",
+   "title": "Fenland Hunt",
+   "region": "Northumbria",
+   "type": "hunt",
+   "premise": "Wild boar in reed beds where the bow is useless.",
+   "status": "outline"
+  },
+  {
+   "id": "s35",
+   "title": "The Hostage",
+   "region": "Northumbria",
+   "type": "stealth",
+   "premise": "Free a child hostage from a burh without bloodshed.",
+   "status": "outline"
+  },
+  {
+   "id": "s36",
+   "title": "Whale Road",
+   "region": "Open sea",
+   "type": "naval",
+   "premise": "A whale hunt from open boats.",
+   "status": "outline"
+  },
+  {
+   "id": "s37",
+   "title": "The Becalmed",
+   "region": "Open sea",
+   "type": "survival",
+   "premise": "Five days without wind and a crew that blames the foreigner.",
+   "status": "outline"
+  },
+  {
+   "id": "s38",
+   "title": "Storm-Wife",
+   "region": "Open sea",
+   "type": "mystery",
+   "premise": "A woman on a skerry claims to call weather.",
+   "status": "outline"
+  },
+  {
+   "id": "s39",
+   "title": "The Skerry Hoard",
+   "region": "Islands",
+   "type": "treasure",
+   "premise": "A riddle on a sword hilt points to an island cairn.",
+   "status": "outline"
+  },
+  {
+   "id": "s40",
+   "title": "Hermit of the Gannet Rock",
+   "region": "Islands",
+   "type": "lore",
+   "premise": "An old hirdman who knew Halfdan, and Ylva.",
+   "status": "outline"
+  },
+  {
+   "id": "s41",
+   "title": "The Burned Stave",
+   "region": "Islands",
+   "type": "mystery",
+   "premise": "A ruined hall with every body facing the door.",
+   "status": "outline"
+  },
+  {
+   "id": "s42",
+   "title": "Draugr's Barrow",
+   "region": "Islands",
+   "type": "dungeon",
+   "premise": "Grave-robbers dress as the dead to keep people away.",
+   "status": "outline"
+  },
+  {
+   "id": "s43",
+   "title": "A Horse for a Jarl",
+   "region": "Vestland",
+   "type": "riding",
+   "premise": "Break a stallion fit for a gift; or keep it.",
+   "status": "outline"
+  },
+  {
+   "id": "s44",
+   "title": "The Short Winter",
+   "region": "Settlement",
+   "type": "management",
+   "premise": "Feed the settlement through a failed harvest.",
+   "status": "outline"
+  },
+  {
+   "id": "s45",
+   "title": "Walls or Wharves",
+   "region": "Settlement",
+   "type": "choice",
+   "premise": "Spend the timber on defence or trade.",
+   "status": "outline"
+  },
+  {
+   "id": "s46",
+   "title": "The Smith's Apprentice",
+   "region": "Settlement",
+   "type": "recruit",
+   "premise": "Brokk's nephew survived Hrafnvik and wants a forge.",
+   "status": "outline"
+  },
+  {
+   "id": "s47",
+   "title": "Astrid's Hall",
+   "region": "Companion",
+   "type": "loyalty",
+   "premise": "Return with her to the ashes of her home.",
+   "status": "outline"
+  },
+  {
+   "id": "s48",
+   "title": "Leif's Last Debt",
+   "region": "Companion",
+   "type": "loyalty",
+   "premise": "The man Leif owes is his brother.",
+   "status": "outline"
+  },
+  {
+   "id": "s49",
+   "title": "Torvald's Shield",
+   "region": "Companion",
+   "type": "loyalty",
+   "premise": "A training duel that explains, later, everything.",
+   "status": "outline"
+  },
+  {
+   "id": "s50",
+   "title": "Ingrid's Oath",
+   "region": "Companion",
+   "type": "loyalty",
+   "premise": "She will heal anyone; an enemy is brought to her door.",
+   "status": "outline"
+  }
+ ]
+}

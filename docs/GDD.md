@@ -1,0 +1,103 @@
+# Game design document
+
+Status key: **[built]** in the playable slice · **[proto]** partly working · **[planned]** design only.
+Numbers for unbuilt systems are starting points for tuning, not measured values.
+
+## Pillars
+
+1. **Earned, not given.** Every skill Eirik has, the player learned by doing it first as a child.
+2. **A blade and its wisdom.** Violence is fast, costly and remembered. Restraint is always an option and sometimes the harder one.
+3. **A living North.** People have work, weather has consequences, the land feeds you or kills you.
+4. **The crown weighs.** Power arrives with people to protect and choices nobody thanks you for.
+
+## Player experience by act
+
+| Act | Fantasy | New systems |
+|---|---|---|
+| I | A child who survives | Movement, dialogue, hunting, fire, stealth, cold **[built]**; hunger, shelter **[planned]** |
+| II | A farmer who fights | Melee combat, weapons, crafting, trading, farming |
+| III | An outlaw who gathers friends | Companions, bounties, horse, first ship |
+| IV | A captain abroad | Sailing, naval combat, sieges, ports, diplomacy |
+| V | A leader who rebuilds | Settlement, recruiting, supply, territory |
+| VI | A jarl among jarls | Faction politics, duels, large battles |
+| VII | A king, of some kind | Army command alongside personal combat |
+
+## Combat **[proto: sparring only]**
+
+Stamina gates everything; posture decides who opens up.
+
+- **Light** attacks chain three hits. **Heavy** (hold) breaks guard and costs more. **[light built]**
+- **Block** (hold) drains stamina per hit. **Parry** (guard raised within 0.26 s of impact) costs nothing and opens a counter. **[built]**
+- **Dodge** roll with 0.32 s of invulnerability, 16 stamina. **[built]**
+- **Posture**: blocked and parried blows fill the defender's posture bar; a full bar staggers and allows an execution. **[planned]**
+- **Soft lock**: attacks and guard turn Eirik toward the nearest opponent. **[built]** Hard lock and target switching. **[planned]**
+- Enemies telegraph, flank, feint, retreat when hurt and punish repeated openers. **[planned]**
+- Contextual and environmental finishers, stealth takedowns, mounted combat. **[planned]**
+
+### Weapons **[planned]**; data in `data/combat.json`
+
+| Weapon | Role | Strength | Weakness |
+|---|---|---|---|
+| One-handed axe | Versatile | Fast chains, hooks shields | Short reach |
+| Dual axes | High-risk offence | Highest damage per second | No block, only parry |
+| Viking sword | Balanced | Best parry window, thrusts | Poor against mail |
+| Axe and shield | Control | Shield bash, widest block | Stamina-hungry |
+| Spear | Reach | Keeps groups off, mounted use | Weak inside its point |
+| Dane axe | Heavy | Cleaves guards and shields | Slow, long recovery |
+| Seax | Stealth | Takedowns, grapples | Negligible in open fights |
+| Bow | Ranged | Hunting, opening shots **[built: child's bow]** | Useless when crowded |
+| War hammer | Armour-breaker | Posture damage through mail | Slow, short |
+
+Two melee sets and one ranged slot are carried; switching takes a short animation.
+
+### Skill trees **[planned]**
+
+Berserker, Shieldmaster, Hunter, Warlord, Wayfarer. Skills unlock abilities, not flat damage (examples:
+*Hooking Beard* pulls a shield down; *Raven's Eye* marks tracks without holding the button; *Shield Wall*
+orders nearby allies to lock shields). Experience comes from quests and from doing the related activity.
+
+## Systems in the slice **[built]**
+
+| System | How it plays |
+|---|---|
+| Woodcutting | Stop a swinging marker in a shrinking gold zone; five logs |
+| Archery | Hold to aim and draw (0.75 s to full), release; arrows drop and can be collected |
+| Wildlife | Hares and deer graze, notice and flee; fear radius depends on stance and speed; deer need two body hits or one to the head or neck |
+| Tracking | Hunter's Sense lights a trail of prints and marks animals |
+| Fishing | Cast, wait, strike on the bite, then reel while managing line strain |
+| Fire-making | Three timed flint strikes; in a storm a bad strike costs an ember |
+| Sparring | Four drills taught by doing: strike, block, parry, dodge |
+| Stealth | Raiders have a vision cone, hearing radius and awareness meter; low cover blocks sight when crouched; being caught reloads the checkpoint |
+| Cold | Warmth drains in the blizzard, slowing Eirik; at zero, health drains |
+| Traits | Wisdom, Compassion, Ferocity, Pride, raised by dialogue choices and saved |
+
+## World
+
+Eight regions, each a streamed zone with a hub, three to five sub-areas and a signature activity.
+Only Hrafnvik valley exists **[built: 640 m square]**. See `data/world.json`.
+
+Living-world rules: day and night **[built]**; weather **[built: clear, snow, blizzard]**; seasons
+**[planned]**; NPC work posts with an evening change **[proto]**; village economy, crime and reputation
+response, travelling merchants, random encounters **[planned]**.
+
+## Activities and side content **[planned unless marked]**
+
+Hunting, fishing, tracking, woodcutting **[built]**; farming, smithing, crafting, trading, horse riding,
+sailing and ship upgrades, tavern games (dice, arm wrestling, drinking), archery and axe-throwing
+contests, treasure maps, settlement building, recruiting, outpost raids, champion duels, ruin mysteries.
+Fifty side missions are outlined in `data/missions.json`; three small ones are playable.
+
+## Interface **[built unless marked]**
+
+Main menu, new / continue / load, three manual slots and an autosave, pause, journal, inventory, map
+with waypoint, Saga screen (traits, bonds, choices), settings. Planned: crafting and merchant screens,
+settlement management, faction and reputation screen, character customisation.
+
+Accessibility **[built]**: three difficulty levels, subtitle toggle and size, objective-marker toggle,
+camera-shake toggle, invertible look, sensitivity, full keyboard remapping, arrow-key camera for play
+without a mouse. Planned: colour-blind palettes, hold-versus-toggle options, screen-reader menu labels.
+
+## Scope honesty
+
+Forty hours of authored content with fifty side missions is the output of a large studio over years.
+The plan in `ROADMAP.md` is built so that each milestone is a complete, playable thing on its own.

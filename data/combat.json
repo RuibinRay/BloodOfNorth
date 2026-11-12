@@ -1,0 +1,115 @@
+{
+ "about": "Weapon classes and skill trees. All planned except the child's bow and wooden sword in Chapter 1.",
+ "weapons": [
+  {
+   "id": "axe",
+   "name": "One-handed axe",
+   "speed": "fast",
+   "reach": "short",
+   "special": "hook shields"
+  },
+  {
+   "id": "dual_axes",
+   "name": "Dual axes",
+   "speed": "very fast",
+   "reach": "short",
+   "special": "no block; parry only"
+  },
+  {
+   "id": "sword",
+   "name": "Viking sword",
+   "speed": "medium",
+   "reach": "medium",
+   "special": "widest parry window; thrust"
+  },
+  {
+   "id": "axe_shield",
+   "name": "Axe and shield",
+   "speed": "medium",
+   "reach": "short",
+   "special": "shield bash; best guard"
+  },
+  {
+   "id": "spear",
+   "name": "Spear",
+   "speed": "medium",
+   "reach": "long",
+   "special": "keep-away; usable mounted"
+  },
+  {
+   "id": "dane_axe",
+   "name": "Dane axe",
+   "speed": "slow",
+   "reach": "long",
+   "special": "cleaves shields and guards"
+  },
+  {
+   "id": "seax",
+   "name": "Seax",
+   "speed": "very fast",
+   "reach": "very short",
+   "special": "stealth takedowns; grapple"
+  },
+  {
+   "id": "bow",
+   "name": "Bow",
+   "speed": "draw 0.75 s",
+   "reach": "ranged",
+   "special": "hunting; headshots"
+  },
+  {
+   "id": "hammer",
+   "name": "War hammer",
+   "speed": "slow",
+   "reach": "short",
+   "special": "posture damage through mail"
+  }
+ ],
+ "skill_trees": [
+  {
+   "id": "berserker",
+   "focus": "aggression",
+   "examples": [
+    "Blood-Warm: attacks restore a sliver of stamina",
+    "Red Mist: a rage state that ignores stagger",
+    "Cleave: heavy attacks pass through one guard"
+   ]
+  },
+  {
+   "id": "shieldmaster",
+   "focus": "defence",
+   "examples": [
+    "Turn Aside: wider parry window",
+    "Boss Strike: shield bash opens posture",
+    "Wall: block arrows while advancing"
+   ]
+  },
+  {
+   "id": "hunter",
+   "focus": "archery, stealth, tracking",
+   "examples": [
+    "Raven's Eye: tracks stay lit after sensing",
+    "Still Hands: steadier full draw",
+    "Quiet Knife: takedown from cover"
+   ]
+  },
+  {
+   "id": "warlord",
+   "focus": "leadership",
+   "examples": [
+    "Shield Wall: order allies to lock shields",
+    "Rally: revive a downed companion's morale",
+    "Flank Order: send archers to a marked position"
+   ]
+  },
+  {
+   "id": "wayfarer",
+   "focus": "endurance and travel",
+   "examples": [
+    "Long Road: slower stamina drain when sprinting",
+    "Weather-Wise: read storms before they break",
+    "Sea Legs: steadier ship handling"
+   ]
+  }
+ ]
+}
