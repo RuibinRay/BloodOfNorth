@@ -7,16 +7,16 @@ import * as THREE from 'three';
 import { clamp, smoothstep, damp, angleDiff } from '../core/util.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { M, STUFF, at, box, cyl, cone, sphere, capsule, tint, merge, shieldGeo } from '../world/geo.js';
+import { buildHead } from './heads.js';
 
 const D = { hip: 0.94, thigh: 0.44, shin: 0.44, chestY: 0.2, shoulderY: 0.3, shoulderX: 0.2, neckY: 0.42, upper: 0.29, fore: 0.27 };
 const DEFAULT_LOOK = {
   scale: 1, child: false, female: false, build: 1, skin: 0xd8a888, hair: 0x6b4a2b, hairStyle: 'short', beard: null,
   tunic: 0x6f6048, trim: 0x8a2f25, legs: 0x4b4034, boots: 0x33261a, cloak: null, fur: false, helmet: false, apron: null, mail: false, // mail: a ring shirt over the tunic
   shield: undefined, // which painted shield he carries (0 to 3); left out, shields are handed round in turn
-  eyes: 0x5a4632, face: 'even', scar: null, scar2: null, // eye colour; face shape: even | lean | broad | long; scar: 'lightning' (over the left eye) | 'cheek' | 'brow'
+  eyes: 0x5a4632, face: 'even', scar: null, scar2: null, // eye colour; scar: 'lightning' (over the left eye) | 'cheek' | 'brow' | 'lip'
+  // the face, the hair and the beard (face shape, nose, ears, brows, lips, age, hair styles, grey, beards): see heads.js
 };
-/** Head proportions by face shape: [width, height, depth] of the skull. */
-const FACES = { even: [0.95, 1.13, 1.02], lean: [0.89, 1.17, 1.0], broad: [1.03, 1.08, 1.05], long: [0.92, 1.22, 1.0] };
 /** Expressions. tilt: brows (+ inner ends down, - inner ends up); by: brow height; lid: 0 wide .. 1 shut; open: jaw; curve: mouth corners; wide: mouth width. */
 const MOODS = {
   neutral: { tilt: 0, by: 0, lid: 0.1, open: 0, curve: 0, wide: 1 },
@@ -28,6 +28,11 @@ const MOODS = {
   smile: { tilt: 0, by: 0.002, lid: 0.22, open: 0.05, curve: 0.75, wide: 1.12 },
   tired: { tilt: -0.16, by: 0, lid: 0.42, open: 0.5, curve: -0.2, wide: 0.95 },
   dead: { tilt: 0, by: 0, lid: 1, open: 0.22, curve: -0.1, wide: 0.95 },
+  // faces some people wear when nothing else is on them (look.mood)
+  scowl: { tilt: 0.3, by: -0.003, lid: 0.3, open: 0, curve: -0.3, wide: 0.96 },
+  smirk: { tilt: 0.05, by: 0.001, lid: 0.2, open: 0, curve: 0.38, wide: 1.04 },
+  worried: { tilt: -0.24, by: 0.002, lid: 0.12, open: 0, curve: -0.25, wide: 0.95 },
+  grin: { tilt: -0.05, by: 0.003, lid: 0.3, open: 0.12, curve: 0.85, wide: 1.15 },
 };
 /** How far the jaw opens for a letter (speech follows the words as they are spoken). */
 const VISEME = { a: 0.95, o: 0.8, e: 0.55, i: 0.4, u: 0.45, y: 0.4, m: 0, b: 0, p: 0, f: 0.12, v: 0.12, w: 0.3, l: 0.35, r: 0.3, s: 0.2, t: 0.25, d: 0.28, n: 0.22, k: 0.3, g: 0.3, h: 0.45 };
@@ -175,6 +180,12 @@ const BLADE = { woodsword: [0.12, 0.58], woodsword_big: [0.12, 0.85], sword: [0.
   club: [0.55, 1.15], woodaxe: [0.45, 0.8], longaxe: [0.75, 1.25], seax: [0.1, 0.52], maul: [0.75, 1.25], smallaxe: [0.2, 0.45], throwaxe: [0.2, 0.45], spear: [1.05, 1.7], hammer: [0.2, 0.38] };
 
 const grp = (parent, x, y, z) => { const g = new THREE.Group(); g.position.set(x, y, z); parent.add(g); return g; };
+/** Darken a piece's colours toward a height (y0: as it is, y1: times k): the shadow under a jaw. */
+function shade(g, y0, y1, k) {
+  const P = g.attributes.position, C = g.attributes.color;
+  for (let i = 0; i < P.count; i++) { const f = 1 + (k - 1) * smoothstep(y0, y1, P.getY(i)); C.setXYZ(i, C.getX(i) * f, C.getY(i) * f, C.getZ(i) * f); }
+  return g;
+}
 // ---- what a figure's pieces are made of -----------------------------------------------------------------
 const MAIL = 0x8f949b, FUR = 0x6c6a66, BELT = 0x3b2a1a, BRONZE = 0xb0905a;
 /** The stuff a piece is made of, told from the colour it was given: skin and metal are plain; the rest has a grain. */
@@ -210,7 +221,7 @@ export function dress(g, stuff) {
   }
   if (!w || u1 - u0 < 1e-6 || v1 - v0 < 1e-6) return g;
   const wide = (lu / w) * (u1 - u0), tall = (lv / w) * (v1 - v0), q = g.parameters || {};
-  const closes = /Capsule|Icosahedron|Tube/.test(g.type) || (/Cylinder|Cone/.test(g.type) && !(q.thetaLength < 6.28)) || (/Sphere/.test(g.type) && !(q.phiLength < 6.28));
+  const closes = g.userData.closes || /Capsule|Icosahedron|Tube/.test(g.type) || (/Cylinder|Cone/.test(g.type) && !(q.thetaLength < 6.28)) || (/Sphere/.test(g.type) && !(q.phiLength < 6.28));
   const nu = closes ? Math.max(1, Math.round(wide / size)) : wide / size, nv = tall / (wide / nu); // the same grain up it as round it
   for (let i = 0; i < n; i++) uv.setXY(i, ((uv.getX(i) - u0) / (u1 - u0)) * nu, ((uv.getY(i) - v0) / (v1 - v0)) * nv);
   return g;
@@ -218,12 +229,20 @@ export function dress(g, stuff) {
 /** One figure, one draw. Every piece of a figure hangs from one joint, so instead of a mesh per piece (thirty-odd draws a
  *  person, counting their shadow) the pieces are fused into a single skinned mesh in which each vertex follows its one
  *  joint with full weight. The joints are the bones; nothing about how they are posed changes.
- *  pieces: [{ bone, geos }] with the geometry in the bone's own space. reach: how big the figure is, for its bounds. */
+ *  pieces: [{ bone, geos }] with the geometry in the bone's own space. reach: how big the figure is, for its bounds.
+ *  A geometry may also follow a second joint (geo.userData.bone2) by a weight at each vertex (attribute w2): the lips,
+ *  the jaw, a beard, hanging hair. Both joints must have the same frame when nothing moves (see heads.js). */
 function fuse(pieces, bones, skeleton, cast, reach, L) {
   const geos = pieces.map(({ bone, geos }) => {
-    for (const x of geos) dress(x, L ? stuffOf(x.userData.hex, L) : 'plain'); // L: whose clothes these are; without it (a face) all is plain
-    const g = merge(geos), n = g.attributes.position.count, bi = bones.indexOf(bone), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4);
-    for (let i = 0; i < n; i++) { si[i * 4] = bi; sw[i * 4] = 1; }
+    for (const x of geos) {
+      dress(x, x.userData.stuff || (L ? stuffOf(x.userData.hex, L) : 'plain')); // L: whose clothes these are; without it (a face) all is plain
+      const n = x.attributes.position.count;
+      if (!x.attributes.w2) x.setAttribute('w2', new THREE.BufferAttribute(new Float32Array(n), 1));
+      x.setAttribute('sb', new THREE.BufferAttribute(new Float32Array(n).fill(x.userData.bone2 ? bones.indexOf(x.userData.bone2) : 0), 1));
+    }
+    const g = merge(geos), n = g.attributes.position.count, bi = bones.indexOf(bone), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4), w2 = g.attributes.w2.array, sb = g.attributes.sb.array;
+    for (let i = 0; i < n; i++) { si[i * 4] = bi; si[i * 4 + 1] = sb[i]; sw[i * 4] = 1 - w2[i]; sw[i * 4 + 1] = w2[i]; }
+    g.deleteAttribute('w2'); g.deleteAttribute('sb');
     g.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4)); g.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4));
     return g;
   });
@@ -263,8 +282,8 @@ export class Humanoid {
       tint(at(cyl(0.2 * b, 0.165, 0.5, 10), 0, 0.06, 0, 0, 0, 0, 1, 1, 0.68), wear, 0.06, 5),
       tint(at(sphere(0.086, 8, 6), D.shoulderX * b, D.shoulderY, 0), wear, 0.05, 6),
       tint(at(sphere(0.086, 8, 6), -D.shoulderX * b, D.shoulderY, 0), wear, 0.05, 7),
-      tint(at(cyl(0.05, 0.058, 0.13, 8), 0, 0.37, 0), L.skin, 0.03, 8),
-      tint(at(cyl(0.085, 0.1, 0.045, 10), 0, 0.322, 0, 0, 0, 0, 1, 1, 0.8), L.trim, 0.05, 9),
+      shade(tint(at(cyl(0.046 * Math.sqrt(b) * (L.female ? 0.88 : 1), 0.062 * Math.sqrt(b) * (L.female ? 0.88 : 1), 0.17, 8, 1.6, false), 0, 0.39, 0), L.skin, 0.03, 8), 0.33, 0.46, 0.72), // the neck, reaching up into the head so its end never shows, in the jaw's shadow
+      tint(at(cyl(0.083, 0.1, 0.052, 10), 0, 0.328, 0, 0, 0, 0, 1, 1, 0.8), L.trim, 0.05, 9),
     ];
     if (L.apron) ch.push(tint(at(box(0.24, 0.3, 0.02), 0, 0.05, 0.126 + (0.136 * b - 0.112) * 0.48, Math.atan((0.136 * b - 0.112) / 0.5)), L.apron, 0.05, 10)); // and on the slope of the chest
     if (L.cloak) ch.push(tint(at(sphere(0.03, 7, 5), 0.105 * b, 0.275, 0.118 * b, 0, 0, 0, 1, 1, 0.4), BRONZE, 0.04, 48)); // the brooch that holds it
@@ -273,37 +292,20 @@ export class Humanoid {
       ch.push(tint(at(new THREE.IcosahedronGeometry(1, 1), x * b, y, z, 0, 0, 0, s * 1.25, s * 0.8, s), FUR, 0.3, 12 + x * 10));
     this.chestMesh = part(grp(j.chest, 0, 0, 0), ch); // its own joint, so the chest can swell with breath
 
-    // head
-    const hd = [
-      tint(at(sphere(0.112, 12, 9), 0, 0.15, 0, 0, 0, 0, ...(FACES[L.face] || FACES.even)), L.skin, 0.03, 20),
-      tint(at(box(0.022, 0.042, 0.03), 0, 0.138, 0.112), L.skin, 0.02, 23),
-      tint(at(sphere(0.024, 6, 5), 0.108, 0.15, 0.0, 0, 0, 0, 0.5, 1.2, 0.8), L.skin, 0.03, 24), tint(at(sphere(0.024, 6, 5), -0.108, 0.15, 0.0, 0, 0, 0, 0.5, 1.2, 0.8), L.skin, 0.03, 25), // ears
-    ];
-    const cap = () => at(new THREE.SphereGeometry(0.122, 10, 6, 0, Math.PI * 2, 0, Math.PI * 0.54), 0, 0.16, -0.012, -0.18, 0, 0, 1, 1.1, 1.06);
-    if (L.helmet) {
-      hd.push(tint(at(new THREE.SphereGeometry(0.128, 10, 6, 0, Math.PI * 2, 0, Math.PI * 0.5), 0, 0.165, 0, 0, 0, 0, 1, 1.12, 1.05), 0x70747a, 0.08, 24));
-      hd.push(tint(at(cyl(0.131, 0.131, 0.028, 10), 0, 0.166, 0, 0, 0, 0, 1, 1, 1.05), 0x4c4f54, 0.05, 25));
-      hd.push(tint(at(box(0.024, 0.1, 0.02), 0, 0.125, 0.128), 0x4c4f54, 0.05, 26));
-    } else if (L.skull) { // a bear's skull worn as a helm
-      hd.push(tint(at(new THREE.SphereGeometry(0.135, 9, 6, 0, Math.PI * 2, 0, Math.PI * 0.52), 0, 0.17, 0.0, 0, 0, 0, 1.05, 1.1, 1.15), 0xd8cfb8, 0.1, 24));
-      hd.push(tint(at(box(0.1, 0.06, 0.13), 0, 0.2, 0.13, 0.25, 0, 0), 0xd0c6ac, 0.08, 25));
-      for (const sx of [-1, 1]) { hd.push(tint(at(cone(0.012, 0.05, 4), sx * 0.035, 0.155, 0.185, Math.PI, 0, 0), 0xefe8d8, 0, 26 + sx)); hd.push(tint(at(sphere(0.022, 5, 4), sx * 0.05, 0.215, 0.1), 0x18140f, 0, 28 + sx)); }
-    } else if (L.hairStyle !== 'bald') hd.push(tint(cap(), L.hair, 0.12, 27));
-    const back = []; // hair that hangs: its own piece, so it swings
-    if (L.hairStyle === 'long' || L.hairStyle === 'braid' || L.hairStyle === 'braids')
-      back.push(tint(at(new THREE.CylinderGeometry(0.118, 0.128, 0.24, 9, 1, true, Math.PI * 0.5, Math.PI), 0, -0.12, 0), L.hair, 0.12, 28));
-    if (L.hairStyle === 'braid') back.push(tint(at(capsule(0.032, 0.3, 5), 0, -0.31, -0.11, 0.12, 0, 0), L.hair, 0.15, 29));
-    if (L.hairStyle === 'tail') back.push(tint(at(capsule(0.036, 0.26, 5), 0, -0.2, -0.13, 0.35, 0, 0), L.hair, 0.15, 29), tint(at(sphere(0.045, 6, 5), 0, -0.02, -0.11), L.hair, 0.1, 35));
-    if (L.hairStyle === 'topknot') hd.push(tint(at(sphere(0.05, 7, 5), 0, 0.275, -0.03), L.hair, 0.1, 36), tint(at(cyl(0.02, 0.03, 0.05, 6), 0, 0.245, -0.03), L.hair, 0.1, 37));
-    if (back.length) { j.hair = grp(j.head, 0, 0.17, -0.01); part(j.hair, back); }
-    if (L.hairStyle === 'braids') for (const s of [-1, 1]) hd.push(tint(at(capsule(0.028, 0.26, 5), s * 0.1, -0.1, 0.05, -0.1, 0, 0), L.hair, 0.15, 30 + s));
-    if (L.hairStyle === 'bun') hd.push(tint(at(sphere(0.055, 7, 5), 0, 0.24, -0.09), L.hair, 0.1, 32));
-    if (L.beard === 'short') hd.push(tint(at(sphere(0.098, 8, 6), 0, 0.085, 0.03, 0, 0, 0, 0.95, 0.85, 0.9), L.hair, 0.12, 33));
-    if (L.beard === 'braided') { hd.push(tint(at(sphere(0.098, 8, 6), 0, 0.085, 0.03, 0, 0, 0, 0.95, 0.85, 0.9), L.hair, 0.12, 33)); for (const s of [-1, 1]) hd.push(tint(at(capsule(0.02, 0.2, 5), s * 0.035, -0.06, 0.085, -0.05, 0, 0), L.hair, 0.15, 38 + s)); }
-    if (L.beard === 'stubble') hd.push(tint(at(sphere(0.108, 8, 6), 0, 0.105, 0.012, 0, 0, 0, 0.93, 0.62, 0.98), L.hair, 0.3, 33));
-    if (L.beard === 'long') { hd.push(tint(at(sphere(0.1, 8, 6), 0, 0.08, 0.03, 0, 0, 0, 0.95, 0.9, 0.9), L.hair, 0.12, 33)); hd.push(tint(at(cone(0.075, 0.26, 7), 0, -0.05, 0.06, Math.PI, 0, 0), L.hair, 0.12, 34)); }
-    part(j.head, hd);
-    this.buildFace(L);
+    // head: the skull, face, hair and beard are built in heads.js; a helmet or a bear's skull is put on here
+    const face = (bone, geos) => { faceSkin.push({ bone, geos }); return bone; };
+    buildHead(this, L, part, face, grp);
+    const hd = [];
+    if (L.helmet) { // its rim on the brow, the nasal down the bridge of the nose
+      hd.push(tint(at(new THREE.SphereGeometry(0.128, 10, 6, 0, Math.PI * 2, 0, Math.PI * 0.5), 0, 0.172, 0, 0, 0, 0, 1, 1.12, 1.05), 0x70747a, 0.08, 24));
+      hd.push(tint(at(cyl(0.136, 0.136, 0.028, 10), 0, 0.173, 0, 0, 0, 0, 1, 1, 1.05), 0x4c4f54, 0.05, 25)); // wide enough that the dome's facets stay inside it
+      hd.push(tint(at(box(0.022, 0.07, 0.02), 0, 0.162, 0.141), 0x4c4f54, 0.05, 26)); // the nose guard, clear of the nose
+    } else if (L.skull) { // a bear's skull worn as a helm, high enough that his own face is seen beneath it
+      hd.push(tint(at(new THREE.SphereGeometry(0.135, 9, 6, 0, Math.PI * 2, 0, Math.PI * 0.52), 0, 0.188, 0.0, 0, 0, 0, 1.05, 1.1, 1.15), 0xd8cfb8, 0.1, 24));
+      hd.push(tint(at(box(0.1, 0.06, 0.13), 0, 0.218, 0.13, 0.25, 0, 0), 0xd0c6ac, 0.08, 25));
+      for (const sx of [-1, 1]) { hd.push(tint(at(cone(0.011, 0.04, 4), sx * 0.058, 0.18, 0.18, Math.PI, 0, 0), 0xefe8d8, 0, 26 + sx)); hd.push(tint(at(sphere(0.022, 5, 4), sx * 0.05, 0.233, 0.1), 0x18140f, 0, 28 + sx)); }
+    }
+    if (hd.length) part(j.head, hd);
 
     // limbs
     for (const [side, sx] of [['L', 1], ['R', -1]]) {
@@ -320,64 +322,23 @@ export class Humanoid {
     }
 
     // one skinned mesh for the body and one for the face (drawn only near the camera), on the same bones
-    const bones = [...new Set([...skin, ...faceSkin].map((x) => x.bone))], sk = new THREE.Skeleton(bones, bones.map(() => new THREE.Matrix4())), reach = Math.max(1, L.scale);
+    const all = [...skin, ...faceSkin], bones = [...new Set([...all.map((x) => x.bone), ...all.flatMap((x) => x.geos.map((g) => g.userData.bone2).filter(Boolean))])];
+    const sk = new THREE.Skeleton(bones, bones.map(() => new THREE.Matrix4())), reach = Math.max(1, L.scale);
     this.bodyMesh = fuse(skin, bones, sk, true, reach, L); this.faceMesh = fuse(faceSkin, bones, sk, false, reach);
+    this.bodyMesh.name = 'body'; this.faceMesh.name = 'face';
     this.root.add(this.bodyMesh, this.faceMesh);
 
     this.cur = {}; this.tgt = {};
     for (const k of POSE_KEYS) { this.cur[k] = REST[k] || 0; this.tgt[k] = 0; }
     this.t = Math.random() * 10; this.phase = 0; this.speed = 0; this.crouch = false; this.param = 0;
     this.loop = null; this.action = null; this.items = { L: null, R: null }; this.onStep = null; this._ls = 0;
-    this.fc = { ...MOODS.neutral }; this.mood = null; this.moodT = 0; this.baseMood = 'neutral'; this.blinkT = 1 + Math.random() * 4; this.blink = 0;
+    this.fc = { ...MOODS.neutral }; this.mood = null; this.moodT = 0; this.baseMood = L.mood || 'neutral'; this.blinkT = 1 + Math.random() * 4; this.blink = 0;
     this.gaze = { yaw: 0, pitch: 0 }; this.lookTarget = null; this.speech = null; this.jaw = 0; this.jawT = 0; this.breath = 1;
     this.ik = { l: 0, r: 0 }; this.sway = 0; this.bank = 0; this.lean = 0; this.seed = Math.random() * 6.283;
     this.applyPose();
   }
 
-  // ---- the face -------------------------------------------------------------------------------
-  buildFace(L) {
-    const j = this.j, f = (this.face = grp(j.head, 0, 0, 0)), ex = 0.04, ey = 0.166, ez = 0.1;
-    const face = (bone, geos) => { this._face.push({ bone, geos }); return bone; };
-    const soft = (geos) => face(grp(f, 0, 0, 0), geos); // a piece of the face on a joint of its own, so it can move
-    const dark = (hex, k) => { const c = new THREE.Color(hex).multiplyScalar(k); return c.getHex(); };
-    // what does not move: the whites of the eyes, and any scar
-    const still = [];
-    for (const s of [1, -1]) still.push(tint(at(sphere(0.02, 8, 6), s * ex, ey, ez - 0.004, 0, 0, 0, 1, 0.74, 0.5), 0xece6da, 0, 60 + s));
-    const scarLine = (pts, hex) => { for (let i = 0; i < pts.length - 1; i++) { const [ax, ay] = pts[i], [bx, by] = pts[i + 1], mx = (ax + bx) / 2, my = (ay + by) / 2;
-      const zs = 0.114 * Math.sqrt(Math.max(0.05, 1 - (mx / 0.106) ** 2 - ((my - 0.15) / 0.127) ** 2)) + 0.004; // on the curve of the face
-      still.push(tint(at(box(Math.hypot(bx - ax, by - ay) + 0.003, 0.0048, 0.003), mx, my, zs - 0.002, 0, 0, Math.atan2(by - ay, bx - ax)), hex, 0, 64 + i)); } };
-    if (L.scar === 'lightning') { // a fork of lightning down through the left eye: forehead to brow, then cheek, with a small branch
-      scarLine([[0.064, 0.226], [0.046, 0.211], [0.056, 0.199], [0.042, 0.186]], 0xf0cfc6);
-      scarLine([[0.05, 0.147], [0.036, 0.133], [0.049, 0.121], [0.037, 0.104]], 0xf0cfc6);
-      scarLine([[0.036, 0.133], [0.024, 0.126]], 0xf0cfc6);
-    }
-    for (const sc of [L.scar, L.scar2]) { // ordinary scars, on the right side so they never hide the lightning
-      if (sc === 'cheek') scarLine([[-0.074, 0.142], [-0.03, 0.118]], 0xe9c8be);
-      if (sc === 'brow') scarLine([[-0.052, 0.208], [-0.036, 0.18]], 0xe9c8be);
-      if (sc === 'lip') scarLine([[-0.012, 0.118], [-0.02, 0.088]], 0xe9c8be);
-    }
-    soft(still);
-    // the eyes themselves: iris, pupil and a point of light, moving together to look
-    const iris = [];
-    for (const s of [1, -1]) iris.push(
-      tint(at(cyl(0.0098, 0.0098, 0.002, 10), s * ex, ey, ez + 0.0072, Math.PI / 2, 0, 0), L.eyes, 0.04, 70 + s),
-      tint(at(cyl(0.0046, 0.0046, 0.002, 8), s * ex, ey, ez + 0.0084, Math.PI / 2, 0, 0), 0x0c0a08, 0, 72 + s),
-      tint(at(sphere(0.0022, 4, 3), s * ex + 0.0034, ey + 0.0036, ez + 0.0092), 0xffffff, 0, 74 + s));
-    this.fIris = soft(iris);
-    // lids hinge at the top of the eye
-    this.fLid = grp(f, 0, ey + 0.0165, 0);
-    const lids = []; for (const s of [1, -1]) lids.push(
-      tint(at(sphere(0.0222, 8, 5), s * ex, -0.0165, ez - 0.0035, 0, 0, 0, 1.03, 0.8, 0.8), dark(L.skin, 0.88), 0.02, 76 + s), // closes over the whole eye
-      tint(at(box(0.034, 0.0042, 0.004), s * ex, -0.031, ez + 0.0125), dark(L.hair, 0.45), 0, 90 + s));                       // the lash line at its edge
-    face(this.fLid, lids);
-    // brows
-    this.fBrow = {}; const bc = dark(L.hair, 0.72);
-    for (const [k, s] of [['L', 1], ['R', -1]]) { const g = (this.fBrow[k] = grp(f, s * ex, ey + 0.0255, ez + 0.007)); face(g, [tint(box(0.038, 0.0085, 0.008), bc, 0.1, 78 + s)]); }
-    // mouth: a slit that opens, and corners that rise or fall
-    this.mouthY = 0.101; const mz = L.beard && L.beard !== 'stubble' ? 0.1235 : 0.1095, lip = L.female ? 0x7a3a36 : 0x3a1e1a;
-    this.fMouth = soft([tint(at(sphere(0.021, 10, 6), 0, 0, -0.004, 0, 0, 0, 1, 0.19, 0.42), lip, 0, 80)]); this.fMouth.position.set(0, this.mouthY, mz); // a line when shut, an oval when open
-    this.fCorn = soft([tint(at(sphere(0.0034, 5, 4), 0.0215, 0, 0), lip, 0, 81), tint(at(sphere(0.0034, 5, 4), -0.0215, 0, 0), lip, 0, 82)]); this.fCorn.position.set(0, this.mouthY, mz);
-  }
+  // ---- the face (built in heads.js) ------------------------------------------------------------
   /** Hold an expression for a while (otherwise the face follows what the body is doing). */
   setMood(name, secs = 1.5) { this.mood = name; this.moodT = secs; }
   /** Speak a line: the mouth follows the letters at speaking pace. */
@@ -401,28 +362,33 @@ export class Humanoid {
     const f = this.face, cam = Humanoid.cam;
     const near = !cam || cam.distanceToSquared(this.root.position) < 26 * 26; // beyond that a face is a few pixels: do not draw it
     f.visible = near; this.faceMesh.visible = near;
-    if (!near) return;
+    if (!near) { this.jawPivot.rotation.x = 0; return; }
     if (this.moodT > 0 && (this.moodT -= dt) <= 0) this.mood = null;
     const m = MOODS[this.moodNow()] || MOODS.neutral, c = this.fc, k = 1 - Math.exp(-9 * dt);
     for (const key in m) c[key] += (m[key] - c[key]) * k;
-    // blinking
+    // blinking: the upper lids turn down over the eyes
     if ((this.blinkT -= dt) < 0) { this.blink = 0.13; this.blinkT = 2 + Math.random() * 4.5; }
     if (this.blink > 0) this.blink -= dt;
-    const lid = this.blink > 0 ? 1 : c.lid;
-    this.fLid.scale.y += ((0.1 + 0.9 * lid) - this.fLid.scale.y) * (1 - Math.exp(-38 * dt));
-    // speech: letters at speaking pace, or fed one by one
+    this._lid += ((this.blink > 0 ? 1 : Math.min(0.85, c.lid + (this.look.squint || 0) * 0.35)) - this._lid) * (1 - Math.exp(-38 * dt)); // squint: lids that sit low
+    this.fLid.rotation.x = -0.72 + 1.16 * this._lid; // open, the lid's edge is just over the iris; shut, it meets the lower lid
+    // speech: letters at speaking pace, or fed one by one; the jaw drops and the lower lip with it
     const sp = this.speech;
     if (sp) { sp.t += dt; const i = Math.floor(sp.t * sp.cps); if (i !== sp.i) { sp.i = i; this.mouthChar(sp.text[i]); } if (i >= sp.text.length) this.speech = null; }
     if (this.jawT > 0) this.jawT -= dt; else this.jaw = 0;
-    const pant = c === this.fc && this.moodNow() === 'tired' ? Math.sin(this.t * 7) * 0.18 : 0;
+    const pant = this.moodNow() === 'tired' ? Math.sin(this.t * 7) * 0.18 : 0;
     const open = Math.max(c.open + pant, this.jaw);
     this.jawNow = (this.jawNow || 0) + (open - (this.jawNow || 0)) * (1 - Math.exp(-26 * dt));
-    this.fMouth.scale.set(c.wide * (1 - this.jawNow * 0.22), 1 + this.jawNow * 4.6, 1); this.fMouth.position.y = this.mouthY - this.jawNow * 0.006;
-    this.fCorn.scale.x = c.wide * (1 - this.jawNow * 0.22); this.fCorn.position.y = this.mouthY - this.jawNow * 0.006 + c.curve * 0.0085; // corners ride with the mouth and lift or fall
-    this.fBrow.L.rotation.z = c.tilt; this.fBrow.R.rotation.z = -c.tilt;
-    this.fBrow.L.position.y = this.fBrow.R.position.y = 0.1915 + c.by;
-    // the eyes go where the head has not yet reached
-    this.fIris.position.set(clamp(this.gaze.yaw * 0.012, -0.0075, 0.0075), clamp(-this.gaze.pitch * 0.012, -0.005, 0.005), 0);
+    this.jawPivot.rotation.x = this.jawNow * 0.13;
+    // the corners of the mouth: out for a wide mouth, in as it opens, up for a smile and down for grief
+    const cx = this.mouthW * (c.wide - 1 - this.jawNow * 0.12), cy = c.curve * 0.0042 - this.jawNow * 0.0012;
+    this.fCornL.position.set(cx, cy, 0); this.fCornR.position.set(-cx, cy, 0);
+    const wry = this.look.wry ? 1 : 0; // one brow up, as if asking whether you meant that
+    this.fBrow.L.rotation.z = c.tilt - wry * 0.16; this.fBrow.R.rotation.z = -c.tilt;
+    this.fBrow.L.position.y = this.browY + c.by + wry * 0.0032; this.fBrow.R.position.y = this.browY + c.by;
+    // the eyes go where the head has not yet reached, and now and then glance aside
+    if ((this.dartT = (this.dartT ?? Math.random() * 3) - dt) < 0) { this.dartT = 0.8 + Math.random() * 3.2; this.dart = Math.random() < 0.6 ? [(Math.random() - 0.5) * 0.3, (Math.random() - 0.5) * 0.12] : [0, 0]; }
+    const d = this.dart || [0, 0], ey = clamp(this.gaze.yaw * 0.55 + d[0], -0.45, 0.45), ex = clamp(this.gaze.pitch * 0.5 + d[1], -0.3, 0.3);
+    for (const e of this.fEye) { e.rotation.y = damp(e.rotation.y, ey, 24, dt); e.rotation.x = damp(e.rotation.x, ex, 24, dt); }
   }
   /** Head and eyes toward what he is looking at; cloth and hair; breath. */
   updateSecondary(dt) {
@@ -439,7 +405,8 @@ export class Humanoid {
     const sp = this.speed / this.scale, want = -clamp(sp * 0.085, 0, 0.5) + Math.sin(this.t * 1.7) * 0.025 - Math.max(0, -this.cur.crx) * 0.5 + this.cur.crx * 0.6;
     this.sway = damp(this.sway, want, 5, dt);
     if (j.cloak) j.cloak.rotation.x = this.sway - this.cur.crx * 0.55 + Math.sin(this.phase * 2) * 0.03 * Math.min(1, sp / 3);
-    if (j.hair) j.hair.rotation.x = this.sway * 0.8 - this.cur.nrx * 0.7 - g.pitch * 0.5;
+    // hair that hangs down the back swings with the body, not the head, and turns a little after the head
+    this.hangPivot.rotation.x = -this.sway * 0.5 + this.cur.crx * 0.15; this.hangPivot.rotation.y = (this.cur.nry + g.yaw * 0.62) * 0.3;
     // breath
     const b = Math.sin(this.t * (1.5 + this.breath * 1.1)) * 0.012 * this.breath;
     this.chestMesh.scale.set(1 + b * 0.6, 1 + b * 0.25, 1 + b * 1.6);

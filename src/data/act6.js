@@ -21,11 +21,11 @@ export const A6 = {
 
 const folk = (o) => ({ build: 1, hair: 0x7a5a3a, tunic: 0x6a6a5a, ...o });
 export const CAST6 = {
-  thora: { name: 'Queen Thora', role: 'Queen of Myrholm, the Marsh Isle', look: { female: true, build: 0.98, hair: 0x8a8478, hairStyle: 'bun', tunic: 0x3e4a3a, trim: 0xc9b27a, cloak: 0x2e3a30, sleeve: 0x3e4a3a, face: 'lean' } },
-  eyvind: { name: 'Prince Eyvind', role: "Thora's son, twelve", look: { scale: 0.8, build: 0.86, hair: 0x8a6a3a, hairStyle: 'short', tunic: 0x4a5a3a, trim: 0xc9b27a, sleeve: 0x4a5a3a } },
-  gest: { name: 'Gest', role: "The queen's oldest advisor", look: folk({ hair: 0xd8d4cc, hairStyle: 'long', beard: 'long', tunic: 0x4a5244, cloak: 0x34382e, build: 0.92 }) },
-  gudmund: { name: 'Jarl Gudmund', role: 'Ruler of Skalløy, the Forge Isle', look: { build: 0.94, hair: 0x5a4a3a, hairStyle: 'short', beard: 'short', tunic: 0x5a4a3a, trim: 0xb08a4a, cloak: 0x3a3430, sleeve: 0x5a4a3a, face: 'lean' } },
-  halvar: { name: 'Halvar', role: "Brokk's nephew, a smith of Skalløy", look: { build: 1.2, hair: 0x6a4a2a, hairStyle: 'short', beard: 'short', tunic: 0x5a5448, apron: 0x4a3626, sleeve: null, face: 'broad' } },
+  thora: { name: 'Queen Thora', role: 'Queen of Myrholm, the Marsh Isle', look: { female: true, build: 0.98, hair: 0x8a8478, hairStyle: 'bun', tunic: 0x3e4a3a, trim: 0xc9b27a, cloak: 0x2e3a30, sleeve: 0x3e4a3a, face: 'lean', age: 0.5, squint: 0.2, lips: 'thin' } },
+  eyvind: { name: 'Prince Eyvind', role: "Thora's son, twelve", look: { scale: 0.8, build: 0.86, hair: 0x8a6a3a, hairStyle: 'short', tunic: 0x4a5a3a, trim: 0xc9b27a, sleeve: 0x4a5a3a, fringe: 0.4, face: 'round' } },
+  gest: { name: 'Gest', role: "The queen's oldest advisor", look: folk({ hair: 0xd8d4cc, hairStyle: 'long', beard: 'belt', tunic: 0x4a5244, cloak: 0x34382e, build: 0.92, recede: 0.8, age: 1, face: 'gaunt' }) },
+  gudmund: { name: 'Jarl Gudmund', role: 'Ruler of Skalløy, the Forge Isle', look: { build: 0.94, hair: 0x5a4a3a, hairStyle: 'short', beard: 'short', tunic: 0x5a4a3a, trim: 0xb08a4a, cloak: 0x3a3430, sleeve: 0x5a4a3a, face: 'lean', recede: 0.3, mood: 'worried' } },
+  halvar: { name: 'Halvar', role: "Brokk's nephew, a smith of Skalløy", look: { build: 1.2, hair: 0x6a4a2a, hairStyle: 'short', beard: 'short', tunic: 0x5a5448, apron: 0x4a3626, sleeve: null, face: 'broad', soot: 0.35 } },
 };
 
 Object.assign(ITEMS, {

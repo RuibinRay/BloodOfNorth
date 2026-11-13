@@ -383,7 +383,7 @@ export function tint(g, hex, jitter = 0, seed = 1) {
 export function merge(geos) {
   const list = geos.map((g) => {
     const n = g.index ? g.toNonIndexed() : g;
-    for (const k of Object.keys(n.attributes)) if (!['position', 'normal', 'uv', 'color', 'cell'].includes(k)) n.deleteAttribute(k); // cell: a figure's pieces (see STUFF)
+    for (const k of Object.keys(n.attributes)) if (!['position', 'normal', 'uv', 'color', 'cell', 'w2', 'sb'].includes(k)) n.deleteAttribute(k); // cell: a figure's pieces (see STUFF); w2, sb: a second joint (see fuse in humanoid.js)
     return n;
   });
   if (list.some((g) => g.attributes.color)) for (const g of list) if (!g.attributes.color) tint(g, 0xffffff);

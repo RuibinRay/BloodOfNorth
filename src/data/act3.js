@@ -25,16 +25,16 @@ export const A3 = {
 
 const folk = (o) => ({ build: 1, hair: 0x7a5a3a, tunic: 0x6a6a5a, ...o });
 export const CAST3 = {
-  hroald: { name: 'King Hroald', role: 'King of Jarnøy, the Iron Isle', look: { build: 1.12, hair: 0x8a8880, hairStyle: 'long', beard: 'long', tunic: 0x4a3a3a, trim: 0xc9a24a, cloak: 0x5a2a24, sleeve: 0x4a3a3a, face: 'long' } },
-  arvid: { name: 'Prince Arvid', role: "Hroald's son, seventeen", look: { build: 1.0, scale: 0.97, hair: 0x7a5a3a, hairStyle: 'short', tunic: 0x5a2a24, trim: 0xc9a24a, sleeve: 0x5a2a24 } },
-  ingrid: { name: 'Princess Ingrid', role: "Hroald's daughter, a healer", look: { female: true, build: 0.95, hair: 0x6a4a2a, hairStyle: 'braid', tunic: 0x5a6a7a, trim: 0xd8d2c2, apron: 0xd8d2c2, sleeve: 0x5a6a7a, face: 'even' } },
+  hroald: { name: 'King Hroald', role: 'King of Jarnøy, the Iron Isle', look: { build: 1.12, hair: 0x8a8880, hairStyle: 'long', beard: 'long', tunic: 0x4a3a3a, trim: 0xc9a24a, cloak: 0x5a2a24, sleeve: 0x4a3a3a, face: 'square', circlet: true, age: 0.7, brows: 1.3 } },
+  arvid: { name: 'Prince Arvid', role: "Hroald's son, seventeen", look: { build: 1.0, scale: 0.97, hair: 0x7a5a3a, hairStyle: 'tousled', tunic: 0x5a2a24, trim: 0xc9a24a, sleeve: 0x5a2a24, rosy: 0.35 } },
+  ingrid: { name: 'Princess Ingrid', role: "Hroald's daughter, a healer", look: { female: true, build: 0.95, hair: 0x6a4a2a, hairStyle: 'braid', tunic: 0x5a6a7a, trim: 0xd8d2c2, apron: 0xd8d2c2, sleeve: 0x5a6a7a, face: 'even', eyes: 0x5a4030, lips: 'full' } },
   hallgerd: { name: 'Hallgerd', role: "A fisherman's daughter", look: { scale: 0.92, female: true, build: 0.9, hair: 0xc8a85a, hairStyle: 'braid', tunic: 0x6a7a5a, apron: 0xcfc6ae } },
   fisher: { name: "Hallgerd's father", role: 'A fisherman', look: folk({ hair: 0x8a8478, beard: 'short', tunic: 0x4a5a6a }) },
   jtrader: { name: 'A Jarnøy smith', role: 'Trader in iron', look: folk({ build: 1.15, hair: 0x4a3a2a, beard: 'short', tunic: 0x5a4a3a, apron: 0x3a2e24 }) },
-  brokk: { name: 'Brokk', role: 'Master smith', look: { build: 1.22, scale: 0.98, hair: 0xb0aca4, hairStyle: 'bald', beard: 'long', tunic: 0x5a4a3a, apron: 0x3a2e24, skin: 0xc8946e, face: 'broad' } },
-  astrid: { name: 'Astrid', role: 'Archer and hunter', look: { female: true, build: 0.92, scale: 0.97, hair: 0x2c241e, hairStyle: 'braid', tunic: 0x4a5a44, trim: 0x2a2a24, legs: 0x3a342c, sleeve: 0x4a5a44, eyes: 0x6a7a5a, face: 'lean' } },
-  torvald: { name: 'Torvald', role: "Veteran; knew Ragnar", look: { build: 1.2, scale: 1.04, hair: 0x8a8478, hairStyle: 'short', beard: 'short', tunic: 0x4a4a4a, trim: 0x8a8a90, cloak: 0x7a7a7e, legs: 0x2e2a26, sleeve: 0x4a4a4a, face: 'long' } },
-  ari: { name: 'Ari Hauksson', role: "Hauk's son, fourteen", look: { scale: 0.84, build: 0.9, hair: 0x8a6a3a, hairStyle: 'short', tunic: 0x7a5a3a } },
+  brokk: { name: 'Brokk', role: 'Master smith', look: { build: 1.22, scale: 0.98, hair: 0xb0aca4, hairStyle: 'balding', beard: 'belt', tunic: 0x5a4a3a, apron: 0x3a2e24, skin: 0xc8946e, face: 'broad', nose: 'broad', brows: 1.4, age: 0.7, soot: 0.15, squint: 0.2 } },
+  astrid: { name: 'Astrid', role: 'Archer and hunter', look: { female: true, build: 0.92, scale: 0.97, hair: 0x2c241e, hairStyle: 'braidfront', tunic: 0x4a5a44, trim: 0x2a2a24, legs: 0x3a342c, sleeve: 0x4a5a44, eyes: 0x6a7a5a, face: 'lean', cheek: 0.6, ridge: 0.25, brows: 0.95, browArch: 0.0015, lips: 'thin', rosy: 0.15 } },
+  torvald: { name: 'Torvald', role: "Veteran; knew Ragnar", look: { build: 1.2, scale: 1.04, hair: 0x8a8478, hairStyle: 'crop', beard: 'short', tunic: 0x4a4a4a, trim: 0x8a8a90, cloak: 0x7a7a7e, legs: 0x2e2a26, sleeve: 0x4a4a4a, face: 'long', temples: 0.7, age: 0.6, nose: 'broken', brows: 1.2 } },
+  ari: { name: 'Ari Hauksson', role: "Hauk's son, fourteen", look: { scale: 0.84, build: 0.9, hair: 0x8a6a3a, hairStyle: 'tousled', tunic: 0x7a5a3a, face: 'round', rosy: 0.45, freckles: 0.3 } },
   bowyer: { name: 'A Jarnøy bowyer', role: 'Bowyer', look: folk({ hair: 0x5a4a3a, hairStyle: 'tail', tunic: 0x5a5a3a }) },
 };
 export const JARN_LOOKS = [folk({ tunic: 0x5a4a44, trim: 0x8a2a22, helmet: true, beard: 'short' }), folk({ tunic: 0x4a4a52, hair: 0x3a2a1c, beard: 'long', build: 1.1 }), folk({ tunic: 0x5a2a24, hair: 0xa8845a, helmet: true }), folk({ female: true, scale: 0.96, hair: 0x6a4a2a, hairStyle: 'braid', tunic: 0x4a5a5a, build: 1.0 })];

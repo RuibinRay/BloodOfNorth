@@ -25,12 +25,12 @@ for (const it of ITEMS.filter((i) => i.kind === 'portrait')) {
   const d = it.request.prompt.replace(/^Bust portrait of /, '').split('. Head and shoulders')[0].toLowerCase(), l = { ...D, ...L }, f = []; // the description alone, without the house style
   const has = (re) => re.test(d);
   if (has(/\bbraid/) && !/braid/.test(l.hairStyle)) f.push('braid in portrait, hair ' + l.hairStyle);
-  if (has(/\bbald\b|shaved head/) && l.hairStyle !== 'bald' && !l.helmet) f.push('bald in portrait, hair ' + l.hairStyle);
-  if (has(/\bbun\b/) && l.hairStyle !== 'bun') f.push('bun in portrait, hair ' + l.hairStyle);
-  if (has(/long [a-z -]*hair|mane/) && !/long|braid|tail/.test(l.hairStyle)) f.push('long hair in portrait, hair ' + l.hairStyle);
+  if (has(/\bbald\b|shaved head/) && !/bald|shaved/.test(l.hairStyle) && !l.helmet) f.push('bald in portrait, hair ' + l.hairStyle);
+  if (has(/\bbun\b/) && !/bun/.test(l.hairStyle)) f.push('bun in portrait, hair ' + l.hairStyle);
+  if (has(/long [a-z -]*hair|mane|shoulder-length/) && !/long|braid|tail|shoulder|mane|warrior|bun/.test(l.hairStyle)) f.push('long hair in portrait, hair ' + l.hairStyle);
   if (has(/tied back/) && !/tail|bun|braid|long/.test(l.hairStyle)) f.push('tied back in portrait, hair ' + l.hairStyle);
-  if (has(/short [a-z -]*hair|cropped/) && !/short/.test(l.hairStyle) && !l.helmet) f.push('short hair in portrait, hair ' + l.hairStyle);
-  if (has(/long [a-z -]*beard/) && l.beard !== 'long' && l.beard !== 'braided') f.push('long beard in portrait, beard ' + l.beard);
+  if (has(/short [a-z -]*hair|cropped/) && !/short|crop|tousled|swept/.test(l.hairStyle) && !l.helmet) f.push('short hair in portrait, hair ' + l.hairStyle);
+  if (has(/long [a-z -]*beard/) && !/long|belt|forked|braided/.test(l.beard)) f.push('long beard in portrait, beard ' + l.beard);
   if (has(/(short|trimmed|full) [a-z -]*beard/) && !l.beard) f.push('beard in portrait, none on figure');
   if (has(/beardless|clean-shaven/) && l.beard) f.push('no beard in portrait, beard ' + l.beard);
   if (!has(/beard|stubble/) && l.beard && !l.female) f.push('no beard said in portrait, beard ' + l.beard);

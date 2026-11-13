@@ -9,12 +9,13 @@ import { ITEMS } from '../data/act1.js';
 const _look = new THREE.Vector3();
 const MAIL = 0.85; // what a mail shirt leaves of a blow (A3.mail in data/act3.js says the same)
 export const EIRIK_ADULT = {
-  scale: 1.0, build: 1.08, skin: 0xdcae8e, hair: 0xa87e45, hairStyle: 'long', beard: 'short', eyes: 0x86aec6, scar: 'lightning',
+  scale: 1.0, build: 1.08, skin: 0xdcae8e, hair: 0xa87e45, hairStyle: 'shoulder', beard: 'short', eyes: 0x86aec6, scar: 'lightning',
+  face: 'even', jaw: 0.95, chin: 0.34, ridge: 0.45, brows: 1.05, // shoulder-length dark blond hair, a short beard, steady grey eyes (his portrait)
   tunic: 0x55664a, trim: 0xb0652a, legs: 0x4a3f33, boots: 0x33261a, sleeve: 0x55664a,
   shield: 0, // the red one with the pale band is always his
 };
 export const EIRIK_CHILD = {
-  scale: 0.7, child: true, skin: 0xe2b494, hair: 0xb58a4e, hairStyle: 'short', eyes: 0x86aec6, // no scar yet: the lightning finds him the spring he is ten
+  scale: 0.7, child: true, skin: 0xe2b494, hair: 0xb58a4e, hairStyle: 'tousled', eyes: 0x86aec6, brows: 0.85, rosy: 0.4, // no scar yet: the lightning finds him the spring he is ten
   tunic: 0x7f8f66, trim: 0xb0652a, legs: 0x5a4a38, boots: 0x3a2a1c, sleeve: 0x7f8f66,
 };
 /** The boy after the old birch is struck (Act I, the lightning): the forked scar through his left eyebrow. */
