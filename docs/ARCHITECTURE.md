@@ -48,6 +48,10 @@ The frame rate has not been measured since the first slices; what follows is cou
   and has its uv turned into repeats of that stuff by its real size (`dress`); the material picks the square in the
   shader (`figureMat` in `src/world/geo.js`), so it is still one material and one draw. The ground, the shore and the
   water are patched the same way (`GROUND`, `waterPatch`), and the trees draw bark and boughs from one picture each.
+- **A ship is built strake by strake** (`hullGeo` in `src/world/props.js`): each strake is its own strip with one
+  board of `TEX.hull` across it, its lower edge pushed out over the strake below. Round shields are `shieldGeo(r,
+  thickness, design)` on `M.shield` (four designs on one sheet), doors are `doorLeaf` on `M.door`, carved timber is
+  `M.carved`. Each of these textures starts as something plain drawn in code and is painted over when its picture loads.
 - **Resolution follows the frame rate** (`Game.adaptRes`), and Settings has a frame counter.
 
 Counted in one frame, before and after: Hrafnvik 4.8 million triangles to 0.96 million; the open-world farm 4.9 to

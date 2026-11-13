@@ -1,7 +1,7 @@
 // Procedural Viking-age props: longhouses, fences, boats and village clutter.
 // Static props are baked into the shared world Builder (ctx.b); ships are separate groups so they can move.
 import * as THREE from 'three';
-import { M, Builder, at, box, cyl, cone, sphere, tri, tint } from './geo.js';
+import { M, Builder, at, box, cyl, cone, sphere, tri, tint, shieldGeo, doorLeaf, rope } from './geo.js';
 import { heightAt } from './terrain.js';
 import { rng } from '../core/util.js';
 
@@ -22,9 +22,10 @@ export function longhouse(ctx, o) {
       const dw = 1.25, l1 = doorX - dw / 2 + hl, l2 = hl - (doorX + dw / 2);
       add(at(box(l1, wallH, 0.3), -hl + l1 / 2, wy, s * hw), M.plank);
       add(at(box(l2, wallH, 0.3), hl - l2 / 2, wy, s * hw), M.plank);
-      add(at(box(dw, wallH, 0.1), doorX, wy, s * (hw - 0.16)), M.dark);
-      for (const k of [-1, 1]) add(at(box(0.18, wallH + 0.12, 0.38), doorX + k * (dw / 2 + 0.06), wy, s * hw), M.timber);
-      add(at(box(dw + 0.6, 0.2, 0.42), doorX, base + wallH + 0.04, s * hw), M.timber);
+      add(at(doorLeaf(dw, wallH), doorX, wy, s * (hw - 0.04), 0, s > 0 ? 0 : Math.PI, 0), M.door);
+      for (const k of [-1, 1]) add(at(box(0.22, wallH + 0.12, 0.4, 0.75), doorX + k * (dw / 2 + 0.08), wy, s * hw), M.carved); // carved door posts and lintel
+      add(at(box(dw + 0.7, 0.24, 0.44, 0.75), doorX, base + wallH + 0.06, s * hw), M.carved);
+      if (len >= 13) for (const k of [-1, 1]) add(at(shieldGeo(0.42, 0.05, (Math.abs(Math.round(x * 3 + z * 7)) + (k > 0 ? 1 : 0)) % 4), doorX + k * (dw / 2 + 1.25), wy - 0.08, s * (hw + 0.2), s * Math.PI / 2, 0, 0), M.shield); // a hall hangs shields by its door
       add(at(box(dw + 0.5, 0.12, 0.9), doorX, base - 0.06, s * (hw + 0.45)), M.stone); // threshold slab
     } else add(at(box(len, wallH, 0.3), 0, wy, s * hw), M.plank);
   }
@@ -37,10 +38,14 @@ export function longhouse(ctx, o) {
   const eaveY = base + wallH - 0.45, run = hw + 0.8, rise = ridge - eaveY, sl = Math.hypot(run, rise), th = Math.atan2(rise, run);
   const roofMat = roof === 'turf' ? M.turf : M.thatch;
   for (const s of [-1, 1]) add(at(box(len + 1.5, 0.36, sl + 0.12, 2.4), 0, eaveY + rise / 2 + 0.14, (s * run) / 2, s * th, 0, 0), roofMat);
+  if (roof === 'turf') for (const s of [-1, 1]) add(at(cyl(0.13, 0.13, len + 1.6, 6), 0, eaveY + 0.16, s * (run + 0.12), 0, 0, Math.PI / 2), M.bark); // the log that keeps the turf from sliding off
   add(at(box(len + 1.8, 0.22, 0.3), 0, ridge + 0.24, 0), M.timber);
   const fl = sl + 1.1;
-  for (const e of [-1, 1]) for (const s of [-1, 1])
-    add(at(box(0.11, 0.22, fl), e * (hl + 0.78), eaveY + (Math.sin(th) * fl) / 2 + 0.24, s * (run - (Math.cos(th) * fl) / 2), s * th, 0, 0), M.timber);
+  for (const e of [-1, 1]) for (const s of [-1, 1]) { // the gable boards, carved, crossing above the ridge
+    add(at(box(0.12, 0.26, fl, 0.75), e * (hl + 0.78), eaveY + (Math.sin(th) * fl) / 2 + 0.24, s * (run - (Math.cos(th) * fl) / 2), s * th, 0, 0), M.carved);
+    const top = [eaveY + Math.sin(th) * fl + 0.24, s * (run - Math.cos(th) * fl)]; // each ends in a beast's head looking out along the ridge
+    add(at(box(0.14, 0.2, 0.42), e * (hl + 0.78), top[0] + 0.06, top[1] - s * 0.1, s * (th - 0.9), 0, 0), M.carved);
+  }
   add(at(box(1.0, 0.16, 0.6), 0.6, ridge + 0.36, 0), M.dark);
   const y0 = heightAt(x, z);
   const [sx, sz] = toWorld(x, z, ry, 0.6, 0);
@@ -216,20 +221,21 @@ export function dock(ctx, x, z, len = 22) {
 // Boats
 // ---------------------------------------------------------------------------------------
 function hullGeo(L, B, D, rise) {
-  const nu = 26, nv = 10, pos = [], uv = [], idx = [];
-  for (let i = 0; i <= nu; i++) {
-    const u = (i / nu) * 2 - 1, au = Math.abs(u);
-    const taper = Math.pow(Math.max(0, 1 - Math.pow(au, 2.4)), 0.7);
-    const keel = Math.pow(au, 3.4) * rise;
-    for (let j = 0; j <= nv; j++) {
-      const phi = ((j / nv) * 2 - 1) * (Math.PI / 2), sp = Math.sin(phi);
-      pos.push(Math.sign(sp) * Math.pow(Math.abs(sp), 0.8) * (B / 2) * taper, keel + D * (1 - Math.cos(phi)) * (0.55 + 0.45 * taper), (u * L) / 2);
-      uv.push((j / nv) * 3, (i / nu) * 10);
+  // Clinker-built: each side is a run of strakes from the keel up to the rail, and the lower edge of each stands out
+  // over the one below it. Every strake carries one board of the hull picture (TEX.hull: the shadow of the lap along
+  // its top, a row of rivets along its bottom), set off along its length so that the knots do not line up.
+  const nu = 26, strakes = L > 10 ? 6 : 4, lap = Math.min(0.05, B * 0.013), pos = [], uv = [], idx = [];
+  const pt = (u, phi, out) => {
+    const au = Math.abs(u), taper = Math.pow(Math.max(0, 1 - Math.pow(au, 2.4)), 0.7), sp = Math.sin(phi), o = out * Math.sqrt(taper);
+    pos.push(Math.sign(sp) * Math.pow(Math.abs(sp), 0.8) * (B / 2) * taper + sp * o, Math.pow(au, 3.4) * rise + D * (1 - Math.cos(phi)) * (0.55 + 0.45 * taper) - Math.cos(phi) * o, (u * L) / 2);
+  };
+  for (const side of [-1, 1]) for (let k = 0; k < strakes; k++) {
+    const p0 = side * (k / strakes) * (Math.PI / 2), p1 = side * ((k + 1) / strakes) * (Math.PI / 2), base = pos.length / 3;
+    for (let i = 0; i <= nu; i++) {
+      const u = (i / nu) * 2 - 1, along = (i / nu) * (L / 3.2) + k * 0.37 + (side > 0 ? 0.5 : 0);
+      pt(u, p0, lap); pt(u, p1, 0); uv.push(along, 0, along, 1);
     }
-  }
-  for (let i = 0; i < nu; i++) for (let j = 0; j < nv; j++) {
-    const a = i * (nv + 1) + j, b = a + 1, c = a + nv + 1, d = c + 1;
-    idx.push(a, b, c, b, d, c);
+    for (let i = 0; i < nu; i++) { const a = base + i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
@@ -237,12 +243,24 @@ function hullGeo(L, B, D, rise) {
   g.setIndex(idx); g.computeVertexNormals();
   return g;
 }
-let hullMat = null;
+/** The deck boards, cut to the shape of the hull at their height, so that they do not come out through her sides. */
+function deckGeo(L, B, D, rise, y) {
+  const n = 18, pos = [], uv = [], idx = [];
+  for (let i = 0; i <= n; i++) {
+    const u = ((i / n) * 2 - 1) * 0.66, au = Math.abs(u), taper = Math.pow(Math.max(0, 1 - Math.pow(au, 2.4)), 0.7);
+    const c = 1 - Math.max(0, y - Math.pow(au, 3.4) * rise) / (D * (0.55 + 0.45 * taper)), hw = Math.pow(Math.sqrt(Math.max(0, 1 - c * c)), 0.8) * (B / 2) * taper * 0.97;
+    pos.push(-hw, y, (u * L) / 2, hw, y, (u * L) / 2); uv.push(-hw / 1.6, (u * L) / 3.2, hw / 1.6, (u * L) / 3.2);
+    if (i < n) { const a = i * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.setIndex(idx); g.computeVertexNormals();
+  return g;
+}
 export function makeShip({ L = 21, B = 4.4, D = 1.55, rise = 2.5, sail = true, shields = true, seed = 1, mast = 9.5 } = {}) {
-  if (!hullMat) { hullMat = M.plank.clone(); hullMat.side = THREE.DoubleSide; hullMat.color.set(0x8f7a66); }
   const b = new Builder(), r = rng(seed);
-  b.add(hullGeo(L, B, D, rise), hullMat);
-  b.add(at(box(B * 0.72, 0.1, L * 0.62), 0, D * 0.42, 0), M.plank);
+  b.add(hullGeo(L, B, D, rise), M.hull);
+  b.add(deckGeo(L, B, D, rise, D * 0.42 + 0.05), M.plank);
   for (let i = -3; i <= 3; i++) b.add(at(box(B * 0.8, 0.09, 0.3), 0, D * 0.7, (i * L) / 11), M.timber); // rowing benches
   // stem and stern posts
   for (const s of [-1, 1]) {
@@ -251,9 +269,13 @@ export function makeShip({ L = 21, B = 4.4, D = 1.55, rise = 2.5, sail = true, s
       new THREE.Vector3(0, y0 - 0.9, z0 - s * 0.5), new THREE.Vector3(0, y0, z0), new THREE.Vector3(0, y0 + 1.25, z0 + s * 0.42),
       new THREE.Vector3(0, y0 + 2.1, z0 + s * 0.3), new THREE.Vector3(0, y0 + 2.45, z0 - s * 0.12),
     ]);
-    b.add(new THREE.TubeGeometry(curve, 14, L > 10 ? 0.15 : 0.07, 6), M.timber);
-    if (L > 10 && s === 1) { // dragon head on the prow
-      b.add(at(box(0.3, 0.34, 0.75), 0, y0 + 2.5, z0 + 0.22, -0.25, 0, 0), M.timber);
+    const post = new THREE.TubeGeometry(curve, 14, L > 10 ? 0.15 : 0.07, 6), pu = post.attributes.uv;
+    for (let i = 0; i < pu.count; i++) pu.setXY(i, pu.getX(i) * 5, pu.getY(i)); // the carving runs up the post
+    b.add(post, L > 10 ? M.carved : M.timber);
+    if (L > 10 && s === 1) { // the dragon's head on the prow: skull, snout, an open lower jaw, two horns
+      b.add(at(box(0.3, 0.34, 0.75, 0.75), 0, y0 + 2.5, z0 + 0.22, -0.25, 0, 0), M.carved);
+      b.add(at(box(0.22, 0.2, 0.42, 0.75), 0, y0 + 2.48, z0 + 0.74, -0.12, 0, 0), M.carved);
+      b.add(at(box(0.18, 0.08, 0.5, 0.75), 0, y0 + 2.22, z0 + 0.62, 0.32, 0, 0), M.carved);
       b.add(at(cone(0.09, 0.4, 5), 0.1, y0 + 2.78, z0 - 0.02, -0.5, 0, 0), M.timber);
       b.add(at(cone(0.09, 0.4, 5), -0.1, y0 + 2.78, z0 - 0.02, -0.5, 0, 0), M.timber);
     }
@@ -268,12 +290,18 @@ export function makeShip({ L = 21, B = 4.4, D = 1.55, rise = 2.5, sail = true, s
       sg.computeVertexNormals();
       b.add(at(sg, 0, D * 0.42 + mast - 0.9 - 2.9 * k, 0.2), M.sail);
     }
+    { // standing rigging: a stay to the stem and one to the stern, two shrouds a side; and the steering oar on her right quarter
+      const top = [0, D * 0.42 + mast - 0.25, 0], yp = rise * 0.96 + D * 0.5 + 1.9, zs = (L / 2) * 0.985 + 0.3;
+      b.add(rope(top, [0, yp, zs]), M.timber); b.add(rope(top, [0, yp, -zs]), M.timber);
+      for (const s of [-1, 1]) for (const dz of [-0.9, 0.9]) b.add(rope(top, [s * (B / 2) * 0.97, D * 0.98, dz]), M.timber);
+      const zq = -L * 0.39, tq = Math.pow(1 - Math.pow(0.78, 2.4), 0.7), xq = -((B / 2) * tq + 0.14), yq = Math.pow(0.78, 3.4) * rise + D * (0.55 + 0.45 * tq);
+      b.add(at(box(0.07, yq + 0.3, 0.36), xq, yq / 2 + 0.15, zq, 0.12, 0, 0), M.timber); // from above the rail to just under the water
+      b.add(at(box(0.9, 0.06, 0.07), xq + 0.45, yq + 0.42, zq + 0.06), M.timber); // the tiller, inboard
+    }
     if (shields) {
-      const cols = [0x8a2a22, 0xc9b27a, 0x2f4a5c, 0x1e1e1e, 0xb8b0a0];
       for (let i = -7; i <= 7; i++) for (const s of [-1, 1]) {
         const u = i / 10.5, taper = Math.pow(1 - Math.pow(Math.abs(u), 2.4), 0.7);
-        const g = tint(cyl(0.42, 0.42, 0.07, 12), cols[(r() * cols.length) | 0], 0.08, i + 20);
-        b.add(at(g, s * ((B / 2) * taper + 0.06), Math.pow(Math.abs(u), 3.4) * rise + D * (0.55 + 0.45 * taper) - 0.2, (u * L) / 2, 0, 0, Math.PI / 2), M.vcPlain);
+        b.add(at(shieldGeo(0.42, 0.07, (r() * 4) | 0, 12), s * ((B / 2) * taper + 0.1), Math.pow(Math.abs(u), 3.4) * rise + D * (0.55 + 0.45 * taper) - 0.2, (u * L) / 2, 0, 0, Math.PI / 2), M.shield);
       }
     }
   }

@@ -2,7 +2,7 @@
 
 A third-person Viking action RPG that follows the owner's story, *The Rise of the Raven King*
 ([docs/story](docs/story/THE_RISE_OF_THE_RAVEN_KING.md): seven acts and an epilogue). This repository holds
-**slice 0.24**: Act I (Eirik's childhood), Act II (nineteen: Bjornstead, the raid, the walls, Kaupang and the
+**slice 0.25**: Act I (Eirik's childhood), Act II (nineteen: Bjornstead, the raid, the walls, Kaupang and the
 Sea-Raven), Act III (twenty: Jarnøy and the Battle of Iron Shore), Act IV (twenty-two: the treasure voyage,
 Wessex, six islands burning, Hedeby Sound), Act V (twenty-four: the hunger winter, the tannery yard, the ring,
 Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, the wedding) and Act VII
@@ -10,7 +10,18 @@ Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, th
 (forty-one: Ravenhold twelve years on, Leif's house, the old birch), each as the story tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
-**New in 0.24.** The 3D world wears generated textures, and the people in it look like their portraits. Everything
+**New in 0.25.** Ships and buildings. **Ships** are clinker-built: each side is six strakes, the lower edge of
+each standing out over the one below, with a board of tarred oak and a row of rivets on every strake; the deck is cut
+to the shape of the hull; the stem and stern posts are carved, and the prow has a jaw; there are stays to stem and
+stern, shrouds, and a steering oar on the right quarter; the sail is a painted striped wool sail · **shields** on
+the rails, by the doors of halls and in the hands of fighters are four painted round shields (Eirik always carries
+the red one with the pale band) · **buildings**: a real door with iron strap hinges and a ring in place of a black
+rectangle, carved door posts and lintel, carved gable boards that end in beasts' heads, a log along each eave of a turf
+roof, and two shields hung by the door of any house of thirteen metres or more. Eight more Higgsfield pictures (12
+cents; $4.87 of the approved $10 in all), worked into `public/art/world/` by [tools/art/world.py](tools/art/world.py).
+The shapes are still built in code.
+
+**In 0.24.** The 3D world wears generated textures, and the people in it look like their portraits. Everything
 here is still built in code; what changed is what it is covered with (Higgsfield pictures worked into textures by
 [tools/art/world.py](tools/art/world.py)). **Ground**: grass, sand and rock have a grain underfoot · **the shore**: a
 line of foam that runs up and down the sand with the swell, wet sand behind it, and clear shallows that darken with
@@ -23,7 +34,7 @@ portrait** (hair, beard, clothes, armour), and `tools/check/looks.js` lists wher
 **a painting for every chapter** (67) behind its title card and in the Acts menu, 22 more portraits (73 in all),
 Raven-Feeder painted at each reforging, a compass rose on the map. **Fixed:** since 0.22 the grown Eirik's body was
 not drawn at all (only what he held): the swap from child to man left the new body out of the scene. He is drawn
-again, and `npm run check` now fails if he is not. Spent on Higgsfield so far: $4.75 of an approved $10.
+again, and `npm run check` now fails if he is not.
 
 **In 0.23.** Painted art, made with the Higgsfield API (the first time the integration has worked: the key pair
 is accepted, and 160 generations cost $2.55). **Portraits** of 51 of the cast, from the story's own descriptions and

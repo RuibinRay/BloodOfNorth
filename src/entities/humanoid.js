@@ -6,12 +6,13 @@
 import * as THREE from 'three';
 import { clamp, smoothstep, damp, angleDiff } from '../core/util.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { M, STUFF, at, box, cyl, cone, sphere, capsule, tint, merge } from '../world/geo.js';
+import { M, STUFF, at, box, cyl, cone, sphere, capsule, tint, merge, shieldGeo } from '../world/geo.js';
 
 const D = { hip: 0.94, thigh: 0.44, shin: 0.44, chestY: 0.2, shoulderY: 0.3, shoulderX: 0.2, neckY: 0.42, upper: 0.29, fore: 0.27 };
 const DEFAULT_LOOK = {
   scale: 1, child: false, female: false, build: 1, skin: 0xd8a888, hair: 0x6b4a2b, hairStyle: 'short', beard: null,
   tunic: 0x6f6048, trim: 0x8a2f25, legs: 0x4b4034, boots: 0x33261a, cloak: null, fur: false, helmet: false, apron: null, mail: false, // mail: a ring shirt over the tunic
+  shield: undefined, // which painted shield he carries (0 to 3); left out, shields are handed round in turn
   eyes: 0x5a4632, face: 'even', scar: null, scar2: null, // eye colour; face shape: even | lean | broad | long; scar: 'lightning' (over the left eye) | 'cheek' | 'brow'
 };
 /** Head proportions by face shape: [width, height, depth] of the skull. */
@@ -479,7 +480,7 @@ export class Humanoid {
   hold(side, name) {
     const h = this.j['ha' + side];
     if (this.items[side]) { h.remove(this.items[side]); this.items[side] = null; }
-    if (name) { const it = makeItem(name); it.position.set(0, -0.03, 0.02); h.add(it); this.items[side] = it; it.userData.name = name; }
+    if (name) { const it = makeItem(name, this.look.shield); it.position.set(0, -0.03, 0.02); h.add(it); this.items[side] = it; it.userData.name = name; }
     if (side === 'R') this.grip2 = { longaxe: 0.4, maul: 0.36, spear: 0.46 }[name] || 0; // where the second hand goes on a long haft
   }
   held(side) { return this.items[side] ? this.items[side].userData.name : null; }
@@ -657,9 +658,12 @@ function makeBow(name) {
   g.userData.setDraw(0, false);
   return g;
 }
-export function makeItem(name) {
+let shieldsMade = 0;
+/** design: which of the four painted shields a round shield is (0 to 3); left out, they take turns. */
+export function makeItem(name, design) {
   if (name === 'bow' || name === 'bow_big') return makeBow(name);
-  const m = new THREE.Mesh(itemGeo(name), M.vcPlain);
+  // a round shield is the painted one (boss and rim are in the picture); everything else is built in flat colours
+  const m = name === 'shield' ? new THREE.Mesh(at(shieldGeo(0.4, 0.035, design ?? shieldsMade++ % 4), 0.09, 0.08, 0, 0, 0, Math.PI / 2), M.shield) : new THREE.Mesh(itemGeo(name), M.vcPlain);
   m.castShadow = true;
   const g = new THREE.Group(); g.add(m);
   return g;

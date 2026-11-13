@@ -1,7 +1,7 @@
 # Higgsfield integration
 
 **State (13 Nov 2026): working for images, and in the game.** The key pair in `.env` is accepted by the official API,
-307 generations have been charged ($4.75 of an approved $10), and 198 files made from them are in the game.
+315 generations have been charged ($4.87 of an approved $10), and 203 files made from them are in the game.
 **Not possible through this API: 3D models.** Its catalogue is image and video models only.
 
 ## What is in the game
@@ -14,15 +14,15 @@
 | Act paintings | 9 | One for each act and the Epilogue (used where a chapter has none), and the title painting behind the loading screen |
 | Building textures | 4 | Plank walls, turf roofs, thatch, stone: drawn into the materials the buildings already use |
 | Parchment and compass | 2 | Under every panel and over the map; the compass rose on the map |
-| **Textures of the 3D world** | 7 files from 15 pictures | See below |
+| **Textures of the 3D world** | 12 files from 23 pictures | See below |
 
 Everything falls back to what the game drew before if a file is missing (`src/ui/art.js`, `src/world/geo.js`,
 `src/world/vegetation.js`).
 
-### The 3D world (0.24)
+### The 3D world (0.24, 0.25)
 
 The API makes no models, so the shapes of the world are still built in code. What its pictures can do is cover them.
-Fifteen pictures (`group:world3d` in the plan) are worked into seven texture files in `public/art/world/` by
+Twenty-three pictures (`group:world3d` in the plan) are worked into twelve texture files in `public/art/world/` by
 [tools/art/world.py](../tools/art/world.py), which runs on every `make`, `post` and `manifest`:
 
 | File | Made from | What the game does with it |
@@ -32,6 +32,11 @@ Fifteen pictures (`group:world3d` in the plan) are worked into seven texture fil
 | `pine` | Pine bark, a mass of needles, and one bough on white, cut out | Bark up the trunk; skirts of needles whose lower edges are cut-out hanging boughs |
 | `birch` | Birch bark, a mass of leaves, and a spray of twigs on white, cut out | White bark; a crown of leaf sprays |
 | `figure` | Wool, fur, ring mail, leather, hair | A sheet of six squares. Every piece of a figure says which square it is made of and how many repeats its real size takes, so one material and one draw still cover a whole person (`STUFF` and `figureMat` in `src/world/geo.js`, `dress` in `src/entities/humanoid.js`) |
+| `hull` | Tarred oak ship planking | One board of it, with the shadow of the strake above along its top and a row of rivets along its bottom (both drawn by world.py), laid once on every strake of every hull (`hullGeo` in `src/world/props.js`) |
+| `sail` | A striped wool sail | Every sail |
+| `shields` | Four round shields on white | Two by two on one sheet: the shields on ships' rails, by halls' doors and in fighters' hands (`shieldGeo`) |
+| `door` | A longhouse door | The door of every longhouse, and three other doors |
+| `carved` | Carved knotwork oak | Door posts and lintels, gable boards, the stem and stern posts of ships and the dragon's head |
 
 Also in 0.24, drawn by the game and not generated: clear water over the shallows that darkens with depth, wet sand
 behind the foam, a band of trim at every hem and cuff, belt buckles, cloak brooches, and ring mail on those the story

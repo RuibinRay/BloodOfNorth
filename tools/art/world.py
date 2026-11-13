@@ -10,6 +10,8 @@ Reads assets/generated/<id>.png and writes public/art/world/:
   birch.webp    [bark | leaves | twigs]                bark, a solid mass of leaves, and a cut-out spray of twigs
   figure.jpg    wool fur mail / plain hair leather     six squares of grain for the figures (grey, to multiply their colours),
                                                        each one repeat with a border of itself round it
+  hull.jpg, sail.jpg, shields.jpg                      a strake of a ship's hull, her sail, four round shields (see ships())
+  door.jpg, carved.jpg                                 a longhouse door; carved timber for door posts, gables and stem posts
 A piece whose original is missing is skipped, and the game falls back to what it drew before.
 """
 import os, sys
@@ -195,5 +197,68 @@ def figure():
     save(at, 'figure.jpg', 92)
 
 
-for f in (ground, pine, birch, figure):
+def ships():
+    """hull.jpg: one strake of a clinker hull, to be laid once on every strake the game builds: a single board of the
+    planking picture, the shadow of the strake above along its top, a row of rivet heads along its bottom.
+    sail.jpg: the sail without its ragged edges. shields.jpg: four round shields, two by two, each filling its square."""
+    im = src('s_hull')
+    if im:
+        a = np.asarray(im.resize((1024, 1024), Image.LANCZOS), dtype=np.float32)
+        rows = a.mean(axis=(1, 2))
+        smooth = np.convolve(rows, np.ones(5) / 5, mode='same')
+        seams = [y for y in range(8, 1016) if smooth[y] == smooth[y - 8:y + 9].min() and smooth[y] < np.median(smooth) * 0.8]
+        seams = [y for i, y in enumerate(seams) if i == 0 or y - seams[i - 1] > 20]
+        gaps = sorted(((b - t, t, b) for t, b in zip(seams, seams[1:])), reverse=True)
+        _, top, bot = gaps[0] if gaps else (0, 300, 380)
+        band = a[top + 4:bot - 3]                                  # one board, clear of the gaps above and below it
+        o = 160                                                   # make it meet itself end to end
+        w = ((np.arange(o) + 0.5) / o)[None, :, None]
+        band = np.concatenate([band[:, :o] * w + band[:, 1024 - o:] * (1 - w), band[:, o:1024 - o]], axis=1)
+        t = np.asarray(Image.fromarray(band.clip(0, 255).astype(np.uint8)).resize((512, 128), Image.LANCZOS), dtype=np.float32)
+        t *= 62.0 / t.mean()                                      # tarred, but not so black that the grain is lost
+        t = np.where(t > 80, 80 + (t - 80) * 0.22, t)             # a pale knot would be seen again on every strake: quieten it
+        y = np.arange(128)[:, None, None]
+        t *= 1.0 - 0.62 * np.clip((16 - y) / 16.0, 0, 1) ** 1.5    # the shadow under the lap of the strake above
+        t *= 1.0 + 0.22 * np.clip((y - 119) / 9.0, 0, 1)          # the worn lower edge
+        yy, xx = np.mgrid[0:128, 0:512]
+        for cx in range(16, 512, 32):                             # rivets: a dark ring, an iron head, a point of light
+            d = np.hypot(xx - cx, yy - 108)
+            t = np.where((d < 5.2)[..., None], t * 0.55, t)
+            t = np.where((d < 3.6)[..., None], np.array([92, 88, 84], dtype=np.float32), t)
+            t = np.where((np.hypot(xx - cx + 1, yy - 107) < 1.3)[..., None], np.array([150, 146, 140], dtype=np.float32), t)
+        save(Image.fromarray(t.clip(0, 255).astype(np.uint8)), 'hull.jpg', 90)
+    im = src('s_sail')
+    if im:
+        w, h = im.size
+        save(im.crop((int(w * 0.07), int(h * 0.06), int(w * 0.93), int(h * 0.94))).resize((512, 512), Image.LANCZOS), 'sail.jpg', 88)
+    cells = [src('s_shield_%d' % i) for i in (1, 2, 3, 4)]
+    if all(cells):
+        at = Image.new('RGB', (512, 512))
+        for i, im in enumerate(cells):
+            a = np.asarray(im, dtype=np.float32)
+            solid = a.min(axis=2) < 225                           # not the white it lies on
+            ys, xs = np.where(solid)
+            cx, cy, r = (xs.min() + xs.max()) / 2, (ys.min() + ys.max()) / 2, max(xs.max() - xs.min(), ys.max() - ys.min()) / 2
+            c = im.crop((int(cx - r), int(cy - r), int(cx + r), int(cy + r))).resize((256, 256), Image.LANCZOS)
+            ca = np.asarray(c, dtype=np.float32)
+            yy, xx = np.mgrid[0:256, 0:256]
+            d = np.hypot(xx - 127.5, yy - 127.5)
+            rim = ca[(d > 116) & (d < 124)].mean(axis=0)          # outside the circle, more of its own rim: nothing white to creep in
+            ca = np.where((d > 124)[..., None], rim, ca)
+            at.paste(Image.fromarray(ca.clip(0, 255).astype(np.uint8)), ((i % 2) * 256, (i // 2) * 256))
+        save(at, 'shields.jpg', 90)
+
+
+def buildings():
+    """door.jpg: the door alone, out of its frame. carved.jpg: carved timber that repeats."""
+    im = src('b_door')
+    if im:
+        w, h = im.size
+        save(im.crop((int(w * 0.075), int(h * 0.095), int(w * 0.925), int(h * 0.965))).resize((384, 512), Image.LANCZOS), 'door.jpg', 88)
+    im = src('b_carved')
+    if im:
+        save(level(im.resize((512, 512), Image.LANCZOS), 70), 'carved.jpg', 88)
+
+
+for f in (ground, pine, birch, figure, ships, buildings):
     f()

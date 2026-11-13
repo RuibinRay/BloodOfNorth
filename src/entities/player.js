@@ -11,6 +11,7 @@ const MAIL = 0.85; // what a mail shirt leaves of a blow (A3.mail in data/act3.j
 export const EIRIK_ADULT = {
   scale: 1.0, build: 1.08, skin: 0xdcae8e, hair: 0xa87e45, hairStyle: 'long', beard: 'short', eyes: 0x86aec6, scar: 'lightning',
   tunic: 0x55664a, trim: 0xb0652a, legs: 0x4a3f33, boots: 0x33261a, sleeve: 0x55664a,
+  shield: 0, // the red one with the pale band is always his
 };
 export const EIRIK_CHILD = {
   scale: 0.7, child: true, skin: 0xe2b494, hair: 0xb58a4e, hairStyle: 'short', eyes: 0x86aec6, // no scar yet: the lightning finds him the spring he is ten

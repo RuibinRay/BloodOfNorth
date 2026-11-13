@@ -187,9 +187,9 @@ export function initTextures() {
     g.fillStyle = rgb(128, 128, 128); g.fillRect(0, 0, s, s);
     speckle(g, s, r, 2600, [[70, 70, 70], [190, 190, 190], [100, 100, 100], [160, 160, 160], [220, 220, 220], [40, 40, 40]], 0.6, 3.2, 0.5);
   }, { srgb: false });
-  TEX.sail = canvasTex(256, (g, s) => {
+  TEX.sail = canvasTex(512, (g, s) => {
     const r = rng(81);
-    for (let i = 0; i < 8; i++) { g.fillStyle = i % 2 ? rgb(196, 186, 164) : rgb(124, 34, 28); g.fillRect(i * 32, 0, 32, s); }
+    for (let i = 0; i < 8; i++) { g.fillStyle = i % 2 ? rgb(196, 186, 164) : rgb(124, 34, 28); g.fillRect(i * 64, 0, 64, s); }
     for (let i = 0; i < s; i += 4) { g.fillStyle = rgb(0, 0, 0, 0.06 + r() * 0.06); g.fillRect(0, i, s, 1); }
   });
   TEX.rune = canvasTex(256, (g, s) => {
@@ -292,6 +292,21 @@ export function initMaterials() {
     paint(t, W3.figure);
     return t;
   })();
+  // Ships and buildings: a strake of a hull, a door, carved timber, four painted shields, and the painted sail.
+  // Each starts as something plain drawn here and is painted over when its picture has loaded.
+  const sheet = (w, h, draw) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d')); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; t.wrapS = t.wrapT = THREE.RepeatWrapping; return t; };
+  TEX.hull = sheet(512, 128, (g) => { g.fillStyle = rgb(58, 48, 41); g.fillRect(0, 0, 512, 128); g.fillStyle = rgb(0, 0, 0, 0.5); g.fillRect(0, 0, 512, 14); });
+  TEX.door = sheet(384, 512, (g) => { g.fillStyle = rgb(42, 32, 25); g.fillRect(0, 0, 384, 512); g.fillStyle = rgb(0, 0, 0, 0.45); for (let x = 0; x < 384; x += 64) g.fillRect(x, 0, 4, 512); });
+  TEX.carved = sheet(512, 512, (g) => g.drawImage(TEX.planks.image, 0, 0, 512, 512));
+  TEX.shields = sheet(512, 512, (g) => [0x8a2a22, 0x2f4a5c, 0x1e1e1e, 0x8a7a66].forEach((hex, i) => {
+    const x = (i % 2) * 256, y = (i >> 1) * 256; g.fillStyle = '#' + hex.toString(16).padStart(6, '0'); g.fillRect(x, y, 256, 256);
+    g.fillStyle = rgb(120, 122, 126); g.beginPath(); g.arc(x + 128, y + 128, 26, 0, 6.3); g.fill();
+  }));
+  for (const k of ['hull', 'door', 'carved', 'shields', 'sail']) paint(TEX[k], W3[k]);
+  M.hull = std({ map: TEX.hull, roughness: 0.85, side: THREE.DoubleSide });
+  M.door = std({ map: TEX.door, roughness: 0.9 });
+  M.carved = patch(std({ map: TEX.carved, color: 0xc4a07c, roughness: 0.9 })); // the picture is grey with age: warmed toward the timber beside it
+  M.shield = std({ map: TEX.shields, roughness: 0.75 });
   M.plank = patch(std({ map: TEX.planks }));
   M.timber = patch(std({ map: TEX.planks, color: 0x8a7663 }));
   M.bark = patch(std({ map: TEX.bark }));
@@ -360,6 +375,19 @@ export function cyl(rt, rb, h, seg = 8, tile = 1.6, open = false) {
   const su = (Math.PI * (rt + rb)) / tile, sv = h / tile;
   for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * su, uv.getY(i) * sv);
   return g;
+}
+/** A round shield lying flat, its face up the Y axis, painted with one of the four on the sheet (TEX.shields, 0 to 3). */
+export function shieldGeo(r, th, design = 0, seg = 16) {
+  const g = new THREE.CylinderGeometry(r, r, th, seg), p = g.attributes.position, uv = g.attributes.uv, cx = design & 1, cy = 1 - ((design >> 1) & 1);
+  for (let i = 0; i < p.count; i++) uv.setXY(i, (cx + 0.5 + (p.getX(i) / r) * 0.485) / 2, (cy + 0.5 - (p.getZ(i) / r) * 0.485) / 2); // the rim takes the picture's own edge
+  return g;
+}
+/** A door leaf with the whole of the door picture on its face (M.door). */
+export const doorLeaf = (w, h, d = 0.1) => new THREE.BoxGeometry(w, h, d);
+/** A thin rope or stay from one point to another. */
+export function rope(a, b, r = 0.016) {
+  const d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], len = Math.hypot(...d);
+  return at(new THREE.CylinderGeometry(r, r, len, 4, 1, true), (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2, Math.acos(d[1] / len), Math.atan2(d[0], d[2]), 0);
 }
 export const cone = (r, h, seg = 7) => new THREE.ConeGeometry(r, h, seg);
 export const sphere = (r, w = 8, h = 6) => new THREE.SphereGeometry(r, w, h);

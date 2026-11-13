@@ -4,7 +4,7 @@
 // Fedje, Skorpa and Gulen. Everything is a procedural stand-in for real art. What the story brings and takes away
 // are stages (see mainland.js), off unless the story switches them on.
 import * as THREE from 'three';
-import { M, Builder, at, box, cyl, cone, sphere, tint } from './geo.js';
+import { M, Builder, at, box, cyl, cone, sphere, tint, doorLeaf } from './geo.js';
 import { heightAt } from './terrain.js';
 import * as P from './props.js';
 import { MAIN, AT_SEA, place } from './layout.js';
@@ -63,7 +63,7 @@ function wessex(ctx, world, scene) {
   for (const k of [-1, 1]) ctx.b.add(at(box(1.3, 1.9, 0.14), ch[0] + k * 2.22, cy + 9.2, ch[1] - 9.6, 0, Math.PI / 2, 0), M.dark);
   ctx.b.add(at(box(1.3, 1.9, 0.14), ch[0], cy + 9.2, ch[1] - 7.38), M.dark);
   const bell = new THREE.Mesh(at(cyl(0.2, 0.42, 0.6, 9), 0, -0.3, 0), M.iron); bell.position.set(ch[0], cy + 9.9, ch[1] - 7.2); scene.add(bell);
-  ctx.b.add(at(box(1.5, 2.4, 0.14), ch[0] + 4.02, cy + 1.2, ch[1] + 3, 0, Math.PI / 2, 0), M.dark); // the south door
+  ctx.b.add(at(doorLeaf(1.5, 2.4, 0.14), ch[0] + 4.02, cy + 1.2, ch[1] + 3, 0, Math.PI / 2, 0), M.door); // the south door
   for (const [a, b2, c2] of [[0.12, 1.5, 0.12], [0.9, 0.12, 0.12]]) ctx.b.add(at(box(a, b2, c2), ch[0], cy + 8.4 + (a < 0.5 ? 0 : 0.3), ch[1] + 7.5), M.timber);
   for (let i = 0; i < 6; i++) { const [x, z] = [ch[0] + 9 + (i % 3) * 2.4, ch[1] - 3 + Math.floor(i / 3) * 3.4]; ctx.b.add(at(box(0.5, 0.9, 0.14), x, gy(x, z) + 0.4, z), M.stone); } // graves
   // the farm outside the wall, where a little girl is burning with fever

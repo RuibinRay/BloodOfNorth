@@ -2,7 +2,7 @@
 // PLACES in layout.js. Everything here is a procedural stand-in for real art. The places where the champions are
 // fought (the watchtower, the bridge, the hall, two ships' decks...) are returned in world.realm for the story code.
 import * as THREE from 'three';
-import { M, at, box, cyl, cone, sphere, tint, patch } from './geo.js';
+import { M, at, box, cyl, cone, sphere, tint, patch, doorLeaf } from './geo.js';
 import { heightAt } from './terrain.js';
 import * as P from './props.js';
 import { GREAT, place } from './layout.js';
@@ -52,7 +52,7 @@ export function tower(ctx, world, x, z, half = 4.2, h = 9) {
     ctx.b.add(at(box(a ? 1.3 : w, 0.7, a ? w : 1.3), x + sx, y0 + h + 1.85, z + sz), M.stone);
   }
   ctx.b.add(at(box(half * 2, 0.3, half * 2, 2), x, y0 + h - 0.15, z), M.plank);
-  ctx.b.add(at(box(1.3, 2.1, 0.12), x, y0 + 1.05, z + half + 0.42), M.dark);
+  ctx.b.add(at(doorLeaf(1.3, 2.1, 0.12), x, y0 + 1.05, z + half + 0.42), M.door);
   ctx.b.add(at(box(0.5, 1.1, 0.12), x - half - 0.42, y0 + h - 2.2, z, 0, Math.PI / 2, 0), M.dark); // the arrow slit that faces the town
   world.addDeck({ x, z, yaw: 0, hw: half - w / 2, hl: half - w / 2, y: y0 + h });
   return { x, z, y: y0 + h, half: half - w / 2 - 0.4, foot: { x, z: z + half + 2 } };
@@ -85,7 +85,7 @@ function stilt(ctx, world, x, z, ry) {
   const [hx, hz] = P.toWorld(x, z, ry, -0.9, -1.0);
   ctx.b.add(at(box(4.2, 1.9, 3.4), hx, y + 0.95, hz, 0, ry, 0), M.plank);
   for (const s of [-1, 1]) ctx.b.add(at(box(4.9, 0.26, 2.5, 2.4), ...((q) => [q[0], y + 2.5, q[1]])(P.toWorld(hx, hz, ry, 0, s * 0.95)), s * 0.7, ry, 0), M.thatch);
-  ctx.b.add(at(box(0.9, 1.6, 0.1), ...((q) => [q[0], y + 0.8, q[1]])(P.toWorld(hx, hz, ry, 0.4, 1.72)), 0, ry, 0), M.dark);
+  ctx.b.add(at(doorLeaf(0.9, 1.6, 0.1), ...((q) => [q[0], y + 0.8, q[1]])(P.toWorld(hx, hz, ry, 0.4, 1.72)), 0, ry, 0), M.door);
   ctx.addBox(hx, hz, 2.1, 1.7, ry, 3);
   const [lx, lz] = P.toWorld(x, z, ry, 2.2, 4.9);
   ctx.b.add(at(box(1.1, 0.1, 3.6), lx, y - 0.75, lz, 0.42, ry, 0), M.plank); // the plank up from the mud

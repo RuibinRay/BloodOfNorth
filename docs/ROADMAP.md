@@ -29,19 +29,29 @@ playtests; none are claimed until then.
 | 0.22 | **Performance and checks** | Vegetation in map cells drawn only when in view, with simpler far trees; props merged area by area; islands dropped past the haze; each person one skinned figure and a face; resolution that follows the frame rate; a frame counter; `npm run check` (every chapter started and compared with a recorded state, five scenes held to a drawing budget, one companion fight) | Triangles a frame down by 75 to 95 per cent in the measured scenes; all 67 chapters pass the check | Built (by script) |
 | 0.23 | **Painted art** | Higgsfield API working (images): 51 portraits beside dialogue and on the Companions page, 32 item paintings in the Inventory, a painting for each act behind its title cards and in the Acts menu, a title painting on the loading screen, four painted world textures, parchment under panels and the map; a batch tool with a spending ledger and a cap | 97 pictures in the game for $2.55; the checks pass | Built |
 | 0.24 | **The world wears its textures** | Generated pictures worked into the 3D world: grain on grass, sand and rock; a foaming waterline and clear shallows; pines and birches with bark and boughs; wool, fur, mail, leather and hair on every figure, with trim, buckles and brooches; the champions' figures matched to their portraits; a painting for each of the 67 chapters, 73 portraits; the grown Eirik drawn again (missing since 0.22) | Seen in screenshots of the shore, the woods and line-ups of the cast; all 67 chapters pass the check, which now also fails if Eirik has no body in the scene | Built (by screenshot and script, not played) |
-| 0.25 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: the raid, Kettil, the shore battle, Arne, Ulf, the deck fights, Rurik, the tannery yard, Skarde, Eydis, Bersi and all of Act VII above all, then the champions, the dive, riding, rowing and sailing feel, aim, stealth, camera | Three people finish everything built without help | Next |
-| 0.26 | **3D models in** | A source of models (Higgsfield's API has none); GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
-| 0.27 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or keep growing the web build | A written decision | Planned |
+| 0.25 | **Ships and buildings** | Clinker-built hulls with a painted board and rivets on every strake, decks cut to the hull, carved stem posts, rigging, a steering oar, a painted sail; four painted round shields on rails, walls and arms; painted doors, carved door frames and gable boards, eave logs | Seen in screenshots of a longship from four sides, the fleet under sail and a longhouse; all 67 chapters pass the check | Built (by screenshot and script, not played) |
+| 0.26 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: the raid, Kettil, the shore battle, Arne, Ulf, the deck fights, Rurik, the tannery yard, Skarde, Eydis, Bersi and all of Act VII above all, then the champions, the dive, riding, rowing and sailing feel, aim, stealth, camera | Three people finish everything built without help | Next |
+| 0.27 | **3D models in** | A source of models (Higgsfield's API has none); GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
+| 0.28 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or keep growing the web build | A written decision | Planned |
 | 1.0 | **Polish** | Side missions, minigames, voiced dialogue, recorded music, performance targets (60 fps at 1440p on suitable hardware as an objective), accessibility pass | Full playthrough signed off | Planned |
 
 ## Immediate next steps
 
 1. Play Acts II to VII and the Epilogue by hand (main menu, Start at an Act) and say where they are unfair, unclear, too easy or too slow: Act VII's fights first (Ulf, Kettil, Vigdis, Gorm, Håkon), then the raid, the shore battle, Arne, the fights on the Sea-Raven's deck, Rurik, the tannery yard, Skarde, Eydis and Bersi.
 2. Rule on the items under "Under review" in the story bible (Act I's Bjornstead is still the old farm in the dale).
-3. Look at the world and the people in play and say what to change (the trees, the shore, the clothes, any figure that does not look like its portrait); $5.25 of the approved $10 is unspent. Consider making a new Higgsfield key, since the pair was pasted into a chat.
+3. Look at the world and the people in play and say what to change (the trees, the shore, the clothes, any figure that does not look like its portrait, the ships, the doors); $5.13 of the approved $10 is unspent. Consider making a new Higgsfield key, since the pair was pasted into a chat.
 4. Decide where the project lives: a PC that can run UE5, or continue in the browser for the epilogue and the polish.
 
-## Known gaps in 0.24
+## Known gaps in 0.25
+
+- **Only the longhouse got the new door and carving.** Every house built by `longhouse()` has them (that is nearly all of them), and three other doors were swapped for the painted one; the great halls, towers, piers, palisades and tents are otherwise as they were.
+- **The boss and rim of a painted shield are flat**: they are in the picture, not modelled. Rurik's black-and-white shield and Gorm's iron-bound one are still built in flat colours, as the story describes them.
+- **All ships share one hull board, one sail and one carving**, in whatever size; Håkon's ships differ from the alliance's only by the darker tint the sea battles already gave their sails.
+- **Ships with their sails down show a bare yard**, not a furled sail (the ships the player and the sea battles work have sails that furl; the moored ones do not).
+- **No oars, no crew at the benches, and the steering oar does not move.**
+- **A longhouse is still a box with a roof**: no smoke hole you can see into, no windows, no interior (except Leif's house in the Epilogue).
+
+## Known gaps carried from 0.24
 
 - **The shapes are the same.** People are still capsules, cylinders and boxes, and trees are cones and planes: they are now covered in cloth, fur, mail, bark and leaves, not remodelled. The API makes pictures, not models.
 - **The grown Eirik was invisible from 0.22 until this slice**, and no check or screenshot of mine caught it, because the check looked at where he stood, not at whether he was drawn. It checks that now. Anything judged from pictures taken in 0.22 and 0.23 with him in frame should be looked at again.

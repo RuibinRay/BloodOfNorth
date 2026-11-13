@@ -298,6 +298,15 @@ const RAW = {
   c_mail: texture('riveted iron chain mail: rows of small interlinked iron rings, close up'),
   c_leather: texture('old cracked leather hide seen very close: deep wrinkles, creases and a pebbled grain like a worn boot, lit from the side so that every crease casts a shadow, in pale grey-tan'),
   c_hair: texture('straight combed human hair in pale ash blonde, the strands running vertically'),
+  // ships and buildings (0.25): a hull's planking, a sail, four shields to hang on a rail or carry, a door, carved timber
+  s_hull: texture('the side of an old wooden ship: long tarred oak boards running horizontally, dark brown-black, with weathered grain, adze marks and a few knots'),
+  s_sail: [`A square sail of heavy woven wool seen flat from straight on, filling the whole frame edge to edge: broad vertical stripes of weathered dull red and undyed cream, with a lattice of thin leather strips sewn diagonally across it, a little stained and sun-faded. Hand-painted stylised game texture, muted earth palette. ${CLEAN}.`, '1:1'],
+  s_shield_1: [onWhite('A round wooden shield seen exactly from the front, a perfect circle filling the picture: flat boards painted in four quarters, two of dull red and two of cream, a domed iron boss in the centre and a stitched rawhide rim, the paint worn and scratched')],
+  s_shield_2: [onWhite('A round wooden shield seen exactly from the front, a perfect circle filling the picture: flat boards painted dark slate blue with one broad pale ring around a domed iron boss in the centre, a stitched rawhide rim, the paint worn and scratched')],
+  s_shield_3: [onWhite('A round wooden shield seen exactly from the front, a perfect circle filling the picture: flat boards painted black with curved yellow-ochre arms spiralling out from a domed iron boss in the centre like a pinwheel, a stitched rawhide rim, the paint worn and scratched')],
+  s_shield_4: [onWhite('A round wooden shield seen exactly from the front, a perfect circle filling the picture: bare weathered grey-brown boards with iron nails, a domed iron boss in the centre and a stitched rawhide rim, scarred by old cuts')],
+  b_door: [`A low, heavy door of a Viking Age longhouse seen flat from straight on, filling the whole frame edge to edge: thick upright oak boards, dark with age, held by two long forged iron strap hinges and rows of iron nail heads, an iron ring handle on the right. Hand-painted stylised game texture, muted earth palette, evenly lit with no shadows and no perspective. ${CLEAN}.`, '3:4'],
+  b_carved: texture('a dark weathered oak board carved in low relief with interlaced Norse knotwork of twisting serpents and bands, the carving covering the whole board'),
 };
 const raw = Object.entries(RAW).map(([id, v]) => ({ id, group: 'world3d', kind: 'raw', ...z(Array.isArray(v) ? v[0] : v, Array.isArray(v) && v[1] ? v[1] : '1:1'), post: ['fit', 256, 256], out: `assets/art/raw/${id}.jpg` }));
 
