@@ -109,7 +109,7 @@ Then open http://localhost:5184. A production build is `npm run build` (output i
 | Send the black raven at your target (Act II) | `R` | RB |
 | Whistle for your horse (open world) | `H` | — |
 | Set or lower the sail (in the boat or ship) | `Shift` | L3 |
-| Sound the horn: crew ashore, or back aboard | `G` | — |
+| Sound the horn: crew ashore, or back aboard; in a shield wall, the line goes forward if they are reeling | `G` | — |
 | First / second companion's skill | `Y` / `U` | — |
 | Companions: wait here, or come with me | `B` | — |
 | At the ship's helm: loose a volley; raise shields | left mouse; hold right mouse | X or RT; LT |
@@ -178,8 +178,9 @@ All keyboard and mouse bindings can be changed in Settings.
    raiders' camp in the ravine; Torvald, and his shield wall.
 3. *The Healer's Hands* — the voyage with the fifty; Princess Ingrid's hospital; Leif and the water.
 4. *The Battle of Iron Shore* — dig the trench, fill the Stinking Ditch; shields up under the arrows; call the
-   archers' places to Astrid from the air; hold the wall beside Torvald; take ten men to the side gate; get the
-   families out. Grjotgard.
+   archers' places to Astrid from the air; stand in the shield wall beside Torvald, a hundred and fifty against two
+   hundred (raise your guard when they rush, sound the horn when they reel, kill the ones who come through); take
+   ten men to the side gate; get the families out. Grjotgard.
 5. *The Longshot* — through the burning granary and up the tower to Arne Longshot.
 6. *The Enemy Who Escaped* — Ulf Two-Blades, who cannot be beaten today; three burning boats; the pyres.
 7. *The Gift of Iron* — gold refused, iron asked for; Ingrid; the second forge and the first reforging;
@@ -240,8 +241,8 @@ All keyboard and mouse bindings can be changed in Settings.
    ram.
 2. *Two Blades, One Sea* — Leif and Ulf on the benches (a scene); hold the Sea-Raven; Ulf Two-Blades across two
    decks, until the black raven comes down; Leif against the mast.
-3. *The Black Shore* — wade ashore under fire arrows; push the line off the sand; go back for the men of Vængr;
-   shove them up the road; go back for the men of Jarnøy.
+3. *The Black Shore* — wade ashore under fire arrows with the line; push their shield wall off the sand; go back
+   for the men of Vængr; push again to the foot of the road; go back for the men of Jarnøy.
 4. *The Red-Hand Returns* — Kettil on a black horse at the bend; mud, the buckler, the boot knife; his knees.
 5. *The Pens* — as Torvald: the goat path, the gate, Star-Fall, three locks; what Astrid sees (a scene).
 6. *Vigdis, the Left Hand* — the long bridge; left-left, right-right; the bridge alight.

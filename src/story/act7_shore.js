@@ -1,7 +1,8 @@
 // Act VII on Svartøy, from the surf to the hall gate: "The Black Shore" (the landing, two pushes up from the sand,
 // and twice going back for men who are cut off), "The Red-Hand Returns" (Kettil at the bend), "The Pens" (played as
 // Torvald, with Star-Fall), "Vigdis, the Left Hand" (the burning bridge) and "Gorm, the Right Hand" (the gate).
-// Four hundred against five hundred are about twenty against a stream of nine to a push. See act7_sea.js.
+// The two pushes up from the sand are shield walls (systems/shieldwall.js): about a hundred and fifty a side as rank
+// and file, with the kings and jarls in the front rank. The rescues and the later fights are small. See act7_sea.js.
 import { CAST3 } from '../data/act3.js';
 import { QUESTS } from '../data/act1.js';
 import { A7, TOLD, SAID, KARI_LINES, GORM_LINES } from '../data/act7.js';
@@ -10,10 +11,13 @@ import { FOES } from './champions.js';
 import { Knack } from '../systems/activities2.js';
 import { TEN } from './act4_home.js';
 import { A7Part, SHORE7, HALL7 } from './act7_sea.js';
+import { WALL } from '../data/shieldwall.js';
 
 const LINE7 = ['svanhild', 'hroald', 'jorund', 'ragnvald', ...TEN];   // the kings and jarls each hold part of the line
 const BLADE = { svanhild: 'sword', hroald: 'sword', jorund: 'sword', ragnvald: 'axe' };
 const CUT = [[-44, -196], [34, -196]];                                // where the two groups are cut off
+const WL = [{ x: [-15.75, 29.75], z: -216, from: [[-2, -191], [18, -190], [-22, -191]] }, { x: [-23, 19], z: -189, from: [[-14, -171], [-10, -168]] }]; // where the line stands at the start of each push, and where their reserves come down from
+const lineX = (st, k) => WL[st].x[0] + ((WL[st].x[1] - WL[st].x[0]) * k) / (LINE7.length - 1);
 
 export class A7Shore extends A7Part {
   constructor(game, core) { super(game, core); this.fires = []; this.flung = []; this.vT = 0; }
@@ -53,13 +57,16 @@ export class A7Shore extends A7Part {
         if (i < 2) this.fix(n, hx - 1 + i * 2.2, w.groundAt(hx - 1 + i * 2.2, hz - 1) + 0.24, hz - 1, 1.87, 'lie'); else this.put(n, hx + 1.6, hz + 2.2, [hx + 1.2, hz + 1.4], 'kneel'); });
     }
     if (name === 'w7shore') {
-      const wade = bs === 0, lz = bs >= 3 ? -191 : -216;
-      LINE7.forEach((id, i) => { const dx = -15.75 + i * 3.5; arm(at(id, wade ? dx * 0.8 : dx, wade ? -241 - (i % 3) * 1.2 : lz + (i % 2) * 1.2, 0, wade ? null : 'guard'), BLADE[id]); });
+      // the line: where this push starts, or where the last one ended
+      const wade = bs === 0, st = bs >= 3 ? 1 : 0, adv = bs === 2 ? A7.wall[0].goal : bs >= 4 ? A7.wall[1].goal : 0, lz = WL[st].z + adv, B = c.battle;
+      if (!this.marching) LINE7.forEach((id, i) => { const dx = lineX(st, i); arm(at(id, wade ? dx * 0.8 : dx, wade ? -241 - (i % 3) * 1.2 : lz, 0, wade ? null : 'guard'), BLADE[id]); });
+      if (bs <= 1) { if (!(B.wall && B.wall.o.stage === 0 && B.wall.phase === 'wait')) this.formLine(0, { wait: true, land: wade }); }   // theirs stands off above the sand until the push
+      else if (bs !== 3 && !(B.wall && B.wall.o.stage === st && B.wall.over === 'broke')) this.formLine(st, { rest: true, adv });       // the line stands where it won to
       bow(at('astrid', -6, wade ? -246 : lz - 9, 0)); J.slice(6).forEach((n, i) => { n.name = "One of Astrid's archers"; bow(this.put(n, ...this.X(2 + i * 4, wade ? -247 : lz - 9.6), 0)); n.talk = null; });
       at('leif', 5, -234, this.X(0, -200), null, 'seax');
       for (const [dx, dz] of [[-30, -183], [26, -185], [-8, -175]]) this.fire(...this.X(dx, dz), 2.2, 1.9); // the burned-out warehouses are alight again
       if (bs === 2 || bs === 4) this.cutOff(bs === 4 ? 1 : 0);
-      if (wade && !this.waded) { this.waded = true; for (const id of LINE7) { const n = c.npc(id), i = LINE7.indexOf(id); n.goTo(...this.X(-15.75 + i * 3.5, -216 + (i % 2) * 1.2), { speed: 2.3 + (i % 3) * 0.2, onArrive: (o) => { o.yaw = 0; o.setLoop('guard'); } }); } }
+      if (wade && !this.waded) { this.waded = true; for (const id of LINE7) { const n = c.npc(id), i = LINE7.indexOf(id); n.goTo(...this.X(lineX(0, i), WL[0].z), { speed: 2.3 + (i % 3) * 0.2, onArrive: (o) => { o.yaw = 0; o.setLoop('guard'); } }); } }
       return;
     }
     if (name === 'w7bend') { // Håkon's reserve, and its commander on a black horse
@@ -113,11 +120,23 @@ export class A7Shore extends A7Part {
   // ---- the Black Shore -----------------------------------------------------------------------------
   /** A push up from the sand: 0 the harbor town, 1 the road. */
   push(i) {
-    const g = this.g, c = this.c, R = { ...A7.shore }, X = (a, b) => this.X(a, b);
+    const g = this.g, c = this.c, B = c.battle;
     this.arm();
-    c.battle.startSkirmish(LINE7, i ? [X(4, -174), X(10, -173), X(7, -170)] : [X(1, -196), X(-23, -195), X(22, -197)], R.n, R.atOnce, () => { for (const id of LINE7) { const n = c.npc(id); if (!n.dead) n.h.play('cheer', 1.1); } g.quests.notify('event', i ? 'a7road' : 'a7town'); }, R);
-    LINE7.forEach((id, k) => { const n = c.npc(id), [x, z] = X(-15.75 + k * 3.5, (i ? -191 : -216) + (k % 2) * 1.2); n.home = [x, z, 0]; if (n.dist({ x, z }) > 2) n.goTo(x, z, { run: true, onArrive: (o) => { o.yaw = 0; o.setLoop('guard'); } }); });
-    g.ui.questBanner('The Black Shore', i ? 'the road' : 'the harbor town');
+    const done = () => g.quests.notify('event', i ? 'a7road' : 'a7town');
+    const fail = () => c.fail('The Black Shore', 'The line broke on the sand. Stand in it, raise your guard when their horn sounds, and sound your own when they reel.');
+    if (B.wall && B.wall.o.stage === i && B.wall.phase === 'wait') B.wall.go({ mode: 'push', done, fail });
+    else { const w = this.formLine(i, { mode: 'push', wait: true, done, fail, march: i === 1 }); g.after(i ? 5.5 : 1.5, () => { if (B.wall === w) w.go(); }); } // theirs comes on once ours has come up and formed
+    LINE7.forEach((id, k) => { const n = c.npc(id), [x, z] = this.X(lineX(i, k), WL[i].z); n.home = [x, z, 0]; if (n.dist({ x, z }) > 2) n.goTo(x, z, { run: true, onArrive: (o) => { o.yaw = 0; o.setLoop('guard'); } }); });
+    g.ui.questBanner('The Black Shore', i ? 'the road' : 'the harbor town'); c.hint('wallPush');
+  }
+  /** The alliance's line and Håkon's, as rank and file. land: ours wades in from the surf; march: ours comes up from where the first push ended; rest: ours only, standing where it won to. */
+  formLine(stage, { mode = 'auto', wait = false, rest = false, adv = 0, land = false, march = false, done = null, fail = null } = {}) {
+    const c = this.c, W = WL[stage], z = W.z + adv + WALL.gap / 2, w0 = WL[0];
+    const from = land ? (f, n) => this.X((w0.x[0] + ((w0.x[1] - w0.x[0]) * f) / (n - 1)) * 0.8, -243 - Math.random() * 5)
+      : march ? (f, n) => this.X(w0.x[0] + ((w0.x[1] - w0.x[0]) * f) / (n - 1), w0.z + A7.wall[0].goal - Math.random() * 3) : null;
+    return c.battle.startWall({ stage, a: this.X(W.x[0], z), b: this.X(W.x[1], z), face: 0, heroes: LINE7.map((id) => c.npc(id)), anchors: ['svanhild', 'hroald'], paint: ['alliance', 'wolves'],
+      mode, wait, rest, R: { ...A7.shore }, cfg: { ...A7.wall[stage], ...(rest ? { ranks: [3, 0], reserve: [0, 0] } : {}) }, thin: rest ? [0.3, 0] : null,
+      arrive: from && { from, speed: land ? 2.4 : 3.6 }, from: W.from.map(([x, zz]) => this.X(x, zz)), done, fail });
   }
   /** A group of allies cut off, and the men round them (seen, until he comes back for them). */
   cutOff(i) {
@@ -322,7 +341,7 @@ export class A7Shore extends A7Part {
     },
     'q_blackshore.town'(r) { const c = this.c; c.setPhase('w7shore', r); this.here(r, this.X(0, -222), 0); if (r) this.dress('w7shore'); c.hint(null); this.push(0); if (!r) c.tell(TOLD.shore.slice(2), 10); },
     'q_blackshore.back1'(r) { const c = this.c; c.setPhase('w7shore', r); this.here(r, this.X(-6, -208), 0); this.arm(); this.dress('w7shore'); c.hint('goBack'); },
-    'q_blackshore.road'(r) { const c = this.c; c.setPhase('w7shore', r); this.here(r, this.X(-30, -200), 1.2); this.dress('w7shore'); c.hint(null); this.push(1); if (!r) this.g.after(10.5, () => c.tell(TOLD.slopes, 11)); },
+    'q_blackshore.road'(r) { const c = this.c; c.setPhase('w7shore', r); this.here(r, this.X(-30, -200), 1.2); this.marching = !r; this.dress('w7shore'); this.marching = false; c.hint(null); this.push(1); if (!r) this.g.after(10.5, () => c.tell(TOLD.slopes, 11)); },
     'q_blackshore.back2'(r) { const c = this.c; c.setPhase('w7shore', r); this.here(r, this.X(6, -186), 0); this.arm(); this.dress('w7shore'); c.hint('goBack'); },
     'q_blackshore.bend'(r) { const c = this.c; c.setPhase('w7shore', r); this.here(r, this.X(26, -194), -0.6); this.arm(); this.dress('w7shore'); c.hint(null); },
     'q_redhand.kettil'(r) {
@@ -366,6 +385,8 @@ export class A7Shore extends A7Part {
       if (k >= 1 && !f.done) { f.done = true; g.audio.play('thud'); g.fx.burst('dust', x, n.pos.y + 0.2, z, 12); if (f.dead) n.dead = true; }
     }
     if (this.tor && p.equipped !== 'maul') { p.equip('maul'); p.h.hold('R', 'starfall'); }
+    const wl = c.battle.wall;
+    if (wl) { wl.update(dt, g.mode === 'play'); if (wl.surges >= 2 && !wl.taught) { wl.taught = true; c.hint(null); } } // the strip at the top says the rest
     if (g.mode !== 'play') return;
     if (c.battle.sk) c.battle.updateSkirmish(dt);
     if (ph === 'w7shore') {
