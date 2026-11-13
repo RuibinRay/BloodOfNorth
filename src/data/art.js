@@ -203,5 +203,14 @@ export const ART = {
   "ui": {
     "compass": "art/ui/compass.webp",
     "parchment": "art/ui/parchment.webp"
+  },
+  "world": {
+    "birch": "art/world/birch.webp",
+    "figure": "art/world/figure.jpg",
+    "foam": "art/world/foam.jpg",
+    "ground_grass": "art/world/ground_grass.jpg",
+    "ground_rock": "art/world/ground_rock.jpg",
+    "ground_sand": "art/world/ground_sand.jpg",
+    "pine": "art/world/pine.webp"
   }
 };

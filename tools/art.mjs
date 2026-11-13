@@ -49,6 +49,7 @@ function post(it) {
   execFileSync('python3', [path.join(ROOT, 'tools/art/post.py'), src, outPath(it), ...it.post.map(String)], { stdio: ['ignore', 'pipe', 'pipe'] });
 }
 function manifest() {
+  execFileSync('python3', [path.join(ROOT, 'tools/art/world.py'), ROOT], { stdio: ['ignore', 'pipe', 'inherit'] }); // the textures of the 3D world, from whichever originals are there
   for (const [to, from, how] of MIRRORS) if (fs.existsSync(path.join(ROOT, from))) execFileSync('python3', [path.join(ROOT, 'tools/art/post.py'), path.join(ROOT, from), path.join(ROOT, to), how]);
   const base = path.join(ROOT, 'public/art'), out = {};
   if (fs.existsSync(base)) for (const kind of fs.readdirSync(base).sort()) {

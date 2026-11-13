@@ -9,15 +9,60 @@ import { ART } from '../data/art.js';
 /** Uniforms shared by every patched material (wind sway + snow cover). */
 export const shared = { uTime: { value: 0 }, uSnow: { value: 0 }, uWind: { value: 1 } };
 
+// The ground. Its colour is painted once for a whole valley or island (about half a metre to a pixel); close to, that is
+// a smear. So the grain comes from three small repeating pictures laid out in the world itself: grass, sand along
+// every shore (all the sea lies at height 0), rock where it is steep. Each has had its own colour taken out
+// (tools/art/world.py), so the painted colour still decides the hue. At the water's edge the sand is dark and wet,
+// and a thin line of foam moves up and down it: both are measured in metres along the sand, not in height, so a
+// flat beach and a steep one get the same narrow edge. Until the pictures load they are flat grey, which changes nothing.
+const GROUND = `
+        vec2 gw = vGround.xz;
+        float gSand = 1.0 - smoothstep(0.9, 1.9, vGround.y);
+        float gRock = smoothstep(0.24, 0.5, vSteep);
+        vec3 gG = texture2D(uGrass, gw * 0.37).rgb * texture2D(uGrass, gw * 0.047).rgb * 4.0;
+        vec3 gS = texture2D(uSand, gw * 0.29).rgb * texture2D(uSand, gw * 0.041).rgb * 4.0;
+        vec3 gR = texture2D(uRock, gw * 0.21).rgb * texture2D(uRock, gw * 0.033).rgb * 4.0;
+        diffuseColor.rgb *= mix(mix(gG, gS, gSand), gR, gRock) * (texture2D(uDetail, vMapUv * 17.3).r * 0.3 + 0.86);
+        float gUp = 1.0 - vSteep, gSlope = max(sqrt(max(1.0 - gUp * gUp, 0.0)) / max(gUp, 0.2), 0.035);
+        float shore = vGround.y / gSlope;                                   // metres up the beach from the waterline
+        float tide = 0.45 * sin(uTime * 0.8 + gw.x * 0.11 + gw.y * 0.07) + 0.3 * sin(uTime * 1.37 + gw.y * 0.19 - gw.x * 0.05);
+        float wet = (1.0 - smoothstep(0.6 + tide, 2.6 + tide, shore)) * step(-6.0, shore);
+        diffuseColor.rgb *= mix(1.0, 0.66, wet);
+        float lap = 1.0 - smoothstep(0.0, 0.42, abs(shore - (0.35 + tide)));
+        float fm = texture2D(uFoam, gw * 0.83 + vec2(uTime * 0.03, uTime * 0.02)).r;
+        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.93, 0.96, 0.97), lap * (0.25 + 0.75 * fm) * 0.9);`;
+
+/** The sea and the river. Looking down through it the water is clear and green over the sand; toward the horizon it
+ *  is the deep colour and mirrors the sky. Its ripples are the same small pattern at two sizes, so the repeat does
+ *  not show, and patches of foam drift on it. */
+export function waterPatch(mat) {
+  mat.userData.ice = { value: 0 }; // 1: frozen over (the river in winter): no clear shallows, no foam
+  mat.onBeforeCompile = (sh) => {
+    sh.uniforms.uTime = shared.uTime; sh.uniforms.uFoam = { value: TEX.foam }; sh.uniforms.uIce = mat.userData.ice;
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vSeaXZ;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvSeaXZ = (modelMatrix * vec4(transformed, 1.0)).xz;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform float uTime;\nuniform float uIce;\nuniform sampler2D uFoam;\nvarying vec2 vSeaXZ;')
+      .replace('vec3 mapN = texture2D( normalMap, vNormalMapUv ).xyz * 2.0 - 1.0;', 'vec3 mapN = texture2D( normalMap, vNormalMapUv ).xyz + texture2D( normalMap, vNormalMapUv * 0.23 + vec2( 0.37, 0.11 ) ).xyz * 1.4 - 1.7;')
+      .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+        float seaF = pow(1.0 - clamp(dot(normalize(vViewPosition), normal), 0.0, 1.0), 2.2);
+        diffuseColor.rgb = mix(vec3(0.07, 0.3, 0.32), diffuseColor.rgb, max(0.3 + 0.7 * seaF, uIce));
+        diffuseColor.a = mix(mix(0.58, 0.97, seaF), 0.96, uIce);
+        float seaFm = texture2D(uFoam, vSeaXZ * 0.045 + vec2(uTime * 0.006, uTime * 0.004)).r * texture2D(uFoam, vSeaXZ * 0.013 - vec2(uTime * 0.003, 0.0)).r;
+        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.86, 0.92, 0.94), smoothstep(0.32, 0.75, seaFm) * 0.55 * (1.0 - uIce));`);
+  };
+  mat.customProgramCacheKey = () => 'sea1';
+  return mat;
+}
+
 /** Adds wind sway and snow accumulation to a built-in material. */
 export function patch(mat, { sway = 0, snow = 1, detail = null, upNormal = false } = {}) {
   mat.onBeforeCompile = (sh) => {
     sh.uniforms.uTime = shared.uTime;
     sh.uniforms.uSnow = shared.uSnow;
     sh.uniforms.uWind = shared.uWind;
-    if (detail) sh.uniforms.uDetail = { value: detail };
+    if (detail) { sh.uniforms.uDetail = { value: detail }; sh.uniforms.uGrass = { value: TEX.gGrass }; sh.uniforms.uSand = { value: TEX.gSand }; sh.uniforms.uRock = { value: TEX.gRock }; sh.uniforms.uFoam = { value: TEX.foam }; }
     sh.vertexShader = sh.vertexShader
-      .replace('#include <common>', '#include <common>\nuniform float uTime;\nuniform float uWind;\nvarying float vSnowF;')
+      .replace('#include <common>', '#include <common>\nuniform float uTime;\nuniform float uWind;\nvarying float vSnowF;\nvarying vec3 vGround;\nvarying float vSteep;')
       .replace('#include <begin_vertex>', `#include <begin_vertex>
         vec3 nW = normal;
         float ph = 0.0;
@@ -26,17 +71,20 @@ export function patch(mat, { sway = 0, snow = 1, detail = null, upNormal = false
           vec4 iw = instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
           ph = iw.x * 0.31 + iw.z * 0.27;
         #endif
-        vSnowF = smoothstep(0.2, 0.85, normalize(mat3(modelMatrix) * nW).y);
+        float upN = normalize(mat3(modelMatrix) * nW).y;
+        vSnowF = smoothstep(0.2, 0.85, upN);
+        vSteep = 1.0 - upN;
         ${sway > 0 ? `float sw = (sin(uTime * 1.6 + ph) + 0.5 * sin(uTime * 3.3 + ph * 1.7)) * uWind * ${sway.toFixed(5)} * position.y * position.y;
-        transformed.x += sw; transformed.z += sw * 0.6;` : ''}`);
+        transformed.x += sw; transformed.z += sw * 0.6;` : ''}
+        vGround = (modelMatrix * vec4(transformed, 1.0)).xyz;`);
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', `#include <common>\nuniform float uSnow;\nvarying float vSnowF;\n${detail ? 'uniform sampler2D uDetail;' : ''}`)
+      .replace('#include <common>', `#include <common>\nuniform float uSnow;\nvarying float vSnowF;\nvarying vec3 vGround;\nvarying float vSteep;\n${detail ? 'uniform sampler2D uDetail;\nuniform sampler2D uGrass;\nuniform sampler2D uSand;\nuniform sampler2D uRock;\nuniform sampler2D uFoam;\nuniform float uTime;' : ''}`)
       .replace('#include <color_fragment>', `#include <color_fragment>
-        ${detail ? 'diffuseColor.rgb *= (texture2D(uDetail, vMapUv * 120.0).r * 0.7 + 0.66) * (texture2D(uDetail, vMapUv * 17.3).r * 0.3 + 0.86);' : ''}
+        ${detail ? GROUND : ''}
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.86, 0.9, 0.96), clamp(uSnow * ${snow.toFixed(2)} * vSnowF, 0.0, 1.0));`);
     if (upNormal) sh.fragmentShader = sh.fragmentShader.replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\n normal = normalize(vNormal);');
   };
-  mat.customProgramCacheKey = () => `p${sway}_${snow}_${detail ? 1 : 0}_${upNormal ? 1 : 0}`;
+  mat.customProgramCacheKey = () => `p${sway}_${snow}_${detail ? 2 : 0}_${upNormal ? 1 : 0}`;
   return mat;
 }
 
@@ -202,13 +250,22 @@ export function initMaterials() {
   const std = (o) => new THREE.MeshStandardMaterial(Object.assign({ roughness: 0.9, metalness: 0 }, o));
   // Painted surfaces, when the game has them (public/art/textures): each is drawn into the texture above once it has
   // loaded, so until then, and wherever a file is missing, the world wears what is drawn in code.
-  for (const k of ['planks', 'thatch', 'turf', 'stone']) {
-    const url = (ART.textures || {})[k];
-    if (!url) continue;
-    const img = new Image();
-    img.onload = () => { const c = TEX[k].image; c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); TEX[k].needsUpdate = true; };
-    img.src = url;
+  const paint = (tex, url) => { if (!url) return; const img = new Image(); img.onload = () => { const c = tex.image; c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); tex.needsUpdate = true; }; img.src = url; };
+  for (const k of ['planks', 'thatch', 'turf', 'stone']) paint(TEX[k], (ART.textures || {})[k]);
+  // Grain for the ground, foam for the water's edge, and cloth, fur, mail, leather and hair for the figures
+  // (public/art/world, built by tools/art/world.py). Flat grey until they load: flat grey changes nothing.
+  const W3 = ART.world || {};
+  for (const [k, file, flat] of [['gGrass', 'ground_grass', 128], ['gSand', 'ground_sand', 128], ['gRock', 'ground_rock', 128], ['foam', 'foam', 0]]) {
+    TEX[k] = canvasTex(512, (g, sz) => { g.fillStyle = rgb(flat, flat, flat); g.fillRect(0, 0, sz, sz); }, { srgb: false });
+    paint(TEX[k], W3[file]);
   }
+  TEX.figure = (() => { // six squares: wool fur mail / leather hair plain
+    const c = document.createElement('canvas'); c.width = 768; c.height = 512;
+    const g = c.getContext('2d'); g.fillStyle = rgb(205, 205, 205); g.fillRect(0, 0, 768, 512);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+    paint(t, W3.figure);
+    return t;
+  })();
   M.plank = patch(std({ map: TEX.planks }));
   M.timber = patch(std({ map: TEX.planks, color: 0x8a7663 }));
   M.bark = patch(std({ map: TEX.bark }));

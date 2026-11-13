@@ -277,7 +277,31 @@ const surfaces = [
   { id: 'ui_compass', kind: 'ui', ...z(`A compass rose drawn in dark brown ink on old tan parchment: a ring with eight long points, the north point longest and ending in a small raven's head, fine hatching, drawn by hand with a quill. Centred, filling most of the picture, flat even light. ${CLEAN}.`), post: ['cover', 384, 384], out: 'public/art/ui/compass.webp' },
 ].map((x) => ({ group: 'world', ...x }));
 
+// ---- stuff for the 3D world itself: not shown as pictures, but worked into textures by tools/art/world.py -----------
+// Ground (grass, sand, rock) and sea foam; bark, needles and leaves for the trees, with a bough and a spray of twigs
+// on white to be cut out; cloth, fur, mail, leather and hair for the figures. Each keeps only a thumbnail here:
+// what the game loads is what world.py builds from the originals (public/art/world).
+const onWhite = (what) => `${what}, isolated on a pure white background with nothing else in the picture, flat even light, no shadow. ${CLEAN}.`;
+const RAW = {
+  w_grass: texture('short rough meadow grass with a little moss and clover, seen from straight above'),
+  w_sand: texture('pale grey-tan beach sand with scattered small pebbles and bits of broken shell, seen from straight above'),
+  w_rock: texture('weathered grey granite with fine cracks and patches of pale lichen'),
+  w_foam: `Seamless tileable texture of sea foam seen from straight above: a lacy net of bright white foam bubbles and streaks on a pure black background, evenly lit, filling the whole frame edge to edge. ${CLEAN}.`,
+  w_bark_pine: texture('the bark of an old pine trunk: reddish grey-brown furrowed plates running vertically'),
+  w_bark_birch: texture('the bark of a birch trunk: chalk-white papery bark with scattered thin black horizontal marks'),
+  w_needles: texture('a dense mass of dark green spruce boughs and needles overlapping and hanging downward'),
+  w_leaves: texture('a dense mass of small golden-yellow autumn birch leaves overlapping'),
+  w_bough: [onWhite('A single spruce bough with dense dark green needles hanging straight down, its woody stem at the top of the picture and its drooping tips at the bottom'), '3:4'],
+  w_twig: [onWhite('A spray of thin birch twigs covered in many small golden-yellow autumn leaves, spreading outward from the centre and filling the picture')],
+  c_wool: texture('coarse hand-woven wool twill cloth in plain undyed light grey, the diagonal weave clearly visible'),
+  c_fur: texture('thick shaggy animal fur in light grey, the hairs lying downward'),
+  c_mail: texture('riveted iron chain mail: rows of small interlinked iron rings, close up'),
+  c_leather: texture('worn vegetable-tanned leather in pale grey-tan with fine creases and scuffs'),
+  c_hair: texture('straight combed human hair in pale ash blonde, the strands running vertically'),
+};
+const raw = Object.entries(RAW).map(([id, v]) => ({ id, group: 'world3d', kind: 'raw', ...z(Array.isArray(v) ? v[0] : v, Array.isArray(v) && v[1] ? v[1] : '1:1'), post: ['fit', 256, 256], out: `assets/art/raw/${id}.jpg` }));
+
 /** Pictures made from another picture at no cost: [made file, from file, how]. tools/art.mjs makes them after every run. */
 export const MIRRORS = [['public/art/items/brother_axe.webp', 'public/art/items/father_axe.webp', 'flip']];
 
-export const ITEMS = [...people, ...others, ...things, ...scenes, ...chapters, ...surfaces];
+export const ITEMS = [...people, ...others, ...things, ...scenes, ...chapters, ...surfaces, ...raw];

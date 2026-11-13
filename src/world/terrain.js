@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { fbm, noise2, smoothstep, lerp, clamp, distToPolyline } from '../core/util.js';
 import { FLATS, PATHS, FIELDS, VILLAGE, POI, ISLES } from './layout.js';
-import { patch, TEX } from './geo.js';
+import { patch, waterPatch, TEX } from './geo.js';
 import { realmAt, buildRealmHeights, buildRealm } from './realm.js';
 
 export const SIZE = 640, HALF = SIZE / 2, N = 256, CELL = SIZE / N;
@@ -133,7 +133,7 @@ function paintAlbedo() {
   const px = SIZE / T;
   const mix3 = (a, b, t) => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
   const grassA = [92, 104, 50], grassB = [128, 116, 58], grassC = [150, 128, 70], floorF = [72, 66, 42], dirt = [112, 90, 64],
-    rock = [116, 112, 106], sand = [156, 146, 118], gravel = [110, 108, 100], snow = [228, 232, 240], soil = [98, 76, 52], mud = [84, 72, 54];
+    rock = [116, 112, 106], sand = [182, 164, 126], gravel = [110, 108, 100], snow = [228, 232, 240], soil = [98, 76, 52], mud = [84, 72, 54];
   for (let j = 0; j < T; j++) {
     const z = -HALF + (j + 0.5) * px;
     for (let i = 0; i < T; i++) {
@@ -199,7 +199,7 @@ function buildChart() {
     const sl = Math.hypot(heightAt(x + 2.5, z) - h, heightAt(x, z + 2.5) - h) / 2.5, nn = noise2(x * 0.09, z * 0.09) * 0.5 + 0.5, n2 = noise2(x * 0.021 + 7, z * 0.021) * 0.5 + 0.5;
     let r = lerp(92, 128, nn), gg = lerp(104, 116, nn), b = lerp(50, 58, nn);
     const hth = smoothstep(0.5, 0.8, n2) * 0.6; r = lerp(r, 118, hth); gg = lerp(gg, 92, hth); b = lerp(b, 84, hth);       // heather
-    const sh = 1 - smoothstep(0.3, 1.5, h); r = lerp(r, 156, sh); gg = lerp(gg, 146, sh); b = lerp(b, 118, sh);            // shingle
+    const sh = 1 - smoothstep(0.3, 1.5, h); r = lerp(r, 182, sh); gg = lerp(gg, 164, sh); b = lerp(b, 126, sh);            // shingle
     const rk = smoothstep(0.42, 0.85, sl); r = lerp(r, 116, rk); gg = lerp(gg, 112, rk); b = lerp(b, 106, rk);              // rock
     const sn = smoothstep(46, 62, h + nn * 10) * (1 - smoothstep(0.9, 1.5, sl) * 0.7); r = lerp(r, 228, sn); gg = lerp(gg, 232, sn); b = lerp(b, 240, sn);
     const dp = smoothstep(-2.5, -8, h); r = lerp(r, 58, dp); gg = lerp(gg, 70, dp); b = lerp(b, 76, dp);                      // deep floor: the colour of the open sea's
@@ -239,10 +239,10 @@ export function buildTerrain(scene) {
   buildRealm(scene);
 
   // --- water: the fjord (one big plane at sea level) and the river ribbon ---
-  const waterMat = new THREE.MeshStandardMaterial({
-    color: 0x24465a, roughness: 0.08, metalness: 0.55, transparent: true, opacity: 0.88,
-    normalMap: TEX.waterN, normalScale: new THREE.Vector2(0.55, 0.55), envMapIntensity: 1.3,
-  });
+  const waterMat = waterPatch(new THREE.MeshStandardMaterial({
+    color: 0x1f4254, roughness: 0.1, metalness: 0.5, transparent: true, opacity: 1,
+    normalMap: TEX.waterN, normalScale: new THREE.Vector2(0.42, 0.42), envMapIntensity: 1.3,
+  }));
   TEX.waterN.repeat.set(580, 580);
   const sea = new THREE.Mesh(new THREE.PlaneGeometry(10000, 10000), waterMat); // the home waters and the open sea of the ten islands
   sea.rotation.x = -Math.PI / 2; sea.position.set(0, 0, 1600); sea.receiveShadow = true;
@@ -260,7 +260,7 @@ export function buildTerrain(scene) {
   rgeo.setAttribute('uv', new THREE.Float32BufferAttribute(ruv, 2));
   rgeo.setIndex(ri); rgeo.computeVertexNormals();
   const riverN = TEX.waterN.clone(); riverN.needsUpdate = true; riverN.repeat.set(1, 1);
-  const riverMat = waterMat.clone(); riverMat.normalMap = riverN; riverMat.color.set(0x2c5062); riverMat.opacity = 0.82;
+  const riverMat = waterPatch(waterMat.clone()); riverMat.normalMap = riverN; riverMat.color.set(0x2c5062); riverMat.opacity = 0.92;
   const river = new THREE.Mesh(rgeo, riverMat);
   river.receiveShadow = true;
   scene.add(river);
@@ -271,7 +271,7 @@ export function buildTerrain(scene) {
     /** Freeze or thaw the river surface (Chapter 2). */
     setIce(on) {
       this.iced = on;
-      riverMat.color.set(on ? 0xdbe8f0 : 0x2c5062); riverMat.opacity = on ? 0.96 : 0.82;
+      riverMat.color.set(on ? 0xdbe8f0 : 0x2c5062); riverMat.opacity = on ? 0.96 : 0.92; riverMat.userData.ice.value = on ? 1 : 0;
       riverMat.roughness = on ? 0.42 : 0.08; riverMat.metalness = on ? 0.05 : 0.55; riverMat.normalScale.setScalar(on ? 0.12 : 0.55);
     },
     update(t) {
