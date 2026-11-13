@@ -49,7 +49,8 @@ playtests; none are claimed until then.
 ## Known gaps in 0.29
 
 - **Movement was judged from still pictures.** A film strip shows eight moments of a stride side by side; it cannot show whether the walk feels right at speed, whether the bank into a turn is too much, or whether a head that nods is charming or silly. Nobody has watched any of it run, and a person has not seen it at all.
-- **What was not touched**: the blows, guards, bow, dodges and falls (worked on in 0.19), faces and speech, crouching, swimming, the hare's hop, fish, and the ships' own motion on the water.
+- **What was not touched**: the blows themselves and the bow (worked on in 0.19), faces and speech, crouching, swimming, the hare's hop, fish, and the ships' own motion on the water.
+- **The fighting moves that were redone** (guard, block with a shield, roll, sidestep, the falls) were looked at in film strips of one figure standing alone, not in a fight. A roll goes over forwards or backwards by which way he is facing when he starts it; sideways he only tucks. Whether a full turn in 0.42 seconds reads as a roll or a blur at speed, nobody has seen. Only men cut down in a fight fall forward or half turned: anyone the story lays down still falls onto his back, because cameras look at them there.
 - **The lean, the bank, the nod and the tail are read from what moves the figure**, not told to it: someone teleported or turned on the spot by a script banks for a moment as if he had turned.
 - **A hound and a wolf wag alike**, and every horse swishes its tail the same way.
 - **The rank and file step in place when the line creeps**: their legs follow how far the line moves, not their own feet on the ground.

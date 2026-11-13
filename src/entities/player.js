@@ -387,7 +387,8 @@ export class Player {
       this.dodgeDur = this.dodgeT = roll ? 0.42 : 0.26; this.dodgeK = roll ? 6.2 : 7.4; this.iframes = roll ? 0.32 : 0.2;
       this.stamina -= dodgeCost; this.staminaDelay = roll ? 0.7 : 0.45; this.crouch = false;
       if (dm > 0.2) this.dodgeDir.set(dx, 0, dz); else this.dodgeDir.set(-Math.sin(this.yaw), 0, -Math.cos(this.yaw));
-      h.play(roll ? 'dodge' : 'sidestep', this.dodgeT); g.audio.play('whoosh', { vol: 0.6 }); g.events.emit('dodge', roll);
+      const ahead = this.dodgeDir.x * Math.sin(this.yaw) + this.dodgeDir.z * Math.cos(this.yaw); // how much of the roll is the way he faces: forward he goes over forwards, back over backwards, sideways he stays tucked
+      h.play(roll ? 'dodge' : 'sidestep', this.dodgeT, { roll: ahead > 0.5 ? 1 : ahead < -0.5 ? -1 : 0 }); g.audio.play('whoosh', { vol: 0.6 }); g.events.emit('dodge', roll);
     }
     // the Stormguard: for a moment, whatever comes is turned. It answers on its own when death is close (see receive);
     // the key calls it early, for a blow that cannot be blocked. Either way: only a calm man, and it costs more each time.

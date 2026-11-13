@@ -18,7 +18,12 @@ which the weight goes from one leg to the other, different for each person · **
 sheep (which used to slide), the goat, the pigs and the cow as well as the wolf and the horse; the wolf and the horse
 nod their heads with their stride, look about when they stand, and swing their tails; a raven's wing bends at the
 wrist as it beats · **the battle lines**: the rank and file step with their legs when the line goes forward, gives
-ground, comes up from the rear or runs · **cloth**: banners wave from their poles and sails move in the wind.
+ground, comes up from the rear or runs · **cloth**: banners wave from their poles and sails move in the wind ·
+**fighting**: with a shield on his arm a man now guards with it (it comes up in front of him and he looks over its
+rim, the weapon drawn back) instead of holding it out to one side; the guard stance breathes and shifts with one foot
+forward; a roll turns him right over, forwards or backwards as he goes; the sidestep is a hop off the line; a man
+struck down buckles and lands and settles, and one cut down in a fight may fall forward onto his knees and his face,
+or half turned, and lies as he fell.
 
 **In 0.28.** Animals and weapons. **Animals** are covered in something: a wolf has a shaggy pelt, a horse a
 short coat and a mane and tail of hair, a sheep a curly fleece, deer and hares a coat, ravens feathers. Three were

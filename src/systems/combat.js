@@ -73,7 +73,7 @@ export class Combat {
   kill(e) {
     const c = e.cb;
     if (this.target === e) this.target = null;
-    if (c.onDown) { c.out = true; c.onDown(e); } else e.die();
+    if (c.onDown) { c.out = true; c.onDown(e); } else e.die(false, true);
     if (!c.training) this.g.state.xp += c.boss ? 25 : 6; // renown for the fallen
     this.g.fx.burst('blood', e.pos.x, e.pos.y + 1.1, e.pos.z, c.boss ? 22 : 10); if (c.boss) { this.g.slowT = Math.max(this.g.slowT || 0, 0.9); this.g.player.cam.kick = -9; }
     this.g.events.emit('enemyDown', e);
