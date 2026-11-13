@@ -190,6 +190,7 @@ export class A6Marsh extends A4Part {
       const R = A6.eydis, low = e.cb.hp <= e.cb.maxHp * R.floor;
       d.t += dt; if (low) e.cb.hp = e.cb.maxHp * R.floor;
       if (!d.hinted && (low || d.t > R.hintAfter)) { d.hinted = true; c.sub('Every time he charges, the mud grabs his feet and she punishes him. He takes a cut on the shoulder, then the leg. The water around him turns red.', 9); c.hint('callSot'); }
+      else if (d.hinted && low && (d.again = (d.again || 0) + dt) > R.again) { d.again = 0; c.hint('callSot'); this.g.audio.play('raven', { vol: 0.7 }); } // held at the floor and still no raven: {b} calls from the mist, and the hint stands again (game)
     }
   }
 }

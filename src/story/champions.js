@@ -215,7 +215,7 @@ export class Champions {
     if (def.id === 'gorm' || def.id === 'rurik') g.after(2.4, () => g.ui.toast(def.id === 'gorm' ? 'Wall of Iron: nothing gets through from the front. Make him swing.' : 'A shield wall of one: break his guard, or catch him in his own swing.'));
     if (def.id === 'vigdis') g.after(1.5, () => g.ui.hint('She steps twice before she strikes, always from the side: left, left, right, right. Watch the arrow at the edge of the screen, listen for her feet, and raise your guard ({block}) on the beat.'));
     if (def.id === 'skarde') g.after(6, () => g.ui.hint('He tires. Give ground, keep your guard up when he talks, and let him swing at air.'));
-    if (!this.st.flags.artHint) { this.st.flags.artHint = true; g.after(9, () => g.ui.hint('{art1} is Thunder Smash: a leap and a stroke of lightning that stops a swing and breaks a guard. It spends the storm bar, which the Stormguard also needs.')); }
+    if (!this.st.flags.artHint) { this.st.flags.artHint = true; g.after(9, () => g.ui.tip('{art1} is Thunder Smash: a leap and a stroke of lightning that stops a swing and breaks a guard. It spends the storm bar, which the Stormguard also needs.')); }
     p.mortal = true;
   }
   /** A fight changes: the bridge burns, Gorm throws his shield away, Håkon changes weapons. */
