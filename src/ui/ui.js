@@ -501,11 +501,12 @@ export class UI {
     const row = (name, html) => `<div class="lrow"><span>${name}</span><div>${html}</div></div>`;
     body.innerHTML = `<h3>Appearance</h3><p class="muted">How Eirik looks as a man. The lightning scar over his left eye stays in every version.</p>
       <div class="looks"><canvas id="mirror" width="340" height="430"></canvas><div class="opts">
-      ${row('Hair', chips('hairStyle', [['short', 'Short'], ['long', 'Long'], ['tail', 'Tied back'], ['braid', 'One braid'], ['braids', 'Two braids'], ['topknot', 'Topknot'], ['bald', 'Shaved']]))}
+      ${row('Hair', chips('hairStyle', [['crop', 'Cropped'], ['short', 'Short'], ['swept', 'Swept back'], ['shoulder', 'To the shoulder'], ['long', 'Long'], ['mane', 'Mane'], ['warrior', 'Long, braided at the temples'], ['tail', 'Tied back'], ['braid', 'One braid'], ['braids', 'Two braids'], ['topknot', 'Topknot'], ['shaved', 'Shaved'], ['bald', 'Bald']]))}
       ${row('Hair colour', dots('hair', [0xd9c27a, 0xa87e45, 0x8a5a2e, 0x5c4028, 0x2c241e, 0x9a4420, 0x9a968e, 0xe6e2da]))}
-      ${row('Beard', chips('beard', [[null, 'None'], ['stubble', 'Stubble'], ['short', 'Short'], ['long', 'Long'], ['braided', 'Braided']]))}
+      ${row('Beard', chips('beard', [[null, 'None'], ['stubble', 'Stubble'], ['short', 'Short'], ['full', 'Full'], ['long', 'Long'], ['forked', 'Forked'], ['braided', 'Braided'], ['goatee', 'Chin']]))}
       ${row('Eyes', dots('eyes', [0x86aec6, 0x8e979c, 0x6f8f5a, 0x8a6a3a, 0x5a4632, 0xb07a2e]))}
-      ${row('Face', chips('face', [['even', 'Even'], ['lean', 'Lean'], ['broad', 'Broad'], ['long', 'Long']]))}
+      ${row('Face', chips('face', [['even', 'Even'], ['lean', 'Lean'], ['broad', 'Broad'], ['long', 'Long'], ['square', 'Square'], ['heavy', 'Heavy']]))}
+      ${row('Nose', chips('nose', [['straight', 'Straight'], ['hooked', 'Hooked'], ['broken', 'Broken'], ['snub', 'Snub'], ['broad', 'Broad']]))}
       ${row('Skin', dots('skin', [0xe8c0a2, 0xdcae8e, 0xc8946e, 0xa87550, 0x7a5236]))}
       ${row('Build', chips('build', [[0.96, 'Lean'], [1.08, 'Strong'], [1.2, 'Heavy']]))}
       ${row('Height', chips('scale', [[0.96, 'Short'], [1.0, 'Middling'], [1.05, 'Tall']]))}

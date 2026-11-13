@@ -16,17 +16,17 @@ export const ITEMS = {
 };
 
 export const CAST = {
-  ragnar: { name: 'Ragnar', role: 'Father', look: { scale: 1.04, build: 1.12, hair: 0x9a7a48, hairStyle: 'long', beard: 'short', tunic: 0x4f6272, trim: 0xb89a4a, legs: 0x4a4034, sleeve: 0x4f6272 } },
-  ylva: { name: 'Ylva', role: 'Mother', look: { scale: 0.96, female: true, build: 0.92, hair: 0x8a4a2a, hairStyle: 'braid', tunic: 0x5f7a56, trim: 0xc9a24a, apron: 0xd8cfb8, sleeve: 0xd8cfb8 } },
-  hrolf: { name: 'Hrolf the Skald', role: 'Village skald', look: { scale: 0.97, hair: 0xb8b4ac, hairStyle: 'long', beard: 'long', tunic: 0x6a5a70, trim: 0x8a7a4a, cloak: 0x4a4458, sleeve: 0x6a5a70 } },
-  brokk: { name: 'Kolbrand', role: 'Smith', look: { scale: 1.02, build: 1.26, hairStyle: 'bald', beard: 'short', hair: 0x3a2a1c, tunic: 0x5a4a3a, apron: 0x3a2e24, skin: 0xc8946e } },
-  odd: { name: 'Odd', role: 'Fisherman', look: { hair: 0x5a4a3a, beard: 'short', tunic: 0x6a6a5a, trim: 0x3a5a6a, sleeve: 0x6a6a5a } },
-  thyra: { name: 'Thyra', role: 'Village girl', look: { scale: 0.72, child: true, female: true, hair: 0xd8b86a, hairStyle: 'braids', tunic: 0x9a5a4a, trim: 0xd8c890 } },
-  gunnar: { name: 'Gunnar the Elder', role: 'Village elder', look: { build: 1.08, hair: 0x8a8680, hairStyle: 'long', beard: 'short', tunic: 0x7a3a2e, trim: 0xc9a24a, cloak: 0x3a4a5a, sleeve: 0x7a3a2e } },
-  asa: { name: 'Asa', role: 'Weaver', look: { female: true, scale: 0.95, build: 0.92, hair: 0x4a3a2a, hairStyle: 'bun', tunic: 0x6a5a7a, apron: 0xcfc6ae } },
-  farmer1: { name: 'Ketil', role: 'Farmer', look: { hair: 0x7a5a3a, tunic: 0x7a6a4a, beard: 'short' } },
+  ragnar: { name: 'Ragnar', role: 'Father', look: { scale: 1.04, build: 1.12, hair: 0x9a7a48, hairStyle: 'tail', beard: 'short', tunic: 0x4f6272, trim: 0xb89a4a, legs: 0x4a4034, sleeve: 0x4f6272, jaw: 0.95, age: 0.2, brows: 1.1, eyes: 0x7a8a96 } },
+  ylva: { name: 'Ylva', role: 'Mother', look: { scale: 0.96, female: true, build: 0.92, hair: 0x8a4a2a, hairStyle: 'braidfront', tunic: 0x5f7a56, trim: 0xc9a24a, apron: 0xd8cfb8, sleeve: 0xd8cfb8, eyes: 0x5a7a4a, face: 'heart', cheek: 0.55, lips: 'full', browArch: 0.005 } },
+  hrolf: { name: 'Hrolf the Skald', role: 'Village skald', look: { scale: 0.97, hair: 0xc0bcb4, hairStyle: 'long', beard: 'long', tunic: 0x6a5a70, trim: 0x8a7a4a, cloak: 0x4a4458, sleeve: 0x6a5a70, age: 0.8, face: 'long', nose: 'long', brows: 1.3, eyes: 0x7a8aa0, mood: 'smile' } },
+  brokk: { name: 'Kolbrand', role: 'Smith', look: { scale: 1.02, build: 1.26, hairStyle: 'bald', beard: 'long', hair: 0x8a8680, tunic: 0x5a4a3a, apron: 0x3a2e24, skin: 0xc8946e, soot: 0.3, mood: 'smile', face: 'broad', nose: 'broad', age: 0.65, brows: 1.3 } },
+  odd: { name: 'Odd', role: 'Fisherman', look: { hair: 0x5a4a3a, beard: 'short', tunic: 0x6a6a5a, trim: 0x3a5a6a, sleeve: 0x6a6a5a, hairStyle: 'short', rosy: 0.45, face: 'long', nose: 'long', age: 0.3, eyes: 0x6a7a8a } },
+  thyra: { name: 'Thyra', role: 'Village girl', look: { scale: 0.72, child: true, female: true, hair: 0xd8b86a, hairStyle: 'braids', tunic: 0x9a5a4a, trim: 0xd8c890, freckles: 0.4, rosy: 0.6, mood: 'smile', face: 'round' } },
+  gunnar: { name: 'Gunnar the Elder', role: 'Village elder', look: { build: 1.08, hair: 0x8a8680, hairStyle: 'tail', beard: 'short', tunic: 0x7a3a2e, trim: 0xc9a24a, cloak: 0x3a4a5a, sleeve: 0x7a3a2e, recede: 0.4, age: 0.65, face: 'square', nose: 'hooked', brows: 1.2, grey: 0.3 } },
+  asa: { name: 'Asa', role: 'Weaver', look: { female: true, scale: 0.95, build: 0.92, hair: 0x4a3a2a, hairStyle: 'bun', tunic: 0x6a5a7a, apron: 0xcfc6ae, age: 0.35, face: 'lean', squint: 0.15 } },
+  farmer1: { name: 'Ketil', role: 'Farmer', look: { hair: 0x7a5a3a, tunic: 0x7a6a4a, beard: 'short', face: 'broad', nose: 'broad' } },
   farmer2: { name: 'Dagny', role: 'Farmer', look: { female: true, scale: 0.94, build: 0.92, hair: 0xb89a5a, hairStyle: 'braids', tunic: 0x8a6a4a, apron: 0xbfb49a } },
-  hakon: { name: 'Jarl Håkon Ironwolf', role: 'Antagonist', look: { scale: 1.12, build: 1.26, hair: 0x2a2420, hairStyle: 'long', beard: 'short', tunic: 0x2e2e34, trim: 0x8a8a90, legs: 0x24221f, cloak: 0x34343a, fur: true, helmet: true, mail: true, sleeve: 0x2e2e34 } },
+  hakon: { name: 'Jarl Håkon Ironwolf', role: 'Antagonist', look: { scale: 1.12, build: 1.26, hair: 0x2a2420, hairStyle: 'long', beard: 'short', tunic: 0x2e2e34, trim: 0x8a8a90, legs: 0x24221f, cloak: 0x34343a, fur: true, helmet: true, mail: true, sleeve: 0x2e2e34, grey: 0.15, face: 'square', ridge: 0.8, eyes: 0x8e979c, nose: 'hooked', brows: 1.2, squint: 0.25 } },
 };
 export const RAIDER_LOOKS = [
   { build: 1.15, tunic: 0x3a2e2a, trim: 0x6a1a14, legs: 0x2a2420, helmet: true, beard: 'short', hair: 0x4a3a2a, cloak: 0x2a2a2e, sleeve: 0x3a2e2a },

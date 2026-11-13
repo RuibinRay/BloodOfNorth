@@ -46,6 +46,30 @@ playtests; none are claimed until then.
 3. Look at the world and the people in play and say what to change (the trees, the shore, the clothes, any figure that does not look like its portrait, the ships, the halls and gates, the animals); $4.99 of the approved $10 is unspent. Consider making a new Higgsfield key, since the pair was pasted into a chat.
 4. Decide where the project lives: a PC that can run UE5, or continue in the browser for the epilogue and the polish.
 
+## Faces and hair (built on the branch `faces-and-hair` from 0.29; not yet merged)
+
+Asked for: better eyes, noses, ears, mouths and above all hair, and every important character looking like themselves.
+Built: `src/entities/heads.js` builds every head from its look (the skull, nose, ears, eyes, lids, brows, lips, jaw,
+hair and beard; the fields it reads are listed at its top); `humanoid.js` skins a vertex to two joints where a piece
+bends (jaw, mouth corners, hair that hangs onto the back, a long beard or a braid lying on the chest), and animates the
+jaw, lids, irises and mouth corners. Looks for about eighty named people in the cast tables, `champions.js` and
+`player.js`, matched to their portraits. Seen in labelled sheets of every style and of the cast, from the front and
+three-quarters, and in scenes; `npm run check` passes.
+
+Known gaps:
+- **Judged from still pictures**, like the animation pass: no one has watched a face talk, blink or glance in play.
+- **The camera in play is four or five metres behind Eirik**, and dialogue does not move it, so most of the face work is
+  seen in cutscenes and up close; at play distance what tells people apart is their hair, beard, colour and build.
+- **Hair is a shaped shell with locks, a hanging curtain and tubes for braids**, not strands: it does not move in the
+  wind, and long hair can pass through a raised arm or a cloak's collar.
+- **Long beards and braids lying on the chest bend between the head and the chest**: with the head turned far they
+  kink at the neck.
+- **Faces share one set of eyes and lips**, varied by size, spacing, colour, lids and brows; there are no sculpted
+  likenesses. Unnamed folk, raiders and the rank and file keep the default face (the rank and file their own simpler one).
+- **A portrait and the story disagree in two places, left as the portraits have it**: Liv's eyes are her father's blue
+  (the story gives her her mother's), and Håkon in Act VII keeps his black hair streaked with grey, not the grey
+  hair and long beard his look had before.
+
 ## Known gaps in 0.29
 
 - **Everything is in one place again, except what is still being made.** `act7-fight-tuning` (Ulf, Kettil and Vigdis made to last longer, from a bot playtest) and `story-hints-stay` (one-time tips no longer wipe the story's hints) were merged here, and `main` was brought up from 0.16 to this. Both were made in other sessions from 0.22 and were checked there, not replayed here: here every chapter starts and the checks pass with them in. A fifth branch, `faces-and-hair`, is being worked on in another session as this is written (it has uncommitted changes to `src/entities/humanoid.js` and `src/world/geo.js`, cut from the animation pass before the fighting moves were added): it is not merged, and will meet the fighting moves in the same file when it is.
