@@ -87,7 +87,7 @@ export const FOES = [
     skills: [['Buckler-Hook', 'A twist of the buckler takes the weapon out of Eirik\'s hand for a few breaths, even through a guard.'], ['Mud in the Eyes', 'Thrown from three paces. A raised guard keeps it out.'], ['Boot-Knife', 'A feint with the axe, then the knife from his boot, which no guard stops.']],
     cb: { hp: 280, dmg: 15, skill: 0.6, dodge: 0.35,
       moves: [{ id: 'hook', anim: 'shove', dur: 0.85, hitAt: 0.45, dmg: 6, name: 'Buckler-Hook', hook: 3 }, { id: 'mud', anim: 'atk1', dur: 0.7, hitAt: 0.5, dmg: 1, reach: 3.4, name: 'Mud in the Eyes', fx: { blind: 3.5 }, min: 2.2 },
-        ...str('bk', [mv('cut', 'a', { dmg: 8, dur: 0.7 }), { id: 'x', anim: 'thrust', dur: 0.5, hitAt: 0.45, dmg: 20, unblockable: true, name: 'Boot-Knife' }], 1), ...str('kc', [mv('cut', 'a'), mv('back', 'b')])],
+        ...str('bk', [mv('cut', 'a', { dmg: 8, dur: 0.7 }), { id: 'x', anim: 'thrust', dur: 0.9, hitAt: 0.45, dmg: 20, unblockable: true, name: 'Boot-Knife' }], 1), ...str('kc', [mv('cut', 'a'), mv('back', 'b')])],
       phases: [{ at: 0.4, line: 'Wait. Wait! I can tell you who paid for it!', set: { dodge: 0.5 } }] } },
   { id: 'vigdis', n: 8, name: 'Vigdis Quickblood', title: 'the Left Hand', act: 'VII', where: 'the long bridge, Svartøy', spot: at('svartoy', 'bridgeN', 0, 26), near: 15,
     task: 'Svartøy: step onto the long bridge, where Vigdis Quickblood waits', says: '', won: 'On the next left-left he does not block. He steps in. She dies with both blades still in her hands.',
