@@ -108,6 +108,11 @@ console.log('Building…');
 try { execFileSync(process.execPath, [join(root, 'node_modules/vite/bin/vite.js'), 'build', '--logLevel', 'error'], { cwd: root, stdio: ['ignore', 'pipe', 'pipe'] }); ok('the game builds'); }
 catch (e) { fail('the game does not build:\n' + String(e.stderr || e.stdout || e.message).trim().split('\n').slice(0, 12).join('\n')); process.exit(1); }
 
+{ // the paintings the game lists (src/data/art.js) are files that exist
+  const { ART } = await import('../src/data/art.js'), all = Object.values(ART).flatMap((k) => Object.values(k)), gone = all.filter((f) => !existsSync(join(root, 'public', f)));
+  gone.length ? fail(`${gone.length} of ${all.length} paintings listed in src/data/art.js are missing from public/: ${gone.slice(0, 4).join(', ')}`) : ok(`all ${all.length} paintings the game lists are in public/art`);
+}
+
 const server = await createServer({ root, logLevel: 'silent', server: { host: '127.0.0.1', port: 5190, strictPort: false, hmr: false, watch: null } });
 await server.listen();
 const base = server.resolvedUrls.local[0];

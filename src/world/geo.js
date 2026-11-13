@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { rng } from '../core/util.js';
+import { ART } from '../data/art.js';
 
 /** Uniforms shared by every patched material (wind sway + snow cover). */
 export const shared = { uTime: { value: 0 }, uSnow: { value: 0 }, uWind: { value: 1 } };
@@ -199,6 +200,15 @@ const clothCache = new Map();
 export function initMaterials() {
   initTextures();
   const std = (o) => new THREE.MeshStandardMaterial(Object.assign({ roughness: 0.9, metalness: 0 }, o));
+  // Painted surfaces, when the game has them (public/art/textures): each is drawn into the texture above once it has
+  // loaded, so until then, and wherever a file is missing, the world wears what is drawn in code.
+  for (const k of ['planks', 'thatch', 'turf', 'stone']) {
+    const url = (ART.textures || {})[k];
+    if (!url) continue;
+    const img = new Image();
+    img.onload = () => { const c = TEX[k].image; c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); TEX[k].needsUpdate = true; };
+    img.src = url;
+  }
   M.plank = patch(std({ map: TEX.planks }));
   M.timber = patch(std({ map: TEX.planks, color: 0x8a7663 }));
   M.bark = patch(std({ map: TEX.bark }));

@@ -27,19 +27,26 @@ playtests; none are claimed until then.
 | 0.20 | **The Old Birch** | The Epilogue as the story tells it, all three parts: Ravenhold twelve years on (the town past the palisade, the market on the strand, ships from four coasts, the row of stones, Torvald and Hauk, Halvar and the Thing-Ring, the people the war left); Leif's house, the first building that can be walked into (Liv, the dice, the Twins); the walk up the hill with Little Brokk, Bjorn's mound under the grown birch, the lesson, the young raven, the view rising out to sea. Eirik at forty-one. The whole story can now be played | Automated playtest: every step played in order to the last screen; all 9 steps loaded cold; started from the menu; Act VII's end screen continues into it | **Done** |
 | 0.21 | **Companions who fight** | Start at any chapter of any act (67), each started by script and checked; the six companions fight with their own kit and one skill each (called with Y and U); two walk with Eirik in the open world (recruited by talking, B to wait or come, down rather than dead, Ingrid gets them up); in the story's battles the companions on the line use their kit, their skills can be called, and Astrid on the field shoots for him | Every chapter starts in the right place; each skill used in a scripted fight; party kept across a save | Built (by script) |
 | 0.22 | **Performance and checks** | Vegetation in map cells drawn only when in view, with simpler far trees; props merged area by area; islands dropped past the haze; each person one skinned figure and a face; resolution that follows the frame rate; a frame counter; `npm run check` (every chapter started and compared with a recorded state, five scenes held to a drawing budget, one companion fight) | Triangles a frame down by 75 to 95 per cent in the measured scenes; all 67 chapters pass the check | Built (by script) |
-| 0.23 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: the raid, Kettil, the shore battle, Arne, Ulf, the deck fights, Rurik, the tannery yard, Skarde, Eydis, Bersi and all of Act VII above all, then the champions, the dive, riding, rowing and sailing feel, aim, stealth, camera | Three people finish everything built without help | Next |
-| 0.24 | **Real assets in** | Working Higgsfield credentials; key art; GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
-| 0.25 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or keep growing the web build | A written decision | Planned |
+| 0.23 | **Painted art** | Higgsfield API working (images): 51 portraits beside dialogue and on the Companions page, 32 item paintings in the Inventory, a painting for each act behind its title cards and in the Acts menu, a title painting on the loading screen, four painted world textures, parchment under panels and the map; a batch tool with a spending ledger and a cap | 97 pictures in the game for $2.55; the checks pass | Built |
+| 0.24 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: the raid, Kettil, the shore battle, Arne, Ulf, the deck fights, Rurik, the tannery yard, Skarde, Eydis, Bersi and all of Act VII above all, then the champions, the dive, riding, rowing and sailing feel, aim, stealth, camera | Three people finish everything built without help | Next |
+| 0.25 | **3D models in** | A source of models (Higgsfield's API has none); GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
+| 0.26 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or keep growing the web build | A written decision | Planned |
 | 1.0 | **Polish** | Side missions, minigames, voiced dialogue, recorded music, performance targets (60 fps at 1440p on suitable hardware as an objective), accessibility pass | Full playthrough signed off | Planned |
 
 ## Immediate next steps
 
 1. Play Acts II to VII and the Epilogue by hand (main menu, Start at an Act) and say where they are unfair, unclear, too easy or too slow: Act VII's fights first (Ulf, Kettil, Vigdis, Gorm, Håkon), then the raid, the shore battle, Arne, the fights on the Sea-Raven's deck, Rurik, the tannery yard, Skarde, Eydis and Bersi.
 2. Rule on the items under "Under review" in the story bible (Act I's Bjornstead is still the old farm in the dale).
-3. Supply the Higgsfield key ID and secret, run `npm run hf -- auth`, then generate the key art and reference sheets.
+3. Look at the painted art in play and say what to change or add (more scenes, missing portraits); about $7.45 of the approved $10 is unspent. Consider making a new Higgsfield key, since the pair was pasted into a chat.
 4. Decide where the project lives: a PC that can run UE5, or continue in the browser for the epilogue and the polish.
 
-## Known gaps in 0.22
+## Known gaps in 0.23
+
+- **The paintings and the 3D figures are two different looks.** A painted, lifelike face now sits beside a figure built from capsules and boxes. Nothing in the world itself was remodelled: the API makes pictures, not models.
+- **A portrait is one generation from words**, so the same person at different ages is not the same painted face, and about a dozen named speakers (the lawspeakers, merchants, messengers) have no portrait and show none.
+- **Some pictures are near, not exact**: Ragnar's axe is a plain axe with a raven, not a true bearded axe; the whale painting's raven is black; the planks are the pilot's tarred ones.
+- **Title cards of every chapter in an act share that act's one painting.**
+- **Nobody has looked at any of it in play but me, in screenshots.**
 
 - **The frame rate has not been measured.** What is counted is what each scene asks the machine to draw (draw calls and triangles, exact). The timings taken while doing this work came from a hidden browser tab and were too noisy to use. The frame counter in Settings shows the real figure on the machine it runs on.
 - **Resolution that follows the frame rate was tested with made-up frame times**, not on a struggling machine: it fell to 70% and then 55% at thirty frames a second and climbed back at sixty. It may need its thresholds changed once it has been seen working.

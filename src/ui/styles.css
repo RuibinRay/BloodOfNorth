@@ -163,6 +163,10 @@ i.key { font-style: normal; border: 1px solid rgba(231, 217, 187, 0.5); border-r
 #dialogue { position: absolute; left: 50%; bottom: 6%; transform: translateX(-50%); width: min(820px, 88vw); padding: 18px 26px 16px; display: none; pointer-events: auto;
   background: linear-gradient(rgba(231, 217, 187, 0.97), rgba(214, 198, 164, 0.97)); color: var(--ink); border: 1px solid #8a7248; box-shadow: 0 0 0 4px var(--wood), 0 0 0 5px #6d5a3a, 0 12px 40px rgba(0, 0, 0, 0.6); z-index: 8; }
 #dialogue.on { display: block; }
+#dialogue .portrait { display: none; position: absolute; left: 18px; bottom: 16px; width: 112px; height: 140px; background: #2a2018 center top / cover no-repeat; border: 1px solid #8a7248; box-shadow: 0 0 0 3px var(--wood), 0 6px 18px rgba(0, 0, 0, 0.55); }
+#dialogue.faced { padding-left: 154px; min-height: 172px; }
+#dialogue.faced .portrait { display: block; }
+@media (max-width: 760px) { #dialogue .portrait { width: 72px; height: 90px; } #dialogue.faced { padding-left: 106px; min-height: 122px; } }
 #dialogue .speaker { font-size: 14px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--blood); font-weight: 700; }
 #dialogue .text { font-size: 21px; line-height: 1.45; min-height: 2.9em; margin-top: 6px; }
 #dialogue .choices { margin-top: 4px; }
@@ -175,6 +179,7 @@ i.key { font-style: normal; border: 1px solid rgba(231, 217, 187, 0.5); border-r
 #fade { position: absolute; inset: 0; background: #000; opacity: 0; z-index: 9; }
 #card { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; opacity: 0; transition: opacity 1s; z-index: 10; }
 #card.on { opacity: 1; }
+#card.painted { background: #0b0a09 center / cover no-repeat; } /* the painting of the act behind its title */
 #card h1 { font-weight: 500; font-size: clamp(34px, 5.2vw, 68px); letter-spacing: 0.14em; text-transform: uppercase; margin: 0; text-shadow: 0 3px 18px #000; }
 #card h1::after { content: ""; display: block; width: 260px; max-width: 60vw; height: 1px; margin: 18px auto 0; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
 #card p { font-size: clamp(16px, 1.7vw, 22px); font-style: italic; margin: 16px 20px 0; text-shadow: 0 2px 8px #000; }
@@ -208,7 +213,7 @@ nav button small { display: block; font-size: 12px; letter-spacing: 0.04em; opac
 #tabs button:hover:not(.on) { color: #fff; }
 #panel-close { all: unset; cursor: pointer; padding: 0 20px; font-size: 18px; color: var(--parch-dim); }
 #panel-close:hover { color: #fff; }
-#panel-body { flex: 1; overflow: auto; padding: 24px 30px; color: var(--ink); background: linear-gradient(var(--parch), var(--parch-dim)); }
+#panel-body { flex: 1; overflow: auto; padding: 24px 30px; color: var(--ink); background: var(--vellum, none) center / cover, linear-gradient(var(--parch), var(--parch-dim)); background-blend-mode: multiply; background-attachment: local, local; }
 #panel-body h3 { margin: 0 0 4px; font-size: 24px; font-weight: 600; letter-spacing: 0.04em; }
 #panel-body h4 { margin: 20px 0 6px; font-size: 13px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--blood); }
 #panel-body p { line-height: 1.55; margin: 6px 0; font-size: 16px; }
@@ -251,6 +256,12 @@ ul.steps li.cur { font-weight: 700; }
 .keys button { font: 600 13px ui-monospace, Menlo, monospace; min-width: 74px; padding: 4px 8px; background: #f3e8cf; border: 1px solid #8a7248; border-bottom-width: 2px; border-radius: 4px; cursor: pointer; color: var(--ink); }
 .keys button.wait { background: var(--blood); color: #fff; }
 .slot { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid rgba(74, 54, 38, 0.22); }
+.slot img.face { width: 72px; height: 90px; object-fit: cover; object-position: center top; border: 1px solid #8a7248; box-shadow: 0 0 0 2px var(--wood); flex: none; }
+.slot img.face.away { filter: grayscale(0.85) brightness(0.8); }
+.slot img.scene { width: 160px; height: 90px; object-fit: cover; border: 1px solid #8a7248; box-shadow: 0 0 0 2px var(--wood); flex: none; }
+.list button img.pic { width: 30px; height: 30px; object-fit: cover; vertical-align: middle; margin-right: 8px; border: 1px solid rgba(74, 54, 38, 0.5); }
+img.itemart { float: right; width: 190px; height: 190px; margin: 0 0 12px 18px; object-fit: cover; border: 1px solid #8a7248; box-shadow: 0 0 0 3px var(--wood); }
+@media (max-width: 760px) { .slot img.scene { width: 96px; height: 54px; } img.itemart { width: 120px; height: 120px; } }
 .slot .info { flex: 1; } .slot .info b { font-size: 17px; } .slot .info span { display: block; font-size: 13.5px; color: var(--ink-soft); }
 details.chapters { margin: 0 0 4px; border-bottom: 1px solid rgba(74, 54, 38, 0.22); }
 details.chapters summary { cursor: pointer; padding: 6px 0 8px; font-size: 14px; color: var(--ink-soft); letter-spacing: 0.03em; }
@@ -281,7 +292,7 @@ details.chapters li > span { display: inline-block; min-width: min(60%, 340px); 
 .status-grid ul { margin: 4px 0; padding-left: 18px; font-size: 14.5px; line-height: 1.5; }
 .tag { display: inline-block; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; padding: 2px 7px; border: 1px solid currentColor; margin-right: 6px; }
 .tag.ok { color: #3f6d3a; } .tag.proto { color: #8a6a1a; } .tag.plan { color: #6a5a4a; }
-#loading { position: absolute; inset: 0; background: #0b0a09; display: flex; align-items: center; justify-content: center; text-align: center; z-index: 20; transition: opacity 0.8s; }
+#loading { position: absolute; inset: 0; background: #0b0a09 center / cover no-repeat; display: flex; align-items: center; justify-content: center; text-align: center; z-index: 20; transition: opacity 0.8s; }
 #loading.gone { opacity: 0; pointer-events: none; }
 #loading h1 { font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; font-size: clamp(26px, 4vw, 46px); margin: 0; }
 #loading p { font-style: italic; opacity: 0.7; }

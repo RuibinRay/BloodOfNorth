@@ -2,7 +2,7 @@
 
 A third-person Viking action RPG that follows the owner's story, *The Rise of the Raven King*
 ([docs/story](docs/story/THE_RISE_OF_THE_RAVEN_KING.md): seven acts and an epilogue). This repository holds
-**slice 0.22**: Act I (Eirik's childhood), Act II (nineteen: Bjornstead, the raid, the walls, Kaupang and the
+**slice 0.23**: Act I (Eirik's childhood), Act II (nineteen: Bjornstead, the raid, the walls, Kaupang and the
 Sea-Raven), Act III (twenty: Jarnøy and the Battle of Iron Shore), Act IV (twenty-two: the treasure voyage,
 Wessex, six islands burning, Hedeby Sound), Act V (twenty-four: the hunger winter, the tannery yard, the ring,
 Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, the wedding) and Act VII
@@ -10,7 +10,17 @@ Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, th
 (forty-one: Ravenhold twelve years on, Leif's house, the old birch), each as the story tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
-**New in 0.22.** Performance and checks. The game now draws far less for the same picture: trees, rocks, bushes and
+**New in 0.23.** Painted art, made with the Higgsfield API (the first time the integration has worked: the key pair
+is accepted, and 160 generations cost $2.55). **Portraits** of 51 of the cast, from the story's own descriptions and
+the colours of the figures in the game, shown beside what each says in a conversation and on the Companions page;
+Eirik has three, at nine, grown and at forty-one · **paintings of the things he carries** (32) in the Inventory ·
+**a painting for each act and the Epilogue** behind its title cards and in the Acts menu, and a title painting behind
+the loading screen · **painted textures** on plank walls, turf roofs, thatch and stone · **parchment** under every
+panel and over the map. The 3D world itself, its figures, buildings, ships and weapons, is still built in code: the API
+makes pictures, not models. How it is made, what it cost and what was learned is in
+[docs/HIGGSFIELD.md](docs/HIGGSFIELD.md).
+
+**In 0.22.** Performance and checks. The game now draws far less for the same picture: trees, rocks, bushes and
 grass are laid out in map cells and only the cells in view are drawn (they were all drawn, everywhere, every frame, and
 again for shadows); far trees use a simpler shape; grass and bushes stop where they can no longer be seen; the props of
 each place are merged area by area instead of across the whole map; an island the haze has taken is not drawn; and
@@ -393,7 +403,7 @@ the [story bible](docs/STORY_BIBLE.md).
 |---|---|
 | **Playable and tested** | All of Act I (chapters 1–3), Act II (nine chapters), Act III (eight chapters), Act IV (eight chapters), Act V (seven chapters), Act VI (nine chapters), Act VII (eleven chapters) and the Epilogue (three parts) start to finish, by scripted playtest; a building that can be walked into; a sea battle played from one deck (fire arrows, a ship of archers to shoot, a ram); a landing with two pushes and two rescues; a chapter played as another character; a final fight in four parts whose last is won by waiting and guarding; a hunt across a marsh with the white raven; two champion fights that are won by something other than damage (the black raven; a ledge); a night infiltration with patrols, dogs and hiding places; seeing through the black raven; a duel with a scripted fall and recovery; fights on a ship's deck; a duel with scripted turns; a horse to ride in the story; a battle with allies who hold attackers along a line; four companions who join in their scenes; start-at-an-act; a village that burns, is walled and gains a ship as the story goes; timed work, a wrestling and shield-wall game, a dive with breath; melee combat against enemies that guard, take turns and flank, with a two-phase captain; an ally who fights; the black raven harrying a target; raven companions and Raven's Eye; five hidden omens; hunger and warmth, shelter, cooking, a wolf encounter with two outcomes, thin-ice crossing; movement, camera, stamina; dialogue with choices; quests, journal, tracker, map with waypoint; woodcutting, archery, tracking, fishing, fire-making; sparring; stealth with raider sight and hearing; cold survival; day/night, snow, fire; in-engine cutscenes; save/load with autosave; settings, key rebinding, gamepad |
 | **Prototype** | Companions who fight (six kits and six skills; two at Eirik's side in the open world, and on the line in the story's battles; tested by script, not by a person, and the numbers are first guesses); the open-world sandbox (two law-districts, fourteen islands, one horse, a rowing boat and a crewed ship, sea battles with volleys, ramming and boarding, paid passage, one secret weapon, one crew raid); procedural characters and animation; procedural audio and score; villager routines; wildlife AI; combat balance and the new enemy kinds (tuned against scripted players only) |
-| **Blocked** | Higgsfield asset generation — the API needs a key ID *and* a secret; only one value was supplied. See [docs/HIGGSFIELD.md](docs/HIGGSFIELD.md) |
+| **Blocked** | 3D models from Higgsfield: its API makes images and video only, so the figures, buildings and ships stay procedural. Images work since 0.23. See [docs/HIGGSFIELD.md](docs/HIGGSFIELD.md) |
 | **Planned** | Everything else in the brief: Act I's last missing scenes (Old Hrefna's bones, the stick and the little shield, the seven seats); the rest of the sea map (about forty islands of which fourteen exist as a sandbox; a longship of your own, fleets and crew who can be hurt; wind and weather at sea; more districts — designed in [docs/OPEN_WORLD.md](docs/OPEN_WORLD.md)); adult combat and nine weapons, skill trees, companions' own side missions and loyalty, sailing, settlement, factions, 50 side missions, UE5 port. See [docs/ROADMAP.md](docs/ROADMAP.md) |
 
 How it was tested: an automated playtest drives the real game loop through every quest step (see
@@ -414,6 +424,7 @@ src/story/     director scripts: Act I (one per chapter), Acts II to VI (act2*.j
 src/ui/        HUD, menus, panels
 data/          campaign-wide design data (missions, world, combat) — engine-agnostic JSON
 assets/        asset registry and generated assets
-tools/         the checks (`npm run check`: check.mjs and check/), Higgsfield API client
+tools/         the checks (`npm run check`), the art pipeline (`npm run art`: art.mjs and art/), the older Higgsfield client
+public/art/    the painted art the game shows (portraits, items, scene paintings, textures, parchment)
 docs/          design document, story bible, architecture, roadmap
 ```

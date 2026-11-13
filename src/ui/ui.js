@@ -5,6 +5,7 @@ import { listSaves, saveSettings, deleteSave, latestSave, DEFAULT_SETTINGS } fro
 import { ITEMS, QUESTS } from '../data/act1.js';
 import { ACTS } from '../data/chapters.js';
 import { COMPANIONS, available, absent } from '../data/companions.js';
+import { portraitFor, portraitOf, itemArt, actArt, actArtAt, titleArt, parchment } from './art.js';
 import { SECRETS } from '../data/act1_ch3.js';
 import { TREES, POINT_EVERY } from '../systems/skills.js';
 import { POI, ISLES, DISTRICT_LINE, GREAT, MAIN, PLACES } from '../world/layout.js';
@@ -37,7 +38,7 @@ export class UI {
     this.objSpan = document.createElement('span'); this.objSpan.className = 'obj'; this.objSpan.textContent = '◆'; this.e.compass.appendChild(this.objSpan);
     this.waySpan = document.createElement('span'); this.waySpan.className = 'way'; this.waySpan.textContent = '▾'; this.e.compass.appendChild(this.waySpan);
     $('#panel-close').onclick = () => this.closePanel();
-    this.applySettings();
+    this.applySettings(); this.applyArt();
 
     const m = this.e.meter;
     this.meter = {
@@ -52,6 +53,12 @@ export class UI {
     };
   }
   applySettings() { document.documentElement.style.setProperty('--sub-scale', this.g.settings.subtitleSize); }
+  /** The paintings that are part of the page itself: behind the loading screen, and vellum under every panel and the map. */
+  applyArt() {
+    const t = titleArt(), pm = parchment(), ld = document.getElementById('loading');
+    if (t && ld) ld.style.backgroundImage = `linear-gradient(rgba(8,7,6,0.55), rgba(8,7,6,0.8)), url("${t}")`;
+    if (pm) { document.documentElement.style.setProperty('--vellum', `url("${pm}")`); this.parch = new Image(); this.parch.src = pm; }
+  }
 
   // ---- small HUD pieces ---------------------------------------------------------------
   keys(text) { return esc(text).replace(/\{(\w+)\}/g, (_, a) => `<kbd>${esc(this.g.input.label(a))}</kbd>`); }
@@ -143,6 +150,8 @@ export class UI {
     speaker = this.g.fmt(speaker || ''); // a raven can speak now: {w} and {b} are their names
     const d = this.e.dialogue; d.classList.add('on');
     d.querySelector('.speaker').textContent = speaker;
+    const face = portraitFor(speaker, this.g), pe = d.querySelector('.portrait'); // the speaker's painted face, when there is one
+    if (face !== this._face) { this._face = face; d.classList.toggle('faced', !!face); pe.style.backgroundImage = face ? `url("${face}")` : ''; }
     const t = d.querySelector('.text'); t.textContent = text; t.style.display = text || !choices ? '' : 'none';
     const c = d.querySelector('.choices'); c.innerHTML = '';
     if (choices) choices.forEach((ch, i) => {
@@ -161,6 +170,8 @@ export class UI {
   card(title, sub = '', dur = 3) {
     return new Promise((res) => {
       const c = this.e.card; c.querySelector('h1').textContent = title; c.querySelector('p').textContent = sub; c.classList.add('on');
+      const art = title ? actArt(this.g) : null; // a title stands over the painting of its act; a card of plain words stays on black
+      c.classList.toggle('painted', !!art); c.style.backgroundImage = art ? `linear-gradient(rgba(8,7,6,0.5), rgba(8,7,6,0.72)), url("${art}")` : '';
       this.cardS = { t: 0, dur, res, out: false };
     });
   }
@@ -345,8 +356,9 @@ export class UI {
     if (!ids.includes(this.sel.item)) this.sel.item = ids[0];
     const cur = this.sel.item, it = ITEMS[cur] || { name: cur, desc: '', cat: '' };
     const weapon = cur === 'bow' || g.player.meleeOwned().includes(cur);
-    body.innerHTML = `<div class="cols"><div class="list">${ids.map((id) => `<button data-id="${id}" class="${id === cur ? 'on' : ''}"><span class="n">${inv[id]}</span><small>${esc(ITEMS[id]?.cat || '')}</small>${icon(itemIcon(id, ITEMS[id]?.cat))}${esc(ITEMS[id]?.name || id)}</button>`).join('')}</div>
-      <div><h3>${icon(itemIcon(cur, it.cat), 'big')}${esc(it.name)}</h3><p class="muted">${esc(it.cat)} · carried: ${inv[cur]}</p><p>${esc(it.desc)}</p>${weapon ? `<button class="btn" id="eq">${g.player.equipped === cur ? 'Put away' : 'Equip'}</button>` : ''}</div></div>`;
+    const pic = (id) => (itemArt(id) ? `<img class="pic" src="${itemArt(id)}" alt="">` : icon(itemIcon(id, ITEMS[id]?.cat))); // its painting, or the drawn sign
+    body.innerHTML = `<div class="cols"><div class="list">${ids.map((id) => `<button data-id="${id}" class="${id === cur ? 'on' : ''}"><span class="n">${inv[id]}</span><small>${esc(ITEMS[id]?.cat || '')}</small>${pic(id)}${esc(ITEMS[id]?.name || id)}</button>`).join('')}</div>
+      <div>${itemArt(cur) ? `<img class="itemart" src="${itemArt(cur)}" alt="">` : ''}<h3>${itemArt(cur) ? '' : icon(itemIcon(cur, it.cat), 'big')}${esc(it.name)}</h3><p class="muted">${esc(it.cat)} · carried: ${inv[cur]}</p><p>${esc(it.desc)}</p>${weapon ? `<button class="btn" id="eq">${g.player.equipped === cur ? 'Put away' : 'Equip'}</button>` : ''}</div></div>`;
     body.querySelectorAll('.list button').forEach((b) => (b.onclick = () => { this.sel.item = b.dataset.id; this.openPanel('inventory', this.tabs); }));
     const eq = body.querySelector('#eq'); if (eq) eq.onclick = () => { g.player.equip(g.player.equipped === cur ? 'none' : cur); if (cur !== 'bow' && g.player.equipped === cur) g.state.flags.melee = cur; this.openPanel('inventory', this.tabs); };
   }
@@ -396,6 +408,7 @@ export class UI {
     const draw = () => {
       x.drawImage(local ? this.townBase[town.id] : realm ? this.realmBase : sea ? this.seaBase : this.mapBase, 0, 0, W, H);
       x.fillStyle = 'rgba(46,34,20,0.16)'; x.fillRect(0, 0, W, H);
+      if (this.parch && this.parch.complete && this.parch.naturalWidth) { x.save(); x.globalCompositeOperation = 'multiply'; x.globalAlpha = 0.7; x.drawImage(this.parch, 0, 0, W, H); x.restore(); } // the chart is drawn on vellum
       x.textAlign = 'center'; x.font = 'italic 15px Georgia'; x.lineWidth = 3;
       if (local) {
         x.strokeStyle = 'rgba(96,70,44,0.55)'; x.lineWidth = 2.2; for (const r of town.roads || []) { x.beginPath(); r.forEach(([dx, dz], i) => x[i ? 'lineTo' : 'moveTo'](X(town.x + dx), Z(town.z + dz))); x.stroke(); }
@@ -571,13 +584,13 @@ export class UI {
     const g = this.g, st = g.state, party = st.party || [], open = st.stage === 'open', key = (a) => esc(g.input.label(a));
     body.innerHTML = `<h3>Companions</h3><p class="muted">${open ? `In the open world two of them can walk with you. Find them by the farm (Ingrid on Jarnøy, Svanhild on Vængr) and ask them along. ${key('call1')} and ${key('call2')} call on the first and second one's skill; ${key('order')} tells them to wait where they stand, or to come with you. If one goes down, help them up, or let Ingrid do it; they are never killed.` : `In the story's battles, the companions the scene puts on the line fight with their own way of fighting, and ${key('call1')} / ${key('call2')} call on their skills (shown over the bottom right while they stand with you). In the open world, two of them can walk with you.`}</p>` +
       Object.entries(COMPANIONS).map(([id, k]) => { const here = available(id, st), mine = party.includes(id);
-        return `<div class="slot"><div class="info"><b>${esc(k.name)}${mine ? ' · with you' : ''}</b><span>${esc(k.who)}</span><span>${esc(k.style)}</span><span><b style="font-size:14px">${esc(k.skill.name)}</b> (every ${k.skill.cd} s): ${esc(k.skill.desc)}</span>${here ? '' : `<span><i>${esc(absent(id, st))}</i></span>`}</div></div>`; }).join('') +
+        return `<div class="slot">${portraitOf(id) ? `<img class="face${here ? '' : ' away'}" src="${portraitOf(id)}" alt="">` : ''}<div class="info"><b>${esc(k.name)}${mine ? ' · with you' : ''}</b><span>${esc(k.who)}</span><span>${esc(k.style)}</span><span><b style="font-size:14px">${esc(k.skill.name)}</b> (every ${k.skill.cd} s): ${esc(k.skill.desc)}</span>${here ? '' : `<span><i>${esc(absent(id, st))}</i></span>`}</div></div>`; }).join('') +
       '<p class="muted">Who they are, what they carry and when they join or leave are the owner\'s story. How they fight, their skills and the numbers are the game\'s.</p>';
   }
   render_acts(body) {
     const g = this.g;
     body.innerHTML = `<h3>Start at an act or a chapter</h3><p class="muted">An act starts at its opening. Open its chapters to start at any one of them. Everything before is taken as played: the quests done, and what Eirik carries and has learned by then. From there the game autosaves as usual, so the autosave will follow what you start. Saves in the three slots are not touched.</p>` +
-      ACTS.map((a, ai) => `<div class="slot"><div class="info"><b>${esc(a.title)}</b><span>${esc(a.text)}</span></div><button class="btn" data-act="${a.quests[0]}">Start</button></div>` +
+      ACTS.map((a, ai) => `<div class="slot">${actArtAt(ai) ? `<img class="scene" src="${actArtAt(ai)}" alt="">` : ''}<div class="info"><b>${esc(a.title)}</b><span>${esc(a.text)}</span></div><button class="btn" data-act="${a.quests[0]}">Start</button></div>` +
         `<details class="chapters" data-ai="${ai}"${this.actsOpen === ai ? ' open' : ''}><summary>The ${a.quests.length} chapters</summary><ol>` +
         a.quests.map((id) => `<li><span>${esc(QUESTS[id] ? QUESTS[id].title : id)}</span><button class="btn small" data-act="${id}">Play</button></li>`).join('') + '</ol></details>').join('');
     body.querySelectorAll('details.chapters').forEach((d) => d.addEventListener('toggle', () => { if (d.open) { this.actsOpen = +d.dataset.ai; body.querySelectorAll('details.chapters').forEach((o) => { if (o !== d) o.open = false; }); } }));
@@ -595,8 +608,8 @@ export class UI {
     body.querySelectorAll('[data-del]').forEach((b) => (b.onclick = () => { deleteSave(b.dataset.del); this.openPanel('saves', this.tabs); }));
   }
   render_status(body) {
-    body.innerHTML = `<h3>Build status — slice 0.20 (the whole story, Acts I to VII and the epilogue; open-world sandbox)</h3>
-      <p>This is the whole of the owner's story, seven acts and the epilogue, not the finished game. It has been checked by scripted playtest, not yet by people playing it through. Everything on screen is generated in code; characters, props and sound are placeholders awaiting real assets.</p>
+    body.innerHTML = `<h3>Build status — slice 0.23 (the whole story, Acts I to VII and the epilogue; companions; painted portraits, items and scenes; open-world sandbox)</h3>
+      <p>This is the whole of the owner's story, seven acts and the epilogue, not the finished game. It has been checked by scripted playtest, not yet by people playing it through. The world, its figures and the sound are generated in code; the portraits, item pictures, scene paintings, parchment and four textures are painted with Higgsfield; characters, props and sound are placeholders awaiting real assets.</p>
       <div class="status-grid">
       <div><h4><span class="tag ok">playable</span></h4><ul><li>Act I, Chapter 1: a full day in Hrafnvik and the night raid</li><li>Act I, Chapter 2: winter survival, a wolf, trackers and the river ice</li><li>Act I, Chapter 3: Bjornstead, the raven chicks, the axe under the hearthstone, first flight</li><li>The lightning: the storm, the old birch, the scar, the white raven's first words</li><li>Raven's Eye: fly the white raven, mark what she sees</li><li>Five hidden omens that seed later secret weapons</li><li>Act II, all nine chapters as the story tells them: Bjornstead the coastal village, the hunt, the Thing and the feast, Kettil's visit, the raid and the barn, the Hall of Wolves, the peddlers, the walls, Kaupang and the wreck, the arm-ring</li><li>Act III, all eight chapters: Arvid and the collectors, the Thing, Brokk, Astrid and Torvald, Ingrid's hospital, the Battle of Iron Shore, Arne Longshot in the tower, Ulf Two-Blades and the boats, the gift of iron, Storm-Yew</li><li>Act IV, all eight chapters: the treasure voyage, Rurik Shieldsplitter on the deck, Wessex, the Iron Circle, six islands burning, the council of six kings, Hedeby Sound, Driftwood</li><li>Act V, all seven chapters: the assembly and the rebuilding, the winter of hunger and the whale, the tannery yard at Håkon's hunting camp, the ring and Old Thrand, Vængr and Skarde Bear-Maw, Torvald's confession, the feast</li><li>Act VI, all nine chapters: Myrholm and Eydis the Mire, Skalløy and the last forge, Bersi Black-Anvil at the quarry's edge, Brokk's funeral, the judgment of Torvald, the Hall of Wolves, the nine oaths, the wedding, the fleet</li><li>Act VII, all eleven chapters: fire on the water and the ship of archers, Ulf Two-Blades across two burning decks, the Black Shore and the men he goes back for, Kettil at the bend, the pens (played as Torvald, with Star-Fall), Vigdis on the burning bridge, Gorm at the gate, the Hall of Wolves, the Ironwolf in four parts, Hauk's stone, the law-rock at Gulen</li><li>The Epilogue, all three parts: Ravenhold twelve years on, the row of stones, the Thing-Ring, the people the war left, Leif's house (the one building you can walk into), the walk up the hill with Little Brokk, the young raven, the view out to sea</li><li>Rain, a glow on fire and steel, blade trails and impact flashes; a bow that bends and draws, with a perfect-release window; the camera follows the mouse (Settings can switch it off)</li><li>Melee combat: light and heavy blows, block, parry and riposte, dodge, guard-breaking and finishing blows, enemies that take turns and flank, a two-phase captain</li><li>The black raven harries your target; arrows work on men</li><li>Hunger and warmth, shelter, cooking, thin-ice crossing</li><li>Third-person movement, camera, stamina, crouch, dodge</li><li>Dialogue with choices, traits and bonds</li><li>Quests, journal, objective tracker, map with waypoint</li><li>Woodcutting, bow hunting, tracking, fishing, fire-making</li><li>Sparring tutorial: strike, block, parry, dodge</li><li>Stealth escape with raider sight and hearing</li><li>Cold and warmth survival</li><li>Day/night sky, snow, fire, in-engine cutscenes</li><li>Save / load, autosave, settings, key rebinding, gamepad</li></ul></div>
       <div><h4><span class="tag proto">prototype</span></h4><ul><li>Procedural characters and animation (to be replaced by rigged models), now with animated faces, expressions, speech mouths, breathing, cloth and hair sway, foot planting</li><li>Appearance screen for the grown Eirik; the lightning scar</li><li>Directional strikes, sidestep and roll, raven warnings, camera lock, twin blades and war maul</li><li>Stormguard by the story's rules (only when calm; it costs more each time), Thunder Smash and four more storm skills</li><li>The Wolf's Table: the story's seven champions, the two hands and Håkon, each with named skills, fought where the story has them fall. The fights only: the chapters round them are not built</li><li>Five great islands of the story at full scale (Jarnøy, Solvik, Myrholm, Skalløy, Svartøy), with people who work at a task or walk a road and appear round you on dry land</li><li>Raven-Feeder's three reforgings; icons for items, weapons and missions</li><li>Procedural audio and score</li><li>Villager routines (posts and an evening change, not full schedules)</li><li>Wildlife AI: hares, deer, sheep, ravens</li><li>Adult Eirik is the same placeholder rig, scaled up</li><li>Open world sandbox: horse, boat with a sail, a ship to buy and six crew to recruit, a horn that brings them ashore to fight, sea battles (volleys, shields, ramming, boarding across two decks), archers, shield-bearers and berserkers, a shield with a shove, four melee weapons and throwing axes, five skill trees bought with renown, crew who can be wounded, fourteen islands on a sea chart, two law-districts, wolf-mark outlawry (witnesses, hue and cry, bounty-hunters, blood-price, hide-duel), standing up to “my king”, trade, paid passage between harbours, the first secret weapon</li><li>Higgsfield asset client (built, waiting on a valid key ID and secret)</li></ul></div>

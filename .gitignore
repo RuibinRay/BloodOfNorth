@@ -5,3 +5,6 @@ dist/
 .DS_Store
 *.log
 .playtest/
+
+# Higgsfield originals (large); the game-ready files are in public/art
+assets/generated/
