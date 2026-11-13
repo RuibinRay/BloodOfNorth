@@ -52,9 +52,11 @@ export const WALL = {
   autoFloor: [0.72, 0.45],// a wall that fights on by itself stops losing men at this share of what it began with: [ours, theirs]
 };
 
-/** What each side's rank and file wear: tunics, the top of the head (iron for a helmet, or hair), and shield paint. */
+/** What each side's rank and file wear: tunics, the top of the head (iron for a helmet, or hair), and which of the four
+ *  painted shields they carry (0 red with a pale band, 1 blue with a ring, 2 black and yellow, 3 bare boards): ours in
+ *  red and blue, Håkon's in black. */
 export const PAINT = {
-  ravenhold: { tunic: [0x6f6048, 0x5a4a44, 0x4a4a52, 0x5a2a24, 0x4a5a5a, 0x7a6a50], cap: [0x70747a, 0x6b4a2b, 0xa8845a, 0x3a2a1c, 0x70747a, 0x8a5a2a], shield: [0x8a2f25, 0xb8862e, 0x8a2f25, 0x35506a, 0xc9b68a] },
-  alliance: { tunic: [0x6f6048, 0x4a4a52, 0x4a5a5a, 0x7a6a50, 0x5a2a24, 0x39503a, 0x6a5a7a], cap: [0x70747a, 0x70747a, 0x6b4a2b, 0xa8845a, 0x3a2a1c], shield: [0x8a2f25, 0xb8862e, 0x35506a, 0xc9b68a, 0x3f6a4a, 0x8a2f25] },
-  wolves: { tunic: [0x3a2e2a, 0x4a3a30, 0x2e3438, 0x54402e, 0x2a2a2e], cap: [0x4c4f54, 0x4c4f54, 0x4a3a2a, 0x2a2018, 0x4c4f54], shield: [0x1c1c20, 0x26262a, 0x4a1612, 0x1c1c20] },
+  ravenhold: { tunic: [0x6f6048, 0x5a4a44, 0x4a4a52, 0x5a2a24, 0x4a5a5a, 0x7a6a50], cap: [0x70747a, 0x6b4a2b, 0xa8845a, 0x3a2a1c, 0x70747a, 0x8a5a2a], design: [0, 0, 1, 0, 3] },
+  alliance: { tunic: [0x6f6048, 0x4a4a52, 0x4a5a5a, 0x7a6a50, 0x5a2a24, 0x39503a, 0x6a5a7a], cap: [0x70747a, 0x70747a, 0x6b4a2b, 0xa8845a, 0x3a2a1c], design: [0, 1, 1, 3, 0, 1] },
+  wolves: { tunic: [0x3a2e2a, 0x4a3a30, 0x2e3438, 0x54402e, 0x2a2a2e], cap: [0x4c4f54, 0x4c4f54, 0x4a3a2a, 0x2a2018, 0x4c4f54], design: [2, 2, 3, 2] },
 };

@@ -192,7 +192,7 @@ function stuffOf(hex, L) {
  *  repeats of that stuff, as many as its real size takes. A piece that closes on itself (a sleeve, a leg, a cap of
  *  hair) gets a whole number round it, so the weave meets itself at the seam. */
 const _va = new THREE.Vector3(), _vb = new THREE.Vector3(), _vc = new THREE.Vector3();
-function dress(g, stuff) {
+export function dress(g, stuff) {
   const [cx, cy, size] = STUFF[stuff], P = g.attributes.position, uv = g.attributes.uv, ix = g.index, n = P.count, cell = new Float32Array(n * 2);
   for (let i = 0; i < n; i++) { cell[i * 2] = cx / 3; cell[i * 2 + 1] = cy / 2; }
   g.setAttribute('cell', new THREE.BufferAttribute(cell, 2));

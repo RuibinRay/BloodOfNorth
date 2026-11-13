@@ -2,7 +2,7 @@
 
 A third-person Viking action RPG that follows the owner's story, *The Rise of the Raven King*
 ([docs/story](docs/story/THE_RISE_OF_THE_RAVEN_KING.md): seven acts and an epilogue). This repository holds
-**slice 0.26**: Act I (Eirik's childhood), Act II (nineteen: Bjornstead, the raid, the walls, Kaupang and the
+**slice 0.27**: Act I (Eirik's childhood), Act II (nineteen: Bjornstead, the raid, the walls, Kaupang and the
 Sea-Raven), Act III (twenty: Jarnøy and the Battle of Iron Shore), Act IV (twenty-two: the treasure voyage,
 Wessex, six islands burning, Hedeby Sound), Act V (twenty-four: the hunger winter, the tannery yard, the ring,
 Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, the wedding) and Act VII
@@ -10,7 +10,17 @@ Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, th
 (forty-one: Ravenhold twelve years on, Leif's house, the old birch), each as the story tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
-**New in 0.26.** Halls and towns. **A hall is now built as a hall**: any longhouse wide and long enough (the
+**New in 0.27.** The real shield walls are in. They were built in another session on a branch of their own
+(`real-shield-walls`, from 0.22) and are now merged with everything since: the Battle of Iron Shore (Act III) and both
+pushes on the Black Shore (Act VII) are two lines of about a hundred and fifty men a side, with the story's named
+fighters in the front rank, instead of skirmishes in pairs (see "Real shield walls" in
+[docs/ROADMAP.md](docs/ROADMAP.md) for how they work and what is not known about them). **The rank and file now wear
+what everyone else wears**: the same weave, leather and hair as the jointed figures beside them, and the four painted
+shields in place of flat quartered discs, ours in red and blue, Håkon's in black and yellow and bare boards, so the
+two lines can be told apart at a glance. Two branches from other sessions are still not merged: `act7-fight-tuning`
+and `story-hints-stay`.
+
+**In 0.26.** Halls and towns. **A hall is now built as a hall**: any longhouse wide and long enough (the
 kings' halls on Jarnøy, Solvik and Myrholm, the hall at Bjornstead and Ravenhold, the elder's hall in Hrafnvik, the
 hall in Wessex) has higher walls, a wide door under a carved porch with its own little roof, a row of painted shields
 along the wall, a smoke louver on the ridge, bigger beasts' heads on the gables and a banner on a pole either side of

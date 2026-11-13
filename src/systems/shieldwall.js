@@ -82,7 +82,7 @@ export class ShieldWall {
     return [m.tx + this.nx * k + this.ux * rnd(-2, 2), m.tz + this.nz * k + this.uz * rnd(-2, 2)];
   }
   add(side, rank, file, placed) {
-    const P = this.paint[side], i = this.R.take(pick(P.tunic), pick(P.cap), pick(P.shield));
+    const P = this.paint[side], i = this.R.take(pick(P.tunic), pick(P.cap), pick(P.design));
     if (i < 0) return null;
     const m = { i, side, rank, file, st: 'in', t: 0, hp: this.cfg.cut.hp, kind: Math.random() < (side ? 0.4 : 0.2) ? 1 : 0, ph: Math.random() * 6.28, jx: rnd(-0.12, 0.12), jz: rnd(-0.1, 0.1),
       armT: -1, armD: 0.6, next: rnd(0.5, 5.5), hit: 0, aim: 0, aimT: 0, yaw: this.yaw[side], sc: rnd(0.95, 1.06), x: 0, y: 0, z: 0, gy: null };
