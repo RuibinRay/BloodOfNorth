@@ -2,7 +2,7 @@
 
 A third-person Viking action RPG that follows the owner's story, *The Rise of the Raven King*
 ([docs/story](docs/story/THE_RISE_OF_THE_RAVEN_KING.md): seven acts and an epilogue). This repository holds
-**slice 0.28**: Act I (Eirik's childhood), Act II (nineteen: Bjornstead, the raid, the walls, Kaupang and the
+**slice 0.29**: Act I (Eirik's childhood), Act II (nineteen: Bjornstead, the raid, the walls, Kaupang and the
 Sea-Raven), Act III (twenty: Jarnøy and the Battle of Iron Shore), Act IV (twenty-two: the treasure voyage,
 Wessex, six islands burning, Hedeby Sound), Act V (twenty-four: the hunger winter, the tannery yard, the ring,
 Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, the wedding) and Act VII
@@ -10,7 +10,17 @@ Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, th
 (forty-one: Ravenhold twelve years on, Leif's house, the old birch), each as the story tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
-**New in 0.28.** Animals and weapons. **Animals** are covered in something: a wolf has a shaggy pelt, a horse a
+**New in 0.29.** An animation pass over everything that moves. **People**: a new walk and run (the swinging knee
+folds and the foot is carried through, the hips turn with the stride and the shoulders against it, the arms bend as
+they come forward, the head stays facing the way he goes; running, he leans into it and rises between footfalls), a
+lean into a start and back into a stop, a bank into a turn with the head looking into it, and a way of standing in
+which the weight goes from one leg to the other, different for each person · **animals**: knees for the deer, the
+sheep (which used to slide), the goat, the pigs and the cow as well as the wolf and the horse; the wolf and the horse
+nod their heads with their stride, look about when they stand, and swing their tails; a raven's wing bends at the
+wrist as it beats · **the battle lines**: the rank and file step with their legs when the line goes forward, gives
+ground, comes up from the rear or runs · **cloth**: banners wave from their poles and sails move in the wind.
+
+**In 0.28.** Animals and weapons. **Animals** are covered in something: a wolf has a shaggy pelt, a horse a
 short coat and a mane and tail of hair, a sheep a curly fleece, deer and hares a coat, ravens feathers. Three were
 rebuilt as well as covered: **the wolf** has a deep chest, lean haunches, a ruff, a jaw, a nose, a brush of a tail and
 legs with thighs and paws that fold at the knee as they come forward; **the horse** has a chest and quarters, a neck with the mane lying along its crest, a

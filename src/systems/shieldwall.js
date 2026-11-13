@@ -407,16 +407,16 @@ export class ShieldWall {
   figures(dt) {
     const g = this.g, R = this.R, T = this.T, lie = this.cfg.lie, keep = [], p = g.player.pos, cam = g.camera.position;
     for (const m of this.figs) {
-      let pitch = 0, arm = 0, y = 0, fwd = 0, sc = m.sc;
+      let pitch = 0, arm = 0, y = 0, fwd = 0, sc = m.sc, stride = 0;
       if (m.st === 'gone') { R.free(m.i); continue; }
       if (m.st === 'walk') { // coming up from the rear
         this.slot(m.side, m.rank, m.file, m); const dx = m.tx - m.x, dz = m.tz - m.z, d = Math.hypot(dx, dz), st = Math.min(d, (m.v || 3.6) * dt);
         if (d > 1e-3) { m.x += (dx / d) * st; m.z += (dz / d) * st; m.yaw = dampAngle(m.yaw, Math.atan2(dx, dz), 8, dt); }
         if (d < 0.5) m.st = 'in';
-        y = Math.abs(Math.sin(T * 9 + m.ph)) * 0.05; pitch = 0.06; m.gy = null;
+        y = Math.abs(Math.sin(T * 9 + m.ph)) * 0.05; pitch = 0.06; m.gy = null; stride = Math.sin(T * 9 + m.ph);
       } else if (m.st === 'in') {
         this.slot(m.side, m.rank, m.file, m); const dx = m.tx - m.x, dz = m.tz - m.z;
-        if (Math.abs(dx) + Math.abs(dz) > 0.004) { const k = 1 - Math.exp(-7 * dt); m.x += dx * k; m.z += dz * k; m.gy = null; }
+        if (Math.abs(dx) + Math.abs(dz) > 0.004) { const k = 1 - Math.exp(-7 * dt); m.x += dx * k; m.z += dz * k; m.gy = null; stride = Math.sin(T * 8 + m.ph) * Math.min(0.7, Math.hypot(dx, dz) * 2.5); } // the line going forward or giving ground: they step
         m.yaw = dampAngle(m.yaw, m.aimT > 0 ? m.aim : this.yaw[m.side], 6, dt); m.aimT -= dt;
         const front = m.rank === 0;
         pitch = Math.sin(T * 1.7 + m.ph) * 0.03 + this.heave[m.side] * (front ? 0.2 : 0.1); y = Math.sin(T * 2.3 + m.ph) * 0.012;
@@ -438,7 +438,7 @@ export class ShieldWall {
         if (m.t > lie + 1.6) { R.free(m.i); continue; }
       } else if (m.st === 'rout') {
         m.t += dt; m.x += Math.sin(m.yaw) * m.v * dt; m.z += Math.cos(m.yaw) * m.v * dt; m.gy = null;
-        y = Math.abs(Math.sin(T * 11 + m.ph)) * 0.07; pitch = 0.22; arm = -0.2; sc *= clamp((m.life - m.t) / 0.6, 0, 1);
+        y = Math.abs(Math.sin(T * 11 + m.ph)) * 0.07; pitch = 0.22; arm = -0.2; sc *= clamp((m.life - m.t) / 0.6, 0, 1); stride = Math.sin(T * 11 + m.ph) * 1.2;
         if (m.t > m.life) { R.free(m.i); continue; }
       }
       if (m.gy === null) m.gy = g.world.groundAt(m.x, m.z);
@@ -449,7 +449,7 @@ export class ShieldWall {
         if (d < 1.05 && d > 1e-3) { ox += (dx / d) * (1.05 - d); oz += (dz / d) * (1.05 - d); }
         if (Math.hypot(m.x - cam.x, m.z - cam.z) < 1.5) sc = 0;
       }
-      R.set(m.i, m.x + ox, m.gy + y, m.z + oz, m.yaw, pitch, arm, m.kind, sc);
+      R.set(m.i, m.x + ox, m.gy + y, m.z + oz, m.yaw, pitch, arm, m.kind, sc, stride);
       keep.push(m);
     }
     this.figs = keep;

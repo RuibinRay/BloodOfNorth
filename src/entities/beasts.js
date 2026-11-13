@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { M, at, cyl, cone, sphere, capsule, tint, merge } from '../world/geo.js';
 import { dress } from './humanoid.js';
+import { jointed } from './wildlife.js';
 
 // What each piece is covered in (TEX.beast, as in wildlife.js); a piece that says nothing is plain.
 const all = (geos) => merge(geos.map((g) => (g.attributes.cell ? g : dress(g, 'plain'))));
@@ -11,7 +12,7 @@ const pelt = (g) => dress(g, 'pelt'), coat = (g) => dress(g, 'coat');
 function beast(parts, legs, legLen, legCol) {
   const g = new THREE.Group(), body = new THREE.Mesh(all(parts), M.beast); body.castShadow = true; g.add(body);
   g.userData.legs = [];
-  for (const [x, z] of legs) { const leg = new THREE.Group(); leg.position.set(x, legLen, z); const m = new THREE.Mesh(all([coat(tint(at(cyl(0.045, 0.03, legLen, 5), 0, -legLen / 2, 0), legCol, 0.1, 3))]), M.beast); m.castShadow = true; leg.add(m); g.add(leg); g.userData.legs.push(leg); }
+  for (const [x, z] of legs) { const leg = new THREE.Group(); leg.position.set(x, legLen, z); jointed(leg, [coat(tint(at(cyl(0.05, 0.04, legLen / 2, 5), 0, -legLen / 4, 0), legCol, 0.1, 3))], [coat(tint(at(cyl(0.038, 0.03, legLen / 2, 5), 0, (-legLen * 3) / 4, 0), legCol, 0.1, 4))], -legLen / 2); g.add(leg); g.userData.legs.push(leg); }
   return g;
 }
 export function goatModel() {
