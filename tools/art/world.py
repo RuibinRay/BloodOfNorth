@@ -10,6 +10,7 @@ Reads assets/generated/<id>.png and writes public/art/world/:
   birch.webp    [bark | leaves | twigs]                bark, a solid mass of leaves, and a cut-out spray of twigs
   figure.jpg    wool fur mail / plain hair leather     six squares of grain for the figures (grey, to multiply their colours),
                                                        each one repeat with a border of itself round it
+  beast.jpg, gear.jpg                                  the same kind of sheet as figure.jpg, for animals and for weapons and tools
   hull.jpg, sail.jpg, shields.jpg                      a strake of a ship's hull, her sail, four round shields (see ships())
   door.jpg, carved.jpg                                 a longhouse door; carved timber for door posts, gables and stem posts
 A piece whose original is missing is skipped, and the game falls back to what it drew before.
@@ -172,21 +173,34 @@ def repeatable(im, size, fine=0):
     return Image.fromarray(a.clip(0, 255).astype(np.uint8)).resize((size, size), Image.LANCZOS).convert('RGB')
 
 
-def figure():
+def band(im):
+    """The tallest strip of a picture between two dark gaps that run across it (one board of a planked wall, one bar
+    of a stack of steel), as a picture of its own."""
+    a = np.asarray(im.convert('RGB').resize((1024, 1024), Image.LANCZOS), dtype=np.float32)
+    smooth = np.convolve(a.mean(axis=(1, 2)), np.ones(5) / 5, mode='same')
+    seams = [y for y in range(8, 1016) if smooth[y] == smooth[y - 8:y + 9].min() and smooth[y] < np.median(smooth) * 0.8]
+    seams = [0] + [y for i, y in enumerate(seams) if i == 0 or y - seams[i - 1] > 20] + [1023]
+    _, top, bot = max((b - t, t, b) for t, b in zip(seams, seams[1:]))
+    return Image.fromarray(a[top + 5:bot - 4].clip(0, 255).astype(np.uint8))
+
+
+def sheet(out, cells, gains, fine=None, pre=None):
     """Six squares, each holding one repeat of its stuff 224 pixels across with the repeat carried on into a 16-pixel
-    border, so the game can lay any number of repeats over a sleeve or a cloak out of one picture without a seam."""
-    cells = ['c_wool', 'c_fur', 'c_mail', None, 'c_hair', 'c_leather']   # the plain square is the one a piece gets if it says nothing
+    border, so the game can lay any number of repeats over a sleeve, a flank or a blade out of one picture without a
+    seam. Each square is grey and averages the same in light, so that it can lighten as well as darken whatever colour
+    the game gives the thing. cells: six names of originals, None for a plain square (the first of the bottom row is
+    always plain: it is what a piece gets if it says nothing)."""
     if not all(src(c) for c in cells if c):
         return
     at = Image.new('RGB', (768, 512), (205, 205, 205))
-    gains = {'c_wool': 0.55, 'c_fur': 0.85, 'c_mail': 0.75, 'c_leather': 1.7, 'c_hair': 0.9}
     to_lin = lambda v: np.where(v <= 0.04045, v / 12.92, ((v + 0.055) / 1.055) ** 2.4)
     to_srgb = lambda v: np.where(v <= 0.0031308, v * 12.92, 1.055 * v ** (1 / 2.4) - 0.055)
-    flat = float(to_lin(np.float32(205 / 255.0)))   # what the game divides by: each square must average this in light, not in paint
+    flat = float(to_lin(np.float32(205 / 255.0)))   # what the game divides by
     for i, c in enumerate(cells):
         if not c:
             continue
-        t = grain(repeatable(src(c), 224, fine=14 if c == 'c_leather' else 0), mean=205.0, gray=True, gain=gains[c])
+        im = (pre or {}).get(c, lambda x: x)(src(c))
+        t = grain(repeatable(im, 224, fine=(fine or {}).get(c, 0)), mean=205.0, gray=True, gain=gains.get(c, 1.0))
         lin = to_lin(np.asarray(t, dtype=np.float32) / 255.0)
         t = Image.fromarray((to_srgb((lin * (flat / lin.mean())).clip(0, 1)) * 255).round().astype(np.uint8))
         cell = Image.new('RGB', (256, 256))
@@ -194,7 +208,26 @@ def figure():
             for y in (-208, 16, 240):
                 cell.paste(t, (x, y))
         at.paste(cell, ((i % 3) * 256, (i // 3) * 256))
-    save(at, 'figure.jpg', 92)
+    save(at, out, 92)
+
+
+def figure():
+    """figure.jpg: what people wear. wool fur mail / plain hair leather."""
+    sheet('figure.jpg', ['c_wool', 'c_fur', 'c_mail', None, 'c_hair', 'c_leather'],
+          {'c_wool': 0.55, 'c_fur': 0.85, 'c_mail': 0.75, 'c_leather': 1.7, 'c_hair': 0.9}, fine={'c_leather': 14})
+
+
+def beasts():
+    """beast.jpg: what animals are covered in. pelt coat feather / plain mane fleece."""
+    sheet('beast.jpg', ['c_fur', 'a_coat', 'a_feather', None, 'c_hair', 'a_fleece'],
+          {'c_fur': 1.1, 'a_coat': 3.2, 'a_feather': 1.0, 'c_hair': 1.0, 'a_fleece': 0.9}, fine={'a_fleece': 30})
+
+
+def gear():
+    """gear.jpg: what weapons and tools are made of. wood wrap steel / plain plain plain. The steel is one bar of the
+    picture (it came as a stack of them)."""
+    sheet('gear.jpg', ['g_wood', 'g_wrap', 'g_steel', None, None, None],
+          {'g_wood': 1.6, 'g_wrap': 0.45, 'g_steel': 0.9}, fine={'g_steel': 40}, pre={'g_steel': band})
 
 
 def ships():
@@ -267,5 +300,5 @@ def buildings():
         save(at, 'banners.jpg', 88)
 
 
-for f in (ground, pine, birch, figure, ships, buildings):
+for f in (ground, pine, birch, figure, beasts, gear, ships, buildings):
     f()

@@ -210,7 +210,7 @@ export function dress(g, stuff) {
   }
   if (!w || u1 - u0 < 1e-6 || v1 - v0 < 1e-6) return g;
   const wide = (lu / w) * (u1 - u0), tall = (lv / w) * (v1 - v0), q = g.parameters || {};
-  const closes = /Capsule|Icosahedron/.test(g.type) || (/Cylinder|Cone/.test(g.type) && !(q.thetaLength < 6.28)) || (/Sphere/.test(g.type) && !(q.phiLength < 6.28));
+  const closes = /Capsule|Icosahedron|Tube/.test(g.type) || (/Cylinder|Cone/.test(g.type) && !(q.thetaLength < 6.28)) || (/Sphere/.test(g.type) && !(q.phiLength < 6.28));
   const nu = closes ? Math.max(1, Math.round(wide / size)) : wide / size, nv = tall / (wide / nu); // the same grain up it as round it
   for (let i = 0; i < n; i++) uv.setXY(i, ((uv.getX(i) - u0) / (u1 - u0)) * nu, ((uv.getY(i) - v0) / (v1 - v0)) * nv);
   return g;
@@ -570,6 +570,14 @@ export class Humanoid {
 // Hand-held items. Local +Z is "away from the fist" (blade / haft direction).
 // ---------------------------------------------------------------------------------------
 const itemCache = new Map();
+/** What a piece of a weapon or a tool is made of (TEX.gear), told from the colour it was given unless it says (`as`):
+ *  greys are steel, browns are wood, anything else is plain. */
+function gearStuff(g) {
+  if (g.userData.stuff) return g.userData.stuff;
+  const hex = g.userData.hex ?? 0xffffff, r = hex >> 16, gr = (hex >> 8) & 255, b = hex & 255, mx = Math.max(r, gr, b), sat = mx ? (mx - Math.min(r, gr, b)) / mx : 0;
+  return sat < 0.2 && mx < 200 ? 'steel' : r > gr && gr > b && sat > 0.25 && gr / r > 0.55 ? 'wood' : 'plain';
+}
+const as = (g, stuff) => { g.userData.stuff = stuff; return g; };
 function itemGeo(name) {
   if (itemCache.has(name)) return itemCache.get(name);
   const W = 0x8a6a44, WD = 0x5c4630, IR = 0x9aa0a8, g = [];
@@ -577,7 +585,7 @@ function itemGeo(name) {
   switch (name) {
     case 'woodsword': g.push(bladeZ(0.52, 0.045, W, 1), tint(at(box(0.15, 0.03, 0.03), 0, 0, 0.07), WD, 0, 2), tint(at(cyl(0.017, 0.017, 0.13, 5), 0, 0, 0, Math.PI / 2, 0, 0), WD, 0, 3)); break;
     case 'woodsword_big': g.push(bladeZ(0.78, 0.055, W, 1), tint(at(box(0.2, 0.035, 0.035), 0, 0, 0.07), WD, 0, 2), tint(at(cyl(0.02, 0.02, 0.16, 5), 0, 0, 0, Math.PI / 2, 0, 0), WD, 0, 3)); break;
-    case 'sword': g.push(bladeZ(0.82, 0.05, IR, 1), tint(at(box(0.2, 0.035, 0.035), 0, 0, 0.07), 0x6e5a36, 0, 2), tint(at(cyl(0.02, 0.02, 0.16, 5), 0, 0, 0, Math.PI / 2, 0, 0), WD, 0, 3), tint(at(sphere(0.03, 5, 4), 0, 0, -0.09), 0x6e5a36, 0, 4)); break;
+    case 'sword': g.push(bladeZ(0.82, 0.05, IR, 1), as(tint(at(box(0.2, 0.035, 0.035), 0, 0, 0.07), 0x6e5a36, 0, 2), 'plain'), as(tint(at(cyl(0.02, 0.02, 0.16, 5), 0, 0, 0, Math.PI / 2, 0, 0), WD, 0, 3), 'wrap'), tint(at(sphere(0.03, 5, 4), 0, 0, -0.09), 0x6e5a36, 0, 4)); break;
     case 'axe': case 'father_axe': case 'brother_axe':
       g.push(tint(at(cyl(0.016, 0.02, 0.66, 5), 0, 0, 0.23, Math.PI / 2, 0, 0), WD, 0.08, 1));
       g.push(tint(at(box(0.022, 0.2, 0.1), 0, -0.07, 0.5), IR, 0.06, 2), tint(at(box(0.024, 0.07, 0.07), 0, 0.0, 0.5), 0x70747a, 0, 3));
@@ -598,14 +606,14 @@ function itemGeo(name) {
     case 'ironshield': g.push(tint(at(cyl(0.56, 0.56, 0.045, 18), 0.1, 0.08, 0, 0, 0, Math.PI / 2), 0x3a2e24, 0.1, 1), tint(at(new THREE.TorusGeometry(0.56, 0.03, 5, 18), 0.1, 0.08, 0, 0, Math.PI / 2, 0), 0x4c4f54, 0, 2), tint(at(sphere(0.1, 7, 5), 0.13, 0.08, 0, 0, 0, 0, 0.6, 1, 1), IR, 0, 3), tint(at(box(0.02, 1.0, 0.07), 0.125, 0.08, 0), 0x4c4f54, 0, 4), tint(at(box(0.02, 0.07, 1.0), 0.125, 0.08, 0), 0x4c4f54, 0, 5)); break;
     case 'halfshield': { // Rurik's: half black, half white
       const a = new THREE.CylinderGeometry(0.42, 0.42, 0.03, 16, 1, false, 0, Math.PI), b = new THREE.CylinderGeometry(0.42, 0.42, 0.03, 16, 1, false, Math.PI, Math.PI);
-      g.push(tint(at(a, 0.09, 0.08, 0, 0, 0, Math.PI / 2), 0xe6e2d8, 0.06, 1), tint(at(b, 0.09, 0.08, 0, 0, 0, Math.PI / 2), 0x141416, 0.06, 2), tint(at(sphere(0.07, 7, 5), 0.11, 0.08, 0, 0, 0, 0, 0.6, 1, 1), IR, 0, 3));
+      g.push(as(tint(at(a, 0.09, 0.08, 0, 0, 0, Math.PI / 2), 0xe6e2d8, 0.06, 1), 'wood'), as(tint(at(b, 0.09, 0.08, 0, 0, 0, Math.PI / 2), 0x141416, 0.06, 2), 'wood'), tint(at(sphere(0.07, 7, 5), 0.11, 0.08, 0, 0, 0, 0, 0.6, 1, 1), IR, 0, 3));
       break;
     }
     case 'buckler': g.push(tint(at(cyl(0.2, 0.2, 0.03, 12), 0.07, 0.04, 0, 0, 0, Math.PI / 2), 0x4c4f54, 0.1, 1), tint(at(sphere(0.06, 6, 5), 0.09, 0.04, 0, 0, 0, 0, 0.7, 1, 1), 0x2a2c30, 0, 2)); break;
     case 'javelins': for (let i = 0; i < 3; i++) g.push(tint(at(cyl(0.011, 0.012, 1.3, 4), (i - 1) * 0.035, 0.02 * (i % 2), 0.2, Math.PI / 2, 0, 0), WD, 0.08, i), tint(at(cone(0.022, 0.16, 4), (i - 1) * 0.035, 0.02 * (i % 2), 0.92, Math.PI / 2, 0, 0), IR, 0, 4 + i)); break;
     case 'woodaxe': g.push(tint(at(cyl(0.02, 0.024, 0.85, 5), 0, 0, 0.3, Math.PI / 2, 0, 0), WD, 0.08, 1), tint(at(box(0.03, 0.2, 0.13), 0, -0.06, 0.68), IR, 0.06, 2)); break;
     case 'longaxe': g.push(tint(at(cyl(0.02, 0.025, 1.4, 5), 0, 0, 0.5, Math.PI / 2, 0, 0), WD, 0.08, 1), tint(at(box(0.03, 0.32, 0.2), 0, -0.11, 1.08), IR, 0.06, 2), tint(at(box(0.034, 0.07, 0.08), 0, 0.0, 1.08), 0x70747a, 0, 3)); break;
-    case 'seax': g.push(bladeZ(0.46, 0.05, IR, 1), tint(at(box(0.11, 0.03, 0.03), 0, 0, 0.07), 0x6e5a36, 0, 2), tint(at(cyl(0.018, 0.018, 0.14, 5), 0, 0, 0, Math.PI / 2, 0, 0), WD, 0, 3)); break;
+    case 'seax': g.push(bladeZ(0.46, 0.05, IR, 1), as(tint(at(box(0.11, 0.03, 0.03), 0, 0, 0.07), 0x6e5a36, 0, 2), 'plain'), as(tint(at(cyl(0.018, 0.018, 0.14, 5), 0, 0, 0, Math.PI / 2, 0, 0), WD, 0, 3), 'wrap')); break;
     case 'maul': g.push(tint(at(cyl(0.022, 0.028, 1.3, 6), 0, 0, 0.46, Math.PI / 2, 0, 0), WD, 0.08, 1), tint(at(box(0.17, 0.17, 0.3), 0, 0, 1.08), 0x5a5e64, 0.08, 2), tint(at(box(0.19, 0.05, 0.05), 0, 0, 1.08), 0x3a3d43, 0, 3), tint(at(box(0.05, 0.19, 0.05), 0, 0, 1.08), 0x3a3d43, 0, 4)); break;
     case 'smallaxe': case 'throwaxe': g.push(tint(at(cyl(0.014, 0.017, 0.5, 5), 0, 0, 0.17, Math.PI / 2, 0, 0), WD, 0.08, 1), tint(at(box(0.02, 0.13, 0.08), 0, -0.04, 0.38), IR, 0.06, 2)); break;
     case 'spear': g.push(tint(at(cyl(0.015, 0.017, 2.0, 5), 0, 0, 0.35, Math.PI / 2, 0, 0), WD, 0.08, 1), tint(at(cone(0.035, 0.26, 4), 0, 0, 1.47, Math.PI / 2, 0, 0), IR, 0, 2)); break;
@@ -635,6 +643,7 @@ function itemGeo(name) {
     case 'fish': g.push(tint(at(sphere(0.06, 6, 5), 0, -0.14, 0.02, 0, 0, 0, 0.5, 2.6, 1), 0x9aa6a8, 0.15, 1)); break;
     default: g.push(tint(box(0.05, 0.05, 0.05), 0xffffff));
   }
+  for (const x of g) dress(x, gearStuff(x));
   const geo = merge(g);
   itemCache.set(name, geo);
   return geo;
@@ -643,7 +652,7 @@ function itemGeo(name) {
 function makeBow(name) {
   const R = name === 'bow' ? 0.62 : 0.9, A = 0.62, brace = R - R * Math.cos(A), tipZ = R * Math.sin(A), pull = 0.5 * (R / 0.62), g = new THREE.Group(), pts = [];
   for (let i = 0; i <= 10; i++) { const a = -A + (i / 10) * 2 * A; pts.push(new THREE.Vector3(0, R - R * Math.cos(a), R * Math.sin(a))); }
-  const limbs = new THREE.Mesh(tint(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 14, 0.012, 5), 0x7a5a36, 0.05, 1), M.vcPlain); limbs.castShadow = true; g.add(limbs);
+  const limbs = new THREE.Mesh(dress(tint(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 14, 0.012, 5), 0x7a5a36, 0.05, 1), 'wood'), M.gear); limbs.castShadow = true; g.add(limbs);
   const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(9), 3));
   const string = new THREE.Line(sg, new THREE.LineBasicMaterial({ color: 0xe8e0d0 })); string.frustumCulled = false; g.add(string);
   const L = 0.74 * (R / 0.62), arrow = new THREE.Mesh(merge([tint(at(cyl(0.006, 0.006, L, 4), 0, -L / 2, 0), 0xcdb48a, 0.05, 2), tint(at(cone(0.016, 0.07, 4), 0, -L - 0.03, 0, Math.PI, 0, 0), 0x9aa0a8, 0, 3),
@@ -663,7 +672,7 @@ let shieldsMade = 0;
 export function makeItem(name, design) {
   if (name === 'bow' || name === 'bow_big') return makeBow(name);
   // a round shield is the painted one (boss and rim are in the picture); everything else is built in flat colours
-  const m = name === 'shield' ? new THREE.Mesh(at(shieldGeo(0.4, 0.035, design ?? shieldsMade++ % 4), 0.09, 0.08, 0, 0, 0, Math.PI / 2), M.shield) : new THREE.Mesh(itemGeo(name), M.vcPlain);
+  const m = name === 'shield' ? new THREE.Mesh(at(shieldGeo(0.4, 0.035, design ?? shieldsMade++ % 4), 0.09, 0.08, 0, 0, 0, Math.PI / 2), M.shield) : new THREE.Mesh(itemGeo(name), M.gear);
   m.castShadow = true;
   const g = new THREE.Group(); g.add(m);
   return g;

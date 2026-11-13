@@ -1,7 +1,7 @@
 # Higgsfield integration
 
 **State (13 Nov 2026): working for images, and in the game.** The key pair in `.env` is accepted by the official API,
-317 generations have been charged ($4.90 of an approved $10), and 204 files made from them are in the game.
+324 generations have been charged ($5.01 of an approved $10), and 206 files made from them are in the game.
 **Not possible through this API: 3D models.** Its catalogue is image and video models only.
 
 ## What is in the game
@@ -14,15 +14,15 @@
 | Act paintings | 9 | One for each act and the Epilogue (used where a chapter has none), and the title painting behind the loading screen |
 | Building textures | 4 | Plank walls, turf roofs, thatch, stone: drawn into the materials the buildings already use |
 | Parchment and compass | 2 | Under every panel and over the map; the compass rose on the map |
-| **Textures of the 3D world** | 13 files from 25 pictures | See below |
+| **Textures of the 3D world** | 15 files from 32 pictures | See below |
 
 Everything falls back to what the game drew before if a file is missing (`src/ui/art.js`, `src/world/geo.js`,
 `src/world/vegetation.js`).
 
-### The 3D world (0.24 to 0.26)
+### The 3D world (0.24 to 0.28)
 
 The API makes no models, so the shapes of the world are still built in code. What its pictures can do is cover them.
-Twenty-five pictures (`group:world3d` in the plan) are worked into thirteen texture files in `public/art/world/` by
+Thirty-two pictures (`group:world3d` in the plan) are worked into fifteen texture files in `public/art/world/` by
 [tools/art/world.py](../tools/art/world.py), which runs on every `make`, `post` and `manifest`:
 
 | File | Made from | What the game does with it |
@@ -32,6 +32,8 @@ Twenty-five pictures (`group:world3d` in the plan) are worked into thirteen text
 | `pine` | Pine bark, a mass of needles, and one bough on white, cut out | Bark up the trunk; skirts of needles whose lower edges are cut-out hanging boughs |
 | `birch` | Birch bark, a mass of leaves, and a spray of twigs on white, cut out | White bark; a crown of leaf sprays |
 | `figure` | Wool, fur, ring mail, leather, hair | A sheet of six squares. Every piece of a figure says which square it is made of and how many repeats its real size takes, so one material and one draw still cover a whole person (`STUFF` and `figureMat` in `src/world/geo.js`, `dress` in `src/entities/humanoid.js`) |
+| `beast` | Fur, a short coat, feathers, hair, fleece | The same kind of sheet as `figure`, for animals (`M.beast`): a wolf's pelt, a horse's coat and mane, a sheep's fleece, a raven's feathers |
+| `gear` | Ash wood, a wrapped grip, forged steel | The same again for weapons and tools (`M.gear`): hafts, grips, blades; the steel square is the one that shines |
 | `hull` | Tarred oak ship planking | One board of it, with the shadow of the strake above along its top and a row of rivets along its bottom (both drawn by world.py), laid once on every strake of every hull (`hullGeo` in `src/world/props.js`) |
 | `sail` | A striped wool sail | Every sail |
 | `shields` | Four round shields on white | Two by two on one sheet: the shields on ships' rails, by halls' doors and in fighters' hands (`shieldGeo`) |
@@ -79,6 +81,9 @@ node tools/art.mjs make group:cast --cap=10
 - **Cut a weave on its own repeat.** Fading a picture into a shifted copy of itself is enough to make grass repeat,
   but it smears a weave and cuts across strands of hair. `repeatable()` in world.py finds how far along a picture best
   matches its own start and cuts there.
+- **Some things do not come as a texture.** Asked for bone, it tiled a floor with ivory squares; asked for a blade, it
+  stacked seven blades. The steel in the game is one bar cut out of that stack (`band()` in world.py); the bone was
+  not used.
 - **One model: Z-Image Turbo** (`z-image/turbo`), $0.015 a picture at 1k or 2k. A pilot tried the same portrait, axe,
   scene and planks on it, on Qwen Image 3 ($0.04 to $0.075) and on Recraft V4.1 ($0.035). Z-Image gave the most even
   period look; Qwen drew modern haircuts; Recraft painted heavier and less alike from picture to picture.

@@ -32,19 +32,28 @@ playtests; none are claimed until then.
 | 0.25 | **Ships and buildings** | Clinker-built hulls with a painted board and rivets on every strake, decks cut to the hull, carved stem posts, rigging, a steering oar, a painted sail; four painted round shields on rails, walls and arms; painted doors, carved door frames and gable boards, eave logs | Seen in screenshots of a longship from four sides, the fleet under sail and a longhouse; all 67 chapters pass the check | Built (by screenshot and script, not played) |
 | 0.26 | **Halls and towns** | Halls built as halls (higher walls, a wide door under a carved porch, shields, a smoke louver, banners); the Hall of Wolves with a gable, a louvered roof, great doors, wolf banners and the old crowned-raven banners the story names; gates in the palisades of Ravenhold and Svartøy | Seen in screenshots of four halls, two gates and the Hall of Wolves inside and out; all 67 chapters pass the check | Built (by screenshot and script, not played) |
 | 0.27 | **Shield walls merged** | The branch `real-shield-walls` (Iron Shore and the Black Shore as rank and file, about 150 a side) merged with 0.23 to 0.26; the rank and file given the weave, leather, hair and painted shields of the jointed figures | Merged without conflicts; all 67 chapters pass the check; both walls looked at in screenshots | Built (by screenshot and script, not played) |
-| 0.28 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: the raid, Kettil, the shore battle, Arne, Ulf, the deck fights, Rurik, the tannery yard, Skarde, Eydis, Bersi and all of Act VII above all, then the champions, the dive, riding, rowing and sailing feel, aim, stealth, camera | Three people finish everything built without help | Next |
-| 0.29 | **3D models in** | A source of models (Higgsfield's API has none); GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
-| 0.30 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or keep growing the web build | A written decision | Planned |
+| 0.28 | **Animals and weapons** | Pelt, coat, fleece, feathers and manes on the animals; the wolf, the horse and the ravens rebuilt with real chests, legs, heads and wings; steel, wood and wrapped grips on weapons and tools | Seen in a line-up of the animals and five armed men; all 67 chapters pass the check | Built (by screenshot and script, not played) |
+| 0.29 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: the raid, Kettil, the shore battle, Arne, Ulf, the deck fights, Rurik, the tannery yard, Skarde, Eydis, Bersi and all of Act VII above all, then the champions, the dive, riding, rowing and sailing feel, aim, stealth, camera | Three people finish everything built without help | Next |
+| 0.30 | **3D models in** | A source of models (Higgsfield's API has none); GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
+| 0.31 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or keep growing the web build | A written decision | Planned |
 | 1.0 | **Polish** | Side missions, minigames, voiced dialogue, recorded music, performance targets (60 fps at 1440p on suitable hardware as an objective), accessibility pass | Full playthrough signed off | Planned |
 
 ## Immediate next steps
 
 1. Play Acts II to VII and the Epilogue by hand (main menu, Start at an Act) and say where they are unfair, unclear, too easy or too slow: Act VII's fights first (Ulf, Kettil, Vigdis, Gorm, Håkon), then the raid, the shore battle, Arne, the fights on the Sea-Raven's deck, Rurik, the tannery yard, Skarde, Eydis and Bersi.
 2. Rule on the items under "Under review" in the story bible (Act I's Bjornstead is still the old farm in the dale).
-3. Look at the world and the people in play and say what to change (the trees, the shore, the clothes, any figure that does not look like its portrait, the ships, the halls and gates); $5.10 of the approved $10 is unspent. Consider making a new Higgsfield key, since the pair was pasted into a chat.
+3. Look at the world and the people in play and say what to change (the trees, the shore, the clothes, any figure that does not look like its portrait, the ships, the halls and gates, the animals); $4.99 of the approved $10 is unspent. Consider making a new Higgsfield key, since the pair was pasted into a chat.
 4. Decide where the project lives: a PC that can run UE5, or continue in the browser for the epilogue and the polish.
 
-## Known gaps in 0.27
+## Known gaps in 0.28
+
+- **The animals were looked at standing still, in a line-up.** The wolf's and the horse's legs are now two pieces and a foot that swing from the hip as one, as the single stick did; nobody has watched them run, or ridden the horse, since. The ravens were not looked at perched or in flight.
+- **Deer, hares and sheep were covered, not rebuilt**: the same shapes as before under a coat or a fleece.
+- **What a weapon's piece is made of is told from its colour** (greys steel, browns wood): a bronze guard has a wood grain, and so has a loaf of bread. Two were set by hand: Rurik's painted shield is boards, sword and seax grips are wrapped.
+- **The rank and file's spears and axes, arrows in flight and thrown axes** are still flat colour.
+- **The short coat is nearly smooth**: the picture for it came back almost flat, and what shows on a horse is mostly its colour.
+
+## Known gaps carried from 0.27
 
 - **The shield walls have been merged, not replayed.** They were checked by script on their own branch (see "Real shield walls" below); here, after the merge, every chapter starts and both walls stand and look right in screenshots, but neither battle has been played through again, by a script or by a person.
 - **Two branches made in other sessions are still not in this one** (and nothing is in `main`): `act7-fight-tuning` and `story-hints-stay`, both cut from 0.22. A dry run says they merge without conflicts.

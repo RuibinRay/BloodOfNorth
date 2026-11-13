@@ -206,11 +206,13 @@ export const ART = {
   },
   "world": {
     "banners": "art/world/banners.jpg",
+    "beast": "art/world/beast.jpg",
     "birch": "art/world/birch.webp",
     "carved": "art/world/carved.jpg",
     "door": "art/world/door.jpg",
     "figure": "art/world/figure.jpg",
     "foam": "art/world/foam.jpg",
+    "gear": "art/world/gear.jpg",
     "ground_grass": "art/world/ground_grass.jpg",
     "ground_rock": "art/world/ground_rock.jpg",
     "ground_sand": "art/world/ground_sand.jpg",

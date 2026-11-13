@@ -2,7 +2,7 @@
 
 A third-person Viking action RPG that follows the owner's story, *The Rise of the Raven King*
 ([docs/story](docs/story/THE_RISE_OF_THE_RAVEN_KING.md): seven acts and an epilogue). This repository holds
-**slice 0.27**: Act I (Eirik's childhood), Act II (nineteen: Bjornstead, the raid, the walls, Kaupang and the
+**slice 0.28**: Act I (Eirik's childhood), Act II (nineteen: Bjornstead, the raid, the walls, Kaupang and the
 Sea-Raven), Act III (twenty: Jarnøy and the Battle of Iron Shore), Act IV (twenty-two: the treasure voyage,
 Wessex, six islands burning, Hedeby Sound), Act V (twenty-four: the hunger winter, the tannery yard, the ring,
 Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, the wedding) and Act VII
@@ -10,7 +10,18 @@ Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, th
 (forty-one: Ravenhold twelve years on, Leif's house, the old birch), each as the story tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
-**New in 0.27.** The real shield walls are in. They were built in another session on a branch of their own
+**New in 0.28.** Animals and weapons. **Animals** are covered in something: a wolf has a shaggy pelt, a horse a
+short coat and a mane and tail of hair, a sheep a curly fleece, deer and hares a coat, ravens feathers. Three were
+rebuilt as well as covered: **the wolf** has a deep chest, lean haunches, a ruff, a jaw, a nose, a brush of a tail and
+legs with thighs and paws; **the horse** has a chest and quarters, a neck with the mane lying along its crest, a
+muzzle, eyes, a forelock, a hanging tail, legs with hooves, and a blanket under the saddle; **the ravens**, white and
+black, have heads, eyes, heavy beaks, wedge tails and wings with spread fingers in place of a ball and two planks.
+**Weapons and tools** are made of something: blades and axe-heads are hammered steel that takes the light, hafts and
+bows are wood with a grain, sword and seax grips are wrapped. Seven more Higgsfield pictures (about 10 cents; $5.01 of
+the approved $10 in all), worked into two new sheets, `beast.jpg` and `gear.jpg`, that work the way the figures'
+sheet does.
+
+**In 0.27.** The real shield walls are in. They were built in another session on a branch of their own
 (`real-shield-walls`, from 0.22) and are now merged with everything since: the Battle of Iron Shore (Act III) and both
 pushes on the Black Shore (Act VII) are two lines of about a hundred and fifty men a side, with the story's named
 fighters in the front rank, instead of skirmishes in pairs (see "Real shield walls" in

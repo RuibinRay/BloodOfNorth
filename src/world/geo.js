@@ -246,8 +246,13 @@ export function initTextures() {
 // uv counts repeats of that stuff, so a cloak can carry three repeats of the weave and a belt half of one. Each square
 // holds one repeat with a border of itself round it (tools/art/world.py), so nothing shows where a repeat ends.
 /** Where each stuff is on the sheet, as [column, row from the bottom], and how many metres one repeat of it covers. */
-export const STUFF = { wool: [0, 1, 0.16], fur: [1, 1, 0.4], mail: [2, 1, 0.22], plain: [0, 0, 1], hair: [1, 0, 0.2], leather: [2, 0, 0.4] };
-function figureMat(mat) {
+export const STUFF = { wool: [0, 1, 0.16], fur: [1, 1, 0.4], mail: [2, 1, 0.22], plain: [0, 0, 1], hair: [1, 0, 0.2], leather: [2, 0, 0.4],
+  // TEX.beast, the same kind of sheet for animals (M.beast): a wolf's pelt, a horse's short coat, feathers / plain, a mane, a fleece
+  pelt: [0, 1, 0.34], coat: [1, 1, 0.3], feather: [2, 1, 0.2], mane: [1, 0, 0.22], fleece: [2, 0, 0.3],
+  // TEX.gear, for weapons and tools (M.gear): a haft's wood, a wrapped grip, steel (the one square that shines) / plain
+  wood: [0, 1, 0.3], wrap: [1, 1, 0.1], steel: [2, 1, 0.22] };
+/** metal: whether the top right square of this material's sheet is metal (mail on TEX.figure, steel on TEX.gear). */
+function figureMat(mat, metal = true) {
   mat.color.setScalar(1 / 0.6105); // the sheet is a light grey (205) so that it can lighten as well as darken: this gives the colours back their strength
   mat.onBeforeCompile = (sh) => {
     sh.vertexShader = sh.vertexShader
@@ -262,6 +267,7 @@ function figureMat(mat) {
         float fMail = step(0.6, vCell.x) * step(0.4, vCell.y);`)
       .replace('#include <metalnessmap_fragment>', '#include <metalnessmap_fragment>\nmetalnessFactor = mix(metalnessFactor, 0.62, fMail);')
       .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, 0.5, fMail);');
+    if (!metal) sh.fragmentShader = sh.fragmentShader.replace('float fMail = step(0.6, vCell.x) * step(0.4, vCell.y);', 'float fMail = 0.0;');
   };
   return mat;
 }
@@ -323,6 +329,10 @@ export function initMaterials() {
   M.ember = std({ color: 0x331008, emissive: 0xff5a14, emissiveIntensity: 1.6, roughness: 1 });
   // vertex-coloured: one material for all characters, one for props/animals/items
   M.char = figureMat(std({ vertexColors: true, roughness: 0.82, side: THREE.DoubleSide, map: TEX.figure }));
+  // animals, and weapons and tools: the same arrangement as the figures (a sheet of six squares, a `cell` on every vertex)
+  for (const k of ['beast', 'gear']) { TEX[k] = sheet(768, 512, (g) => { g.fillStyle = rgb(205, 205, 205); g.fillRect(0, 0, 768, 512); }); TEX[k].wrapS = TEX[k].wrapT = THREE.ClampToEdgeWrapping; paint(TEX[k], W3[k]); }
+  M.beast = figureMat(std({ vertexColors: true, roughness: 0.92, map: TEX.beast }), false);
+  M.gear = figureMat(std({ vertexColors: true, roughness: 0.85, map: TEX.gear }));
   M.vc = patch(std({ vertexColors: true, roughness: 0.9 }));
   M.vcPlain = std({ vertexColors: true, roughness: 0.85 });
   M.cloth = (hex) => {

@@ -3,28 +3,30 @@ import * as THREE from 'three';
 import { clamp, damp, dampAngle, angleDiff } from '../core/util.js';
 import { M, at, box, cyl, cone, sphere, capsule, tint, merge } from '../world/geo.js';
 import { heightAt } from '../world/terrain.js';
-import { makeItem } from './humanoid.js';
+import { makeItem, dress } from './humanoid.js';
 
 const _v = new THREE.Vector3(), _u = new THREE.Vector3();
-const mesh = (geos) => { const m = new THREE.Mesh(merge(geos), M.vcPlain); m.castShadow = true; return m; };
+// Every piece of an animal says what it is covered in (TEX.beast: see STUFF in geo.js); one that says nothing is plain.
+const mesh = (geos) => { const m = new THREE.Mesh(merge(geos.map((g) => (g.attributes.cell ? g : dress(g, 'plain')))), M.beast); m.castShadow = true; return m; };
+const pelt = (g) => dress(g, 'pelt'), coat = (g) => dress(g, 'coat'), fleece = (g) => dress(g, 'fleece'), feather = (g) => dress(g, 'feather'), mane = (g) => dress(g, 'mane');
 
 function hareModel() {
   const g = new THREE.Group(), fur = 0x8a7a66;
   g.add(mesh([
-    tint(at(sphere(0.14, 8, 6), 0, 0.16, 0, 0, 0, 0, 0.8, 0.85, 1.35), fur, 0.15, 1),
-    tint(at(sphere(0.08, 7, 5), 0, 0.27, 0.17), fur, 0.12, 2),
+    pelt(tint(at(sphere(0.14, 8, 6), 0, 0.16, 0, 0, 0, 0, 0.8, 0.85, 1.35), fur, 0.15, 1)),
+    pelt(tint(at(sphere(0.08, 7, 5), 0, 0.27, 0.17), fur, 0.12, 2)),
     tint(at(capsule(0.018, 0.12, 4), 0.03, 0.4, 0.14, -0.25, 0, 0), 0x7a6a58, 0.1, 3), tint(at(capsule(0.018, 0.12, 4), -0.03, 0.4, 0.14, -0.25, 0, 0), 0x7a6a58, 0.1, 4),
-    tint(at(sphere(0.045, 5, 4), 0, 0.19, -0.19), 0xe8e2d6, 0.05, 5),
+    fleece(tint(at(sphere(0.045, 5, 4), 0, 0.19, -0.19), 0xe8e2d6, 0.05, 5)),
     tint(at(sphere(0.012, 4, 3), 0.045, 0.3, 0.22), 0x120c08, 0, 6), tint(at(sphere(0.012, 4, 3), -0.045, 0.3, 0.22), 0x120c08, 0, 7),
   ]));
   return g;
 }
 function deerModel(stag) {
   const g = new THREE.Group(), fur = 0x8c6a48, parts = [
-    tint(at(capsule(0.27, 0.72, 8), 0, 0.98, 0, Math.PI / 2, 0, 0, 1, 1, 1.05), fur, 0.1, 1),
-    tint(at(capsule(0.1, 0.42, 6), 0, 1.32, 0.56, 0.75, 0, 0), fur, 0.1, 2),
-    tint(at(sphere(0.12, 7, 6), 0, 1.6, 0.8, 0, 0, 0, 0.85, 0.9, 1.5), 0x9a7854, 0.08, 3),
-    tint(at(sphere(0.06, 5, 4), 0, 1.02, -0.66), 0xe8e0d0, 0.05, 4),
+    coat(tint(at(capsule(0.27, 0.72, 8), 0, 0.98, 0, Math.PI / 2, 0, 0, 1, 1, 1.05), fur, 0.1, 1)),
+    coat(tint(at(capsule(0.1, 0.42, 6), 0, 1.32, 0.56, 0.75, 0, 0), fur, 0.1, 2)),
+    coat(tint(at(sphere(0.12, 7, 6), 0, 1.6, 0.8, 0, 0, 0, 0.85, 0.9, 1.5), 0x9a7854, 0.08, 3)),
+    fleece(tint(at(sphere(0.06, 5, 4), 0, 1.02, -0.66), 0xe8e0d0, 0.05, 4)),
     tint(at(cone(0.035, 0.14, 4), 0.09, 1.72, 0.72, -0.3, 0, -0.5), fur, 0.05, 5), tint(at(cone(0.035, 0.14, 4), -0.09, 1.72, 0.72, -0.3, 0, 0.5), fur, 0.05, 6),
     tint(at(sphere(0.016, 4, 3), 0.09, 1.63, 0.86), 0x120c08, 0, 7), tint(at(sphere(0.016, 4, 3), -0.09, 1.63, 0.86), 0x120c08, 0, 8),
   ];
@@ -37,67 +39,88 @@ function deerModel(stag) {
   g.userData.legs = [];
   for (const [x, z] of [[0.13, 0.36], [-0.13, 0.36], [0.13, -0.38], [-0.13, -0.38]]) {
     const leg = new THREE.Group(); leg.position.set(x, 0.86, z);
-    leg.add(mesh([tint(at(capsule(0.045, 0.72, 5), 0, -0.4, 0), 0x6e5238, 0.1, 12)]));
+    leg.add(mesh([coat(tint(at(capsule(0.045, 0.72, 5), 0, -0.4, 0), 0x6e5238, 0.1, 12))]));
     g.add(leg); g.userData.legs.push(leg);
   }
   return g;
 }
 export function wolfModel() {
-  const g = new THREE.Group(), fur = 0x6e6e72;
+  const g = new THREE.Group(), fur = 0x6e6e72, low = 0x5c5c60;
   g.add(mesh([
-    tint(at(capsule(0.19, 0.6, 8), 0, 0.6, 0, Math.PI / 2, 0, 0, 1, 1, 1.02), fur, 0.14, 1),
-    tint(at(sphere(0.15, 7, 6), 0, 0.78, 0.5, 0, 0, 0, 0.9, 0.95, 1.2), 0x7a7a7e, 0.1, 2),
-    tint(at(cone(0.07, 0.24, 5), 0, 0.74, 0.74, Math.PI / 2, 0, 0), 0x55555a, 0.08, 3),
-    tint(at(cone(0.045, 0.13, 4), 0.08, 0.95, 0.46), fur, 0.05, 4), tint(at(cone(0.045, 0.13, 4), -0.08, 0.95, 0.46), fur, 0.05, 5),
-    tint(at(capsule(0.05, 0.4, 5), 0, 0.5, -0.62, -0.9, 0, 0), 0x5c5c60, 0.1, 6),
-    tint(at(sphere(0.016, 4, 3), 0.07, 0.83, 0.62), 0xd8b040, 0, 7), tint(at(sphere(0.016, 4, 3), -0.07, 0.83, 0.62), 0xd8b040, 0, 8),
+    pelt(tint(at(capsule(0.18, 0.58, 8), 0, 0.6, 0, Math.PI / 2, 0, 0, 1, 1, 1.02), fur, 0.14, 1)),
+    pelt(tint(at(sphere(0.22, 8, 6), 0, 0.61, 0.27, 0, 0, 0, 0.95, 1.08, 1.0), 0x747478, 0.14, 11)),   // a deep chest
+    pelt(tint(at(sphere(0.2, 8, 6), 0, 0.6, -0.3, 0, 0, 0, 0.95, 1.0, 1.05), fur, 0.14, 12)),          // and lean haunches
+    pelt(tint(at(sphere(0.2, 7, 5), 0, 0.7, 0.34, 0.3, 0, 0, 1.0, 1.1, 0.9), 0x77777b, 0.14, 10)),     // the ruff of his neck
+    pelt(tint(at(sphere(0.15, 7, 6), 0, 0.8, 0.52, 0, 0, 0, 0.9, 0.92, 1.15), 0x7a7a7e, 0.1, 2)),
+    coat(tint(at(cone(0.075, 0.26, 6), 0, 0.77, 0.76, Math.PI / 2, 0, 0, 1, 1, 0.8), 0x55555a, 0.08, 3)), // the muzzle
+    coat(tint(at(box(0.07, 0.022, 0.18), 0, 0.715, 0.72, 0.12, 0, 0), 0x3c3c40, 0.05, 13)),             // the lower jaw, a little open
+    tint(at(sphere(0.022, 5, 4), 0, 0.775, 0.885), 0x141416, 0, 14),                                      // the nose
+    pelt(tint(at(cone(0.05, 0.15, 4), 0.085, 0.97, 0.47, -0.15, 0, -0.15), fur, 0.05, 4)), pelt(tint(at(cone(0.05, 0.15, 4), -0.085, 0.97, 0.47, -0.15, 0, 0.15), fur, 0.05, 5)),
+    pelt(tint(at(capsule(0.075, 0.42, 6), 0, 0.5, -0.64, -0.9, 0, 0), low, 0.14, 6)),                     // a brush of a tail
+    tint(at(sphere(0.016, 4, 3), 0.07, 0.85, 0.63), 0xd8b040, 0, 7), tint(at(sphere(0.016, 4, 3), -0.07, 0.85, 0.63), 0xd8b040, 0, 8),
   ]));
   g.userData.legs = [];
   for (const [x, z] of [[0.11, 0.32], [-0.11, 0.32], [0.11, -0.34], [-0.11, -0.34]]) {
     const leg = new THREE.Group(); leg.position.set(x, 0.52, z);
-    leg.add(mesh([tint(at(capsule(0.04, 0.42, 5), 0, -0.25, 0), 0x5c5c60, 0.1, 9)]));
+    leg.add(mesh([pelt(tint(at(capsule(0.056, 0.17, 5), 0, -0.1, 0), fur, 0.12, 9)), coat(tint(at(capsule(0.033, 0.22, 5), 0, -0.345, 0.01), low, 0.1, 15)), coat(tint(at(box(0.07, 0.04, 0.1), 0, -0.5, 0.025), 0x48484c, 0.05, 16))])); // thigh, shank, paw
     g.add(leg); g.userData.legs.push(leg);
   }
   return g;
 }
 export function horseModel() {
-  const g = new THREE.Group(), coat = 0x7a5636, dark = 0x2e2018;
+  const g = new THREE.Group(), hide = 0x7a5636, dark = 0x2e2018;
   g.add(mesh([
-    tint(at(capsule(0.31, 1.0, 8), 0, 1.16, 0, Math.PI / 2, 0, 0, 1, 1, 1.05), coat, 0.1, 1),
-    tint(at(capsule(0.15, 0.6, 6), 0, 1.6, 0.74, 0.7, 0, 0), coat, 0.1, 2),
-    tint(at(sphere(0.15, 7, 6), 0, 1.95, 1.08, 0.5, 0, 0, 0.85, 0.9, 1.9), coat, 0.08, 3),
-    tint(at(box(0.07, 0.42, 0.62), 0, 1.86, 0.62, 0.7, 0, 0), dark, 0.1, 4),
-    tint(at(capsule(0.06, 0.6, 5), 0, 1.0, -0.86, -0.5, 0, 0), dark, 0.1, 5),
-    tint(at(cone(0.04, 0.13, 4), 0.08, 2.1, 0.98), coat, 0.05, 6), tint(at(cone(0.04, 0.13, 4), -0.08, 2.1, 0.98), coat, 0.05, 7),
-    tint(at(box(0.5, 0.1, 0.55), 0, 1.5, -0.05), 0x4a3424, 0.1, 8),
+    coat(tint(at(capsule(0.3, 0.96, 8), 0, 1.16, 0, Math.PI / 2, 0, 0, 1, 1, 1.05), hide, 0.1, 1)),
+    coat(tint(at(sphere(0.34, 9, 7), 0, 1.2, 0.5, 0, 0, 0, 0.98, 1.06, 0.92), hide, 0.1, 10)),              // the chest
+    coat(tint(at(sphere(0.36, 9, 7), 0, 1.22, -0.5, 0, 0, 0, 1.0, 1.04, 0.96), hide, 0.1, 11)),             // the quarters
+    coat(tint(at(capsule(0.17, 0.56, 7), 0, 1.6, 0.74, 0.72, 0, 0, 0.85, 1, 1.15), hide, 0.1, 2)),          // the neck, deeper than it is wide
+    coat(tint(at(sphere(0.15, 8, 6), 0, 1.97, 1.08, 0.55, 0, 0, 0.8, 0.9, 1.75), hide, 0.08, 3)),
+    coat(tint(at(sphere(0.1, 7, 5), 0, 1.84, 1.29, 0.55, 0, 0, 0.85, 0.85, 1.2), 0x5a3e28, 0.08, 12)),      // the muzzle
+    mane(tint(at(box(0.07, 0.62, 0.1), 0, 1.742, 0.579, 0.72, 0, 0), dark, 0.16, 4)),                         // the mane, lying along the crest of the neck
+    mane(tint(at(box(0.07, 0.16, 0.12), 0, 2.07, 0.99, 0.9, 0, 0), dark, 0.16, 13)),                        // the forelock
+    mane(tint(at(capsule(0.075, 0.66, 6), 0, 0.92, -0.9, -0.22, 0, 0), dark, 0.16, 5)),                     // the tail, hanging
+    tint(at(cone(0.04, 0.13, 4), 0.08, 2.12, 0.98), hide, 0.05, 6), tint(at(cone(0.04, 0.13, 4), -0.08, 2.12, 0.98), hide, 0.05, 7),
+    tint(at(sphere(0.022, 5, 4), 0.105, 2.0, 1.1), 0x120c08, 0, 14), tint(at(sphere(0.022, 5, 4), -0.105, 2.0, 1.1), 0x120c08, 0, 15),
+    tint(at(box(0.56, 0.05, 0.62), 0, 1.5, -0.05), 0x7a2a22, 0.1, 16), tint(at(box(0.44, 0.1, 0.5), 0, 1.55, -0.05), 0x4a3424, 0.1, 8), // a blanket, and the saddle on it
   ]));
   g.userData.legs = [];
   for (const [x, z] of [[0.17, 0.52], [-0.17, 0.52], [0.17, -0.55], [-0.17, -0.55]]) {
     const leg = new THREE.Group(); leg.position.set(x, 1.0, z);
-    leg.add(mesh([tint(at(capsule(0.055, 0.85, 5), 0, -0.48, 0), dark, 0.1, 9)]));
+    leg.add(mesh([coat(tint(at(capsule(0.09, 0.34, 6), 0, -0.2, 0), hide, 0.1, 9)), coat(tint(at(capsule(0.046, 0.4, 5), 0, -0.68, 0), dark, 0.1, 17)), tint(at(cyl(0.06, 0.072, 0.09, 6), 0, -0.955, 0.01), 0x16110c, 0.05, 18)])); // thigh, cannon, hoof
     g.add(leg); g.userData.legs.push(leg);
   }
   return g;
 }
 function sheepModel() {
   const g = new THREE.Group();
-  const parts = [tint(at(sphere(0.34, 8, 6), 0, 0.55, 0, 0, 0, 0, 0.9, 0.85, 1.3), 0xd8d2c2, 0.14, 1), tint(at(sphere(0.12, 6, 5), 0, 0.68, 0.45, 0, 0, 0, 0.8, 0.9, 1.3), 0x3a3028, 0.1, 2)];
+  const parts = [fleece(tint(at(sphere(0.34, 8, 6), 0, 0.55, 0, 0, 0, 0, 0.9, 0.85, 1.3), 0xd8d2c2, 0.14, 1)), coat(tint(at(sphere(0.12, 6, 5), 0, 0.68, 0.45, 0, 0, 0, 0.8, 0.9, 1.3), 0x3a3028, 0.1, 2))];
   for (const [x, z] of [[0.14, 0.25], [-0.14, 0.25], [0.14, -0.25], [-0.14, -0.25]]) parts.push(tint(at(cyl(0.035, 0.035, 0.36, 4), x, 0.18, z), 0x3a3028, 0.05, 3));
   g.add(mesh(parts));
   return g;
 }
+/** A wing seen from above: broad at the body, narrowing to three spread fingers at the tip. side: +1 or -1. */
+function wingGeo(side) {
+  const pts = [[0.04, 0.09], [0.3, 0.11], [0.5, 0.07], [0.58, 0.03], [0.5, 0.0], [0.57, -0.04], [0.48, -0.05], [0.53, -0.1], [0.42, -0.1], [0.25, -0.14], [0.04, -0.12]];
+  const sh = new THREE.Shape(pts.map(([x, z]) => new THREE.Vector2(side * x, -z)));
+  return at(new THREE.ExtrudeGeometry(sh, { depth: 0.012, bevelEnabled: false }), 0, -0.006, 0, -Math.PI / 2, 0, 0); // flat in the air, a finger thick
+}
 export function ravenModel(col = 0x14141a, beak = 0x2a2a30) {
-  const g = new THREE.Group();
-  g.add(mesh([tint(at(sphere(0.1, 6, 5), 0, 0, 0, 0, 0, 0, 0.8, 0.8, 1.9), col, 0.1, 1), tint(at(cone(0.03, 0.12, 4), 0, 0.02, 0.24, Math.PI / 2, 0, 0), beak, 0, 2), tint(at(box(0.12, 0.01, 0.2), 0, 0, -0.24), col, 0.1, 3)]));
+  const g = new THREE.Group(), eye = col > 0x808080 ? 0x2a2420 : 0x6a6a72;
+  g.add(mesh([
+    feather(tint(at(sphere(0.1, 7, 6), 0, 0, 0, 0, 0, 0, 0.78, 0.8, 1.8), col, 0.1, 1)),
+    feather(tint(at(sphere(0.062, 7, 6), 0, 0.035, 0.17, 0, 0, 0, 0.95, 1, 1.1), col, 0.08, 5)),                     // the head
+    tint(at(cone(0.024, 0.13, 5), 0, 0.022, 0.29, Math.PI / 2 + 0.12, 0, 0, 1, 1, 0.8), beak, 0, 2),                  // a heavy beak, turned down a little
+    tint(at(sphere(0.011, 4, 3), 0.045, 0.055, 0.2), eye, 0, 6), tint(at(sphere(0.011, 4, 3), -0.045, 0.055, 0.2), eye, 0, 7),
+    ...[-0.32, 0, 0.32].map((a, k) => feather(tint(at(box(0.055, 0.01, 0.26), Math.sin(a) * 0.12, -0.005 * k, -0.16 - Math.cos(a) * 0.12, 0, a, 0), col, 0.12, 8 + k))), // the tail, spread in a wedge
+  ]));
   g.userData.wings = [];
   for (const s of [-1, 1]) {
     const w = new THREE.Group();
-    w.add(mesh([tint(at(box(0.46, 0.012, 0.2), s * 0.24, 0, 0), col, 0.15, 4)]));
+    w.add(mesh([feather(tint(wingGeo(s), col, 0.15, 4))]));
     g.add(w); g.userData.wings.push(w);
   }
   return g;
 }
-
 export class Wildlife {
   constructor(game) {
     this.game = game; this.animals = []; this.arrows = []; this.ravens = [];

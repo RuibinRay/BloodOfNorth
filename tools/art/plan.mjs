@@ -298,6 +298,14 @@ const RAW = {
   c_mail: texture('riveted iron chain mail: rows of small interlinked iron rings, close up'),
   c_leather: texture('old cracked leather hide seen very close: deep wrinkles, creases and a pebbled grain like a worn boot, lit from the side so that every crease casts a shadow, in pale grey-tan'),
   c_hair: texture('straight combed human hair in pale ash blonde, the strands running vertically'),
+  // animals and weapons (0.28): what a beast is covered in, and what a weapon is made of (the wolf's pelt is c_fur, a mane is c_hair)
+  a_coat: texture('the short sleek coat of a horse seen extremely close: fine short hairs all lying in one direction with a soft sheen, in plain light grey'),
+  a_fleece: texture('the thick curly fleece of a sheep seen extremely close: tight woolly curls and locks, every curl clearly separate with shadow between them, in off-white'),
+  a_feather: texture('overlapping bird feathers seen extremely close, laid in rows like roof tiles, every feather with a clear central shaft and fine barbs, in plain light grey'),
+  g_steel: texture('a hand-forged steel blade seen extremely close: bright grey metal with fine hammer marks, faint wavy pattern-welding lines running lengthwise and a few small nicks'),
+  g_wood: texture('a smooth ash wood tool handle seen extremely close: pale wood with long straight grain lines running vertically, worn smooth by hands'),
+  g_wrap: texture('a sword grip wrapped tightly in narrow leather cord seen extremely close: even bands of dark leather cord lying side by side, every turn clearly separate with a shadow between'),
+  g_bone: texture('polished antler and bone seen extremely close: pale ivory with fine dark cracks and small pores'),
   // ships and buildings (0.25): a hull's planking, a sail, four shields to hang on a rail or carry, a door, carved timber
   s_hull: texture('the side of an old wooden ship: long tarred oak boards running horizontally, dark brown-black, with weathered grain, adze marks and a few knots'),
   s_sail: [`A square sail of heavy woven wool seen flat from straight on, filling the whole frame edge to edge: broad vertical stripes of weathered dull red and undyed cream, with a lattice of thin leather strips sewn diagonally across it, a little stained and sun-faded. Hand-painted stylised game texture, muted earth palette. ${CLEAN}.`, '1:1'],

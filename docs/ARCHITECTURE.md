@@ -55,6 +55,10 @@ The frame rate has not been measured since the first slices; what follows is cou
 - **A hall is a longhouse that is big enough** (`longhouse()` in `src/world/props.js`: `hall`, by default 6.8 m wide
   and 15 m long or more): the same function then builds the porch, the louver, the shields and the banners. Gates are
   `gate()` and banners on poles `pole()` in `src/world/realm_props.js`; both take a colour or 'raven' / 'wolf'.
+- **Animals and hand-held things use the figures' arrangement with sheets of their own**: `M.beast` over `TEX.beast`
+  (`src/entities/wildlife.js` says what each piece is covered in) and `M.gear` over `TEX.gear` (`gearStuff()` in
+  `src/entities/humanoid.js` tells what each piece of an item is made of from its colour). All three sheets are six
+  squares in the same places, so `STUFF`, `dress()` and `figureMat()` serve all of them.
 - **A shield wall's rank and file are instanced copies of one braced figure** (`src/entities/ranks.js`, driven by
   `src/systems/shieldwall.js`): the cloth, the fixed parts, the cap, the two weapon arms and one mesh for each of the
   four painted shields, so about three hundred men are nine draws. Their pieces are dressed with the same `dress()` as
