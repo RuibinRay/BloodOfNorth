@@ -6,7 +6,9 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",
-        "dev"
+        "dev",
+        "--prefix",
+        "/Users/ray/Game_Blood_of_the_North"
       ],
       "port": 5184
     }
