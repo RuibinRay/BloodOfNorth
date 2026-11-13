@@ -5,7 +5,7 @@ import { listSaves, saveSettings, deleteSave, latestSave, DEFAULT_SETTINGS } fro
 import { ITEMS, QUESTS } from '../data/act1.js';
 import { ACTS } from '../data/chapters.js';
 import { COMPANIONS, available, absent } from '../data/companions.js';
-import { portraitFor, portraitOf, itemArt, actArt, actArtAt, titleArt, parchment } from './art.js';
+import { portraitFor, portraitOf, itemArt, actArt, actArtAt, titleArt, parchment, compass, chapterArt } from './art.js';
 import { SECRETS } from '../data/act1_ch3.js';
 import { TREES, POINT_EVERY } from '../systems/skills.js';
 import { POI, ISLES, DISTRICT_LINE, GREAT, MAIN, PLACES } from '../world/layout.js';
@@ -58,6 +58,7 @@ export class UI {
     const t = titleArt(), pm = parchment(), ld = document.getElementById('loading');
     if (t && ld) ld.style.backgroundImage = `linear-gradient(rgba(8,7,6,0.55), rgba(8,7,6,0.8)), url("${t}")`;
     if (pm) { document.documentElement.style.setProperty('--vellum', `url("${pm}")`); this.parch = new Image(); this.parch.src = pm; }
+    if (compass()) { this.rose = new Image(); this.rose.src = compass(); }
   }
 
   // ---- small HUD pieces ---------------------------------------------------------------
@@ -147,10 +148,10 @@ export class UI {
 
   // ---- dialogue -----------------------------------------------------------------------
   showDialogue(speaker, text, choices, sel = 0) {
-    speaker = this.g.fmt(speaker || ''); // a raven can speak now: {w} and {b} are their names
+    const who = speaker || ''; speaker = this.g.fmt(who); // a raven can speak now: {w} and {b} are their names
     const d = this.e.dialogue; d.classList.add('on');
     d.querySelector('.speaker').textContent = speaker;
-    const face = portraitFor(speaker, this.g), pe = d.querySelector('.portrait'); // the speaker's painted face, when there is one
+    const face = portraitFor(who, this.g), pe = d.querySelector('.portrait'); // the speaker's painted face, when there is one
     if (face !== this._face) { this._face = face; d.classList.toggle('faced', !!face); pe.style.backgroundImage = face ? `url("${face}")` : ''; }
     const t = d.querySelector('.text'); t.textContent = text; t.style.display = text || !choices ? '' : 'none';
     const c = d.querySelector('.choices'); c.innerHTML = '';
@@ -356,9 +357,9 @@ export class UI {
     if (!ids.includes(this.sel.item)) this.sel.item = ids[0];
     const cur = this.sel.item, it = ITEMS[cur] || { name: cur, desc: '', cat: '' };
     const weapon = cur === 'bow' || g.player.meleeOwned().includes(cur);
-    const pic = (id) => (itemArt(id) ? `<img class="pic" src="${itemArt(id)}" alt="">` : icon(itemIcon(id, ITEMS[id]?.cat))); // its painting, or the drawn sign
+    const pic = (id) => (itemArt(id, g) ? `<img class="pic" src="${itemArt(id, g)}" alt="">` : icon(itemIcon(id, ITEMS[id]?.cat))); // its painting, or the drawn sign
     body.innerHTML = `<div class="cols"><div class="list">${ids.map((id) => `<button data-id="${id}" class="${id === cur ? 'on' : ''}"><span class="n">${inv[id]}</span><small>${esc(ITEMS[id]?.cat || '')}</small>${pic(id)}${esc(ITEMS[id]?.name || id)}</button>`).join('')}</div>
-      <div>${itemArt(cur) ? `<img class="itemart" src="${itemArt(cur)}" alt="">` : ''}<h3>${itemArt(cur) ? '' : icon(itemIcon(cur, it.cat), 'big')}${esc(it.name)}</h3><p class="muted">${esc(it.cat)} · carried: ${inv[cur]}</p><p>${esc(it.desc)}</p>${weapon ? `<button class="btn" id="eq">${g.player.equipped === cur ? 'Put away' : 'Equip'}</button>` : ''}</div></div>`;
+      <div>${itemArt(cur, g) ? `<img class="itemart" src="${itemArt(cur, g)}" alt="">` : ''}<h3>${itemArt(cur, g) ? '' : icon(itemIcon(cur, it.cat), 'big')}${esc(it.name)}</h3><p class="muted">${esc(it.cat)} · carried: ${inv[cur]}</p><p>${esc(it.desc)}</p>${weapon ? `<button class="btn" id="eq">${g.player.equipped === cur ? 'Put away' : 'Equip'}</button>` : ''}</div></div>`;
     body.querySelectorAll('.list button').forEach((b) => (b.onclick = () => { this.sel.item = b.dataset.id; this.openPanel('inventory', this.tabs); }));
     const eq = body.querySelector('#eq'); if (eq) eq.onclick = () => { g.player.equip(g.player.equipped === cur ? 'none' : cur); if (cur !== 'bow' && g.player.equipped === cur) g.state.flags.melee = cur; this.openPanel('inventory', this.tabs); };
   }
@@ -409,6 +410,7 @@ export class UI {
       x.drawImage(local ? this.townBase[town.id] : realm ? this.realmBase : sea ? this.seaBase : this.mapBase, 0, 0, W, H);
       x.fillStyle = 'rgba(46,34,20,0.16)'; x.fillRect(0, 0, W, H);
       if (this.parch && this.parch.complete && this.parch.naturalWidth) { x.save(); x.globalCompositeOperation = 'multiply'; x.globalAlpha = 0.7; x.drawImage(this.parch, 0, 0, W, H); x.restore(); } // the chart is drawn on vellum
+      if (this.rose && this.rose.complete && this.rose.naturalWidth) { const r = Math.round(W * 0.2); x.save(); x.globalCompositeOperation = 'multiply'; x.globalAlpha = 0.85; x.drawImage(this.rose, W - r - 10, 10, r, r); x.restore(); } // and a rose in its corner
       x.textAlign = 'center'; x.font = 'italic 15px Georgia'; x.lineWidth = 3;
       if (local) {
         x.strokeStyle = 'rgba(96,70,44,0.55)'; x.lineWidth = 2.2; for (const r of town.roads || []) { x.beginPath(); r.forEach(([dx, dz], i) => x[i ? 'lineTo' : 'moveTo'](X(town.x + dx), Z(town.z + dz))); x.stroke(); }
@@ -592,7 +594,7 @@ export class UI {
     body.innerHTML = `<h3>Start at an act or a chapter</h3><p class="muted">An act starts at its opening. Open its chapters to start at any one of them. Everything before is taken as played: the quests done, and what Eirik carries and has learned by then. From there the game autosaves as usual, so the autosave will follow what you start. Saves in the three slots are not touched.</p>` +
       ACTS.map((a, ai) => `<div class="slot">${actArtAt(ai) ? `<img class="scene" src="${actArtAt(ai)}" alt="">` : ''}<div class="info"><b>${esc(a.title)}</b><span>${esc(a.text)}</span></div><button class="btn" data-act="${a.quests[0]}">Start</button></div>` +
         `<details class="chapters" data-ai="${ai}"${this.actsOpen === ai ? ' open' : ''}><summary>The ${a.quests.length} chapters</summary><ol>` +
-        a.quests.map((id) => `<li><span>${esc(QUESTS[id] ? QUESTS[id].title : id)}</span><button class="btn small" data-act="${id}">Play</button></li>`).join('') + '</ol></details>').join('');
+        a.quests.map((id) => `<li>${chapterArt(id) ? `<img class="thumb" loading="lazy" src="${chapterArt(id)}" alt="">` : ''}<span>${esc(QUESTS[id] ? QUESTS[id].title : id)}</span><button class="btn small" data-act="${id}">Play</button></li>`).join('') + '</ol></details>').join('');
     body.querySelectorAll('details.chapters').forEach((d) => d.addEventListener('toggle', () => { if (d.open) { this.actsOpen = +d.dataset.ai; body.querySelectorAll('details.chapters').forEach((o) => { if (o !== d) o.open = false; }); } }));
     body.querySelectorAll('[data-act]').forEach((b) => (b.onclick = () => g.startAt(b.dataset.act)));
   }
