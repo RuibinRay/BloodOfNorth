@@ -24,6 +24,8 @@ export const STORM = { cost: 50, more: 15, calm: 60, drain: 35, shaken: 2.2, nea
 const SPEED = { jog: 3.3, sprint: 5.0, crouch: 1.5, aim: 1.3, block: 1.2 };
 const _v = new THREE.Vector3(), _d = new THREE.Vector3();
 
+const SWINGS = /^(atk|chop|thrust|slam|twinL|cast)/; // the actions that leave a stroke in the air
+
 export class Player {
   constructor(game) {
     this.game = game;
@@ -136,6 +138,7 @@ export class Player {
     for (let i = 0; i < 3; i++) g.fx.burst('spark', this.pos.x + (ax / ad) * (0.5 + i * 0.35), this.pos.y + 1.0 + i * 0.25, this.pos.z + (az / ad) * (0.5 + i * 0.35), 10);
     g.audio.play('parry'); g.audio.play('steel'); g.audio.play('drum', { vol: 0.8 });
     g.hitStop = 0.12; g.slowT = 0.45; this.cam.shake = 0.3; this.wardT = Math.min(this.wardT, 0.18); // one blow turned, and a moment more
+    g.ui.pulse('ward', 0.8); g.fx.ring(this.pos.x, this.pos.y, this.pos.z, { r0: 0.4, r1: 5, dur: 0.5, color: 0x9fd0ff, a: 0.8 }); g.fx.flare(this.pos.x + (ax / ad) * 0.7, this.pos.y + 1.3, this.pos.z + (az / ad) * 0.7, 2.2, 0.7, 0.85, 1, 0.14);
     g.events.emit('warded');
   }
   /** An arrow arrives. Only a raised shield stops it. */
@@ -203,7 +206,7 @@ export class Player {
     if (tg && gap < 3.6 + (mod.reach || 0)) this.yaw = Math.atan2(tg.pos.x - this.pos.x, tg.pos.z - this.pos.z);
     const dur = (heavy ? 0.85 : n === 3 ? 0.62 : 0.5) / speed;
     this.lungeT = dur * 0.36; this.lungeV = mod.lunge || (tg && gap > W.reach - 0.6 && gap < 5 ? 2.6 : 0.7); // he steps into the blow
-    h.play(anim, dur, { hitAt: heavy ? 0.45 : 0.4, onHit: () => {
+    h.play(anim, dur, { hitAt: heavy ? 0.45 : 0.4, heavy, turning: !!mod.turning, onHit: () => {
       g.events.emit('playerSwing', n, heavy, mod);
       if (W.double && !heavy) g.after(0.11, () => g.events.emit('playerSwing', n, heavy, { ...mod, dmg: (mod.dmg || 1) * W.double, second: true }));
     } });
@@ -219,7 +222,7 @@ export class Player {
   /** Can a storm skill be used: learned, the bar full enough, nothing else in hand. Says why not. */
   artReady(id, cdKey) {
     const g = this.game, k = g.skills.def(id);
-    if (!g.skills.has(id) || this.h.busy || this.blocking || this.stepT > 0 || this.fx.disarm > 0) return false;
+    if (!g.skills.has(id) || this.h.busy || this.blocking || this.stepT > 0 || this.fx.disarm > 0 || this.other) return false;
     if (this.stormDead) { g.ui.toast('The scar is cold. There is nothing left in it.'); return false; }
     if (cdKey && this.cd[cdKey] > 0) { g.ui.toast(`${k.name}: not yet`); return false; }
     if (this.ward < k.storm) { g.ui.toast(`${k.name} needs ${k.storm} of the storm bar: land blows and parry to fill it`); return false; }
@@ -235,7 +238,7 @@ export class Player {
     if (tg && gap < 9) this.yaw = Math.atan2(tg.pos.x - this.pos.x, tg.pos.z - this.pos.z);
     this.lungeT = 0.34; this.lungeV = Math.max(1.5, Math.min(9, (gap - 1.8) / 0.34)); this.iframes = Math.max(this.iframes, 0.3);
     g.audio.play('whoosh'); g.audio.play('shout', { vol: 0.8 }); g.events.emit('swingStart', true);
-    h.play('slam', 0.78, { hitAt: 0.5, onHit: () => g.events.emit('thunder') });
+    h.play('slam', 0.78, { hitAt: 0.5, heavy: true, storm: true, onHit: () => g.events.emit('thunder') });
   }
   /** Storm-Step: through the man he faces, cutting as he passes, and out behind him. */
   stormStep() {
@@ -247,7 +250,7 @@ export class Player {
     if (!this.artReady('st_step', 'step')) return;
     this.cd.step = 4; this.yaw = Math.atan2(dx, dz);
     this.stepA = { x: this.pos.x, z: this.pos.z }; this.stepB = { x: bx, z: bz }; this.stepDur = this.stepT = 0.16; this.stepTarget = tg; this.iframes = 0.34;
-    this.h.play('thrust', 0.3); g.audio.play('whoosh'); g.audio.play('steel', { vol: 0.5 });
+    this.h.play('thrust', 0.3, { storm: true }); g.audio.play('whoosh'); g.audio.play('steel', { vol: 0.5 });
   }
   /** Storm-Cry: a shout with thunder under it. */
   stormCry() {
@@ -331,7 +334,7 @@ export class Player {
     }
     this.health = Math.max(this.mortal ? 0 : 1, this.health - dmg); this.fury = Math.min(100, this.fury + 9);
     if (!this.mist()) this.h.play('stagger', 0.5); // the red mist: a blow no longer breaks his swing
-    g.audio.play('hurt'); this.cam.shake = 0.25;
+    g.audio.play('hurt'); this.cam.shake = 0.25; g.ui.pulse('hurt', Math.min(1, 0.35 + dmg / 40)); g.fx.burst('blood', this.pos.x, this.pos.y + 1.2, this.pos.z, 6);
     if (this.health <= 0) g.events.emit('playerDied');
     return 'hit';
   }
@@ -393,7 +396,7 @@ export class Player {
       if (k === 'poison') this.health = Math.max(4, this.health - 3 * dt);
       if (this.fx[k] <= 0) { if (k === 'disarm') this.h.hold('R', WEAPONS[this.equipped] ? WEAPONS[this.equipped].hold || this.equipped : null); if (k === 'noShield' && this.isMelee()) { this.h.hold('L', this.offItem()); if (g.inventory.has('shield')) g.ui.toast('A fresh shield on your arm'); } }
     }
-    if (ctrl && inp.hit('ward') && this.adult && this.isMelee()) {
+    if (ctrl && inp.hit('ward') && this.adult && this.isMelee() && !this.other) {
       const cost = this.guardCost();
       if (this.stormDead) g.ui.toast('The scar is cold. There is nothing left in it.');
       else if (!this.calm()) g.ui.toast('Too angry: the Stormguard will not answer. Hold your guard and breathe.');
@@ -421,16 +424,20 @@ export class Player {
           g.camera.getWorldDirection(_d);
           h.handWorld('L', _v);
           const dir = this.aimPoint(_d).sub(_v).normalize();
-          g.wildlife.shoot(_v, dir, 26 + this.draw * 22, this);
+          const perfect = this.draw >= 1 && this.fullT < 0.45; // loosed in the moment the string reaches the cheek: it flies truer and hits harder
+          g.wildlife.shoot(_v, dir, 26 + this.draw * 22 + (perfect ? 4 : 0), this, { power: this.draw, perfect });
           g.inventory.remove('arrow', 1, true);
-          g.audio.play('bow'); h.play('shoot', 0.3); this.draw = 0;
+          g.audio.play('bow'); g.audio.play('whoosh', { vol: 0.35 }); if (perfect) g.audio.play('chime', { vol: 0.35 });
+          h.play('shoot', 0.24, { onEnd: () => { if (g.inventory.count('arrow') > 0 && this.equipped === 'bow') h.play('nock', 0.32); } });
+          cam.kick = 3.2 + this.draw * 2; cam.shake = Math.max(cam.shake, 0.05 + this.draw * 0.05); this.draw = 0;
           g.events.emit('shoot');
         } else if (g.inventory.count('arrow') <= 0) g.ui.toast('No arrows left');
       }
     }
     if (this.aiming) this.draw = Math.min(1, this.draw + dt / (g.skills.has('h_still') ? 0.5 : 0.75)); else this.draw = 0;
+    this.fullT = this.draw >= 1 ? (this.fullT || 0) + dt : 0;
     this.updateArc();
-    h.param = this.draw;
+    h.param = this.draw; h.aimPitch = cam.pitch - 0.12; h.nocked = g.inventory.count('arrow') > 0;
     h.setLoop(this.aiming ? 'aim' : this.blocking ? 'block' : this.loopOverride || null);
 
     // --- locomotion ---
@@ -496,6 +503,11 @@ export class Player {
     h.breath = this.stamina < 30 ? 2.8 : this.sprinting || g.combat.active ? 1.8 : 1;
     h.setLocomotion(this.moving ? this.speed : 0, this.crouch);
     h.update(dt);
+    const act = h.action; // the stroke his blade leaves in the air: brighter for a heavy blow, blue-white when the storm is in it
+    if (act && SWINGS.test(act.name)) {
+      const f = act.t / act.dur, side = act.name === 'twinL' ? 'L' : 'R';
+      if (f > 0.27 && f < 0.66 && h.blade(side, _v, _d)) { const tr = g.fx.trailFor(this), st = this.breakT > 0 || act.storm || act.turning; if (tr) tr.add(_v, _d, st ? 0.5 : 0.95, st ? 0.78 : 0.95, 1, st ? 0.95 : act.heavy ? 0.8 : 0.5); }
+    }
     this.noise = !this.moving ? 0 : this.crouch ? 1.2 : this.sprinting ? 10 : 5;
     this.updateCamera(dt, ctrl);
   }
@@ -536,7 +548,8 @@ export class Player {
     }
     c.position.set(x, y, z);
     c.lookAt(tx, ty, tz);
-    const fov = lerp((g.baseFov ?? 58) + (this.sprinting && this.speed > 4 ? 5 : 0), 40, cam.aimK); // the view opens a little at a run
+    cam.kick = damp(cam.kick || 0, 0, 8, dt); // a heavy blow pulls the view in for an instant; a loosed arrow lets it out
+    const fov = lerp((g.baseFov ?? 58) + (this.sprinting && this.speed > 4 ? 5 : 0), 40 - this.draw * 5, cam.aimK) + cam.kick; // the view opens a little at a run, and narrows as the bow is drawn
     if (Math.abs(c.fov - fov) > 0.05) { c.fov = damp(c.fov, fov, 9, dt); c.updateProjectionMatrix(); }
   }
 }

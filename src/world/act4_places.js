@@ -15,7 +15,7 @@ const gy = heightAt;
 const SR = { L: 20, B: 4.2, seed: 21, mast: 9 };                                   // the Sea-Raven
 const KNARR = { L: 24, B: 7.4, D: 2.4, rise: 1.9, seed: 71, shields: false, mast: 11 }; // Fafnir's Bed: a huge, fat-bellied knarr
 /** A ship that can be walked on: the model, and its deck. */
-function afloat(w, objs, opt, x, z, yaw, hw, hl) {
+export function afloat(w, objs, opt, x, z, yaw, hw, hl) {
   const m = P.makeShip(opt); m.position.set(x, -0.15, z); m.rotation.y = yaw; objs.push(m);
   return { m, x, z, yaw, y: -0.15 + m.userData.deckY, deck: w.addDeck({ x, z, yaw, hw, hl, y: -0.15 + m.userData.deckY }) };
 }

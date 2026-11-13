@@ -72,23 +72,30 @@ export class Input {
     window.addEventListener('blur', () => this.down.clear());
     canvas.addEventListener('mousedown', (e) => {
       if (this.captureNext) { const f = this.captureNext; this.captureNext = null; f('Mouse' + e.button); return; }
-      if (this.wantLock && !this.locked) { this.lock(); if (e.button === 0) return; }
+      if (this.wantLock && !this.locked && this.settings.mouseLook !== false) { const first = !this.triedLock; this.triedLock = true; this.lock(); if (e.button === 0 && first && this.lockWorks !== false) return; } // the first click only takes the pointer; if it cannot be taken, later clicks are blows
       const c = 'Mouse' + e.button;
       this.down.add(c); this.pressed.add(c);
     });
     window.addEventListener('mouseup', (e) => { const c = 'Mouse' + e.button; this.down.delete(c); this.releasedSet.add(c); });
     canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+    // The camera follows the mouse (Settings: "Camera follows the mouse"). With the pointer captured that is the usual mouse look.
+    // Where the pointer cannot be captured (an embedded view, or before the first click) it still follows: the mouse's own movement
+    // turns the view, and holding the pointer against an edge of the screen keeps it turning.
     window.addEventListener('mousemove', (e) => {
-      if (this.locked) { this.mdx += e.movementX; this.mdy += e.movementY; }
+      this.mx = e.clientX / innerWidth; this.my = e.clientY / innerHeight;
+      if (this.settings.mouseLook === false) return;
+      if (this.locked || this.wantLock) { this.mdx += e.movementX || 0; this.mdy += e.movementY || 0; }
     });
+    document.addEventListener('mouseleave', () => { this.mx = this.my = null; });
+    document.addEventListener('pointerlockerror', () => { this.lockWorks = false; });
     document.addEventListener('pointerlockchange', () => {
       const was = this.locked;
-      this.locked = document.pointerLockElement === canvas;
+      this.locked = document.pointerLockElement === canvas; this.triedLock = false; if (this.locked) this.lockWorks = true;
       if (was && !this.locked && !this.expectUnlock && this.onLockLost) this.onLockLost();
       this.expectUnlock = false;
     });
   }
-  lock() { try { const p = this.canvas.requestPointerLock(); if (p && p.catch) p.catch(() => {}); } catch { /* unsupported */ } }
+  lock() { try { const p = this.canvas.requestPointerLock(); if (p && p.catch) p.catch(() => { this.lockWorks = false; }); } catch { this.lockWorks = false; } }
   unlock() { if (this.locked) { this.expectUnlock = true; document.exitPointerLock(); } }
 
   held(action) { const b = this.bindings[action]; return !!b && b.some((c) => this.down.has(c)); }
@@ -117,6 +124,9 @@ export class Input {
     const rx = this.padAxes[2], ry = this.padAxes[3];
     if (Math.abs(rx) > 0.15) dx += rx * 2.6 * s * dt;
     if (Math.abs(ry) > 0.15) dy += ry * 1.8 * s * dt;
+    if (!this.locked && this.wantLock && this.settings.mouseLook !== false && this.mx != null) { // the pointer held against an edge: keep turning
+      dx += (this.mx > 0.97 ? 1 : this.mx < 0.03 ? -1 : 0) * 1.9 * s * dt; dy += (this.my > 0.97 ? 1 : this.my < 0.03 ? -1 : 0) * 1.0 * s * dt;
+    }
     if (this.settings.invertY) dy = -dy;
     return { dx, dy };
   }

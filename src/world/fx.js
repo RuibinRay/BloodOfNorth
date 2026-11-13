@@ -61,6 +61,41 @@ class Pool {
   }
 }
 
+/** The stroke a blade leaves in the air: a ribbon between where its edge was a moment ago and where it is now. */
+class Trail {
+  constructor(scene, n = 18) {
+    this.n = n; this.s = []; this.owner = null; this.idle = 0;
+    this.pos = new Float32Array(n * 2 * 3); this.col = new Float32Array(n * 2 * 4);
+    const g = new THREE.BufferGeometry(), idx = [];
+    for (let i = 0; i < n - 1; i++) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+    g.setIndex(idx); g.setAttribute('position', new THREE.BufferAttribute(this.pos, 3).setUsage(THREE.DynamicDrawUsage)); g.setAttribute('tcolor', new THREE.BufferAttribute(this.col, 4).setUsage(THREE.DynamicDrawUsage));
+    this.mesh = new THREE.Mesh(g, new THREE.ShaderMaterial({
+      vertexShader: 'attribute vec4 tcolor; varying vec4 vC; void main(){ vC = tcolor; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+      fragmentShader: `varying vec4 vC; void main(){ gl_FragColor = vC;
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
+      }`,
+      transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }));
+    this.mesh.frustumCulled = false; this.mesh.renderOrder = 7; this.mesh.visible = false; scene.add(this.mesh);
+  }
+  /** One more sample of the edge: its root and its tip, and the colour of the stroke (r, g, b, strength). */
+  add(base, tip, r = 0.9, g = 0.95, b = 1, a = 0.5) { this.s.unshift({ bx: base.x, by: base.y, bz: base.z, tx: tip.x, ty: tip.y, tz: tip.z, r, g, b, a, t: 0 }); if (this.s.length > this.n) this.s.length = this.n; this.idle = 0; }
+  update(dt) {
+    const S = this.s, life = 0.17;
+    for (const q of S) q.t += dt;
+    while (S.length && S[S.length - 1].t > life) S.pop();
+    this.idle += dt;
+    if (S.length < 2) { this.mesh.visible = false; if (this.idle > 0.6) { this.owner = null; S.length = 0; } return; }
+    const P = this.pos, C = this.col;
+    for (let i = 0; i < this.n; i++) {
+      const q = S[Math.min(i, S.length - 1)], k = i < S.length ? (1 - q.t / life) : 0, o = i * 6, c = i * 8;
+      P[o] = q.bx; P[o + 1] = q.by; P[o + 2] = q.bz; P[o + 3] = q.tx; P[o + 4] = q.ty; P[o + 5] = q.tz;
+      C[c] = q.r; C[c + 1] = q.g; C[c + 2] = q.b; C[c + 3] = 0; C[c + 4] = q.r; C[c + 5] = q.g; C[c + 6] = q.b; C[c + 7] = q.a * k * k; // bright at the tip, nothing at the root
+    }
+    this.mesh.geometry.attributes.position.needsUpdate = true; this.mesh.geometry.attributes.tcolor.needsUpdate = true; this.mesh.visible = true;
+  }
+}
+
 export class FX {
   constructor(scene, renderer) {
     this.scene = scene; this.renderer = renderer;
@@ -73,7 +108,33 @@ export class FX {
     });
     this.wind = { x: 0.6, z: 0.2 };
     this.fireLoud = 0; // 0..1 nearest-fire loudness, read by the audio system
+    this.trails = Array.from({ length: 12 }, () => new Trail(scene));
+    this.rings = Array.from({ length: 8 }, () => { // a ring that runs out along the ground from where something heavy landed
+      const m = new THREE.Mesh(new THREE.RingGeometry(0.86, 1, 44), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, fog: false }));
+      m.rotation.x = -Math.PI / 2; m.visible = false; m.renderOrder = 6; scene.add(m); return { m, t: 0, dur: 1, r0: 0, r1: 1, a: 1 };
+    });
+    // rain: a few hundred short strokes that fall round the camera
+    const RN = 900, rp = new Float32Array(RN * 6); this.rainN = RN; this.rainP = rp; this.rainSeed = new Float32Array(RN * 3); this.rainK = 0; this.rainWant = 0;
+    for (let i = 0; i < RN * 3; i++) this.rainSeed[i] = Math.random();
+    const rg = new THREE.BufferGeometry(); rg.setAttribute('position', new THREE.BufferAttribute(rp, 3).setUsage(THREE.DynamicDrawUsage));
+    this.rain = new THREE.LineSegments(rg, new THREE.LineBasicMaterial({ color: 0xaab8c8, transparent: true, opacity: 0, depthWrite: false }));
+    this.rain.frustumCulled = false; this.rain.visible = false; this.rain.renderOrder = 4; scene.add(this.rain); this.rainT = 0;
   }
+  /** The stroke of a blade belonging to `owner` (a character): the same one for as long as he keeps swinging. */
+  trailFor(owner) {
+    let t = this.trails.find((q) => q.owner === owner);
+    if (!t) { t = this.trails.find((q) => !q.owner); if (!t) return null; t.owner = owner; t.s.length = 0; }
+    return t;
+  }
+  /** A ring across the ground: from radius r0 out to r1 in `dur` seconds. */
+  ring(x, y, z, { r0 = 0.3, r1 = 4, dur = 0.45, color = 0xffe6b0, a = 0.7 } = {}) {
+    const q = this.rings.find((k) => k.t <= 0) || this.rings[0];
+    q.m.position.set(x, y + 0.06, z); q.m.material.color.setHex(color); q.t = dur; q.dur = dur; q.r0 = r0; q.r1 = r1; q.a = a; q.m.visible = true;
+  }
+  /** One bright instant at a point (where steel met steel, where an arrow struck). */
+  flare(x, y, z, size = 1, r = 1, g = 0.92, b = 0.75, life = 0.1) { this.add.spawn(x, y, z, 0, 0, 0, life, size * 0.4, r, g, b, 0.6, size * 3, 0, 0); }
+  /** How hard it is raining, 0 to 1. */
+  setRain(k) { this.rainWant = k; }
   resize(h) { const s = h * 0.9; this.add.points.material.uniforms.scale.value = s; this.norm.points.material.uniforms.scale.value = s; }
 
   addFire(x, y, z, size = 1, { smoke = true, on = true } = {}) { const f = { x, y, z, size, on, smoke, acc: 0, sacc: 0 }; this.fires.push(f); return f; }
@@ -101,7 +162,7 @@ export class FX {
     }
     for (; i < 40; i++) a.setXYZ(i, x, y, z);
     a.needsUpdate = true; b.l.visible = true; b.l.material.opacity = 1; b.t = 0.22;
-    this.flash.position.set(x, y + 3, z); this.flash.intensity = 900; this.flashT = 0.3;
+    this.flash.position.set(x, y + 3, z); this.flash.intensity = 240; this.flashT = 0.3;
     this.burst('spark', x, y + 0.2, z, 34);
     for (let k = 0; k < 10; k++) { const an = Math.random() * 6.28, r = 1 + Math.random() * 3.4; this.burst('spark', x + Math.cos(an) * r, y + 0.15, z + Math.sin(an) * r, 2); }
   }
@@ -114,6 +175,8 @@ export class FX {
       else if (kind === 'dust') this.norm.spawn(x, y, z, Math.cos(a) * u, 0.3 + Math.random() * 0.5, Math.sin(a) * u, 0.7 + u * 0.5, 0.25, 0.55, 0.5, 0.42, 0.35, 0.5, 0.5, 0);
       else if (kind === 'snowpuff') this.norm.spawn(x, y, z, Math.cos(a) * u * 0.8, 0.4 + Math.random() * 0.6, Math.sin(a) * u * 0.8, 0.5 + u * 0.4, 0.14, 0.92, 0.95, 1, 0.5, 0.3, 0.5, 2);
       else if (kind === 'blood') this.norm.spawn(x, y, z, Math.cos(a) * u * 1.2, 0.6 + Math.random() * 1.4, Math.sin(a) * u * 1.2, 0.35 + u * 0.3, 0.05, 0.45, 0.04, 0.03, 0.9, 0, 0, 9);
+      else if (kind === 'ember') this.add.spawn(x + Math.cos(a) * u * 0.6, y, z + Math.sin(a) * u * 0.6, Math.cos(a) * (0.4 + u * 1.6), 1.2 + Math.random() * 3.2, Math.sin(a) * (0.4 + u * 1.6), 0.8 + u * 1.2, 0.05, 1, 0.55, 0.16, 1, 0, 1.0, -0.6);
+      else if (kind === 'dirt') this.norm.spawn(x, y, z, Math.cos(a) * (1 + u * 3.2), 2 + Math.random() * 3.4, Math.sin(a) * (1 + u * 3.2), 0.55 + u * 0.5, 0.09, 0.24, 0.2, 0.16, 1, 0.05, 0, 11);
       else if (kind === 'breath') this.norm.spawn(x, y, z, Math.cos(a) * 0.1, 0.12, Math.sin(a) * 0.1, 0.9, 0.1, 0.9, 0.93, 1, 0.16, 0.35, 0.3, 0);
     }
   }
@@ -159,10 +222,22 @@ export class FX {
     }
     if (this.bolts) { // lightning fades in a handful of frames
       for (const b of this.bolts) if (b.t > 0) { b.t -= dt; b.l.material.opacity = Math.max(0, b.t / 0.22) * (Math.random() < 0.3 ? 0.4 : 1); if (b.t <= 0) b.l.visible = false; }
-      if (this.flashT > 0) { this.flashT -= dt; this.flash.intensity = 900 * Math.max(0, this.flashT / 0.3); }
+      if (this.flashT > 0) { this.flashT -= dt; this.flash.intensity = 240 * Math.max(0, this.flashT / 0.3); }
     }
     this.fireLoud = loud;
     this.add.update(dt, w.x, w.z); this.norm.update(dt, w.x, w.z);
+    for (const t of this.trails) if (t.owner || t.s.length) t.update(dt);
+    for (const q of this.rings) if (q.t > 0) { q.t -= dt; const k = 1 - Math.max(0, q.t) / q.dur, r = q.r0 + (q.r1 - q.r0) * (1 - (1 - k) * (1 - k)); q.m.scale.set(r, r, 1); q.m.material.opacity = q.a * (1 - k) * (1 - k); if (q.t <= 0) q.m.visible = false; }
+    this.rainK += (this.rainWant - this.rainK) * Math.min(1, dt * 0.8);
+    if (this.rainK > 0.02) { // the strokes fall through a box that moves with whoever is being watched
+      this.rainT += dt; const P = this.rainP, Sd = this.rainSeed, n = Math.round(this.rainN * Math.min(1, this.rainK)), box = 26, h = 16, fall = 19, sl = 0.5;
+      for (let i = 0; i < n; i++) {
+        const x = focus.x + ((Sd[i * 3] * box + w.x * this.rainT * 2.2) % box + box) % box - box / 2, z = focus.z + ((Sd[i * 3 + 2] * box + w.z * this.rainT * 2.2) % box + box) % box - box / 2;
+        const y = focus.y - 2 + h - ((Sd[i * 3 + 1] * h + this.rainT * fall) % h), o = i * 6;
+        P[o] = x; P[o + 1] = y; P[o + 2] = z; P[o + 3] = x - w.x * 0.07; P[o + 4] = y - sl; P[o + 5] = z - w.z * 0.07;
+      }
+      this.rain.geometry.setDrawRange(0, n * 2); this.rain.geometry.attributes.position.needsUpdate = true; this.rain.material.opacity = 0.34 * Math.min(1, this.rainK * 1.5); this.rain.visible = true;
+    } else this.rain.visible = false;
 
     // assign the few real lights to the nearest burning fires
     const near = this.fires.filter((f) => f.on).map((f) => ({ f, d: Math.hypot(f.x - focus.x, f.z - focus.z) })).sort((a, b) => a.d - b.d);

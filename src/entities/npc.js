@@ -5,6 +5,8 @@ import { Humanoid } from './humanoid.js';
 
 const _v = new THREE.Vector3();
 
+const TRAILED = /^(atk|chop|thrust|slam|twinL)/, _w = new THREE.Vector3();
+
 export class NPC {
   constructor(game, id, def) {
     this.game = game; this.id = id; this.name = def.name; this.def = def;
@@ -48,7 +50,7 @@ export class NPC {
     this.h.play('fall', 1.1, { onEnd: () => {} });
     if (!quiet && this.dist(this.game.player) < 30) this.game.audio.play('thud', { vol: 0.6 });
   }
-  revive() { this.dead = false; this.mode = 'idle'; this.loop = null; this.h.action = null; }
+  revive() { this.dead = false; this.mode = 'idle'; this.loop = null; this.h.action = null; if (this.quills) { for (const m of this.quills) this.root.remove(m); this.quills = null; } } // and the arrows that were in him are gone
 
   /** Step toward a point; returns remaining distance. */
   step(tx, tz, speed, dt) {
@@ -134,6 +136,11 @@ export class NPC {
     h.setLocomotion(moving ? this.speed : 0, this.crouch);
     if (this.mode !== 'fight') h.setLoop(this.talking && !this.dead ? 'talk' : moving && this.loop !== 'torch' && this.loop !== 'carry' && this.loop !== 'dead' ? null : this.loop);
     h.update(dt);
+    const act = h.action; // the stroke a fighter's blade leaves in the air: red for a blow that cannot be blocked
+    if (act && this.visible && (this.cb || this.mode === 'fight') && TRAILED.test(act.name) && this.dist(p) < 34) {
+      const f = act.t / act.dur;
+      if (f > 0.27 && f < 0.66 && h.blade('R', _v, _w)) { const tr = g.fx.trailFor(this), mv = this.cb && this.cb.move, red = mv && (mv.unblockable || mv.aoe); if (tr) tr.add(_v, _w, 1, red ? 0.3 : 0.86, red ? 0.18 : 0.72, red ? 0.9 : this.cb && this.cb.boss ? 0.6 : 0.34); }
+    }
     if (this.torch) { h.handWorld('L', _v); this.torch.x = _v.x; this.torch.y = _v.y + 0.42; this.torch.z = _v.z; this.torch.on = !this.dead; }
   }
 

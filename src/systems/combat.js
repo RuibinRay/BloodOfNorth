@@ -74,6 +74,7 @@ export class Combat {
     if (this.target === e) this.target = null;
     if (c.onDown) { c.out = true; c.onDown(e); } else e.die();
     if (!c.training) this.g.state.xp += c.boss ? 25 : 6; // renown for the fallen
+    this.g.fx.burst('blood', e.pos.x, e.pos.y + 1.1, e.pos.z, c.boss ? 22 : 10); if (c.boss) { this.g.slowT = Math.max(this.g.slowT || 0, 0.9); this.g.player.cam.kick = -9; }
     this.g.events.emit('enemyDown', e);
   }
 
@@ -94,7 +95,7 @@ export class Combat {
       const wall = c.kind === 'shield' && !open && !riposte && Math.abs(angleDiff(e.yaw, Math.atan2(p.pos.x - e.pos.x, p.pos.z - e.pos.z))) < 1.2;
       if (!riposte && !open && (heavy ? wall : wall || Math.random() < c.skill * 0.62)) { // guarded: no damage, but it wears the guard down
         e.h.play('parry', 0.3); g.audio.play(real ? 'steel' : 'clack'); p.cam.shake = heavy ? 0.16 : 0.08;
-        e.h.handWorld(wall ? 'L' : 'R', _v); g.fx.burst(real ? 'spark' : 'chips', _v.x, _v.y + 0.2, _v.z, 6);
+        e.h.handWorld(wall ? 'L' : 'R', _v); g.fx.burst(real ? 'spark' : 'chips', _v.x, _v.y + 0.2, _v.z, heavy ? 14 : 8); if (real) g.fx.flare(_v.x, _v.y + 0.2, _v.z, heavy ? 1.5 : 0.9);
         c.posture = Math.min(100, c.posture + (heavy && W.breaker ? 100 : (heavy ? 42 : wall ? 10 : 16) * W.posture * (mod.posture || 1))); this.checkPosture(e);
         if (c.counter && c.state !== 'stagger' && (c.counterCd || 0) <= 0) { c.state = 'windup'; c.t = 0.22; c.counterCd = 2.2; } // she turns the blow and answers it // a long axe goes through a shield
         if (heavy && wall && sk.has('b_cleave')) this.hurt(e, W.dmg * 16, 0); // Cleave: half of it gets through
@@ -113,7 +114,8 @@ export class Combat {
         if (finish) { dmg = c.boss ? dmg * 3 : c.hp + 1; g.slowT = 0.7; p.execT = 0.9; g.audio.play('split'); g.events.emit('finisher', e); if (sk.has('b_harvest')) { p.stamina = Math.min(100, p.stamina + 30); p.health = Math.min(100, p.health + 12); } }
         else if (c.state === 'stagger') dmg *= 1.8;
         g.hitStop = finish ? 0 : heavy ? 0.08 : 0.045;
-        g.audio.play('arrowHit'); g.audio.play('thud', { vol: 0.5 }); p.cam.shake = finish ? 0.4 : heavy ? 0.22 : 0.1;
+        g.audio.play('arrowHit'); g.audio.play('thud', { vol: 0.5 }); p.cam.shake = finish ? 0.4 : heavy ? 0.22 : 0.1; p.cam.kick = finish ? -8 : heavy ? -4.5 : -1.6;
+        { const hy = e.pos.y + 1.25 * e.h.scale; g.fx.flare(e.pos.x, hy, e.pos.z, finish ? 2.4 : heavy ? 1.6 : 0.9, 1, 0.9, 0.8, 0.09); g.fx.burst('blood', e.pos.x, hy, e.pos.z, finish ? 18 : heavy ? 9 : 3); if (finish) g.fx.ring(e.pos.x, e.pos.y, e.pos.z, { r0: 0.3, r1: 3.4, dur: 0.5, color: 0xffd9a0, a: 0.6 }); }
         const a = Math.atan2(e.pos.x - p.pos.x, e.pos.z - p.pos.z), k = heavy ? 0.7 : 0.3;
         if (!c.keepDry || g.world.walkable(e.pos.x + Math.sin(a) * k, e.pos.z + Math.cos(a) * k)) { e.pos.x += Math.sin(a) * k; e.pos.z += Math.cos(a) * k; }
         g.events.emit('enemyHit', e, heavy);
@@ -126,7 +128,7 @@ export class Combat {
   slam(W) {
     const g = this.g, p = g.player, ix = p.pos.x + Math.sin(p.yaw) * 1.7, iz = p.pos.z + Math.cos(p.yaw) * 1.7, iy = g.world.groundAt(ix, iz);
     g.audio.play('thud'); g.audio.play('split'); g.audio.play('drum', { vol: 0.7 }); p.cam.shake = 0.55; g.hitStop = 0.1;
-    g.fx.burst('chips', ix, iy + 0.15, iz, 26); g.fx.burst('spark', ix, iy + 0.2, iz, 8);
+    g.fx.burst('chips', ix, iy + 0.15, iz, 26); g.fx.burst('spark', ix, iy + 0.2, iz, 8); g.fx.burst('dirt', ix, iy + 0.1, iz, 22); g.fx.ring(ix, iy, iz, { r0: 0.4, r1: W.slam + 0.6, dur: 0.42, color: 0xe8d8b8, a: 0.7 }); p.cam.kick = -5;
     for (const e of this.alive()) {
       const d = Math.hypot(e.pos.x - ix, e.pos.z - iz), c = e.cb;
       if (d > W.slam) continue;
@@ -161,6 +163,7 @@ export class Combat {
   thunder() {
     const g = this.g, p = g.player, W = p.weaponDef(), ix = p.pos.x + Math.sin(p.yaw) * 1.5, iz = p.pos.z + Math.cos(p.yaw) * 1.5, iy = g.world.groundAt(ix, iz);
     g.fx.bolt(ix, iy, iz); g.audio.play('thunder'); g.audio.play('split'); p.cam.shake = 0.75; g.hitStop = 0.12; g.fx.burst('chips', ix, iy + 0.15, iz, 22);
+    g.fx.burst('dirt', ix, iy + 0.1, iz, 26); g.fx.ring(ix, iy, iz, { r0: 0.5, r1: STORM.smashR + 1, dur: 0.5, color: 0xbfe0ff, a: 0.9 }); g.fx.ring(ix, iy, iz, { r0: 0.2, r1: STORM.smashR * 0.6, dur: 0.3, color: 0xffffff, a: 0.8 }); g.fx.flare(ix, iy + 0.6, iz, 4.5, 0.75, 0.88, 1, 0.14); g.ui.pulse('white', 0.3); p.cam.kick = -7;
     if (!this.active) return;
     for (const e of this.alive()) {
       const d = Math.hypot(e.pos.x - ix, e.pos.z - iz), c = e.cb;
@@ -186,7 +189,7 @@ export class Combat {
   /** Storm-Cry: the blow they were about to throw is gone, and the crew take heart. */
   stormCry() {
     const g = this.g, p = g.player;
-    g.audio.play('thunder', { vol: 0.55 }); p.cam.shake = 0.45;
+    g.audio.play('thunder', { vol: 0.55 }); p.cam.shake = 0.45; g.fx.ring(p.pos.x, p.pos.y, p.pos.z, { r0: 0.6, r1: STORM.cryR, dur: 0.7, color: 0xbfe0ff, a: 0.6 }); p.cam.kick = 4;
     for (let i = 0; i < 14; i++) { const a = (i / 14) * 6.283; g.fx.burst('dust', p.pos.x + Math.cos(a) * 2.2, p.pos.y + 0.2, p.pos.z + Math.sin(a) * 2.2, 2); }
     for (const e of this.alive()) {
       const c = e.cb;
@@ -312,7 +315,8 @@ export class Combat {
     let res;
     if (mv && mv.aoe) { // a blow into the ground: everyone inside the ring, whichever way he faces; it cannot be blocked
       const ix = e.pos.x + Math.sin(e.yaw) * 1.5, iz = e.pos.z + Math.cos(e.yaw) * 1.5;
-      g.fx.burst('chips', ix, g.world.groundAt(ix, iz) + 0.15, iz, 24); g.audio.play('thud'); g.audio.play('drum', { vol: 0.6 }); p.cam.shake = Math.max(p.cam.shake, 0.3);
+      { const iy = g.world.groundAt(ix, iz); g.fx.burst('chips', ix, iy + 0.15, iz, 24); g.fx.burst('dirt', ix, iy + 0.1, iz, 20); g.fx.ring(ix, iy, iz, { r0: 0.4, r1: mv.aoe + 0.4, dur: 0.42, color: 0xff8a50, a: 0.85 }); }
+      g.audio.play('thud'); g.audio.play('drum', { vol: 0.6 }); p.cam.shake = Math.max(p.cam.shake, 0.3);
       if (Math.hypot(p.pos.x - ix, p.pos.z - iz) > mv.aoe) return;
       res = p.receive(e, dmg, { unblockable: true });
     } else {
@@ -504,9 +508,11 @@ export class Combat {
         if (ph.line) e.say(ph.line, 4); g.audio.play('shout'); g.audio.play('horn', { freq: 90, vol: 0.4 });
         if (ph.do) ph.do(e);
       }
+      if (!e.cb || e.cb.out) continue; // what the change did ended the fight
       if (e.cb.boss && !e.cb.rage && e.cb.hp < e.cb.maxHp * 0.5) { e.cb.rage = true; if (e.cb.rageLine) e.say(e.cb.rageLine, 3.5); g.audio.play('shout'); }
       this.think(e, dt);
     }
+    if (best && !best.cb) best = this.target = p.target = null; // the fight ended inside this frame
     g.ui.setTarget(best ? { name: best.name, hp: best.cb.hp / best.cb.maxHp, posture: best.cb.posture / 100, broken: best.cb.state === 'stagger', skill: this.cast ? (this.cast.e === best ? this.cast.name : `${this.cast.e.name}: ${this.cast.name}`) : '' } : null);
     this.harryCd = Math.max(0, this.harryCd - dt);
     if (g.input.hit('harry')) this.harry();

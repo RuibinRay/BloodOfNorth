@@ -29,7 +29,7 @@ const MOODS = {
 };
 /** How far the jaw opens for a letter (speech follows the words as they are spoken). */
 const VISEME = { a: 0.95, o: 0.8, e: 0.55, i: 0.4, u: 0.45, y: 0.4, m: 0, b: 0, p: 0, f: 0.12, v: 0.12, w: 0.3, l: 0.35, r: 0.3, s: 0.2, t: 0.25, d: 0.28, n: 0.22, k: 0.3, g: 0.3, h: 0.45 };
-const _t = new THREE.Vector3(), _u = new THREE.Vector3(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), DOWN = new THREE.Vector3(0, -1, 0), XAX = new THREE.Vector3(1, 0, 0);
+const _t = new THREE.Vector3(), _u = new THREE.Vector3(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _q3 = new THREE.Quaternion(), DOWN = new THREE.Vector3(0, -1, 0), XAX = new THREE.Vector3(1, 0, 0);
 const POSE_KEYS = ['hy', 'hrx', 'hry', 'crx', 'cry', 'crz', 'nrx', 'nry', 'slx', 'sly', 'slz', 'srx', 'sry', 'srz', 'elL', 'elR', 'llx', 'llz', 'lrx', 'lrz', 'knL', 'knR', 'pitch', 'by'];
 const REST = { slz: 0.09, srz: -0.09, elL: -0.12, elR: -0.12 };
 
@@ -37,7 +37,13 @@ const REST = { slz: 0.09, srz: -0.09, elL: -0.12, elR: -0.12 };
 const LOOPS = {
   block: (p) => { p.srx = -1.45; p.sry = 0.55; p.srz = 0; p.elR = -1.5; p.slx = -0.5; p.elL = -1.2; p.crx = 0.1; p.knL = p.knR = 0.3; p.hy = -0.04; },
   guard: (p) => { p.srx = -0.75; p.sry = 0.2; p.elR = -1.0; p.slx = -0.5; p.elL = -0.9; p.knL = p.knR = 0.22; p.hy = -0.03; p.crx = 0.08; },
-  aim: (p, t, h) => { const d = h.param; p.cry = -0.45; p.slx = -1.5; p.sly = 0.45; p.slz = 0; p.elL = -0.05; p.srx = -1.45; p.sry = -0.6 - 0.5 * d; p.srz = 0; p.elR = -0.8 - 1.5 * d; p.nry = 0.3; },
+  aim: (p, t, h) => { // side on to the mark, the bow arm straight, the string hand coming back to the cheek; at full draw the arm trembles
+    const d = h.param || 0, ap = clamp(h.aimPitch || 0, -0.5, 0.6), tr = d >= 0.99 ? Math.sin(t * 37) * 0.006 : 0, br = Math.sin(t * 1.6) * 0.012;
+    p.cry = -0.5; p.hry = -0.3; p.crx = -0.05 * d + ap * 0.22; p.nry = 0.32; p.nrx = ap * 0.25;
+    p.slx = -1.5 + ap * 0.7 + br + tr; p.sly = 0.45; p.slz = 0; p.elL = -0.05;
+    p.srx = -1.45 + ap * 0.7 + br; p.sry = -0.55 - 0.55 * d; p.srz = 0; p.elR = -0.8 - 1.5 * d + tr * 2;
+    p.llz = 0.1; p.lrz = -0.1; p.llx = -0.12; p.lrx = 0.1; p.knL = 0.12; p.knR = 0.1; p.hy = -0.02;
+  },
   carry: (p) => { p.slx = p.srx = -0.6; p.elL = p.elR = -1.4; },
   sit: (p) => { p.hy = -0.52; p.llx = p.lrx = -1.45; p.knL = p.knR = 1.5; p.crx = 0.14; p.slx = p.srx = -0.5; p.elL = p.elR = -0.6; },
   warm: (p, t) => { p.hy = -0.52; p.llx = p.lrx = -1.45; p.knL = p.knR = 1.5; p.crx = 0.3; p.slx = p.srx = -1.15 + Math.sin(t * 1.3) * 0.04; p.elL = p.elR = -0.3; p.nrx = 0.2; },
@@ -57,30 +63,114 @@ const LOOPS = {
   lie: (p) => { p.pitch = -1.5; p.by = 0.16; p.slx = -2.6; p.srx = -2.6; p.elL = -0.9; p.elR = -0.9; p.llx = 0.1; p.lrx = -0.08; },
   mourn: (p) => { p.hy = -0.43; p.llx = -1.4; p.knL = 1.5; p.lrx = 0.15; p.knR = 1.55; p.crx = 0.7; p.nrx = 0.45; p.slx = p.srx = -0.8; p.elL = p.elR = -0.9; },
 };
-// ---- one-shot actions: keyframes [startFraction, poseOverrides] ----------------------
+// ---- one-shot actions ---------------------------------------------------------------
+// Two kinds. A plain list of [startFraction, pose] holds each pose until the next (the body eases toward it).
+// A list wrapped in S() is a curve: [fraction, pose, ease] keys that the body follows exactly, so a blow can gather,
+// snap and follow through, with the hips, the knees and the off hand in it as well as the arm. A blow lands at about
+// 0.4 to 0.5 of its length (see hitAt where it is played), so that is where each curve is fastest.
+const S = (keys) => { keys.smooth = true; return keys; };
+const EASE = { lin: (u) => u, in: (u) => u * u * u, snap: (u) => u * u * u * u, out: (u) => 1 - (1 - u) ** 3, io: (u) => u * u * (3 - 2 * u) };
+function sampleKeys(keys, f, p) {
+  let i = 0; while (i < keys.length - 1 && f >= keys[i + 1][0]) i++;
+  const a = keys[i], b = keys[i + 1], A = a[1];
+  if (!b) { for (const k in A) p[k] = A[k]; return; }
+  const u = EASE[b[2] || 'io'](clamp((f - a[0]) / (b[0] - a[0]), 0, 1)), B = b[1];
+  for (const k in A) p[k] = A[k] + ((k in B ? B[k] : p[k]) - A[k]) * u; // a channel one key leaves out is the body's own pose there
+  for (const k in B) if (!(k in A)) p[k] += (B[k] - p[k]) * u;
+}
+const mirror = (keys) => S(keys.map(([t, ps, e]) => { const o = {}; for (const k in ps) { const v = ps[k], m = { srx: 'slx', sry: 'sly', srz: 'slz', slx: 'srx', sly: 'sry', slz: 'srz', elR: 'elL', elL: 'elR', llx: 'lrx', lrx: 'llx', llz: 'lrz', lrz: 'llz', knL: 'knR', knR: 'knL' }[k] || k; o[m] = /^(s[lr]y|s[lr]z|cry|crz|hry|nry|l[lr]z)$/.test(k) ? -v : v; } return [t, o, e]; }));
+const CUT = [ // a cut from the right shoulder down to the left hip: weight back, hips first, then the shoulders, the front knee takes it
+  [0, { srx: -1.6, sry: -0.3, elR: -1.3, cry: -0.25, hry: -0.1 }],
+  [0.18, { srx: -2.75, sry: -0.7, elR: -1.15, cry: -0.78, hry: -0.28, crx: -0.1, crz: -0.08, lrx: 0.25, llx: -0.2, knL: 0.25, hy: -0.03, slx: -0.5, sly: 0.3, elL: -1.1, nry: 0.35 }, 'out'],
+  [0.27, { srx: -2.62, sry: -0.62, elR: -1.0, cry: -0.72, hry: -0.25, crx: -0.08, lrx: 0.22, llx: -0.25, knL: 0.3, hy: -0.04, slx: -0.5, sly: 0.3, elL: -1.1, nry: 0.3 }],
+  [0.37, { srx: -0.6, sry: 0.7, elR: -0.08, cry: 0.72, hry: 0.3, crx: 0.32, crz: 0.1, llx: -0.55, knL: 0.55, lrx: 0.45, knR: 0.2, hy: -0.1, slx: 0.3, elL: -0.6, nry: -0.3 }, 'in'],
+  [0.5, { srx: -0.35, sry: 0.98, elR: -0.3, cry: 0.88, hry: 0.34, crx: 0.36, crz: 0.1, llx: -0.5, knL: 0.5, lrx: 0.4, knR: 0.2, hy: -0.1, slx: 0.35, elL: -0.7, nry: -0.3 }, 'out'],
+  [0.76, { srx: -0.6, sry: 0.4, elR: -0.8, cry: 0.25, hry: 0.1, crx: 0.12, llx: -0.2, knL: 0.2, lrx: 0.15, hy: -0.04 }, 'io'],
+  [1, {}],
+];
 const ACTIONS = {
-  atk1: [[0, { srx: -2.5, sry: -0.55, elR: -1.0, cry: -0.5, crx: -0.05 }], [0.38, { srx: -0.55, sry: 0.55, elR: -0.1, cry: 0.5, crx: 0.28, hy: -0.05 }], [0.64, { srx: -0.5, sry: 0.4, elR: -0.5, cry: 0.2 }]],
-  atk2: [[0, { srx: -1.35, sry: 1.0, elR: -1.2, cry: 0.55 }], [0.38, { srx: -1.35, sry: -0.9, elR: -0.1, cry: -0.5, crx: 0.15 }], [0.64, { srx: -1.0, sry: -0.5, elR: -0.6, cry: -0.2 }]],
-  atk3: [[0, { srx: -3.0, elR: -1.1, crx: -0.22, slx: -2.0, elL: -1.0 }], [0.4, { srx: -0.8, elR: -0.05, crx: 0.5, hy: -0.1, knL: 0.4, knR: 0.4, slx: -0.7 }], [0.68, { srx: -0.6, elR: -0.5, crx: 0.25 }]],
-  chop: [[0, { srx: -2.9, slx: -2.9, sry: 0.25, sly: -0.25, elR: -0.9, elL: -0.9, crx: -0.25 }], [0.45, { srx: -0.75, slx: -0.75, sry: 0.3, sly: -0.3, elR: -0.15, elL: -0.15, crx: 0.62, hy: -0.12, knL: 0.45, knR: 0.45 }], [0.72, { srx: -0.7, slx: -0.7, sry: 0.3, sly: -0.3, elR: -0.4, elL: -0.4, crx: 0.4 }]],
-  stagger: [[0, { crx: -0.4, nrx: -0.3, slx: -0.6, srx: -0.6, slz: 0.7, srz: -0.7, hy: -0.06, knL: 0.3, knR: 0.3 }], [0.6, { crx: -0.1 }]],
+  atk1: S(CUT),
+  atk2: S([ // the backhand: across the body from the left
+    [0, { srx: -1.2, sry: 0.6, elR: -1.3, cry: 0.3 }],
+    [0.18, { srx: -1.45, sry: 1.15, elR: -1.5, cry: 0.8, hry: 0.3, crx: 0.05, crz: 0.08, llx: 0.2, lrx: -0.25, knR: 0.3, hy: -0.04, slx: -0.3, elL: -0.9, nry: -0.35 }, 'out'],
+    [0.27, { srx: -1.4, sry: 1.1, elR: -1.4, cry: 0.75, hry: 0.28, crz: 0.08, llx: 0.2, lrx: -0.28, knR: 0.32, hy: -0.05, slx: -0.3, elL: -0.9, nry: -0.3 }],
+    [0.37, { srx: -1.35, sry: -0.95, elR: -0.08, cry: -0.68, hry: -0.3, crx: 0.2, crz: -0.1, lrx: -0.55, knR: 0.55, llx: 0.4, knL: 0.2, hy: -0.1, slx: -0.9, sly: 0.5, elL: -0.5, nry: 0.3 }, 'in'],
+    [0.5, { srx: -1.25, sry: -1.2, elR: -0.25, cry: -0.86, hry: -0.34, crx: 0.22, crz: -0.1, lrx: -0.5, knR: 0.5, llx: 0.38, knL: 0.2, hy: -0.1, slx: -0.9, sly: 0.5, elL: -0.6, nry: 0.3 }, 'out'],
+    [0.76, { srx: -1.0, sry: -0.5, elR: -0.7, cry: -0.25, hry: -0.1, crx: 0.1, lrx: -0.2, knR: 0.2, llx: 0.15, hy: -0.04 }, 'io'],
+    [1, {}],
+  ]),
+  atk3: S([ // overhead: up on the toes, then everything comes down with it
+    [0, { srx: -2.0, elR: -1.2, crx: -0.05 }],
+    [0.2, { srx: -3.1, elR: -1.25, crx: -0.3, slx: -2.2, elL: -1.1, hy: 0.03, by: 0.03, lrx: 0.2, llx: -0.15, nrx: -0.2 }, 'out'],
+    [0.29, { srx: -3.05, elR: -1.1, crx: -0.28, slx: -2.1, elL: -1.0, hy: 0.03, by: 0.03, lrx: 0.2, llx: -0.15, nrx: -0.18 }],
+    [0.39, { srx: -0.75, elR: -0.03, crx: 0.58, hy: -0.16, by: 0, knL: 0.6, knR: 0.45, llx: -0.5, lrx: 0.3, slx: -0.6, elL: -0.4, nrx: 0.1 }, 'in'],
+    [0.53, { srx: -0.5, elR: -0.12, crx: 0.68, hy: -0.2, knL: 0.7, knR: 0.5, llx: -0.5, lrx: 0.3, slx: -0.5, elL: -0.5, nrx: 0.1 }, 'out'],
+    [0.78, { srx: -0.6, elR: -0.6, crx: 0.25, hy: -0.07, knL: 0.3, knR: 0.25, llx: -0.2, lrx: 0.12 }, 'io'],
+    [1, {}],
+  ]),
+  chop: S([ // both hands on the haft
+    [0, { srx: -1.8, slx: -1.8, sry: 0.25, sly: -0.25, elR: -1.0, elL: -1.0 }],
+    [0.22, { srx: -3.0, slx: -3.0, sry: 0.25, sly: -0.25, elR: -1.0, elL: -1.0, crx: -0.3, hy: 0.02, nrx: -0.2 }, 'out'],
+    [0.32, { srx: -2.95, slx: -2.95, sry: 0.25, sly: -0.25, elR: -0.9, elL: -0.9, crx: -0.28, hy: 0.02, nrx: -0.2 }],
+    [0.43, { srx: -0.75, slx: -0.75, sry: 0.3, sly: -0.3, elR: -0.12, elL: -0.12, crx: 0.66, hy: -0.15, knL: 0.5, knR: 0.5, llx: -0.3, lrx: 0.2 }, 'in'],
+    [0.57, { srx: -0.6, slx: -0.6, sry: 0.3, sly: -0.3, elR: -0.2, elL: -0.2, crx: 0.72, hy: -0.18, knL: 0.55, knR: 0.55, llx: -0.3, lrx: 0.2 }, 'out'],
+    [0.82, { srx: -0.7, slx: -0.7, sry: 0.3, sly: -0.3, elR: -0.45, elL: -0.45, crx: 0.35, hy: -0.06, knL: 0.25, knR: 0.25 }, 'io'],
+    [1, {}],
+  ]),
+  stagger: S([ // knocked back, then bent over and getting his breath
+    [0, { crx: -0.5, nrx: -0.35, cry: 0.25, slx: -0.7, srx: -0.5, slz: 0.8, srz: -0.7, hy: -0.08, knL: 0.35, knR: 0.3, lrx: 0.35, llx: 0.1 }],
+    [0.3, { crx: -0.3, nrx: -0.15, cry: 0.12, slx: -0.5, srx: -0.5, slz: 0.45, srz: -0.4, hy: -0.07, knL: 0.3, knR: 0.3, lrx: 0.22 }, 'out'],
+    [0.55, { crx: 0.36, nrx: 0.3, slx: -0.3, srx: -0.35, slz: 0.2, srz: -0.2, elL: -0.5, elR: -0.6, hy: -0.12, knL: 0.42, knR: 0.42 }, 'io'],
+    [0.86, { crx: 0.3, nrx: 0.22, slx: -0.3, srx: -0.4, elL: -0.5, elR: -0.7, hy: -0.1, knL: 0.38, knR: 0.38 }, 'io'],
+    [1, {}],
+  ]),
   dodge: [[0, { hy: -0.42, crx: 0.95, nrx: 0.4, llx: -1.3, lrx: -1.3, knL: 2.0, knR: 2.0, slx: -0.9, srx: -0.9, elL: -1.6, elR: -1.6 }], [0.7, { hy: -0.2, crx: 0.4, llx: -0.6, lrx: -0.6, knL: 1.0, knR: 1.0 }]],
-  parry: [[0, { srx: -1.9, sry: 0.75, elR: -0.7, cry: 0.25 }], [0.5, { srx: -1.5, sry: 0.5, elR: -1.3 }]],
+  parry: S([[0, { srx: -1.4, sry: 0.5, elR: -1.2 }], [0.3, { srx: -2.0, sry: 0.85, elR: -0.75, cry: 0.32, crx: -0.08, hy: -0.05, knL: 0.3, knR: 0.3, lrx: 0.15 }, 'out'], [0.62, { srx: -1.7, sry: 0.6, elR: -1.1, cry: 0.15, hy: -0.03 }, 'io'], [1, {}]]),
   sidestep: [[0, { hy: -0.13, crx: 0.16, knL: 0.55, knR: 0.55, llz: 0.22, lrz: -0.22, slx: -0.3, srx: -0.3 }], [0.7, { hy: -0.05, knL: 0.2, knR: 0.2 }]],
-  blockhit: [[0, { srx: -1.25, sry: 0.7, elR: -1.8, slx: -0.7, elL: -1.5, crx: -0.14, hy: -0.07, knL: 0.35, knR: 0.35 }], [0.6, { srx: -1.4, sry: 0.55, elR: -1.5, crx: 0.05 }]],
-  twinL: [[0, { slx: -2.5, sly: 0.55, elL: -1.0, cry: 0.5, crx: -0.05 }], [0.38, { slx: -0.55, sly: -0.55, elL: -0.1, cry: -0.5, crx: 0.28, hy: -0.05 }], [0.64, { slx: -0.5, sly: -0.4, elL: -0.5, cry: -0.2 }]],
-  slam: [[0, { srx: -3.05, slx: -3.05, sry: 0.2, sly: -0.2, elR: -0.7, elL: -0.7, crx: -0.35, hy: 0.02 }], [0.5, { srx: -0.55, slx: -0.55, sry: 0.25, sly: -0.25, elR: -0.1, elL: -0.1, crx: 0.8, hy: -0.2, knL: 0.7, knR: 0.7 }], [0.78, { srx: -0.6, slx: -0.6, elR: -0.3, elL: -0.3, crx: 0.5, hy: -0.12, knL: 0.4, knR: 0.4 }]],
-  ward: [[0, { srx: -1.7, sry: 0.2, elR: -1.9, slx: -1.7, sly: -0.2, elL: -1.9, crx: -0.08, hy: -0.03 }], [0.7, { srx: -1.3, elR: -1.5, slx: -1.3, elL: -1.5 }]],
-  thrust: [[0, { srx: 0.55, elR: -1.25, cry: -0.6, crx: -0.05 }], [0.4, { srx: -0.5, elR: -0.08, cry: 0.5, crx: 0.26, hy: -0.06, knL: 0.3 }], [0.66, { srx: -0.2, elR: -0.7, cry: 0.15 }]],
-  shoot: [[0, { cry: -0.45, slx: -1.5, sly: 0.45, elL: -0.05, srx: -1.3, sry: -1.3, elR: -0.5 }], [0.6, {}]],
+  blockhit: S([[0, { srx: -1.25, sry: 0.7, elR: -1.9, slx: -0.7, elL: -1.6, crx: -0.2, hy: -0.1, knL: 0.42, knR: 0.42, lrx: 0.22, nrx: -0.1 }], [0.5, { srx: -1.4, sry: 0.55, elR: -1.55, slx: -0.55, elL: -1.3, crx: -0.02, hy: -0.06, knL: 0.3, knR: 0.3 }, 'out'], [1, {}]]),
+  twinL: mirror(CUT),
+  slam: S([ // sink, rise off the ground, and bring it all down
+    [0, { srx: -1.8, slx: -1.8, elR: -0.9, elL: -0.9, crx: 0.1, hy: -0.08, knL: 0.3, knR: 0.3 }],
+    [0.24, { srx: -3.1, slx: -3.1, sry: 0.2, sly: -0.2, elR: -0.75, elL: -0.75, crx: -0.4, hy: 0.05, by: 0.12, nrx: -0.25, llx: -0.2, lrx: 0.25 }, 'out'],
+    [0.36, { srx: -3.1, slx: -3.1, sry: 0.2, sly: -0.2, elR: -0.7, elL: -0.7, crx: -0.38, hy: 0.05, by: 0.16, nrx: -0.25, llx: -0.3, lrx: 0.2, knL: 0.5, knR: 0.6 }],
+    [0.46, { srx: -0.5, slx: -0.5, sry: 0.25, sly: -0.25, elR: -0.08, elL: -0.08, crx: 0.85, hy: -0.24, by: 0, knL: 0.8, knR: 0.8, llx: -0.45, lrx: 0.25 }, 'snap'],
+    [0.6, { srx: -0.45, slx: -0.45, sry: 0.25, sly: -0.25, elR: -0.15, elL: -0.15, crx: 0.9, hy: -0.28, knL: 0.9, knR: 0.85, llx: -0.45, lrx: 0.25 }, 'out'],
+    [0.84, { srx: -0.6, slx: -0.6, elR: -0.35, elL: -0.35, crx: 0.45, hy: -0.1, knL: 0.4, knR: 0.4 }, 'io'],
+    [1, {}],
+  ]),
+  ward: S([[0, { srx: -1.4, sry: 0.2, elR: -1.6, slx: -1.4, sly: -0.2, elL: -1.6, hy: -0.08, knL: 0.35, knR: 0.35 }], [0.25, { srx: -1.8, sry: 0.2, elR: -1.9, slx: -1.8, sly: -0.2, elL: -1.9, crx: -0.12, hy: -0.03, by: 0.02, nrx: -0.15 }, 'out'], [0.7, { srx: -1.3, elR: -1.5, slx: -1.3, elL: -1.5, crx: -0.04 }, 'io'], [1, {}]]),
+  thrust: S([ // the hand drawn back past the hip, then a lunge with the whole body behind the point
+    [0, { srx: -0.2, elR: -1.3, cry: -0.3 }],
+    [0.2, { srx: 0.6, sry: -0.2, elR: -1.35, cry: -0.75, hry: -0.25, crx: -0.06, lrx: 0.3, llx: -0.2, knL: 0.3, hy: -0.06, slx: -0.9, elL: -0.6, nry: 0.4 }, 'out'],
+    [0.28, { srx: 0.55, sry: -0.2, elR: -1.3, cry: -0.7, hry: -0.22, crx: -0.05, lrx: 0.3, llx: -0.22, knL: 0.32, hy: -0.06, slx: -0.9, elL: -0.6, nry: 0.38 }],
+    [0.37, { srx: -0.55, sry: 0.12, elR: -0.05, cry: 0.6, hry: 0.3, crx: 0.34, llx: -0.75, knL: 0.75, lrx: 0.55, knR: 0.1, hy: -0.17, slx: 0.4, elL: -0.7, nry: -0.3 }, 'in'],
+    [0.52, { srx: -0.5, sry: 0.15, elR: -0.08, cry: 0.65, hry: 0.3, crx: 0.36, llx: -0.72, knL: 0.72, lrx: 0.52, knR: 0.1, hy: -0.17, slx: 0.4, elL: -0.7, nry: -0.3 }, 'out'],
+    [0.78, { srx: -0.3, elR: -0.8, cry: 0.15, crx: 0.1, llx: -0.25, knL: 0.25, lrx: 0.15, hy: -0.05 }, 'io'],
+    [1, {}],
+  ]),
+  shoot: S([ // the loose: the string hand flies back past the ear, the bow rocks forward in the fingers
+    [0, { cry: -0.5, hry: -0.3, slx: -1.5, sly: 0.45, slz: 0, elL: -0.05, srx: -1.45, sry: -1.1, srz: 0, elR: -2.3, nry: 0.3 }],
+    [0.3, { cry: -0.42, hry: -0.28, slx: -1.4, sly: 0.5, slz: 0, elL: -0.14, srx: -1.5, sry: -1.8, srz: 0, elR: -0.9, nry: 0.3, crx: -0.05 }, 'out'],
+    [0.75, { cry: -0.35, hry: -0.2, slx: -1.3, sly: 0.45, elL: -0.2, srx: -1.2, sry: -1.2, elR: -0.8, nry: 0.25 }, 'io'],
+    [1, {}],
+  ]),
+  nock: S([ // the next arrow, from the quiver at his hip to the string
+    [0, { cry: -0.3, slx: -1.2, sly: 0.4, elL: -0.3, srx: -0.2, sry: -0.4, elR: -1.2, nry: 0.2 }],
+    [0.35, { cry: -0.2, slx: -1.1, sly: 0.35, elL: -0.5, srx: 0.5, sry: -0.3, elR: -1.9, nry: 0.05, nrx: 0.12 }, 'out'],
+    [0.8, { cry: -0.4, slx: -1.4, sly: 0.45, elL: -0.15, srx: -1.35, sry: -0.55, elR: -1.0, nry: 0.28 }, 'io'],
+    [1, {}],
+  ]),
   pickup: [[0, { hy: -0.4, crx: 0.95, llx: -1.0, lrx: -1.0, knL: 1.8, knR: 1.8, srx: -0.9, elR: -0.2, nrx: 0.2 }], [0.65, { hy: -0.15, crx: 0.4 }]],
   strike: [[0, { srx: -1.0, sry: 0.3, elR: -1.2, slx: -0.8, sly: -0.3, elL: -1.0 }], [0.3, { srx: -0.7, sry: 0.45, elR: -0.7, slx: -0.8, sly: -0.3, elL: -1.0 }], [0.6, { srx: -0.9, sry: 0.3, elR: -1.1, slx: -0.8, sly: -0.3, elL: -1.0 }]],
-  cast: [[0, { srx: -2.6, elR: -0.9, crx: -0.15 }], [0.4, { srx: -1.1, elR: -0.1, crx: 0.2 }], [0.7, { srx: -0.9, elR: -0.6 }]],
+  cast: S([[0, { srx: -1.8, elR: -1.1, cry: -0.3 }], [0.28, { srx: -2.7, elR: -1.0, crx: -0.18, cry: -0.55, lrx: 0.25, llx: -0.15 }, 'out'], [0.42, { srx: -1.0, elR: -0.08, crx: 0.26, cry: 0.45, llx: -0.45, knL: 0.45, lrx: 0.35, hy: -0.07 }, 'in'], [0.7, { srx: -0.8, elR: -0.5, crx: 0.15, cry: 0.2 }, 'out'], [1, {}]]),
   fall: [[0, { crx: -0.5, nrx: -0.4, slz: 0.9, srz: -0.9, knL: 0.6, knR: 0.6, hy: -0.2 }], [0.35, { pitch: -1.5, by: 0.16, slz: 1.0, srz: -1.0, nry: 0.5 }]],
   cheer: [[0, { srx: -2.8, elR: -0.3, slx: -2.8, elL: -0.3 }], [0.7, {}]],
   give: [[0, { srx: -1.2, elR: -0.4 }], [0.7, {}]],
-  shove: [[0, { srx: -1.4, slx: -1.4, elL: -0.2, elR: -0.2, crx: 0.3 }], [0.6, {}]],
+  shove: S([[0, { srx: -1.0, slx: -1.0, elL: -1.4, elR: -1.4, crx: -0.1, hy: -0.06 }], [0.3, { srx: -0.9, slx: -0.9, elL: -1.7, elR: -1.7, crx: -0.15, hy: -0.08, lrx: 0.2 }, 'out'], [0.47, { srx: -1.45, slx: -1.45, elL: -0.1, elR: -0.1, crx: 0.38, hy: -0.1, llx: -0.5, knL: 0.5, lrx: 0.4 }, 'in'], [0.75, { srx: -1.3, slx: -1.3, elL: -0.3, elR: -0.3, crx: 0.25, llx: -0.3, knL: 0.3 }, 'out'], [1, {}]]),
 };
+/** Where each weapon's edge runs, as distances up from the fist: the stroke it leaves in the air is drawn between them. */
+const BLADE = { woodsword: [0.12, 0.58], woodsword_big: [0.12, 0.85], sword: [0.14, 0.9], axe: [0.32, 0.62], father_axe: [0.3, 0.64], brother_axe: [0.32, 0.62], daneaxe: [0.95, 1.55], anvilhammer: [0.85, 1.42], wolfsjudgment: [0.8, 1.3], starfall: [0.55, 0.95],
+  club: [0.55, 1.15], woodaxe: [0.45, 0.8], longaxe: [0.75, 1.25], seax: [0.1, 0.52], maul: [0.75, 1.25], smallaxe: [0.2, 0.45], throwaxe: [0.2, 0.45], spear: [1.05, 1.7], hammer: [0.2, 0.38] };
 
 const grp = (parent, x, y, z) => { const g = new THREE.Group(); g.position.set(x, y, z); parent.add(g); return g; };
 const part = (parent, geos) => { const m = new THREE.Mesh(merge(geos), M.char); m.castShadow = true; parent.add(m); return m; };
@@ -356,8 +446,9 @@ export class Humanoid {
     if (a) {
       a.t += dt;
       const f = a.t / a.dur, keys = ACTIONS[a.name];
-      if (keys) { let pose = keys[0][1]; for (const [at_, ps] of keys) if (f >= at_) pose = ps; for (const k in pose) p[k] = pose[k]; }
-      lambda = 21;
+      if (keys && keys.smooth) sampleKeys(keys, Math.min(1, f), p);
+      else if (keys) { let pose = keys[0][1]; for (const [at_, ps] of keys) if (f >= at_) pose = ps; for (const k in pose) p[k] = pose[k]; }
+      lambda = keys && keys.smooth ? 42 : 21;
       if (!a.fired && a.onHit && f >= (a.hitAt ?? 0.4)) { a.fired = true; a.onHit(); }
       if (f >= 1) { this.action = null; if (a.onEnd) a.onEnd(); }
     }
@@ -366,6 +457,27 @@ export class Humanoid {
     this.updateSecondary(dt);
     this.applyPose();
     this.updateFace(dt);
+    const bow = this.items.L; // the bow bends and the string comes back with the draw
+    if (bow && bow.userData.setDraw) { bow.userData.setDraw(this.loop === 'aim' ? this.param || 0 : 0, this.loop === 'aim' && this.nocked !== false); if (this.loop === 'aim' && !this.action) this.gripString(bow); }
+  }
+  /** The string hand goes to the nock, wherever the draw has brought it (two-bone reach from the right shoulder). */
+  gripString(bow) {
+    const j = this.j;
+    j.chest.updateWorldMatrix(true, true); bow.updateWorldMatrix(true, false);
+    _t.set(0, bow.userData.nockY(), 0).applyMatrix4(bow.matrixWorld); j.chest.worldToLocal(_t);
+    _t.x += D.shoulderX * this.look.build; _t.y -= D.shoulderY;
+    const u = D.upper, fo = D.fore, len = clamp(_t.length(), 0.16, u + fo - 0.012);
+    const E = Math.acos(clamp((u * u + fo * fo - len * len) / (2 * u * fo), -1, 1)), al = Math.acos(clamp((u * u + len * len - fo * fo) / (2 * u * len), -1, 1));
+    _q.setFromUnitVectors(DOWN, _t.normalize()); _q2.setFromAxisAngle(XAX, al);
+    j.shR.quaternion.copy(_q).multiply(_q3.setFromAxisAngle(DOWN, Humanoid.elbowTwist ?? 1.9)).multiply(_q2); j.elR.rotation.x = -(Math.PI - E); // the elbow is carried out and back, not down
+  }
+  /** The two ends of the edge of what is in a hand, in the world: false if there is nothing there to cut with. */
+  blade(side, base, tip) {
+    const it = this.items[side], b = it && BLADE[it.userData.name];
+    if (!b) return false;
+    it.updateWorldMatrix(true, false);
+    base.set(0, 0, b[0]).applyMatrix4(it.matrixWorld); tip.set(0, 0, b[1]).applyMatrix4(it.matrixWorld);
+    return true;
   }
   applyPose() {
     const c = this.cur, j = this.j;
@@ -451,7 +563,27 @@ function itemGeo(name) {
   itemCache.set(name, geo);
   return geo;
 }
+/** A bow is three things: limbs that bend, a string that comes back to the cheek, and the arrow on it. */
+function makeBow(name) {
+  const R = name === 'bow' ? 0.62 : 0.9, A = 0.62, brace = R - R * Math.cos(A), tipZ = R * Math.sin(A), pull = 0.5 * (R / 0.62), g = new THREE.Group(), pts = [];
+  for (let i = 0; i <= 10; i++) { const a = -A + (i / 10) * 2 * A; pts.push(new THREE.Vector3(0, R - R * Math.cos(a), R * Math.sin(a))); }
+  const limbs = new THREE.Mesh(tint(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 14, 0.012, 5), 0x7a5a36, 0.05, 1), M.vcPlain); limbs.castShadow = true; g.add(limbs);
+  const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(9), 3));
+  const string = new THREE.Line(sg, new THREE.LineBasicMaterial({ color: 0xe8e0d0 })); string.frustumCulled = false; g.add(string);
+  const L = 0.74 * (R / 0.62), arrow = new THREE.Mesh(merge([tint(at(cyl(0.006, 0.006, L, 4), 0, -L / 2, 0), 0xcdb48a, 0.05, 2), tint(at(cone(0.016, 0.07, 4), 0, -L - 0.03, 0, Math.PI, 0, 0), 0x9aa0a8, 0, 3),
+    tint(at(box(0.001, 0.09, 0.03), 0, -0.06, 0), 0xd8d4cc, 0, 4), tint(at(box(0.03, 0.09, 0.001), 0, -0.06, 0), 0xd8d4cc, 0, 5)]), M.vcPlain); arrow.visible = false; g.add(arrow);
+  g.userData.setDraw = (d, nocked) => {
+    const p = sg.attributes.position, ny = brace + d * pull, fy = 1 + 0.5 * d, fz = 1 - 0.06 * d;
+    limbs.scale.set(1, fy, fz);
+    p.setXYZ(0, 0, brace * fy, -tipZ * fz); p.setXYZ(1, 0, ny, 0); p.setXYZ(2, 0, brace * fy, tipZ * fz); p.needsUpdate = true;
+    arrow.visible = !!nocked; arrow.position.y = ny;
+  };
+  g.userData.nockY = () => arrow.position.y;
+  g.userData.setDraw(0, false);
+  return g;
+}
 export function makeItem(name) {
+  if (name === 'bow' || name === 'bow_big') return makeBow(name);
   const m = new THREE.Mesh(itemGeo(name), M.vcPlain);
   m.castShadow = true;
   const g = new THREE.Group(); g.add(m);

@@ -5,7 +5,7 @@ import { M, at, box, cyl, cone, sphere, capsule, tint, merge } from '../world/ge
 import { heightAt } from '../world/terrain.js';
 import { makeItem } from './humanoid.js';
 
-const _v = new THREE.Vector3();
+const _v = new THREE.Vector3(), _u = new THREE.Vector3();
 const mesh = (geos) => { const m = new THREE.Mesh(merge(geos), M.vcPlain); m.castShadow = true; return m; };
 
 function hareModel() {
@@ -135,7 +135,7 @@ export class Wildlife {
     const m = opts.kind === 'axe' ? makeItem('throwaxe') : new THREE.Mesh(this.arrowGeo, M.vcPlain);
     m.position.copy(origin).addScaledVector(dir, 0.3);
     this.game.scene.add(m);
-    this.arrows.push({ m, v: dir.clone().multiplyScalar(speed), stuck: false, life: 0, owner, in: null, off: null, kind: opts.kind || 'arrow', dmg: opts.dmg, posture: opts.posture, spin: 0 });
+    this.arrows.push({ m, v: dir.clone().multiplyScalar(speed), stuck: false, life: 0, owner, in: null, off: null, kind: opts.kind || 'arrow', dmg: opts.dmg, posture: opts.posture, spin: 0, power: opts.power, perfect: !!opts.perfect });
   }
 
   hitAnimal(a, vital) {
@@ -238,6 +238,7 @@ export class Wildlife {
         ar.m.position.addScaledVector(ar.v, sdt);
         const pos = ar.m.position;
         _v.copy(pos).add(ar.v); ar.m.lookAt(_v);
+        if (ar.owner === p && s === 0) { const tr = g.fx.trailFor(ar); if (tr) { _v.set(pos.x, pos.y + 0.03, pos.z); _u.set(pos.x, pos.y - 0.03, pos.z); if (ar.perfect) tr.add(_v, _u, 1, 0.85, 0.5, 0.75); else tr.add(_v, _u, 0.9, 0.92, 1, 0.3 + (ar.power || 0.5) * 0.25); } } // a thread of air behind it
         if (ar.kind === 'axe') ar.m.rotateX((ar.spin += sdt * 17)); // it turns in the air
         for (const a of this.animals) {
           if (a.dead) continue;
@@ -253,15 +254,24 @@ export class Wildlife {
             if (a.kind === 'sheep') { g.ui.toast("Those are Gunnar's sheep!"); a.state = 'flee'; a.alarm = 3; ar.stuck = true; ar.life = 85; break; }
             ar.stuck = true; ar.in = a; ar.off = pos.clone().sub(a.pos); ar.life = 0;
             this.hitAnimal(a, vital);
+            if (ar.owner === p) { g.ui.hitMark(vital ? 'head' : a.dead ? 'kill' : ''); g.fx.burst('blood', pos.x, pos.y, pos.z, 4); }
             break;
           }
         }
         if (!ar.stuck && g.combat.active) for (const e of g.combat.alive()) { // arrows hurt people too
           const top = 1.9 * e.h.scale;
           if (Math.hypot(pos.x - e.pos.x, pos.z - e.pos.z) < 0.45 && pos.y > e.pos.y && pos.y < e.pos.y + top) {
-            ar.stuck = true; ar.life = 89; ar.m.visible = false; g.audio.play('arrowHit');
-            if (ar.kind === 'axe') { if ((e.cb.state === 'windup' || e.cb.state === 'strike') && !e.cb.boss) { e.cb.state = 'recover'; e.cb.t = 0.9; e.h.action = null; } g.audio.play('thud', { vol: 0.6 }); g.hitStop = 0.05; }
-            g.combat.hurt(e, ar.dmg ?? (pos.y > e.pos.y + top * 0.8 ? 60 : 28) * (g.skills.has('h_broad') ? 1.4 : 1), ar.posture ?? 20); break;
+            const head = pos.y > e.pos.y + top * 0.8, mine = ar.owner === p;
+            ar.stuck = true; ar.life = 89; g.audio.play('arrowHit');
+            if (ar.kind === 'axe') { ar.m.visible = false; if ((e.cb.state === 'windup' || e.cb.state === 'strike') && !e.cb.boss) { e.cb.state = 'recover'; e.cb.t = 0.9; e.h.action = null; } g.audio.play('thud', { vol: 0.6 }); g.hitStop = 0.05; }
+            else { // the arrow stays in him, and goes where he goes
+              ar.m.position.addScaledVector(ar.v, -0.004); e.root.attach(ar.m); (e.quills || (e.quills = [])).push(ar.m); if (e.quills.length > 5) e.root.remove(e.quills.shift()); ar.gone = true;
+              g.fx.flare(pos.x, pos.y, pos.z, head ? 1.2 : 0.7, 1, 0.9, 0.8, 0.08); g.fx.burst('blood', pos.x, pos.y, pos.z, head ? 10 : 5); g.hitStop = Math.max(g.hitStop || 0, head ? 0.06 : 0.03);
+            }
+            const pw = ar.power != null ? (0.7 + 0.45 * ar.power) * (ar.perfect ? 1.25 : 1) : 1; // a full draw hits harder; a perfect loose harder still
+            g.combat.hurt(e, ar.dmg ?? (head ? 60 : 28) * pw * (g.skills.has('h_broad') ? 1.4 : 1), ar.posture ?? 20);
+            if (mine) { g.ui.hitMark(e.dead || !e.cb || e.cb.out ? 'kill' : head ? 'head' : ''); if (head) g.audio.play('clack', { vol: 0.7 }); }
+            break;
           }
         }
         if (ar.stuck) break;
@@ -272,6 +282,7 @@ export class Wildlife {
           if (Math.hypot(_v.x - bx, _v.z - bz) > 0.001) { ar.stuck = true; ar.life = 0; g.audio.play('arrowHit', { vol: 0.6 }); g.events.emit('arrowHit', pos); break; }
         }
       }
+      if (ar.gone) { this.arrows.splice(i, 1); continue; }
       if (ar.life > 8 && !ar.stuck) { g.scene.remove(ar.m); this.arrows.splice(i, 1); }
     }
   }

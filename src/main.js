@@ -3,6 +3,10 @@ import * as THREE from 'three';
 import { Emitter, damp } from './core/util.js';
 import { Input } from './core/input.js';
 import { AudioSys } from './core/audio.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { loadSettings, writeSave, readSave } from './core/save.js';
 import { initMaterials, shared } from './world/geo.js';
 import { World } from './world/world.js';
@@ -45,6 +49,12 @@ class Game {
     renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(this.baseFov, innerWidth / innerHeight, 0.15, 2600);
+    // Glow: what is brighter than daylight (fire, sparks, lightning, the stroke of a blade) bleeds a little light round itself.
+    // It is a second pass over the frame, so it can be switched off in Settings, and is off at Low quality.
+    this.composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(innerWidth, innerHeight, { type: THREE.HalfFloatType, samples: 4 }));
+    this.composer.addPass(new RenderPass(this.scene, this.camera));
+    this.bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), 0.5, 0.55, 1.4); this.composer.addPass(this.bloom);
+    this.composer.addPass(new OutputPass());
     this.input = new Input(canvas, this.settings);
     this.audio = new AudioSys(this.settings);
     this.ui = new UI(this);
@@ -121,7 +131,16 @@ class Game {
     if (this.sky) this.sky.setQuality(q);
     this.audio.applyVolumes(); this.ui.applySettings(); this.resize();
   }
+  /** Put the frame on the screen: through the glow pass when it is on. */
+  draw() {
+    if (this.settings.bloom !== false && this.settings.quality !== 'low' && this.composer) {
+      const dark = this.sky ? this.sky.isNight : false; // by day only the very brightest things glow; at night a fire lights the air round it
+      this.bloom.threshold = dark ? 0.9 : 1.6; this.bloom.strength = dark ? 0.7 : 0.4;
+      this.composer.render();
+    } else this.renderer.render(this.scene, this.camera);
+  }
   resize() {
+    if (this.composer) { this.composer.setPixelRatio(this.renderer.getPixelRatio()); this.composer.setSize(innerWidth, innerHeight); }
     this.renderer.setSize(innerWidth, innerHeight, false);
     this.camera.aspect = innerWidth / innerHeight; this.camera.updateProjectionMatrix();
     if (this.fx) this.fx.resize(this.renderer.domElement.height);
@@ -165,12 +184,12 @@ class Game {
   }
   /** Start at the opening of a later act, with everything before it taken as played. It is written to a slot of its own and loaded from there. */
   startAt(first) {
-    const order = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_farm', 'q_smoke', 'q_axe', 'q_wolf', 'q_peddlers', 'q_walls', 'q_captain', 'q_oath', 'q_isle', 'q_fifty', 'q_healer', 'q_shore', 'q_long', 'q_ulf', 'q_iron', 'q_price', 'q_gold', 'q_water', 'q_court', 'q_circle', 'q_six', 'q_council', 'q_sound', 'q_drift', 'q_carry', 'q_hunger', 'q_taken', 'q_ring', 'q_wing', 'q_ribbon', 'q_feast', 'q_marsh', 'q_lastforge', 'q_anvil', 'q_smith', 'q_judge', 'q_sigurd', 'q_nine', 'q_wedding', 'q_four'];
-    const st = freshState(), act2 = first === 'q_ten', act5 = first === 'q_carry' || first === 'q_marsh', act4 = first === 'q_gold' || act5;
+    const order = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_farm', 'q_smoke', 'q_axe', 'q_wolf', 'q_peddlers', 'q_walls', 'q_captain', 'q_oath', 'q_isle', 'q_fifty', 'q_healer', 'q_shore', 'q_long', 'q_ulf', 'q_iron', 'q_price', 'q_gold', 'q_water', 'q_court', 'q_circle', 'q_six', 'q_council', 'q_sound', 'q_drift', 'q_carry', 'q_hunger', 'q_taken', 'q_ring', 'q_wing', 'q_ribbon', 'q_feast', 'q_marsh', 'q_lastforge', 'q_anvil', 'q_smith', 'q_judge', 'q_sigurd', 'q_nine', 'q_wedding', 'q_four', 'q_firewater', 'q_blades', 'q_blackshore', 'q_redhand', 'q_pens', 'q_vigdis', 'q_gorm', 'q_wolfhall', 'q_ironwolf', 'q_dead', 'q_crown'];
+    const st = freshState(), act2 = first === 'q_ten', act7 = first === 'q_firewater', act5 = first === 'q_carry' || first === 'q_marsh' || act7, act4 = first === 'q_gold' || act5;
     for (const id of order) { if (id === first) break; st.quests[id] = { status: 'done', step: QUESTS[id].steps.length, count: 0 }; }
     st.quests[first] = { status: 'active', step: 0, count: 0 };
-    Object.assign(st, { stage: 'act2', time: act2 ? 8.6 : 9.2, inventory: act2 ? { bow: 1, arrow: 14, flint: 1 } : { bow: 1, arrow: 14, flint: 1, father_axe: 1, shield: 1, wolf_brooch: 1, arm_ring: 1, ...(act4 ? { mail: 1 } : {}), ...(act5 ? { token: 1, safe_letter: 1 } : {}), ...(first === 'q_marsh' ? { halfdan_ring: 1 } : {}) } });
-    if (act4) st.flags.reforge = 1;
+    Object.assign(st, { stage: 'act2', time: act2 ? 8.6 : 9.2, inventory: act2 ? { bow: 1, arrow: 14, flint: 1 } : { bow: 1, arrow: 14, flint: 1, father_axe: 1, shield: 1, wolf_brooch: 1, arm_ring: 1, ...(act4 ? { mail: 1 } : {}), ...(act5 ? { token: 1, safe_letter: 1 } : {}), ...(first === 'q_marsh' || act7 ? { halfdan_ring: 1 } : {}) } });
+    if (act4) st.flags.reforge = act7 ? 3 : 1;
     Object.assign(st.flags, { a2v: 2, axeHidden: act2, lightning: true, spring: true });
     writeSave('act', st, { quest: QUESTS[first].title, step: QUESTS[first].steps[0].text, playtime: 0 });
     this.loadGame('act');
@@ -262,7 +281,7 @@ class Game {
     this.fx.update(anim, focus, this.sky.isNight);
     this.audio.update(real);
     this.ui.update(anim);
-    if (render) this.renderer.render(this.scene, this.camera);
+    if (render) this.draw();
     inp.endFrame();
   }
 
@@ -284,12 +303,12 @@ class Game {
       view: async (name, c, t, fog) => {
         g.frame(0, false); const f = g.scene.fog.density; if (fog) g.scene.fog.density = fog;
         g.camera.position.set(...c); g.camera.lookAt(...t); g.camera.updateMatrixWorld(); g.sky.dome.position.copy(g.camera.position);
-        g.renderer.render(g.scene, g.camera); g.scene.fog.density = f;
+        g.draw(); g.scene.fog.density = f;
         return (await fetch('/__shot?name=' + name, { method: 'POST', body: g.renderer.domElement.toDataURL('image/jpeg', 0.8) })).status;
       },
       /** Jump straight to a quest step (marks earlier main quests done). */
       jump: (qid, sid) => {
-        const order = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_farm', 'q_smoke', 'q_axe', 'q_wolf', 'q_peddlers', 'q_walls', 'q_captain', 'q_oath', 'q_isle', 'q_fifty', 'q_healer', 'q_shore', 'q_long', 'q_ulf', 'q_iron', 'q_price', 'q_gold', 'q_water', 'q_court', 'q_circle', 'q_six', 'q_council', 'q_sound', 'q_drift', 'q_carry', 'q_hunger', 'q_taken', 'q_ring', 'q_wing', 'q_ribbon', 'q_feast', 'q_marsh', 'q_lastforge', 'q_anvil', 'q_smith', 'q_judge', 'q_sigurd', 'q_nine', 'q_wedding', 'q_four', 'q_open', 'q_sea'];
+        const order = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_farm', 'q_smoke', 'q_axe', 'q_wolf', 'q_peddlers', 'q_walls', 'q_captain', 'q_oath', 'q_isle', 'q_fifty', 'q_healer', 'q_shore', 'q_long', 'q_ulf', 'q_iron', 'q_price', 'q_gold', 'q_water', 'q_court', 'q_circle', 'q_six', 'q_council', 'q_sound', 'q_drift', 'q_carry', 'q_hunger', 'q_taken', 'q_ring', 'q_wing', 'q_ribbon', 'q_feast', 'q_marsh', 'q_lastforge', 'q_anvil', 'q_smith', 'q_judge', 'q_sigurd', 'q_nine', 'q_wedding', 'q_four', 'q_firewater', 'q_blades', 'q_blackshore', 'q_redhand', 'q_pens', 'q_vigdis', 'q_gorm', 'q_wolfhall', 'q_ironwolf', 'q_dead', 'q_crown', 'q_open', 'q_sea'];
         if (!g.started) { g.started = true; g.ui.hideMain(); g.setMode('play'); }
         for (const id of order) {
           if (id === qid) break;
@@ -300,7 +319,7 @@ class Game {
         const oi = order.indexOf(qid);
         if (oi >= 2) for (const [k, n] of [['bow', 1], ['arrow', 12], ['flint', 1]]) if (!g.inventory.has(k)) g.inventory.add(k, n, true);
         if (oi >= 4) if (!g.inventory.has('woodsword')) g.inventory.add('woodsword', 1, true);
-        if (oi >= 8) { const op = order.indexOf('q_open'); g.state.stage = oi >= op ? 'open' : oi >= 12 ? 'act2' : oi >= 10 ? 'ch3' : 'ch2'; if (oi >= 12 && oi < op) g.state.flags.a2v = 2; if (oi >= order.indexOf('q_gold') && oi < op) { g.state.flags.reforge = Math.max(1, g.state.flags.reforge || 0); if (!g.inventory.has('mail')) g.inventory.add('mail', 1, true); if (oi > order.indexOf('q_court') && !g.inventory.has('token')) g.inventory.add('token', 1, true); if (oi > order.indexOf('q_ring') && !g.inventory.has('halfdan_ring')) g.inventory.add('halfdan_ring', 1, true); if (oi > order.indexOf('q_lastforge')) g.state.flags.reforge = Math.max(oi > order.indexOf('q_smith') ? 3 : 2, g.state.flags.reforge || 0); if (oi >= order.indexOf('q_marsh')) g.state.flags.a6begun = oi > order.indexOf('q_marsh') || i > 0; } if (!g.inventory.has('father_axe')) g.inventory.add('father_axe', 1, true); if (qid === 'q_ice' || i >= 6) if (!g.inventory.has('venison')) g.inventory.add('venison', 3, true); }
+        if (oi >= 8) { const op = order.indexOf('q_open'); g.state.stage = oi >= op ? 'open' : oi >= 12 ? 'act2' : oi >= 10 ? 'ch3' : 'ch2'; if (oi >= 12 && oi < op) g.state.flags.a2v = 2; if (oi >= order.indexOf('q_gold') && oi < op) { g.state.flags.reforge = Math.max(1, g.state.flags.reforge || 0); if (!g.inventory.has('mail')) g.inventory.add('mail', 1, true); if (oi > order.indexOf('q_court') && !g.inventory.has('token')) g.inventory.add('token', 1, true); if (oi > order.indexOf('q_ring') && !g.inventory.has('halfdan_ring')) g.inventory.add('halfdan_ring', 1, true); if (oi > order.indexOf('q_lastforge')) g.state.flags.reforge = Math.max(oi > order.indexOf('q_smith') ? 3 : 2, g.state.flags.reforge || 0); if (oi >= order.indexOf('q_marsh')) g.state.flags.a6begun = oi > order.indexOf('q_marsh') || i > 0; if (oi >= order.indexOf('q_firewater')) g.state.flags.a7begun = oi > order.indexOf('q_firewater') || i > 0; } if (!g.inventory.has('father_axe')) g.inventory.add('father_axe', 1, true); if (qid === 'q_ice' || i >= 6) if (!g.inventory.has('venison')) g.inventory.add('venison', 3, true); }
         g.quests.enter(qid, true); g.ui.refreshTracker();
       },
       info: () => ({

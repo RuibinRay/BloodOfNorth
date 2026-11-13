@@ -85,10 +85,22 @@ i.key { font-style: normal; border: 1px solid rgba(231, 217, 187, 0.5); border-r
 #prompt { position: absolute; left: 50%; bottom: 23%; transform: translateX(-50%); padding: 8px 16px; font-size: 17px; background: rgba(12, 10, 8, 0.72); border: 1px solid rgba(201, 162, 74, 0.55); white-space: nowrap; opacity: 0; transition: opacity 0.15s; }
 #prompt.on { opacity: 1; }
 
-#crosshair { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px; opacity: 0; }
+#crosshair { position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px; opacity: 0; transition: opacity 0.12s; }
 #crosshair.on { opacity: 1; }
-#crosshair::before { content: ""; position: absolute; inset: 6px; border: 1.5px solid rgba(240, 232, 214, 0.9); border-radius: 50%; box-shadow: 0 0 2px #000; }
-#crosshair i { position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; margin: -2.5px; border-radius: 50%; background: var(--gold-hi); transform: scale(var(--draw, 0)); }
+#crosshair::before { content: ""; position: absolute; inset: calc(4px + 12px * var(--draw, 0)); border: 1.5px solid rgba(240, 232, 214, 0.85); border-radius: 50%; box-shadow: 0 0 2px #000; transition: border-color 0.1s; }
+#crosshair.full::before { border-color: var(--gold-hi); box-shadow: 0 0 8px rgba(240, 200, 110, 0.8); }
+#crosshair.empty::before { border-style: dashed; border-color: rgba(200, 90, 70, 0.9); }
+#crosshair::after { content: ""; position: absolute; inset: 9px; opacity: 0; background: linear-gradient(45deg, transparent 46%, #fff 46%, #fff 54%, transparent 54%), linear-gradient(-45deg, transparent 46%, #fff 46%, #fff 54%, transparent 54%); filter: drop-shadow(0 0 2px #000); }
+#crosshair.hit::after { animation: hitmark 0.36s ease-out; }
+#crosshair.hit.kill::after, #crosshair.hit.head::after { inset: 3px; background: linear-gradient(45deg, transparent 44%, #f0c86e 44%, #f0c86e 56%, transparent 56%), linear-gradient(-45deg, transparent 44%, #f0c86e 44%, #f0c86e 56%, transparent 56%); }
+@keyframes hitmark { 0% { opacity: 1; transform: scale(1.5); } 30% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(0.9); } }
+#crosshair i { position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px; border-radius: 50%; background: var(--gold-hi); box-shadow: 0 0 2px #000; }
+#pulse { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+#pulse.hurt { background: radial-gradient(ellipse at center, transparent 52%, rgba(150, 12, 8, 0.72) 100%); }
+#pulse.ward { background: radial-gradient(ellipse at center, rgba(190, 225, 255, 0.16) 0%, rgba(120, 180, 255, 0.5) 100%); }
+#pulse.white { background: rgba(255, 255, 255, 0.85); }
+#pulse.on { animation: pulse 0.55s ease-out; }
+@keyframes pulse { 0% { opacity: var(--k, 1); } 100% { opacity: 0; } }
 
 #marker { position: absolute; left: 0; top: 0; width: 0; height: 0; opacity: 0; }
 #marker.on { opacity: 1; }

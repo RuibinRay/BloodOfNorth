@@ -119,7 +119,7 @@ export const FOES = [
       ] } },
 ];
 /** What Håkon fights with in the second part: he changes whenever Eirik gets used to one. */
-const WAR = [
+export const WAR = [
   { hold: 'spear', reach: 3.5, moves: [mv('jab', 'a', { name: 'The Weapons of War: spear', reach: 3.5 }), mv('jab', 'b', { reach: 3.5, dur: 0.7 }), mv('sweep', 'c', { reach: 3.5 }), mv('cut', 'bench', { name: 'The Bench', dur: 0.9, min: 3.5, shots: { n: 1, kind: 'javelin', dmg: 16, fx: { slow: 1.5 } } })] },
   { hold: 'axe', reach: 2.4, moves: [...str('ax', [mv('cut', 'a', { name: 'The Weapons of War: axe', dmg: 18 }), mv('back', 'b', { dmg: 16 })]), mv('over', 'c'), { id: 'coals', anim: 'atk1', dur: 0.7, hitAt: 0.5, dmg: 6, reach: 3.4, name: 'Hearth-Coals', fx: { blind: 2.6 }, min: 2 }] },
   { hold: 'sword', reach: 2.5, moves: [...str('sw', [mv('cut', 'a', { name: 'The Weapons of War: sword' }), mv('back', 'b'), mv('cut', 'c')]), mv('leap', 'd')] },
@@ -255,7 +255,7 @@ export class Champions {
     if (def.n <= 7) { inv.add('wolf_brooch', 1); }
     if (def.trophy && !inv.has(def.trophy[0])) { inv.add(def.trophy[0], 1); g.ui.toast(`${def.trophy[1]}: yours now. ${g.input.label('weapon1')} steps through your weapons.`); }
     if (def.id === 'kettil') g.after(7.5, () => g.ui.subtitle('', 'The seventh and last of the champions is dead. All seven have fallen. The hired men on the slopes begin to drift away.', 7));
-    if (def.id === 'hakon') g.after(8, () => g.ui.card('The Ironwolf is dead', 'What comes after is the story\'s, and is not built yet: the dead of both sides, the Thing at Gulen, and a crown he does not ask for.', 8));
+    if (def.id === 'hakon') g.after(8, () => g.ui.card('The Ironwolf is dead', 'What comes after is the story\'s: the dead of both sides, the Thing at Gulen, and a crown he does not ask for. It is told in Act VII (main menu, Start at an Act).', 8));
     this.open.law.addStanding(8, `${def.name} has fallen`);
     g.quests.notify('event', 'fell_' + def.id);
     g.autosave();

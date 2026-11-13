@@ -190,7 +190,7 @@ function svartoy(ctx, world, scene) {
   }
   // the thrall pens on the far side, and the hidden cove below them
   for (const [dx, dz, ry] of [[-14, -10, 0.1], [12, 2, 0.1], [-10, 16, 0.1]]) { const [px, pz] = W('pens', dx, dz), py = heightAt(px, pz); ctx.b.add(at(box(17, 2.1, 5.2, 2.2), px, py + 0.95, pz, 0, ry, 0), M.stone); ctx.b.add(at(box(17.8, 0.34, 6, 2.4), px, py + 2.15, pz, 0, ry, 0), M.turf); ctx.b.add(at(box(1.1, 1.6, 0.1), ...((q) => [q[0], py + 0.8, q[1]])(P.toWorld(px, pz, ry, 3, 2.64)), 0, ry, 0), M.dark); ctx.addBox(px, pz, 8.6, 2.7, ry, 2.2); }
-  P.fence(ctx, [W('pens', -30, -22), W('pens', 28, -18), W('pens', 30, 26), W('pens', -4, 30)]); P.runestone(ctx, ...W('cove', -4, -6), 0.6);
+  P.fence(ctx, [W('pens', -30, -22), W('pens', 28, -18), W('pens', 29.3, 1)]); P.fence(ctx, [W('pens', 29.7, 7), W('pens', 30, 26), W('pens', -4, 30)]); // the gap on the east side is the gate (Act VII) P.runestone(ctx, ...W('cove', -4, -6), 0.6);
   return { bridge: { x: bridge.x, z: bridge.z, y: by, hw: 2.0, hl: bridge.hl - 1 }, bend: place('svartoy', 'bend'), gate: { x: h.x, z: h.z - hl - 9 }, hall: { x: h.x, z: h.z, y: y0, hw: hw - 1, hl: hl - 1 }, ships: [fa, fb], pens: place('svartoy', 'pens') };
 }
 function myrholm(ctx, world, scene) {

@@ -2,14 +2,29 @@
 
 A third-person Viking action RPG that follows the owner's story, *The Rise of the Raven King*
 ([docs/story](docs/story/THE_RISE_OF_THE_RAVEN_KING.md): seven acts and an epilogue). This repository holds
-**slice 0.18**: Act I (Eirik's childhood), Act II (nineteen: Bjornstead, the raid, the walls, Kaupang and the
+**slice 0.19**: Act I (Eirik's childhood), Act II (nineteen: Bjornstead, the raid, the walls, Kaupang and the
 Sea-Raven), Act III (twenty: Jarnøy and the Battle of Iron Shore), Act IV (twenty-two: the treasure voyage,
 Wessex, six islands burning, Hedeby Sound), Act V (twenty-four: the hunger winter, the tannery yard, the ring,
-Vængr) and Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, the wedding), each as the story
+Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, the wedding) and Act VII
+(twenty-nine: the fleet off Svartøy, the Black Shore, the Hall of Wolves, the law-rock at Gulen), each as the story
 tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
-**New in 0.18.** Act VI, "The Nine Oaths", all nine chapters in the story's order and words · Myrholm: Queen
+**New in 0.19.** Act VII, "The Raven King", all eleven chapters in the story's order and words · fire arrows on
+the fleet in the rain, the ship whose archers rake the decks, Leif's passage past the rocks, the ram · Leif and
+Ulf on the benches, the boarders, Ulf Two-Blades across two burning decks, the black raven, the rail · the Black
+Shore: two pushes up from the sand, and twice going back for men who are cut off · Kettil Red-Hand at the bend,
+on his knees in the mud · the pens, played as Torvald with Star-Fall, and Astrid's brother · Vigdis Quickblood on
+the burning bridge · Gorm Stone-Lung at the gate · the Hall of Wolves, and the Ironwolf in four parts, the last of
+which is won by waiting · the steps of the burning hall, Hauk's stone, the law-rock.
+Also new, in every act: every attack and skill animation redone on eased curves, with a wind-up, a strike and a
+follow-through; blade trails, impact flashes, ground rings and screen pulses; a bow that bends, with a string that
+draws and an arrow on it, a ring that tightens as you draw, a perfect-release window, hit marks, and arrows that
+stay in what they hit; rain; a glow pass on fire and bright steel (Settings: "Glow on fire and steel"); and the
+camera now follows the mouse even when the browser has not captured the pointer (Settings: "Camera follows the
+mouse", on by default; turn it off to look only with the pointer captured or the arrow keys).
+
+**In 0.18.** Act VI, "The Nine Oaths", all nine chapters in the story's order and words · Myrholm: Queen
 Thora, an arrow with a blue thread, the white raven over the marshes, Astrid released on Eirik's surety, Prince
 Eyvind and the leeches, the man the bog kept, and Eydis the Mire under the drowned watchtower with the black raven
 in her face · Skalløy: Brokk and Halvar, the sky-iron, the true story of the hand; three lanes held at night;
@@ -31,11 +46,11 @@ could reload Eirik where the last chapter ended.
 Earlier: [0.16](docs/ROADMAP.md) built Act IV; 0.15 built Act III; 0.14 built Act II, Bjornstead and Kaupang;
 0.13 stored the story and drew the map.
 
-> **What this is, plainly.** Acts I to VI of seven, and a large sandbox, running in a browser. Of the story's 89
-> missions, 68 are built, 4 partly, 5 as the boss fight alone, and 12 are still to build. It is not the 40-hour
+> **What this is, plainly.** All seven acts of the story (the epilogue is not built), and a large sandbox, running
+> in a browser. Of the story's 89 missions, 79 are built, 4 partly, and 6 are still to build. It is not the 40-hour
 > game, it is not Unreal Engine 5, and it is not photorealistic: every character, prop and sound is generated in
 > code as a placeholder. Everything has been checked by scripted playtest only: no person has played Acts III
-> to VI through. See [Status](#status) for exactly what exists.
+> to VII through. See [Status](#status) for exactly what exists.
 
 ## Run it
 
@@ -53,7 +68,7 @@ Then open http://localhost:5184. A production build is `npm run build` (output i
 
 | Action | Keyboard / mouse | Gamepad |
 |---|---|---|
-| Move / look | `W A S D` / mouse (arrow keys also turn the camera) | left stick / right stick |
+| Move / look | `W A S D` / mouse (it turns the camera whether or not the pointer is captured; Settings can switch that off; arrow keys also turn it) | left stick / right stick |
 | Sprint, crouch | `Shift`, `C` | L3, R3 |
 | Interact | `E` | A |
 | Dodge: a sidestep; a roll when going forward or sprinting | `Space` | B |
@@ -191,8 +206,27 @@ All keyboard and mouse bindings can be changed in Settings.
 8. *A Wedding Before War* — the bride-price; the wedding; the harbor wall at sunrise.
 9. *Four Hundred* — Svartøy from the sky; the companions; the last night; the fleet.
 
-The main menu has **Start at an Act**, which begins Act I, II, III, IV, V or VI at its opening with the earlier
-acts taken as played.
+**Act VII — "The Raven King."** Eirik is twenty-nine. Eleven chapters, in the story's order and words.
+
+1. *Fire on the Water* — the Sea-Raven's deck in the rain: Star-Fall and the marsh boat; fire arrows (shield up,
+   and smother what burns); the ship ahead whose archers rake the fleet (the bow); the steering oar with Leif; the
+   ram.
+2. *Two Blades, One Sea* — Leif and Ulf on the benches (a scene); hold the Sea-Raven; Ulf Two-Blades across two
+   decks, until the black raven comes down; Leif against the mast.
+3. *The Black Shore* — wade ashore under fire arrows; push the line off the sand; go back for the men of Vængr;
+   shove them up the road; go back for the men of Jarnøy.
+4. *The Red-Hand Returns* — Kettil on a black horse at the bend; mud, the buckler, the boot knife; his knees.
+5. *The Pens* — as Torvald: the goat path, the gate, Star-Fall, three locks; what Astrid sees (a scene).
+6. *Vigdis, the Left Hand* — the long bridge; left-left, right-right; the bridge alight.
+7. *Gorm, the Right Hand* — the gate of the hall: make him swing; the shield goes; the steps.
+8. *The Hall of Wolves* — alone; why he did it.
+9. *The Ironwolf* — the sword of the guardsman; the weapons of war; Wolf's Judgment in a burning hall; the scar
+   goes cold; stop, wait, and meet the blow. The ring. Walk out.
+10. *What the Dead Leave Behind* — Leif on the steps; three days; Hauk's stone.
+11. *The Crown of the North* — the law-rock at Gulen (a scene).
+
+The main menu has **Start at an Act**, which begins Act I, II, III, IV, V, VI or VII at its opening with the
+earlier acts taken as played. The epilogue is not built.
 
 **Open-world sandbox — "The Whale Road" (prototype).** Not a story chapter: a place to try the systems.
 
@@ -296,10 +330,10 @@ the [story bible](docs/STORY_BIBLE.md).
 
 | | |
 |---|---|
-| **Playable and tested** | All of Act I (chapters 1–3), Act II (nine chapters), Act III (eight chapters), Act IV (eight chapters), Act V (seven chapters) and Act VI (nine chapters) start to finish, by scripted playtest; a hunt across a marsh with the white raven; two champion fights that are won by something other than damage (the black raven; a ledge); a night infiltration with patrols, dogs and hiding places; seeing through the black raven; a duel with a scripted fall and recovery; fights on a ship's deck; a duel with scripted turns; a horse to ride in the story; a battle with allies who hold attackers along a line; four companions who join in their scenes; start-at-an-act; a village that burns, is walled and gains a ship as the story goes; timed work, a wrestling and shield-wall game, a dive with breath; melee combat against enemies that guard, take turns and flank, with a two-phase captain; an ally who fights; the black raven harrying a target; raven companions and Raven's Eye; five hidden omens; hunger and warmth, shelter, cooking, a wolf encounter with two outcomes, thin-ice crossing; movement, camera, stamina; dialogue with choices; quests, journal, tracker, map with waypoint; woodcutting, archery, tracking, fishing, fire-making; sparring; stealth with raider sight and hearing; cold survival; day/night, snow, fire; in-engine cutscenes; save/load with autosave; settings, key rebinding, gamepad |
+| **Playable and tested** | All of Act I (chapters 1–3), Act II (nine chapters), Act III (eight chapters), Act IV (eight chapters), Act V (seven chapters), Act VI (nine chapters) and Act VII (eleven chapters) start to finish, by scripted playtest; a sea battle played from one deck (fire arrows, a ship of archers to shoot, a ram); a landing with two pushes and two rescues; a chapter played as another character; a final fight in four parts whose last is won by waiting and guarding; a hunt across a marsh with the white raven; two champion fights that are won by something other than damage (the black raven; a ledge); a night infiltration with patrols, dogs and hiding places; seeing through the black raven; a duel with a scripted fall and recovery; fights on a ship's deck; a duel with scripted turns; a horse to ride in the story; a battle with allies who hold attackers along a line; four companions who join in their scenes; start-at-an-act; a village that burns, is walled and gains a ship as the story goes; timed work, a wrestling and shield-wall game, a dive with breath; melee combat against enemies that guard, take turns and flank, with a two-phase captain; an ally who fights; the black raven harrying a target; raven companions and Raven's Eye; five hidden omens; hunger and warmth, shelter, cooking, a wolf encounter with two outcomes, thin-ice crossing; movement, camera, stamina; dialogue with choices; quests, journal, tracker, map with waypoint; woodcutting, archery, tracking, fishing, fire-making; sparring; stealth with raider sight and hearing; cold survival; day/night, snow, fire; in-engine cutscenes; save/load with autosave; settings, key rebinding, gamepad |
 | **Prototype** | The open-world sandbox (two law-districts, fourteen islands, one horse, a rowing boat and a crewed ship, sea battles with volleys, ramming and boarding, paid passage, one secret weapon, one crew raid); procedural characters and animation; procedural audio and score; villager routines; wildlife AI; combat balance and the new enemy kinds (tuned against scripted players only) |
 | **Blocked** | Higgsfield asset generation — the API needs a key ID *and* a secret; only one value was supplied. See [docs/HIGGSFIELD.md](docs/HIGGSFIELD.md) |
-| **Planned** | Everything else in the brief: Act VII and the epilogue; the rest of the sea map (about forty islands of which fourteen exist as a sandbox; a longship of your own, fleets and crew who can be hurt; wind and weather at sea; more districts — designed in [docs/OPEN_WORLD.md](docs/OPEN_WORLD.md)); adult combat and nine weapons, skill trees, companions, sailing, settlement, factions, 50 side missions, UE5 port. See [docs/ROADMAP.md](docs/ROADMAP.md) |
+| **Planned** | Everything else in the brief: the epilogue; the rest of the sea map (about forty islands of which fourteen exist as a sandbox; a longship of your own, fleets and crew who can be hurt; wind and weather at sea; more districts — designed in [docs/OPEN_WORLD.md](docs/OPEN_WORLD.md)); adult combat and nine weapons, skill trees, companions, sailing, settlement, factions, 50 side missions, UE5 port. See [docs/ROADMAP.md](docs/ROADMAP.md) |
 
 How it was tested: an automated playtest drives the real game loop through every quest step (see
 `debug` in [src/main.js](src/main.js)). It was verified on an Apple M2 at 60 fps. It has **not** been
