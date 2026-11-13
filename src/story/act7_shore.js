@@ -28,7 +28,7 @@ export class A7Shore extends A7Part {
     this.vigdis = g.addNPC('a7vigdis', { name: 'Vigdis Quickblood', look: F('vigdis').look }); this.gorm = g.addNPC('a7gorm', { name: 'Gorm Stone-Lung', look: F('gorm').look });
     this.vigdis.visible = this.gorm.visible = false;
     g.world.addInteractable({ id: 'a7lock', pos: () => this.nextLock() || { x: 0, z: 0 }, x: 0, z: 0, r: 2.7, priority: 3, label: 'Break the lock', enabled: () => q.at('q_pens', 'locks') && !!this.nextLock() && !this.busy && !g.activity, use: () => this.lock() });
-    g.events.on('warded', () => { const d = this.vd; if (d && !d.done && !d.said) { d.said = true; g.after(1.4, () => this.said(SAID.vigdis)); } });
+    g.events.on('warded', () => { const d = this.vd; if (d && !d.done && !d.said) { d.said = true; d.beat = Math.max(d.beat, g.combat.t + A7.vigdis.talk); g.after(1.4, () => this.said(SAID.vigdis)); } }); // the bridge's next beat waits for her words
   }
   clear(phase) {
     const g = this.g, c = this.c, V = this.V7, on = SHORE7.includes(phase), isle = on || (HALL7.includes(phase) && phase !== 'w7crown');
@@ -257,11 +257,16 @@ export class A7Shore extends A7Part {
   vigdisDuel() {
     const g = this.g, c = this.c, e = this.vigdis, R = A7.vigdis;
     if (this.vd) return;
-    this.arm(); this.vd = { done: false, said: false };
+    this.arm(); this.vd = { done: false, said: false, beat: 0 };
+    // A burst of blows (a finisher on a broken guard) can cross two marks at once: the beats still come one after another.
+    const beat = (fn) => (en) => { const d = this.vd, now = g.combat.t, at = Math.max(now, d.beat); d.beat = at + R.beat; if (at > now) g.after(at - now, () => { if (this.vd === d && !d.done) fn(en); }); else fn(en); };
+    // The story: she sees the flash in his scar when the Stormguard saves him. If it has not yet, it turns her next blow
+    // (the 'warded' handler in build() then plays the lines); if no blow of hers reaches him, her words come without that line.
+    const sees = () => { const d = this.vd; if (d.said) return; g.player.wardT = Math.max(g.player.wardT, R.wardFor); g.after(R.wardFor + 0.5, () => { if (this.vd === d && !d.done && !d.said) { d.said = true; d.beat = Math.max(d.beat, g.combat.t + A7.vigdis.talk); this.said(SAID.vigdis.slice(1)); } }); };
     this.champion(e, 'vigdis', R, { where: 'the long bridge', onDown: (en) => this.vigdisFalls(en), phases: [
-      { at: 0.62, do: () => { const d = this.vd; if (!d.said) { d.said = true; this.said(SAID.vigdis); } } },
-      { at: 0.5, do: () => this.alight(13, 3) },
-      { at: 0.28, use: 1, do: () => { this.alight(7.5, 2.4); c.tell(TOLD.rhythm, 12); } }] });
+      { at: 0.62, do: beat(sees) },
+      { at: 0.5, do: beat(() => this.alight(13, 3)) },
+      { at: 0.28, use: 1, do: beat(() => { this.alight(7.5, 2.4); c.tell(TOLD.rhythm, 12); }) }] });
     c.sub(TOLD.vigdis[0], 13); g.after(2, () => c.hint('feet'));
   }
   /** Fire arrows from Håkon's last archers set the bridge alight: the safe ground shrinks. */

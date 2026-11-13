@@ -99,7 +99,7 @@ export class A7Part extends A4Part {
     delete cb.phases;
     const phases = (o.phases || []).map((ph) => (ph.use === undefined ? ph : { ...ph, set: { ...sets[ph.use], ...(ph.set || {}) } }));
     e.h.hold('R', def.hold[0]); e.h.hold('L', def.hold[1]);
-    g.combat.add(e, { ...cb, hp: R.hp, dmg: R.dmg, boss: true, smart: true, ...o, phases });
+    g.combat.add(e, { ...cb, hp: R.hp, dmg: R.dmg, ...(R.parryBreak ? { parryBreak: R.parryBreak } : {}), boss: true, smart: true, ...o, phases }); // parryBreak: the guard a parry wears off him (a boss's is 24)
     g.audio.setMusic('raid'); g.audio.play('horn', { freq: def.n > 7 ? 82 : 110, vol: 0.5 });
     g.ui.questBanner(`${def.title} · ${o.where || def.where}`, def.name);
     return def;

@@ -238,7 +238,7 @@ export class A7Hall extends A7Part {
       e.yaw = dampAngle(e.yaw, Math.atan2(dx, dz), 5, dt); e.root.rotation.y = e.yaw;
       if (f.state !== 'tell' && f.state !== 'done' && dd > 2.4 && !e.h.busy && g.mode === 'play') { sp = 1.6; e.pos.x += (dx / dd) * sp * dt; e.pos.z += (dz / dd) * sp * dt; g.world.resolve(e.pos, 0.34); }
       e.h.setLoop('guard'); e.h.setLocomotion(sp, false); e.h.update(dt);
-      if (f.state === 'wait' && g.mode === 'play' && (f.t -= dt) <= 0 && dd < 4) { f.state = 'raise'; c.sub(TOLD.answer[0], 5); g.ui.alert(true); g.audio.play('shout'); e.h.play('slam', 2.2, { hitAt: 0.62, onHit: () => this.finalBlow() }); }
+      if (f.state === 'wait' && g.mode === 'play' && (f.t -= dt) <= 0 && dd < 4) { f.state = 'raise'; c.sub(TOLD.answer[0], 5); g.ui.alert(false); /* gold, not red: red means "step out of it", and this one is met */ g.audio.play('shout'); e.h.play('slam', 2.2, { hitAt: 0.62, onHit: () => this.finalBlow() }); }
     } else this.crew([e, ...c.battle.jarn, ...c.sea.town], dt);
     const s = this.spin; // the hammer's own force carries him round
     if (s) { s.t += dt; const k = Math.min(1, s.t / 0.75); p.yaw = s.yaw + Math.PI * 2 * (k * k * (3 - 2 * k)); p.root.rotation.y = p.yaw;
