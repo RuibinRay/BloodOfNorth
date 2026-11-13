@@ -86,7 +86,7 @@ export class UI {
   mouth(speaker, text) {
     const g = this.g;
     if (!speaker || !g.player) return;
-    const who = speaker === 'Eirik' ? g.player : [...g.npcs.values()].find((n) => n.visible && !n.dead && n.name === speaker);
+    const who = g.dialogue ? g.dialogue.speaker(speaker) : null; // by whole name or part of it: 'Håkon' is 'Jarl Håkon Ironwolf'
     if (who && who.h) who.h.say(text);
   }
   subtitle(speaker, text, dur = 3) {
@@ -574,7 +574,7 @@ export class UI {
     body.innerHTML = `<h3>Settings</h3><h4>Game</h4><div class="set">
       ${row('Difficulty', select('difficulty', [['easy', 'Skald (forgiving)'], ['normal', 'Warrior (standard)'], ['hard', 'Jarl (demanding)']]))}
       ${row('Objective markers', check('objectiveMarkers'))}${row('Subtitles', check('subtitles'))}${row('Subtitle size', range('subtitleSize', 0.8, 1.6, 0.1))}${row('Camera shake', check('cameraShake'))}</div>
-      <h4>Camera</h4><div class="set">${row('Camera follows the mouse', check('mouseLook'))}${row('Look sensitivity', range('sensitivity', 0.3, 2.5, 0.1))}${row('Invert vertical look', check('invertY'))}<span></span><span class="muted">With this off the mouse does not turn the view: use the arrow keys or a gamepad stick.</span></div>
+      <h4>Camera</h4><div class="set">${row('Camera follows the mouse', check('mouseLook'))}${row('Close-ups in conversation', check('closeTalk'))}${row('Look sensitivity', range('sensitivity', 0.3, 2.5, 0.1))}${row('Invert vertical look', check('invertY'))}<span></span><span class="muted">With this off the mouse does not turn the view: use the arrow keys or a gamepad stick.</span></div>
       <h4>Graphics</h4><div class="set">${row('Quality', select('quality', [['low', 'Low'], ['medium', 'Medium'], ['high', 'High']]))}${row('Glow on fire and steel', check('bloom'))}${row('Resolution follows the frame rate', check('autoRes'))}${row('Show frame rate', check('showFps'))}<span></span><span class="muted">Grass density and how far trees keep their full shape apply after reloading the game. With "Resolution follows the frame rate" on, the picture is drawn with fewer pixels whenever frames come slower than fifty a second, and sharpens again when there is room.</span></div>
       <h4>Audio</h4><div class="set">${row('Master volume', range('volMaster', 0, 1, 0.05))}${row('Music', range('volMusic', 0, 1, 0.05))}${row('Effects', range('volSfx', 0, 1, 0.05))}</div>
       <h4>Controls <span class="muted">· click a key to rebind · gamepad is supported with a fixed layout</span></h4><div class="keys">${Object.keys(ACTION_LABELS).map((a) => `<div><span>${ACTION_LABELS[a]}</span><button data-a="${a}">${esc(codeLabel(g.input.bindings[a][0]))}</button></div>`).join('')}</div>
