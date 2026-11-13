@@ -114,6 +114,7 @@ export class OpenProto {
     g.events.on('playerDied', () => this.fail());
     g.events.on('mounted', (type) => g.quests.notify('event', 'mounted_' + type));
     this.sea.build(); this.fleet.build(); this.war.build(); this.table.build();
+    g.companions.buildOpen(this); // the companions the story has given him, by the farm (Ingrid and Svanhild where the islands keep them)
   }
   /** One of the people of the open world. o2: role, loop, hold, weapon, line, port; law:false keeps them out of the law. */
   person(id, name, look, x, z, yaw, o2 = {}) {
@@ -244,7 +245,7 @@ export class OpenProto {
   }
   holmgang(by) {
     const g = this.g, x = by.pos.x + 7.5, z = by.pos.z + 3.3, who = this.law.def.champion, first = who.split(' ')[0];
-    this.fighter('champ_' + this.law.id, who === first ? who + ' the Champion' : who, RAIDER_LOOKS[2], x, z, 'axe', { hp: 240, dmg: 17, skill: 0.65, boss: true, rageLine: 'You fight like a king. Kings bleed too!',
+    this.fighter('champ_' + this.law.id, who === first ? who + ' the Champion' : who, RAIDER_LOOKS[2], x, z, 'axe', { hp: 240, dmg: 17, skill: 0.65, boss: true, holm: true, rageLine: 'You fight like a king. Kings bleed too!',
       onDown: (e) => { e.die(); g.combat.clear(); g.audio.setMusic('day'); this.law.clear(`${first} yields the hide. Your marks are struck out.`); this.law.addStanding(15, 'You won the hide-duel'); } });
     g.audio.setMusic('raid');
   }

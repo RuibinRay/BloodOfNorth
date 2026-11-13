@@ -4,6 +4,7 @@ import { codeLabel, ACTION_LABELS, DEFAULT_BINDINGS } from '../core/input.js';
 import { listSaves, saveSettings, deleteSave, latestSave, DEFAULT_SETTINGS } from '../core/save.js';
 import { ITEMS, QUESTS } from '../data/act1.js';
 import { ACTS } from '../data/chapters.js';
+import { COMPANIONS, available, absent } from '../data/companions.js';
 import { SECRETS } from '../data/act1_ch3.js';
 import { TREES, POINT_EVERY } from '../systems/skills.js';
 import { POI, ISLES, DISTRICT_LINE, GREAT, MAIN, PLACES } from '../world/layout.js';
@@ -200,6 +201,12 @@ export class UI {
       this._ak = ak; ae.classList.toggle('on', showArts);
       if (showArts) ae.innerHTML = ARTS.map(([id, ic, act], i) => { const st = ak.split('|')[i][0]; return st === 'x' ? '' : `<div class="art ${st === 'r' ? 'ready' : st === 'a' ? 'angry' : ''}" title="${id === 'guard' ? 'Stormguard' : esc(g.skills.def(id).name)}">${icon(ic)}<kbd>${esc(g.input.label(act))}</kbd></div>`; }).join('');
     }
+    // the companions with him: their state, and their skills on his keys
+    const pl = g.companions ? g.companions.hud() : [], pk = JSON.stringify(pl);
+    if (pk !== this._pk) {
+      this._pk = pk; const pe = this.partyEl || (this.partyEl = document.getElementById('party'));
+      pe.innerHTML = pl.map((m) => `<div class="pm${m.down ? ' down' : m.ready ? ' ready' : ''}${m.armed ? ' armed' : ''}"><div class="top"><b>${esc(m.name)}</b><span class="hp"><i style="width:${m.hp * 100}%"></i></span></div><div class="sk"><kbd>${esc(m.key)}</kbd>${esc(m.skill)}<em>${m.down ? 'down' : m.armed ? 'waiting' : m.cd ? m.cd + ' s' : 'ready'}</em></div></div>`).join('');
+    }
     const bl = p.fx.blind > 0; if (bl !== this._bl) { this._bl = bl; g.renderer.domElement.style.filter = bl ? 'brightness(0.3) blur(3px)' : ''; } // mud in his eyes
     this.e.sense.style.opacity = g.sense * 0.9;
 
@@ -276,7 +283,7 @@ export class UI {
   }
   hideMain() { this.e.menu.classList.remove('on'); this.e.hud.classList.remove('hidden'); }
   showPause() {
-    const g = this.g, all = ['journal', 'inventory', 'map', 'saga', 'skills', 'looks', 'settings', 'saves', 'status'];
+    const g = this.g, all = ['journal', 'inventory', 'map', 'saga', 'skills', 'companions', 'looks', 'settings', 'saves', 'status'];
     this.e.pause.classList.add('on');
     this.buttons($('#pause-buttons'), [
       { label: 'Resume', act: () => g.resume() },
@@ -285,6 +292,7 @@ export class UI {
       { label: 'Map', act: () => this.openPanel('map', all) },
       { label: 'Saga', act: () => this.openPanel('saga', all) },
       { label: 'Skills', act: () => this.openPanel('skills', all) },
+      { label: 'Companions', act: () => this.openPanel('companions', all) },
       { label: 'Appearance', act: () => this.openPanel('looks', all) },
       { label: 'Settings', act: () => this.openPanel('settings', all) },
       { label: 'Save / Load', act: () => this.openPanel('saves', all) },
@@ -294,7 +302,7 @@ export class UI {
   hidePause() { this.e.pause.classList.remove('on'); }
 
   openPanel(tab, tabs = ['journal', 'inventory', 'map', 'saga', 'skills', 'looks', 'settings', 'saves', 'status']) {
-    const names = { journal: 'Journal', inventory: 'Inventory', map: 'Map', saga: 'Saga', skills: 'Skills', looks: 'Appearance', settings: 'Settings', saves: 'Saves', status: 'Build Status', acts: 'Acts' };
+    const names = { journal: 'Journal', inventory: 'Inventory', map: 'Map', saga: 'Saga', skills: 'Skills', companions: 'Companions', looks: 'Appearance', settings: 'Settings', saves: 'Saves', status: 'Build Status', acts: 'Acts' };
     this.tabs = tabs; this.tab = tab;
     this.e.panel.classList.add('on'); this.e.pause.classList.remove('on');
     this.e.tabs.innerHTML = '';
@@ -555,6 +563,13 @@ export class UI {
     body.querySelector('#reset').onclick = () => { Object.assign(s, DEFAULT_SETTINGS, { bindings: null }); g.input.bindings = structuredClone(DEFAULT_BINDINGS); saveSettings(s); g.applySettings(); this.openPanel('settings', this.tabs); };
   }
   /** Begin at the opening of any act that is built, with what came before taken as played. */
+  render_companions(body) {
+    const g = this.g, st = g.state, party = st.party || [], open = st.stage === 'open', key = (a) => esc(g.input.label(a));
+    body.innerHTML = `<h3>Companions</h3><p class="muted">${open ? `In the open world two of them can walk with you. Find them by the farm (Ingrid on Jarnøy, Svanhild on Vængr) and ask them along. ${key('call1')} and ${key('call2')} call on the first and second one's skill; ${key('order')} tells them to wait where they stand, or to come with you. If one goes down, help them up, or let Ingrid do it; they are never killed.` : `In the story's battles, the companions the scene puts on the line fight with their own way of fighting, and ${key('call1')} / ${key('call2')} call on their skills (shown over the bottom right while they stand with you). In the open world, two of them can walk with you.`}</p>` +
+      Object.entries(COMPANIONS).map(([id, k]) => { const here = available(id, st), mine = party.includes(id);
+        return `<div class="slot"><div class="info"><b>${esc(k.name)}${mine ? ' · with you' : ''}</b><span>${esc(k.who)}</span><span>${esc(k.style)}</span><span><b style="font-size:14px">${esc(k.skill.name)}</b> (every ${k.skill.cd} s): ${esc(k.skill.desc)}</span>${here ? '' : `<span><i>${esc(absent(id, st))}</i></span>`}</div></div>`; }).join('') +
+      '<p class="muted">Who they are, what they carry and when they join or leave are the owner\'s story. How they fight, their skills and the numbers are the game\'s.</p>';
+  }
   render_acts(body) {
     const g = this.g;
     body.innerHTML = `<h3>Start at an act or a chapter</h3><p class="muted">An act starts at its opening. Open its chapters to start at any one of them. Everything before is taken as played: the quests done, and what Eirik carries and has learned by then. From there the game autosaves as usual, so the autosave will follow what you start. Saves in the three slots are not touched.</p>` +

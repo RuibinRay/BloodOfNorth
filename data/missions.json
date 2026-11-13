@@ -1,7 +1,7 @@
 {
   "about": "Mission breakdown of the owner's story (docs/story/THE_RISE_OF_THE_RAVEN_KING.md), chapter by chapter. status: built (playable; tested by script) | partial (something of it is playable; read the note) | fight_only (the champion fight is playable in its place, without the chapter round it) | planned. Minutes are design targets, not measured playtime: nothing here has been timed with a person playing.",
   "source": "docs/story/THE_RISE_OF_THE_RAVEN_KING.md",
-  "updated": "2026-11-13 (0.20)",
+  "updated": "2026-11-13 (0.21)",
   "acts": [
     {
       "act": 1,

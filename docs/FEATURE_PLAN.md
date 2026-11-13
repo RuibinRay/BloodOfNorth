@@ -77,7 +77,9 @@ Built in 0.16: the same skirmish on a ship's deck (the rail is the edge of the w
 
 Built in 0.15: a first battle with allies (the Iron Shore). Defenders stand in a line and each holds one attacker, striking him when he closes; attackers who find no one free come for the player, who can also strike the ones being held. It is a stand-in for a shield wall, not one.
 
-Planned, in order: a person plays every champion and the numbers are retuned (the Ghost of Tsushima lesson); companions who fight beside him everywhere, not only in set battles (Leif first); real shield walls and battles of dozens; weapon-against-weapon contact; mounted and thrown-spear combat; per-weapon animation sets.
+Built in 0.21: companions who fight. Each of the six has a kit (health, how much of what is aimed at them they turn, how hard and how fast they strike, whether each blow lands twice, the strokes they use) and one skill on a cooldown, called from two keys: a trick that breaks a man's guard, a full-draw arrow through a guard, a call that pulls the men pressing Eirik onto a shield, a finishing cut on a broken guard, a blow that splits a shield, and a healer's bandage. Allies' blows no longer always make a man flinch, so quick blades do not hold him helpless. Companions go down instead of dying, and a man pulled onto a shield stays there even beside Eirik.
+
+Planned, in order: a person plays every champion and the numbers are retuned (the Ghost of Tsushima lesson); companions beside him through the story's own chapters, not only on its battle lines and in the open world; real shield walls and battles of dozens; weapon-against-weapon contact; mounted and thrown-spear combat; per-weapon animation sets.
 
 ## World
 

@@ -52,14 +52,15 @@ export class Combat {
   attackers() { return this.enemies.filter((e) => !e.dead && (e.cb.state === 'windup' || e.cb.state === 'strike')).length; }
   maxAttackers() { const d = this.g.settings.difficulty; return d === 'hard' ? 2 : d === 'easy' ? 1 : this.alive().length >= 4 ? 2 : 1; }
 
-  hurt(e, dmg, posture = 0) {
+  /** o.flinch: false = the blow lands without throwing him off his stroke (a companion's light, quick cuts). */
+  hurt(e, dmg, posture = 0, o = {}) {
     const c = e.cb, g = this.g;
     if (e.dead || c.out) return;
     c.hp -= dmg; c.posture = Math.min(100, c.posture + posture);
     g.fx.burst('blood', e.pos.x, e.pos.y + 1.2 * e.h.scale, e.pos.z, 5);
     if (c.training) c.hp = Math.max(c.hp, 1);
     if (c.hp <= 0) return this.kill(e);
-    if (c.state !== 'strike' && c.state !== 'stagger') e.h.play('stagger', 0.32);
+    if (o.flinch !== false && c.state !== 'strike' && c.state !== 'stagger') e.h.play('stagger', 0.32);
     this.checkPosture(e);
   }
   checkPosture(e) {
@@ -416,7 +417,7 @@ export class Combat {
         if (v) this.cast = { e, name: v.name, t: 2.4 };
         h.play('shoot', 0.4, { hitAt: 0.3, onHit: () => { if (v) for (let i = 0; i < (v.n || 1); i++) g.after(i * 0.2, () => this.shoot(e, v)); else this.shoot(e); } });
       }
-    } else if (busy && d > 3.2 && c.state !== 'stagger' && c.state !== 'harried') { // busy with an ally
+    } else if (busy && (d > 3.2 || c.taunt) && c.state !== 'stagger' && c.state !== 'harried') { // busy with an ally (taunt: called onto a shield, he stays there even beside Eirik)
       const q = c.duel, qx = q.pos.x - e.pos.x, qz = q.pos.z - e.pos.z, qd = Math.hypot(qx, qz) || 1;
       c.state = 'duel'; face = Math.atan2(qx, qz);
       if (qd > 2.0) { mx = qx / qd; mz = qz / qd; speed = 3.2; }
@@ -425,7 +426,7 @@ export class Combat {
         h.play('atk' + (1 + ((Math.random() * 3) | 0)), 0.7, { hitAt: 0.4, onHit: () => {
           if (q.dead || q.wounded) return;
           const near = e.dist(p) < 30;
-          if (q.hpMax && Math.random() < 0.45) { // an ally who can be hurt (the crew): some blows get through
+          if (q.hpMax && Math.random() >= (q.guard ?? 0.55)) { // an ally who can be hurt (the crew, a companion): the blows their guard does not turn get through
             q.hp -= c.dmg * 0.6; q.h.play('stagger', 0.35); if (near) g.audio.play('hurt', { vol: 0.35 });
             if (q.hp <= 0) g.events.emit('allyDown', q, e);
           } else { q.h.play('parry', 0.3); if (near) g.audio.play('steel', { vol: 0.3 }); }

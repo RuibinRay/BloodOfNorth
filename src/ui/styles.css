@@ -286,6 +286,20 @@ details.chapters li > span { display: inline-block; min-width: min(60%, 340px); 
 @media (max-width: 760px) { .cols { grid-template-columns: 1fr; } .trees, .status-grid { grid-template-columns: 1fr 1fr; } .set { grid-template-columns: 1fr; } .keys { grid-template-columns: 1fr; } #tracker { width: 46vw; } #hint { max-width: 46vw; } }
 @media (prefers-reduced-motion: reduce) { .lb, nav button, #hud, #hint, #card { transition: none; } }
 
+#party { position: absolute; right: 22px; bottom: 22px; width: 232px; display: flex; flex-direction: column; gap: 8px; text-shadow: 0 1px 2px #000; }
+#party .pm { padding: 7px 10px 8px; background: rgba(10, 8, 6, 0.62); border-left: 2px solid rgba(231, 217, 187, 0.4); }
+#party .pm.down { border-left-color: var(--blood); opacity: 0.8; }
+#party .top { display: flex; align-items: center; gap: 10px; }
+#party .top b { font-weight: 600; font-size: 14.5px; letter-spacing: 0.05em; min-width: 64px; }
+#party .hp { flex: 1; height: 6px; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(231, 217, 187, 0.25); position: relative; }
+#party .hp i { position: absolute; inset: 0 auto 0 0; background: #8a3a2a; }
+#party .sk { margin-top: 5px; font-size: 12.5px; display: flex; align-items: center; gap: 7px; opacity: 0.6; }
+#party .pm.ready .sk { opacity: 1; color: var(--gold-hi); }
+#party .sk kbd { font: 600 11px/1 system-ui, sans-serif; padding: 2px 5px; background: #1a1612; border: 1px solid rgba(231, 217, 187, 0.35); border-radius: 3px; color: #e7d9bb; }
+#party .sk em { margin-left: auto; font-style: normal; font-variant-numeric: tabular-nums; }
+#party .pm.armed .sk em { color: #dff0ff; }
+#law.on ~ #party { bottom: 86px; } /* above the district and its marks in the open world */
+@media (max-width: 760px) { #party { width: 180px; right: 12px; } }
 #ravenhud { position: absolute; left: 50%; top: 52px; transform: translateX(-50%); text-align: center; display: none; text-shadow: 0 1px 3px #000; }
 #ravenhud.on { display: block; }
 #ravenhud b { display: block; font-size: 19px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--parch); font-weight: 500; }

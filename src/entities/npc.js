@@ -42,7 +42,8 @@ export class NPC {
   /** Walk a path but wait for the player to keep up. */
   lead(pts, opts = {}) { this.goPath(pts, opts); this.mode = 'lead'; return this; }
   follow(target, opts = {}) { this.mode = 'follow'; this.followT = target; this.opts = opts; this.faceT = null; return this; }
-  fight(partner, opts = {}) { this.mode = 'fight'; this.partner = partner; this.opts = opts; this.fightT = 0.4 + Math.random() * 1.2; this.h.setLoop('guard'); return this; }
+  /** Fight someone. opts: lethal (chance a blow kills a man without combat stats), dmg, onWin, wood; kit (a companion's way of fighting, data/companions.js) and scale. */
+  fight(partner, opts = {}) { this.mode = 'fight'; this.partner = partner; this.opts = opts; this.fightT = 0.4 + Math.random() * (opts.kit ? 0.5 : 1.2); this.h.setLoop('guard'); return this; }
   say(text, dur) { this.game.ui.subtitle(this.name, text, dur); }
   die(quiet = false) {
     if (this.dead) return;
@@ -112,11 +113,13 @@ export class NPC {
         const d = this.dist(q);
         if (d > 1.9) { wantSpeed = this.walkSpeed; this.step(q.pos.x, q.pos.z, wantSpeed, dt); }
         this.fightT -= dt;
+        const k = this.opts.kit;
         if (this.fightT <= 0 && !h.busy && d < 2.4) {
-          this.fightT = 1.2 + Math.random() * 1.5;
-          const n = 1 + ((Math.random() * 3) | 0);
-          h.play('atk' + n, 0.6, { hitAt: 0.4, onHit: () => {
+          this.fightT = k ? k.rate[0] + Math.random() * k.rate[1] : 1.2 + Math.random() * 1.5;
+          const anim = k && k.anims ? k.anims[(Math.random() * k.anims.length) | 0] : 'atk' + (1 + ((Math.random() * 3) | 0));
+          h.play(anim, k ? 0.5 : 0.6, { hitAt: 0.4, onHit: () => {
             if (q.dead) return;
+            if (q.cb && k && g.companions) { g.companions.blow(this, q); return; } // a companion's blow: their own weight and speed
             if (q.cb) { g.combat.hurt(q, this.opts.dmg ?? 12, 10); if (this.dist(p) < 34) g.audio.play('steel', { vol: 0.3 }); return; } // an ally's blow
             const near = this.dist(p) < 34;
             if (this.opts.lethal && Math.random() < this.opts.lethal) { q.die(); if (near) g.audio.play('hurt', { vol: 0.5 }); return; }

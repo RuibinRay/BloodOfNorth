@@ -16,6 +16,7 @@ export const DEFAULT_BINDINGS = {
   ward: ['KeyZ'], lock: ['Mouse1', 'KeyL'], walk: ['AltLeft'],
   art1: ['Digit4'], art2: ['Digit5'], art3: ['Digit6'], art4: ['Digit7'],
   shoulder: ['KeyT'],
+  call1: ['KeyY'], call2: ['KeyU'], order: ['KeyB'],
   weapon1: ['Digit1', 'Pad14'], weapon2: ['Digit2', 'Pad15'], weapon3: ['Digit3'], holster: ['KeyX', 'Pad13'],
   inventory: ['KeyI', 'Tab'], journal: ['KeyJ', 'Pad8'], map: ['KeyM'], skills: ['KeyK'],
   pause: ['Escape', 'KeyP', 'Pad9'],
@@ -26,6 +27,7 @@ export const ACTION_LABELS = {
   sprint: 'Sprint', crouch: 'Crouch / sneak', dodge: 'Dodge', interact: 'Interact',
   attack: 'Attack / loose arrow', block: 'Block / aim', sense: "Hunter's sense", raven: "Raven's Eye", harry: 'Send the black raven', whistle: 'Whistle for your horse', horn: 'Sound the horn (crew ashore / back aboard)',
   weapon1: 'Draw, or change, melee weapon', throw: 'Throw an axe', ward: 'Stormguard (turn any blow)', lock: 'Lock on / let go', walk: 'Walk (hold)', art1: 'Thunder Smash', art2: 'Storm-Step', art3: 'Storm-Cry', art4: 'Stormbreak', shoulder: 'Bow: swap shoulder', weapon2: 'Equip bow', weapon3: 'Off hand: shield or second axe', holster: 'Put weapon away',
+  call1: "First companion's skill", call2: "Second companion's skill", order: 'Companions: wait here / with me',
   inventory: 'Inventory', journal: 'Journal', map: 'Map', skills: 'Skills', pause: 'Pause',
   camLeft: 'Camera left', camRight: 'Camera right', camUp: 'Camera up', camDown: 'Camera down',
 };

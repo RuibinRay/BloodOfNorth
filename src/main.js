@@ -24,6 +24,7 @@ import { ITEMS, QUESTS, DIALOGUE } from './data/act1.js';
 import { ORDER } from './data/chapters.js';
 import { POI } from './world/layout.js';
 import { Act1 } from './story/act1.js';
+import { Companions } from './systems/companions.js'; // after the story: the companions' looks come from the acts' casts, which need Act I's chapters loaded first
 import { UI } from './ui/ui.js';
 
 const RUNNING = new Set(['play', 'dialogue', 'cutscene', 'activity']);
@@ -75,6 +76,7 @@ class Game {
     this.ravens = new Ravens(this);
     this.combat = new Combat(this);
     this.skills = new Skills(this);
+    this.companions = new Companions(this);
     this.quests = new Quests(this, QUESTS);
     this.inventory = new Inventory(this, ITEMS);
     this.dialogue = new Dialogue(this, DIALOGUE);
@@ -279,6 +281,7 @@ class Game {
         this.player.update(dt, this.mode === 'play');
         for (const n of this.npcs.values()) n.update(dt);
         this.combat.update(dt);
+        this.companions.update(dt);
         this.wildlife.update(dt);
         this.ravens.update(dt);
         this.story.update(dt);

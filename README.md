@@ -2,7 +2,7 @@
 
 A third-person Viking action RPG that follows the owner's story, *The Rise of the Raven King*
 ([docs/story](docs/story/THE_RISE_OF_THE_RAVEN_KING.md): seven acts and an epilogue). This repository holds
-**slice 0.20**: Act I (Eirik's childhood), Act II (nineteen: Bjornstead, the raid, the walls, Kaupang and the
+**slice 0.21**: Act I (Eirik's childhood), Act II (nineteen: Bjornstead, the raid, the walls, Kaupang and the
 Sea-Raven), Act III (twenty: Jarnøy and the Battle of Iron Shore), Act IV (twenty-two: the treasure voyage,
 Wessex, six islands burning, Hedeby Sound), Act V (twenty-four: the hunger winter, the tannery yard, the ring,
 Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, the wedding) and Act VII
@@ -10,7 +10,21 @@ Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, th
 (forty-one: Ravenhold twelve years on, Leif's house, the old birch), each as the story tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
-**New in 0.20.** The Epilogue, "The Old Birch", the last of the story, in its order and words · Ravenhold
+**New in 0.21.** Any chapter of any act can be started from the main menu (Start at an Act lists each act's
+chapters, 67 in all), with what came before taken as played; every one was started this way by script and checked,
+and the two that left Eirik in the wrong place were fixed · **companions who fight**: Leif, Astrid, Torvald,
+Svanhild, Brokk and Ingrid each fight their own way (Leif's two blades land twice, Torvald is slow and heavy behind a
+shield, Svanhild rarely lets a blow through, Brokk's hammer wears a guard down, Astrid shoots from behind, Ingrid does
+not fight but binds wounds and gets the fallen up) and each has one skill, called with Y and U: Dock-rat's Trick,
+Storm-Yew, Hold the Line, The Finest Sword, Sunder, and Clean Water and a Bandage · in the open world two of them walk
+with Eirik: ask them along at the farm (Ingrid on Jarnøy, Svanhild on Vængr), B tells them to wait or to come; they
+go down rather than die, and get up when the fight is over, when Eirik helps them, or when Ingrid does · in the
+story's battles, the companions the scene puts on the line (Leif at the side gate, Torvald on the wall, Svanhild on
+the Black Shore) fight with their own kit, Eirik can call their skills there too, and Astrid on the field shoots for
+him · who is there follows the story: Brokk is gone after Skalløy, Torvald is away from Hedeby Sound until he swears
+on the ring · a Companions page in the pause menu, and their state and skills over the bottom right of the screen.
+
+**In 0.20.** The Epilogue, "The Old Birch", the last of the story, in its order and words · Ravenhold
 twelve years on: the town spilled past the old palisade, houses, workshops and gardens, a market on the strand,
 ships from Wessex, Frisia, Dublin and the eastern rivers · the row of carved stones, Torvald with a broom at Ari's,
 Hauk with two cups of ale · Halvar at Brokk's old forge, the apprentice, and the Thing-Ring on the anvil · the
@@ -96,6 +110,8 @@ Then open http://localhost:5184. A production build is `npm run build` (output i
 | Whistle for your horse (open world) | `H` | — |
 | Set or lower the sail (in the boat or ship) | `Shift` | L3 |
 | Sound the horn: crew ashore, or back aboard | `G` | — |
+| First / second companion's skill | `Y` / `U` | — |
+| Companions: wait here, or come with me | `B` | — |
 | At the ship's helm: loose a volley; raise shields | left mouse; hold right mouse | X or RT; LT |
 | Draw a melee weapon; again to step to the next you carry | `1` | d-pad |
 | Bow, put away | `2`, `X` | d-pad |
@@ -352,9 +368,9 @@ the [story bible](docs/STORY_BIBLE.md).
 | | |
 |---|---|
 | **Playable and tested** | All of Act I (chapters 1–3), Act II (nine chapters), Act III (eight chapters), Act IV (eight chapters), Act V (seven chapters), Act VI (nine chapters), Act VII (eleven chapters) and the Epilogue (three parts) start to finish, by scripted playtest; a building that can be walked into; a sea battle played from one deck (fire arrows, a ship of archers to shoot, a ram); a landing with two pushes and two rescues; a chapter played as another character; a final fight in four parts whose last is won by waiting and guarding; a hunt across a marsh with the white raven; two champion fights that are won by something other than damage (the black raven; a ledge); a night infiltration with patrols, dogs and hiding places; seeing through the black raven; a duel with a scripted fall and recovery; fights on a ship's deck; a duel with scripted turns; a horse to ride in the story; a battle with allies who hold attackers along a line; four companions who join in their scenes; start-at-an-act; a village that burns, is walled and gains a ship as the story goes; timed work, a wrestling and shield-wall game, a dive with breath; melee combat against enemies that guard, take turns and flank, with a two-phase captain; an ally who fights; the black raven harrying a target; raven companions and Raven's Eye; five hidden omens; hunger and warmth, shelter, cooking, a wolf encounter with two outcomes, thin-ice crossing; movement, camera, stamina; dialogue with choices; quests, journal, tracker, map with waypoint; woodcutting, archery, tracking, fishing, fire-making; sparring; stealth with raider sight and hearing; cold survival; day/night, snow, fire; in-engine cutscenes; save/load with autosave; settings, key rebinding, gamepad |
-| **Prototype** | The open-world sandbox (two law-districts, fourteen islands, one horse, a rowing boat and a crewed ship, sea battles with volleys, ramming and boarding, paid passage, one secret weapon, one crew raid); procedural characters and animation; procedural audio and score; villager routines; wildlife AI; combat balance and the new enemy kinds (tuned against scripted players only) |
+| **Prototype** | Companions who fight (six kits and six skills; two at Eirik's side in the open world, and on the line in the story's battles; tested by script, not by a person, and the numbers are first guesses); the open-world sandbox (two law-districts, fourteen islands, one horse, a rowing boat and a crewed ship, sea battles with volleys, ramming and boarding, paid passage, one secret weapon, one crew raid); procedural characters and animation; procedural audio and score; villager routines; wildlife AI; combat balance and the new enemy kinds (tuned against scripted players only) |
 | **Blocked** | Higgsfield asset generation — the API needs a key ID *and* a secret; only one value was supplied. See [docs/HIGGSFIELD.md](docs/HIGGSFIELD.md) |
-| **Planned** | Everything else in the brief: Act I's last missing scenes (Old Hrefna's bones, the stick and the little shield, the seven seats); the rest of the sea map (about forty islands of which fourteen exist as a sandbox; a longship of your own, fleets and crew who can be hurt; wind and weather at sea; more districts — designed in [docs/OPEN_WORLD.md](docs/OPEN_WORLD.md)); adult combat and nine weapons, skill trees, companions, sailing, settlement, factions, 50 side missions, UE5 port. See [docs/ROADMAP.md](docs/ROADMAP.md) |
+| **Planned** | Everything else in the brief: Act I's last missing scenes (Old Hrefna's bones, the stick and the little shield, the seven seats); the rest of the sea map (about forty islands of which fourteen exist as a sandbox; a longship of your own, fleets and crew who can be hurt; wind and weather at sea; more districts — designed in [docs/OPEN_WORLD.md](docs/OPEN_WORLD.md)); adult combat and nine weapons, skill trees, companions' own side missions and loyalty, sailing, settlement, factions, 50 side missions, UE5 port. See [docs/ROADMAP.md](docs/ROADMAP.md) |
 
 How it was tested: an automated playtest drives the real game loop through every quest step (see
 `debug` in [src/main.js](src/main.js)). It was verified on an Apple M2 at 60 fps. It has **not** been

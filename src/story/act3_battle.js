@@ -179,7 +179,9 @@ export class A3Battle {
   engage(a) {
     const R = this.R, e = a.busy;
     a.engaged = true;
-    a.fight(e, { lethal: 0, dmg: R.allyDmg * (a.id === 'torvald' || a.id === 'arvid' ? 1.7 : 1), onWin: (x) => { x.busy = null; x.engaged = false; x.setLoop('guard'); if (x.home && this.sk) x.goTo(x.home[0], x.home[1], { onArrive: (y) => { y.yaw = x.home[2]; } }); } });
+    const onWin = (x) => { x.busy = null; x.engaged = false; x.setLoop('guard'); if (x.home && this.sk) x.goTo(x.home[0], x.home[1], { onArrive: (y) => { y.yaw = x.home[2]; } }); };
+    if (this.g.companions.kit(a)) a.fight(e, this.g.companions.opts(a, R.allyDmg / 8, { onWin })); // a companion on the line: their own way of fighting (data/companions.js)
+    else a.fight(e, { lethal: 0, dmg: R.allyDmg * (a.id === 'torvald' || a.id === 'arvid' ? 1.7 : 1), onWin });
   }
   startSkirmish(allies, from, budget, atOnce, done, R = null) {
     const c = this.c;
