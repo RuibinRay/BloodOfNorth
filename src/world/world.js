@@ -291,7 +291,7 @@ export class World {
     Object.assign(this.main, buildAct7Places(ctx, this, scene)); // the war: the chained line at sea, Svartøy's shore, the pens, the hall gate, the Thing at Gulen
     Object.assign(this.main, buildEpiloguePlaces(ctx, this, scene)); // twelve years on: Ravenhold beyond its walls, Leif's house, the stones, Bjorn's mound under the old birch
 
-    const stat = ctx.b.build();
+    const stat = ctx.b.build({ still: 256 }); // every place's props, merged area by area
     scene.add(stat);
     this.staticGroup = stat;
 

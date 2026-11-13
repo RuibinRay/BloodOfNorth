@@ -8,7 +8,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { loadSettings, writeSave, readSave } from './core/save.js';
-import { initMaterials, shared } from './world/geo.js';
+import { initMaterials, shared, cullHazed } from './world/geo.js';
 import { World } from './world/world.js';
 import { Sky } from './world/sky.js';
 import { FX } from './world/fx.js';
@@ -43,6 +43,8 @@ class Game {
     this.mode = 'menu'; this.started = false; this.timers = []; this.npcs = new Map();
     this.sense = 0; this.interaction = null; this.activity = null; this.baseFov = 58; this.panelFrom = null; this.menuT = 0;
     this.frames = 0; this.fps = 0; this.fpsT = 0;
+    this.res = { scale: 1, base: 1, avg: 1 / 60, t: 0, wait: 0, hold: 6, skip: 0 }; // resolution that follows the frame rate
+    this.drawn = { calls: 0, tris: 0 };
   }
 
   async boot() {
@@ -50,6 +52,7 @@ class Game {
     const renderer = (this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' }));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.info.autoReset = false; // counted per frame in draw(), across every pass
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(this.baseFov, innerWidth / innerHeight, 0.15, 2600);
     // Glow: what is brighter than daylight (fire, sparks, lightning, the stroke of a blade) bleeds a little light round itself.
@@ -131,17 +134,38 @@ class Game {
   }
   applySettings() {
     const q = this.settings.quality, dpr = window.devicePixelRatio || 1;
-    this.renderer.setPixelRatio(q === 'low' ? 1 : q === 'high' ? Math.min(dpr, 2) : Math.min(dpr, 1.5));
+    this.res.base = q === 'low' ? 1 : q === 'high' ? Math.min(dpr, 2) : Math.min(dpr, 1.5);
+    if (this.settings.autoRes === false) this.res.scale = 1;
+    this.renderer.setPixelRatio(this.res.base * this.res.scale);
     if (this.sky) this.sky.setQuality(q);
     this.audio.applyVolumes(); this.ui.applySettings(); this.resize();
   }
+  /** Resolution that follows the frame rate. When frames come slower than fifty a second the picture is drawn with
+   *  fewer pixels (down to 55% each way) and stretched to the window; when there is room again it creeps back up.
+   *  It falls fast and climbs slowly, and a climb that had to be undone waits longer before it is tried again. */
+  adaptRes(dt) {
+    const r = this.res;
+    if (this.settings.autoRes === false || this.manual || document.hidden || dt > 0.25) return; // a hitch (loading, a hidden tab) is not a slow frame
+    if (r.skip > 0) { r.skip--; return; }                                                        // nor are the frames right after a change
+    r.avg += (dt - r.avg) * 0.1; r.t += dt; r.wait -= dt;
+    if (r.t < 0.6) return;
+    r.t = 0;
+    const slow = r.avg > 1 / 50, set = (s) => { r.scale = Math.min(1, Math.max(0.55, s)); this.renderer.setPixelRatio(r.base * r.scale); this.resize(); r.skip = 4; };
+    if (slow && r.scale > 0.55) { if (r.rose) r.hold = Math.min(60, r.hold * 2); r.rose = false; r.wait = r.hold; set(r.scale - (r.avg > 1 / 35 ? 0.15 : 0.08)); }
+    else if (!slow && r.avg < 1 / 57 && r.scale < 1 && r.wait <= 0) { r.rose = true; r.wait = 2.5; set(r.scale + 0.05); }
+    else if (!slow && r.wait < -20) { r.rose = false; r.hold = 6; }                              // it has held for a while: forget the last failed climb
+  }
   /** Put the frame on the screen: through the glow pass when it is on. */
   draw() {
+    this.renderer.info.reset();
+    this.world.veg.update(this.camera, this.scene.fog.density); // only the trees, rocks and grass worth drawing from here
+    cullHazed(this.camera, this.scene.fog.density);             // and no far island or far town the haze has taken
     if (this.settings.bloom !== false && this.settings.quality !== 'low' && this.composer) {
       const dark = this.sky ? this.sky.isNight : false; // by day only the very brightest things glow; at night a fire lights the air round it
       this.bloom.threshold = dark ? 0.9 : 1.6; this.bloom.strength = dark ? 0.7 : 0.4;
       this.composer.render();
     } else this.renderer.render(this.scene, this.camera);
+    this.drawn.calls = this.renderer.info.render.calls; this.drawn.tris = this.renderer.info.render.triangles;
   }
   resize() {
     if (this.composer) { this.composer.setPixelRatio(this.renderer.getPixelRatio()); this.composer.setSize(innerWidth, innerHeight); }
@@ -254,6 +278,7 @@ class Game {
     requestAnimationFrame((t) => this.tick(t));
     const real = Math.min(0.05, (now - this.last) / 1000); this.last = now;
     this.frames++; this.fpsT += real; if (this.fpsT >= 1) { this.fps = this.frames / this.fpsT; this.frames = 0; this.fpsT = 0; }
+    this.adaptRes((now - this.rawLast) / 1000 || 0); this.rawLast = now;
     if (!this.manual) this.frame(real, true);
   }
   /** Advance the whole game by `real` seconds. Also driven directly by the test harness. */
@@ -359,7 +384,7 @@ class Game {
         pos: [+g.player.pos.x.toFixed(1), +g.player.pos.y.toFixed(1), +g.player.pos.z.toFixed(1)],
         quests: Object.fromEntries(Object.entries(g.state.quests).map(([k, v]) => [k, v.status === 'done' ? 'done' : QUESTS[k].steps[v.step].id + (v.count ? ':' + v.count : '')])),
         inv: g.state.inventory, traits: g.state.traits, interaction: g.interaction ? g.interaction.label : null,
-        draws: g.renderer.info.render.calls, tris: g.renderer.info.render.triangles, veg: g.world.veg.counts,
+        draws: g.drawn.calls, tris: g.drawn.tris, res: g.res.scale, veg: g.world.veg.counts,
       }),
     };
     // ---- scripted playtest helpers (used with debug.manual(true)) ----

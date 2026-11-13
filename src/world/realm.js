@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { fbm, noise2, smoothstep, lerp, distToPolyline } from '../core/util.js';
 import { GREAT, MAIN } from './layout.js';
-import { patch, TEX } from './geo.js';
+import { patch, TEX, hazeCull } from './geo.js';
 
 const C = 5, SEA = -13, DEEP = [58, 70, 76], SHORE = [0.8, 0.93];
 const ALL = [...GREAT, ...MAIN]; // the great islands, then the two stretches of mainland coast
@@ -134,7 +134,7 @@ function buildIsle(s) {
   const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
   const m = new THREE.Mesh(geo, patch(new THREE.MeshStandardMaterial({ map: tex, roughness: 0.96, metalness: 0 }), { detail: TEX.detail, snow: 1 }));
   m.receiveShadow = true; m.name = 'isle_' + s.id;
-  return m;
+  return hazeCull(m); // an island's ground is not drawn once the haze has taken it
 }
 export function buildRealm(scene) {
   for (const s of ALL) scene.add(buildIsle(s));

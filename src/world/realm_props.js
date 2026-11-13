@@ -230,7 +230,7 @@ function myrholm(ctx, world, scene) {
       mesh.setMatrixAt(n, m4.compose(v, q, sc)); const g = 0.75 + R() * 0.4; mesh.setColorAt(n, col.setRGB(0.42 * g, 0.44 * g, 0.2 * g)); n++;
     }
   }
-  mesh.count = n; mesh.instanceMatrix.needsUpdate = true; mesh.instanceColor.needsUpdate = true; mesh.frustumCulled = false; mesh.castShadow = false; scene.add(mesh);
+  mesh.count = n; mesh.instanceMatrix.needsUpdate = true; mesh.instanceColor.needsUpdate = true; mesh.computeBoundingSphere(); mesh.castShadow = false; scene.add(mesh); // bounded, so it is skipped when Myrholm is not in view
   return { mire: { x: t.x + 1, z: t.z + 9 }, reeds: n };
 }
 function skalloy(ctx, world) {

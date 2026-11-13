@@ -17,7 +17,7 @@ export function stage(world, scene, on, build) {
   const ctx = { b, smoke: [], addBox: (...a) => { const o = world.addBox(...a); boxes.push(o); return o; }, addCircle: (...a) => { const o = world.addCircle(...a); circles.push(o); return o; } };
   const w = { addBox: ctx.addBox, addCircle: ctx.addCircle, addDeck: (d) => { decks.push(d); return world.addDeck(d); } };
   const extra = build(ctx, w, objs) || {};
-  const group = b.build(); for (const o of objs) group.add(o); scene.add(group);
+  const group = b.build({ still: 256 }); for (const o of objs) group.add(o); scene.add(group);
   const s = { group, on: true, ...extra, set(v) {
     v = !!v; if (v === s.on) return s;
     s.on = v; group.visible = v;

@@ -29,8 +29,23 @@ scale to a seamless open world; those need the engine port below.
 | Content | `src/data/act1*.js`, `src/story/act1*.js` | Data, and one director per chapter that reacts to quest steps |
 | Interface | `src/ui/*` | DOM overlay |
 
-Performance on the test machine: 60 fps at 1536×1152 with about 1.5 million triangles and under 60
-draw calls by day. This is one measurement on one machine, not a guarantee.
+### Drawing less (0.22)
+
+The frame rate has not been measured since the first slices; what follows is counted, not timed.
+
+- **Vegetation is in map cells** (`src/world/vegetation.js`): trees and rocks 128 m, bushes 64 m, grass 40 m. Each cell is
+  one instanced batch with its own bounds, so the camera and the sun's shadow box each skip what they cannot see. A tree
+  cell beyond 200 m (120 at Low, 300 at High) is drawn with a simpler shape that shares the same instances; grass stops
+  at 90 m and bushes at 260 m.
+- **Still props are merged area by area** (`Builder.build({ still })` in `src/world/geo.js`), not across the whole map,
+  and those areas and each island's ground are not drawn once the haze has taken them (`hazeCull`, `cullHazed`).
+- **A person is one skinned mesh and a face** (`fuse` in `src/entities/humanoid.js`): each piece is bound with full
+  weight to the joint it hangs from, so the joints are the bones and the animation code is unchanged.
+- **Resolution follows the frame rate** (`Game.adaptRes`), and Settings has a frame counter.
+
+Counted in one frame, before and after: Hrafnvik 4.8 million triangles to 0.96 million; the open-world farm 4.9 to
+1.1 million; the Iron Shore gate 4.7 to 0.6 million; the Black Shore battle 4.5 million triangles in 713 draws to
+0.29 million in 321. `npm run check` holds five scenes to a budget a third above these.
 
 ## Design rules that carry over to any engine
 
@@ -53,6 +68,10 @@ callback, `run(seconds)` steps deterministically, and helpers press keys, talk t
 and shoot. Chapter 1 was driven through every quest step this way. `debug.jump(quest, step)` starts
 anywhere. In development, `debug.save(name)` writes a canvas capture to `.playtest/`. Chapter 2 was
 tested the same way, including loading every step cold and the chapter-to-chapter hand-off.
+
+`npm run check` (`tools/check.mjs`, with its in-page half in `tools/check/page.js`) runs the saved checks in a
+headless Chrome over the DevTools protocol, with no extra packages: every chapter started from the Acts menu and
+compared with `tools/check/expected.json`, five scenes held to a drawing budget, and one fight beside two companions.
 
 Not covered: human play feel, real pointer-lock mouse aiming, gamepad on hardware, browsers other
 than the embedded Chromium, and long-session memory.
