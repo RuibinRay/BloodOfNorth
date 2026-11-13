@@ -18,6 +18,7 @@ export const A7 = {
   ulf: { hp: 340, dmg: 15, endAt: 0.2 },                                                 // when he goes for the kill, and the black raven comes down
   shore: { hp: 58, dmg: 11, skill: 0.42, allyDmg: 10, n: 15, atOnce: 3, name: "One of Håkon's warriors" }, // five hundred hold the slopes: fifteen to a push
   rescue: { hp: 58, dmg: 11, skill: 0.42, allyDmg: 10, n: 4, atOnce: 3, name: "One of Håkon's warriors" },
+  wall: [{ goal: 7, approach: 7.5, reserve: [10, 50] }, { goal: 6, approach: 8, reserve: [10, 40] }], // the two pushes up from the sand, as shield walls: paces of ground to win before they break (the rest is data/shieldwall.js)
   kettil: { hp: 280, dmg: 15, kneelAt: 0.14 },
   pens: { hp: 60, dmg: 11, skill: 0.4, allyDmg: 10, n: 8, atOnce: 3, name: 'A guard of the pens' }, // "many more than twenty"
   vigdis: { hp: 300, dmg: 13 }, gorm: { hp: 560, dmg: 28 },
@@ -265,6 +266,7 @@ Object.assign(HINTS, {
   fireShore: 'Fire arrows from the slopes. Hold {block} with a shield when they come down, or keep moving.',
   rake: 'Draw the bow ({weapon2}), hold {block} to aim and draw, {attack} to loose. A full draw flies flat. Their archers are on the ship ahead, off the bow.',
   goBack: 'Go back for them. The line can wait.',
+  wallPush: 'Stand in the line. When their horn sounds, hold {block}: the men near you hold with you. When they reel, sound your horn ({horn}) and the line goes forward. Kill the ones who come through.',
   asTorvald: 'Torvald carries Star-Fall in both hands: slow, and it breaks whatever it lands on. Hold {attack} for a blow into the ground.',
   endIt: 'Eirik ends it: {attack}.',
   feet: 'She steps twice before she strikes, always from the side: left, left, right, right. Stop chasing her. Watch the arrow at the edge of the screen, and raise your guard ({block}) on the beat.',

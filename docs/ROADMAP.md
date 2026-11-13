@@ -97,12 +97,34 @@ playtests; none are claimed until then.
 - **Eirik at forty-one** is the same rig with longer beard, greyer hair and a cloak; a player's own appearance choices still apply.
 - Act VII's known gaps below still stand.
 
+## Real shield walls (branch `real-shield-walls`, on top of 0.22; not yet given a number)
+
+Delivers: the Battle of Iron Shore (Act III) and both pushes on the Black Shore (Act VII) as shield walls. Two lines of rank and file with the named fighters in the front rank: 150 against 150 with 60 more behind them at Iron Shore; about 140 a side on the Black Shore. The line gives and wins ground sector by sector; they rush on a horn, reel where the rush is held, and can then be pushed with the horn (`G`); men who come through a sagging sector are real opponents for Eirik. A strip at the top of the screen shows the line. Numbers in `src/data/shieldwall.js`, `A3.wall` and `A7.wall`.
+
+Checked by script: every step of both battles loaded cold (twenty steps, no errors, the men cleared away when a chapter ends); Iron Shore held by a scripted player who braces and sounds the horn (about 80 seconds, six rushes; in the last run 110 of the 150 were left against 119 of 210); held by one who braces every third rush; held twice in three tries by one who never braces but sounds the horn whenever they reel; lost four times out of four by one who does nothing; the charge and the Stinking Ditch still lead into it; both Black Shore pushes won (57 and 51 seconds) with the rescues between and the step after. Drawing: 284 men cost 8 draw calls and about 315 thousand triangles with their shadows; under two milliseconds a frame on the build machine at 1536 by 1152, timed in a hidden tab.
+
+Known gaps:
+
+- **Nobody has stood in it.** Every number is a first guess: how often a sector holds, how much ground a rush takes, how hard their front rank hits Eirik (9 a thrust), how many come through. A scripted player cannot say whether a rush every ten seconds with two men loose behind the line is exciting or too much.
+- **Bracing is not strictly needed.** A player who does nothing loses Iron Shore, but one who never raised his guard and only sounded the horn each time they reeled still held it twice in three scripted tries, because the sectors beside the named anchors (Torvald; Svanhild and Hroald on the Black Shore) nearly always hold on their own. Whether that is right is for a person to say.
+- **Rank and file are one rigid figure**: a braced pose that leans, strikes with one arm, recoils and falls. No faces, no walking legs (they slide and bob), one build, spear or axe. Beside them the named fighters are full jointed characters, and the difference shows up close.
+- **Eirik walks through his own men** (they step aside a pace) and is hard to pick out among them from behind. Their formation is a solid block he cannot enter, but he can run round its end, where nothing stops him except their spears.
+- **Rank and file never fight a real opponent.** The men who come through are Eirik's alone (and his companions' skills'); the named fighters stay in the line and do not turn on them. When the wall is held or their line breaks, the ones still loose are killed or run.
+- **Iron Shore cannot be won from the wall, only held**, as the story has it: the line will not go past its own stakes, and after six rushes it fights on by itself. From then on it cannot be lost; it loses men slowly to a floor and goes forward when Arne falls.
+- **On the Black Shore the second push ends at the foot of the slope**, six paces from where it starts, because the line is as wide as the flat ground (42 m) and the road up is not. "Shove them up the slope" is still told.
+- **No flanks, wheeling, second line or missiles between the walls.** Arne's archers and the fire arrows fall on Eirik as before, not on the ranks.
+- **The fallen lie for sixteen seconds and sink.** Nobody is wounded, carried back or surrenders.
+- **Only these two battles use it.** Bjornstead's palisade, the gate at Jarnøy, the decks, Vængr and the forge lanes are still skirmishes in pairs.
+- **The horn is keyboard only** (`G`), like the other new keys.
+- **The two battle scenes draw more than they did in 0.22**, by about three hundred figures each: the Black Shore 559 thousand triangles where it was about 290, and the Iron Shore gate about 830 thousand against a budget of 800 (the wall on the beach is always drawn, wherever Eirik is on Jarnøy). Their triangle budgets in `npm run check` were re-recorded to match (750 and 1100 thousand). Draw calls did not rise: 281 on the Black Shore, where 0.22 counted about 320, and 291 at the gate.
+- A save made during a wall starts that step again from its beginning, as it did with the skirmish.
+
 ## Known gaps carried over from 0.19
 
 - **Nothing in Act VII has been played by a person.** Every fight was driven by script: the champions' health was taken down by the test, not by blows, so how hard Ulf, Kettil, Vigdis, Gorm and Håkon are for a player is unknown. Its numbers are first guesses, in one table (`A7` in `src/data/act7.js`).
 - **Higgsfield was not used.** The owner asked for it for the maps. The API needs a key ID and a secret and only one value has been supplied; the Claude connector for the account can read the balance but cannot generate. Map quality was raised in the engine instead: rain, a glow pass on fire and bright steel, and the war's own dressing (ships, stakes, banners, fires). No texture or model in the game is generated art.
 - **The sea battle is fought from one deck that does not move.** Nine ships stand for sixty-two and seven for thirty. Leif's passage past the rocks is a timed task at the steering oar; the wall "breaks" as fires on it. The marsh boats and Fedje's hooks are told.
-- **The landing is two skirmishes, not a battle of nine hundred.** Ten allies hold a line in pairs against fifteen men a push; the two rescues are three men each. Wounded men, panic and surrender are told.
+- **The landing is two shield walls of about a hundred and fifty a side, not a battle of nine hundred** (since the shield walls, below; before that it was ten allies in pairs against fifteen men a push). The two rescues are three men each. Wounded men, panic and surrender are told.
 - **Kettil's end is one key.** The story does not say how he dies; the game asks for a single press after his last words.
 - **The pens are played as Torvald**, who is the same rig as Eirik in different clothes, with the war maul's numbers under Star-Fall. Seven of his twenty dying is told. The freed thralls are about fifteen. Astrid and Kári are a kneeling pose and a standing one.
 - **The bridge burns but does not break.** Fire spreads from both ends in two steps as patches that hurt to stand in.
@@ -167,7 +189,7 @@ playtests; none are claimed until then.
 ## Known gaps carried over from 0.15
 
 - **Nothing in Act III has been played by a person.** Its numbers are first guesses, in one table (`A3` in `src/data/act3.js`).
-- **The battle is a stand-in for the story's.** About sixteen defenders stand at the trench, and attackers arrive in a stream (twenty-two at the wall, eight at the gate) where the story has a hundred and fifty against two hundred. Defenders cannot fall, except Grjotgard, by script; the thirty-one and the nine are told. The eleven ships are ten models and Ulf's.
+- **The wall on the beach is now the story's size; the rest of the battle is not.** Since the shield walls (below) a hundred and fifty defenders stand against about two hundred there, and rank and file fall on both sides. The gate is still eight attackers against the ten; the named defenders cannot fall, except Grjotgard, by script; the thirty-one and the nine are told, not counted from who fell. The eleven ships are ten models and Ulf's.
 - **Not built from Chapter 4:** the town stream and the bridge that collapses under struggling men. The granary burns, but the smoke does not cover the field.
 - **Arne's tower:** the way through the fire is a timed task and the climb is a fade. His tripwires and hook-net are plain patches on the floor that slow and hurt.
 - **Ulf cannot be beaten and Eirik cannot die in their duel**, as the story needs. It ends when the Stormguard has answered twice, when Ulf has lost a little under half his health, or after fifty-five seconds, whichever is first.

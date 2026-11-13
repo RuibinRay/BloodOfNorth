@@ -1,8 +1,9 @@
 // Act III, Chapters 4 to 6 on Jarnøy: "The Battle of Iron Shore" (six days of digging, arrows from the ridge, the
 // Stinking Ditch, the shield wall, the side gate, Grjotgard), "The Longshot" (through the burning granary to Arne in
 // the watchtower) and "The Enemy Who Escaped" (Ulf Two-Blades, the burning boats, the pyres).
-// The battle is a stand-in for the story's hundred and fifty against two hundred: about sixteen defenders and a
-// stream of attackers who fight in pairs along the trench, while the ones who break through come for Eirik.
+// The shield wall on the beach is the story's hundred and fifty against two hundred, as rank and file with the named
+// defenders in the front rank (systems/shieldwall.js): it is held through their rushes, and the ones who break through
+// come for Eirik. The gate and the later acts' smaller fights are the skirmish below: pairs along a line.
 import * as THREE from 'three';
 import { M, cyl, tint, at } from '../world/geo.js';
 import { makeShip } from '../world/props.js';
@@ -11,12 +12,15 @@ import { A3, JARN_LOOKS } from '../data/act3.js';
 import { FOES } from './champions.js';
 import { Knack } from '../systems/activities2.js';
 import { PHASES } from './act2.js';
+import { ShieldWall } from '../systems/shieldwall.js';
+import { WALL } from '../data/shieldwall.js';
 
 const DIGS = [[181, 84], [179, 114]], LINE = ['j0', 'arvid', 'hauk', 'v0', 'j1', 'v2', 'torvald', 'grjotgard', 'v3', 'j2', 'v5', 'j3', 'v7', 'j4', 'v9', 'j5'];
+const LX = 176.6; // where the wall stands, behind the stakes
 const TEN = ['hauk', 'grjotgard', 'v0', 'v2', 'v3', 'leif'], RIDGE = [[132, -112], [148, -118], [164, -116], [180, -110], [196, -104]], SHIPS = [[210, 98], [209, 110], [208, 122]];
 
 export class A3Battle {
-  constructor(game, core) { this.g = game; this.c = core; this.foes = []; this.jarn = []; this.arrows = []; this.fires = []; this.sk = null; this.t = 0; this.saved = []; }
+  constructor(game, core) { this.g = game; this.c = core; this.foes = []; this.jarn = []; this.arrows = []; this.fires = []; this.sk = null; this.wall = null; this.t = 0; this.saved = []; }
   get st() { return this.g.state; }
   get JT() { return this.g.world.main.jarnoy; }
   J(dx, dz) { return this.c.isle.J(dx, dz); }
@@ -74,7 +78,7 @@ export class A3Battle {
     for (const n of [...this.foes, ...this.jarn, this.ulf, this.arne]) n.visible = false;
     for (const f of this.fires) g.fx.removeFire(f); this.fires = [];
     for (const a of this.arrows) { a.m.visible = false; a.t = -1; }
-    this.sk = null; this.rain = null; this.charge = null; this.duel = null; this.archers = null; this.ulfShip.visible = false; this.boatT = 0; this.saved = []; this.grjotOn = false; this.climbing = false; this.pyreOn = false; this.salute = null;
+    this.endWall(); this.sk = null; this.rain = null; this.charge = null; this.duel = null; this.archers = null; this.ulfShip.visible = false; this.boatT = 0; this.saved = []; this.grjotOn = false; this.climbing = false; this.pyreOn = false; this.salute = null;
     if (phase !== 'jbattle' && phase !== 'jdawn' && g.combat.active && PHASES[phase] && PHASES[phase].at === 'jarnoy') g.combat.clear();
     this.c.act.glowTarget = phase === 'jbattle' ? 0.5 : phase === 'jnight' ? 0.4 : this.c.act.glowTarget;
     if (phase.startsWith('a3') || (PHASES[phase] && PHASES[phase].at === 'jarnoy' && phase !== 'jbattle' && phase !== 'jnight')) this.c.act.glowTarget = 0;
@@ -96,11 +100,12 @@ export class A3Battle {
     }
     if (name !== 'jbattle') return;
     P('ingrid', [...I.h(-3, 10.6), 1]); P('hroald', [...I.h(8, 6.4), 0.3]);
-    const line = (ids) => ids.forEach((id) => { const i = LINE.indexOf(id); arm(P(id, [178, 74 + i * 3.2, Math.PI / 2, 'guard']), id === 'torvald' ? 'maul' : id === 'arvid' ? 'sword' : 'spear'); });
-    P('astrid', [171, 96, Math.PI / 2]).h.hold('L', 'bow'); this.jarn.slice(6).forEach((n, i) => P(n.id, [170, 86 + i * 20, Math.PI / 2]).h.hold('L', 'bow'));
-    if (sh >= 7 && sh <= 9) { line(LINE); arm(P('leif', [178, 126, Math.PI / 2]), 'seax'); }
+    const line = (ids) => ids.forEach((id) => { const i = LINE.indexOf(id); arm(P(id, [LX, 74 + i * 3.2, Math.PI / 2, 'guard']), id === 'torvald' ? 'maul' : id === 'arvid' ? 'sword' : 'spear'); });
+    P('astrid', [166, 96, Math.PI / 2]).h.hold('L', 'bow'); this.jarn.slice(6).forEach((n, i) => P(n.id, [165, 86 + i * 20, Math.PI / 2]).h.hold('L', 'bow'));
+    if (sh >= 7 && sh <= 9) { line(LINE); arm(P('leif', [LX - 4, 126, Math.PI / 2]), 'seax'); this.formWall(LINE, sh === 9); }
     else { // the wall holds under Torvald; ten have gone back with Eirik
-      line(LINE.filter((id) => !TEN.includes(id)));
+      const rest = LINE.filter((id) => !TEN.includes(id));
+      line(rest); this.formWall(rest, true); if (lg === 99 || ul >= 0) this.wallTurns();
       if (sh >= 10 && sh < 99) TEN.forEach((id, i) => arm(P(id, [146 + i * 1.6, 30 + (i % 2) * 2, Math.PI]), id === 'leif' ? 'seax' : 'spear'));
       else { ['hauk', 'v0', 'v2', 'v3'].forEach((id, i) => arm(P(id, [144 + i * 3, 18, Math.PI]))); if (ul < 0) arm(P('leif', [156, 16, Math.PI]), 'seax'); c.npc('grjotgard').visible = false; }
     }
@@ -160,7 +165,7 @@ export class A3Battle {
   // ---- the skirmish: pairs along a line, and the ones who come for Eirik ---------------------------------
   /** Take an attacker from the pool (never one still standing) and put him at a point. */
   foe(x, z) {
-    const g = this.g, live = this.sk ? this.sk.live : [];
+    const g = this.g, live = this.sk ? this.sk.live : this.wall ? this.wall.live() : [];
     const R = this.R, pool = R.pool || this.foes;
     const e = pool.find((n) => !n.visible) || pool.find((n) => n.dead && !live.includes(n) && this.t - (n.diedAt || 0) > 9) || pool.find((n) => n.dead && !live.includes(n));
     if (!e) return null;
@@ -173,7 +178,7 @@ export class A3Battle {
   /** He has broken through: he comes for Eirik. */
   mine(e) { const g = this.g, R = this.R; e.mine = true; g.player.mortal = true; g.combat.add(e, { hp: R.hp, dmg: R.dmg, skill: R.skill, ...(R.opt || {}) }); }
   /** The numbers of the fight in hand: Act III's battle, unless a later act brought its own. */
-  get R() { return (this.sk && this.sk.R) || A3.battle; }
+  get R() { return (this.sk && this.sk.R) || (this.wall && this.wall.o.R) || A3.battle; }
   /** He is held by a defender (who strikes him when he closes), unless Eirik comes within reach. */
   pair(e, a) { const g = this.g, R = this.R; e.mine = false; a.busy = e; a.engaged = false; a.busyT = 0; g.combat.add(e, { hp: R.hp, dmg: R.dmg, skill: R.skill, duel: a, ...(R.opt || {}) }); }
   engage(a) {
@@ -207,6 +212,20 @@ export class A3Battle {
     }
     if (k.spawned >= k.budget && !k.live.length) { const f = k.done; this.sk = null; g.combat.clear(); f(); }
   }
+
+  // ---- the shield wall ----------------------------------------------------------------------------------------
+  /** A wall of rank and file (systems/shieldwall.js). The men of theirs who come through it are drawn from the pool and set on Eirik. */
+  startWall(o) { this.endWall(); this.wall = new ShieldWall(this.g, { ...o, spawn: (x, z) => this.foe(x, z), mine: (e) => this.mine(e) }); return this.wall; }
+  endWall() { if (this.wall) { this.wall.dispose(); this.wall = null; } }
+  /** Iron Shore: the two lines on the beach. Before the charge theirs stands off at the water; once Eirik has gone to the gate it fights on without him. */
+  formWall(ids, auto) {
+    const c = this.c, gap = WALL.gap / 2;
+    this.startWall({ a: this.J(LX + gap, 74), b: this.J(LX + gap, 122), face: Math.PI / 2, heroes: ids.map((id) => c.npc(id)), anchors: ['torvald'], from: SHIPS.map(([x, z]) => this.J(x - 4, z)),
+      mode: auto ? 'auto' : 'hold', wait: !auto, cfg: A3.wall, thin: auto ? [0.45, 0.4] : null,
+      done: () => this.g.quests.notify('event', 'a3wall'), fail: () => c.fail('The Shield Wall', 'The wall broke. Stand in the line, raise your guard when their horn sounds, and sound your own when they reel.') });
+  }
+  /** Arne has fallen: without his arrows their attack loses its shape, and the defenders begin pushing them back toward the beach. */
+  wallTurns() { if (this.wall) { this.wall.drift = 0.12; this.wall.driftTo = 9.5; } }
 
   // ---- the gate, the families, Grjotgard ---------------------------------------------------------------
   family() {
@@ -257,7 +276,7 @@ export class A3Battle {
     c.sub('Eirik corners him by the window. Arne goes for his last throwing knife. Eirik is faster. Raven-Feeder takes Arne Longshot in the chest, and the archer falls back through the window into the burning granary.', 9);
     g.after(1.3, () => { e.visible = false; g.audio.play('thud'); });
     g.after(9.2, () => g.ui.card('Arne Longshot', "The first of Håkon's seven champions is dead.", 5).then(() => c.fade(() => { p.teleport(tw.foot.x, tw.foot.z + 2, 0); p.equip('father_axe'); }, 0.8, 0.8))
-      .then(() => { c.sub('Below, the attackers see Arne fall. Without his arrows, their attack loses its shape. The defenders begin pushing them back toward the beach.', 8); g.quests.notify('event', 'a3arne'); }));
+      .then(() => { c.sub('Below, the attackers see Arne fall. Without his arrows, their attack loses its shape. The defenders begin pushing them back toward the beach.', 8); this.wallTurns(); g.quests.notify('event', 'a3arne'); }));
   }
 
   // ---- Ulf Two-Blades, and the boats ----------------------------------------------------------------------------
@@ -343,6 +362,7 @@ export class A3Battle {
       const g = this.g, c = this.c;
       c.setPhase('jbattle', r); this.stages('jbattle'); this.burn(true); g.player.mortal = true; c.hint(null); g.combat.clear();
       if (r) g.player.teleport(...this.J(174, 60), 0);
+      if (this.wall) this.wall.leave(TEN.map((id) => c.npc(id)));
       for (const id of TEN) { const n = c.npc(id); if (r) n.teleport(g.player.pos.x + 2 + Math.random() * 3, g.player.pos.z + 2 + Math.random() * 3, 0); n.setLoop(null); n.follow(g.player, { dist: 2.6 + Math.random() * 2 }); }
       if (!r) c.tell(['Then a Jarnøy man, a fisherman whose wife and children live outside the wall, hears screams from the outer houses, panics and opens the side gate to go to them. Enemy warriors pour through.',
         'Eirik has to choose: hold the shield wall at the beach, or go back and plug the gate and get the families out of the outer houses.', 'He leaves Torvald in command of the wall and takes ten men to the gate.'], 7.5);
@@ -416,15 +436,22 @@ export class A3Battle {
       if (ch.said === 1 && ch.t > 7.5) { ch.said = 2; const e = ch.men.find((x) => x.inDitch); if (e) { e.setLoop(null); e.goTo(...this.J(212, 110), { run: true, onArrive: (o) => { o.visible = false; } }); } }
       if ((ch.said === 2 && ch.t > 15) || ch.t > 40) { // then the rest come over the stakes and the real fighting begins
         this.charge = null; c.sub('Then the rest come over the stakes and the real fighting begins.', 5);
-        const W = A3.battle.wall; this.startSkirmish(LINE, SHIPS.map(([x, z]) => this.J(x - 12, z)), W.budget, W.atOnce, () => q.notify('event', 'a3wall'));
-        for (const e of ch.men) { e.inDitch = false; if (!e.visible || e.dead) continue; e.setLoop(null); const free = this.sk.allies.find((a) => !a.busy); if (free) this.pair(e, free); else this.mine(e); this.sk.live.push(e); this.sk.spawned++; } // the ones who climbed out
+        if (!this.wall) this.formWall(LINE, false);
+        this.wall.go(); this.wallT = 0; this.wallSaid = 0;
+        for (const e of ch.men) { e.inDitch = false; if (!e.visible || e.dead) continue; e.setLoop(null); e.goTo(...this.J(204, 100 + Math.random() * 16), { run: true, onArrive: (o) => { o.visible = false; } }); } // the ones who climbed out go back to their own line
       }
+    }
+    const wl = this.wall;
+    if (wl) {
+      wl.update(dt, g.mode === 'play');
+      if (q.at('q_shore', 'wall') && wl.phase !== 'wait' && g.mode === 'play') { this.wallT += dt;
+        if (wl.surges >= 2 && !wl.taught) { wl.taught = true; c.hint(null); } // the strip at the top says the rest
+        if (this.wallSaid === 0 && this.wallT > 16) { this.wallSaid = 1; c.sub('It is chaos and noise. The shield walls crash together. Torvald holds the center with his hammer, steady as a rock. Arvid fights like a madman to prove his father wrong.', 9); }
+        if (this.wallSaid === 1 && this.wallT > 44) { this.wallSaid = 2; this.burn(true); c.sub('A granary catches fire and the smoke covers everything.', 6); } }
     }
     const k = this.sk;
     if (k) {
       this.updateSkirmish(dt);
-      if (this.sk && q.at('q_shore', 'wall')) { if (k.said === 0 && k.T > 14) { k.said = 1; c.sub('It is chaos and noise. The shield walls crash together. Torvald holds the center with his hammer, steady as a rock. Arvid fights like a madman to prove his father wrong.', 9); }
-        if (k.said === 1 && k.T > 38) { k.said = 2; this.burn(true); c.sub('A granary catches fire and the smoke covers everything.', 6); } }
     }
     if (q.at('q_ulf', 'harbor') && this.ulf.visible) this.ulf.h.setLoop('guard');
     const d = this.duel;

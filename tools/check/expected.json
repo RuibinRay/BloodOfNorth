@@ -482,11 +482,11 @@
   },
   "iron shore gate": {
    "calls": 370,
-   "ktris": 800
+   "ktris": 1100
   },
   "black shore battle": {
    "calls": 420,
-   "ktris": 400
+   "ktris": 750
   },
   "fleet at sea": {
    "calls": 200,

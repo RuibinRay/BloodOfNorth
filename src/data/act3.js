@@ -14,6 +14,7 @@ export const A3 = {
   camp: { n: 5, hp: 50, dmg: 10, skill: 0.4 },                          // the raiders' camp in the ravine
   rain: { volleys: 3, every: 4.4, dmg: 14, arrows: 28, warn: 1.1 },     // Arne's archers on the ridge
   battle: { hp: 52, dmg: 10, skill: 0.4, wall: { budget: 22, atOnce: 3 }, gate: { n: 8, atOnce: 3 }, allyDmg: 7 },
+  wall: { surges: 6, grind: [7.5, 10.5], attrition: 2, cap: 2.2, lose: -3, reserve: [0, 60], approach: 31 }, // the shield wall on the beach, about a hundred and fifty against two hundred: six rushes to stand through, behind the stakes (the rest is data/shieldwall.js)
   arne: { hp: 200, dmg: 12 },
   ulf: { hp: 340, dmg: 17, secs: 55, wards: 2, hpAt: 0.55 },            // he cannot be beaten here: the fight ends on whichever of these comes first
   boats: { secs: 85, leif: 16 },
@@ -209,6 +210,6 @@ export const PRICE_LINES = [
 Object.assign(HINTS, {
   shieldsUp: 'Arrows from the ridge. Draw your axe ({weapon1}) and hold {block} to get under the shield when the volley comes.',
   ravenRidge: 'Press {raven}. Fly north over the ridge behind the town and press {interact} on each archer she sees.',
-  wallHold: 'Fight beside the wall. The men of Ravenhold and Jarnøy hold their own: take the ones who come for you.',
+  wallHold: 'Stand in the line. When their horn sounds, hold {block}: the men near you hold with you. When they reel, sound your horn ({horn}) and the line goes forward. Kill the ones who come through.',
   ulf: 'He is faster than anyone Eirik has faced. Guard, give ground, and stay alive.',
 });
