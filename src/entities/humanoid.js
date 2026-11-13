@@ -330,7 +330,7 @@ export class Humanoid {
     this.loop = null; this.action = null; this.items = { L: null, R: null }; this.onStep = null; this._ls = 0;
     this.fc = { ...MOODS.neutral }; this.mood = null; this.moodT = 0; this.baseMood = 'neutral'; this.blinkT = 1 + Math.random() * 4; this.blink = 0;
     this.gaze = { yaw: 0, pitch: 0 }; this.lookTarget = null; this.speech = null; this.jaw = 0; this.jawT = 0; this.breath = 1;
-    this.ik = { l: 0, r: 0 }; this.sway = 0;
+    this.ik = { l: 0, r: 0 }; this.sway = 0; this.bank = 0; this.lean = 0; this.seed = Math.random() * 6.283;
     this.applyPose();
   }
 
@@ -489,6 +489,12 @@ export class Humanoid {
     this.t += dt;
     const p = this.tgt, sp = this.speed / this.scale;
     for (const k of POSE_KEYS) p[k] = REST[k] || 0;
+    { // how hard he is turning and how fast he is gaining or losing speed, from what whoever moves him does: he banks into a turn and leans into a start
+      const yaw = this.root.rotation.y, turn = dt > 0 ? clamp(angleDiff(this._yaw ?? yaw, yaw) / dt, -6, 6) : 0, acc = dt > 0 ? clamp((sp - (this._sp ?? sp)) / dt, -12, 12) : 0;
+      this._yaw = yaw; this._sp = sp;
+      this.bank = damp(this.bank, clamp(turn * 0.045, -0.2, 0.2) * Math.min(1, sp / 2.5), 6, dt);
+      this.lean = damp(this.lean, clamp(acc * 0.022, -0.12, 0.16), 5, dt);
+    }
     if (sp > 0.12) this.phase += dt * (4.4 + sp * 1.05) * (this.crouch ? 0.8 : 1);
     const s = Math.sin(this.phase), c = Math.cos(this.phase);
     if (sp > 0.3 && Math.sign(s) !== this._ls && this.onStep) this.onStep();
@@ -500,14 +506,32 @@ export class Humanoid {
       p.knL = 1.85 + Math.max(0, c) * 0.3 * a; p.knR = 1.85 + Math.max(0, -c) * 0.3 * a;
       p.slx = -0.35 + s * 0.22 * a; p.srx = -0.35 - s * 0.22 * a; p.elL = p.elR = -0.9;
     } else if (sp > 0.12) {
-      const A = clamp(0.26 + sp * 0.16, 0.3, 1.0), run = smoothstep(2.4, 4.6, sp);
-      p.llx = -s * A; p.lrx = s * A;
-      p.knL = 0.1 + Math.max(0, c) * A * 1.35; p.knR = 0.1 + Math.max(0, -c) * A * 1.35;
-      p.slx = s * A * 0.75; p.srx = -s * A * 0.75; p.elL = p.elR = -(0.2 + run * 0.95);
-      p.hy = Math.cos(this.phase * 2) * 0.022 * A - 0.01;
-      p.crx = 0.05 + run * 0.2; p.cry = s * 0.12 * A; p.hry = -s * 0.07 * A;
+      // Walking and running. One leg swings while the other stands: the swinging knee folds and the foot is carried
+      // through, the hips turn with the stride and the shoulders against it, each arm swings with the far leg and
+      // bends as it comes forward, and the head stays facing the way he is going. Running, he leans into it, the
+      // stride reaches further in front than behind, and he rises off the ground between footfalls.
+      const A = clamp(0.26 + sp * 0.16, 0.3, 1.0), run = smoothstep(2.4, 4.6, sp), walk = 1 - run;
+      const sw = Math.max(0, c), swR = Math.max(0, -c);                  // how far through its swing each leg is (left, right)
+      p.llx = -s * A - run * 0.14; p.lrx = s * A - run * 0.14;
+      p.knL = 0.08 + sw * A * (1.3 + run * 0.75) + Math.max(0, -s) * 0.1 * walk;   // folded in the swing; a little give as the weight comes onto it
+      p.knR = 0.08 + swR * A * (1.3 + run * 0.75) + Math.max(0, s) * 0.1 * walk;
+      p.llz = 0.03 + sw * 0.03; p.lrz = -0.03 - swR * 0.03;              // the swinging foot clears the standing one
+      p.hy = Math.cos(this.phase * 2) * (0.02 + run * 0.035) * A - 0.012 - run * 0.03;
+      p.hry = -s * (0.09 + run * 0.05) * A; p.hrx = run * 0.06;
+      p.crx = 0.05 + run * 0.24 + this.lean; p.cry = s * (0.13 + run * 0.1) * A; p.crz = -c * 0.03 * walk - this.bank;
+      p.nry = -p.cry * 0.75 - p.hry * 0.5 + this.bank * 0.9; p.nrx = -(run * 0.16 + this.lean * 0.6);   // the head does not swing with the shoulders, and looks into a turn
+      const armA = A * (0.7 + run * 0.35);
+      p.slx = s * armA - run * 0.1; p.srx = -s * armA - run * 0.1;
+      p.elL = -(0.16 + run * 1.05) - Math.max(0, -s) * (0.3 + run * 0.25) * A; p.elR = -(0.16 + run * 1.05) - Math.max(0, s) * (0.3 + run * 0.25) * A;
+      p.slz = REST.slz + run * 0.1; p.srz = REST.srz - run * 0.1;
     } else {
-      p.crx = 0.02 + Math.sin(this.t * 1.5) * 0.014; p.nry = Math.sin(this.t * 0.37) * 0.13; p.nrx = Math.sin(this.t * 0.23) * 0.04;
+      // Standing: his weight goes from one leg to the other every few seconds (the hips swing over the standing foot,
+      // the other knee eases, the shoulders settle the other way), he breathes, and now and then looks about him.
+      const w = Math.sin(this.t * 0.42 + this.seed), e = Math.sin(this.t * 0.42 + this.seed + 0.9), k = 0.5 + 0.5 * Math.sin(this.t * 0.11 + this.seed * 3);
+      p.crx = 0.02 + Math.sin(this.t * 1.5) * 0.014; p.nry = Math.sin(this.t * 0.37) * 0.13 + Math.sin(this.t * 0.13 + this.seed) * 0.12 * k; p.nrx = Math.sin(this.t * 0.23) * 0.04;
+      p.hry = w * 0.05; p.hy = -Math.abs(w) * 0.008; p.crz = -e * 0.022; p.cry = -w * 0.03;
+      p.knL = Math.max(0, w) * 0.16; p.knR = Math.max(0, -w) * 0.16; p.llz = 0.035 + Math.max(0, w) * 0.03; p.lrz = -0.035 - Math.max(0, -w) * 0.03;
+      p.slx = Math.sin(this.t * 0.9 + this.seed) * 0.03; p.srx = -Math.sin(this.t * 0.9 + this.seed) * 0.03; p.elL = REST.elL - 0.04 - Math.max(0, e) * 0.06; p.elR = REST.elR - 0.04 - Math.max(0, -e) * 0.06;
     }
     if (this.loop && LOOPS[this.loop]) LOOPS[this.loop](p, this.t, this);
     this.plantFeet(p, dt);

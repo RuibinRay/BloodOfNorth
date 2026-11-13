@@ -11,7 +11,22 @@ const mesh = (geos) => { const m = new THREE.Mesh(merge(geos.map((g) => (g.attri
 /** A leg in two pieces: the game swings the whole leg from the hip (leg.rotation.x, forward when it is negative), and
  *  the lower piece folds at the knee by itself as the leg comes forward, so that a stride lifts the foot instead of
  *  swinging a stick. upper, lower: the pieces, built hanging from the hip; kneeY: how far down the knee is. */
-function jointed(leg, upper, lower, kneeY, bend = 1.0) {
+const now = () => performance.now() / 1000;
+/** Pieces that move together about a point (a head on its neck, a tail on its root): a group at the pivot holding them. */
+function pivoted(parts, px, py, pz) { const grp = new THREE.Group(); grp.position.set(px, py, pz); grp.add(mesh(parts.map((g) => at(g, -px, -py, -pz)))); return grp; }
+/** Life in an animal that nothing else has to drive: its head nods with its stride and looks about a little when it
+ *  stands, and its tail swings. Read when the animal is drawn. */
+function alive(g, head, tail, o = {}) {
+  const seed = Math.random() * 6.283, legs = g.userData.legs;
+  const tick = () => {
+    const t = now(), stride = legs && legs[0] ? legs[0].rotation.x : 0, going = Math.min(1, Math.abs(stride) * 2.5);
+    if (head) { head.rotation.x = Math.abs(stride) * (o.nod ?? 0.16) + Math.sin(t * 0.5 + seed) * 0.035 * (1 - going); head.rotation.y = Math.sin(t * 0.23 + seed * 2) * (o.look ?? 0.22) * (1 - going); }
+    if (tail) { tail.rotation.y = Math.sin(t * (o.wag ?? 2.2) + seed) * (o.swing ?? 0.3) * (1 - going * 0.6); tail.rotation.x = -going * (o.lift ?? 0.35); }
+  };
+  (head || tail).children[0].onBeforeRender = tick;
+  return g;
+}
+export function jointed(leg, upper, lower, kneeY, bend = 1.0) {
   const knee = new THREE.Group(); knee.position.y = kneeY;
   const lo = mesh(lower.map((g) => at(g, 0, -kneeY, 0))), up = mesh(upper);
   knee.add(lo); leg.add(up, knee);
@@ -49,7 +64,7 @@ function deerModel(stag) {
   g.userData.legs = [];
   for (const [x, z] of [[0.13, 0.36], [-0.13, 0.36], [0.13, -0.38], [-0.13, -0.38]]) {
     const leg = new THREE.Group(); leg.position.set(x, 0.86, z);
-    leg.add(mesh([coat(tint(at(capsule(0.045, 0.72, 5), 0, -0.4, 0), 0x6e5238, 0.1, 12))]));
+    jointed(leg, [coat(tint(at(capsule(0.06, 0.26, 5), 0, -0.17, 0), fur, 0.1, 12))], [coat(tint(at(capsule(0.03, 0.36, 5), 0, -0.6, 0), 0x6e5238, 0.1, 13)), tint(at(box(0.06, 0.05, 0.08), 0, -0.835, 0.01), 0x1c1612, 0.05, 14)], -0.37, 1.1);
     g.add(leg); g.userData.legs.push(leg);
   }
   return g;
@@ -62,21 +77,25 @@ export function wolfModel(fur = 0x6e6e72, low = 0x5c5c60) {
     pelt(tint(at(sphere(0.22, 8, 6), 0, 0.61, 0.27, 0, 0, 0, 0.95, 1.08, 1.0), pale(0x747478), 0.14, 11)),   // a deep chest
     pelt(tint(at(sphere(0.2, 8, 6), 0, 0.6, -0.3, 0, 0, 0, 0.95, 1.0, 1.05), fur, 0.14, 12)),          // and lean haunches
     pelt(tint(at(sphere(0.2, 7, 5), 0, 0.7, 0.34, 0.3, 0, 0, 1.0, 1.1, 0.9), pale(0x77777b), 0.14, 10)),     // the ruff of his neck
+  ]));
+  const head = pivoted([
     pelt(tint(at(sphere(0.15, 7, 6), 0, 0.8, 0.52, 0, 0, 0, 0.9, 0.92, 1.15), pale(0x7a7a7e), 0.1, 2)),
     coat(tint(at(cone(0.075, 0.26, 6), 0, 0.77, 0.76, Math.PI / 2, 0, 0, 1, 1, 0.8), wild ? 0x55555a : low, 0.08, 3)), // the muzzle
     coat(tint(at(box(0.07, 0.022, 0.18), 0, 0.715, 0.72, 0.12, 0, 0), 0x3c3c40, 0.05, 13)),             // the lower jaw, a little open
     tint(at(sphere(0.022, 5, 4), 0, 0.775, 0.885), 0x141416, 0, 14),                                      // the nose
     pelt(tint(at(cone(0.05, 0.15, 4), 0.085, 0.97, 0.47, -0.15, 0, -0.15), fur, 0.05, 4)), pelt(tint(at(cone(0.05, 0.15, 4), -0.085, 0.97, 0.47, -0.15, 0, 0.15), fur, 0.05, 5)),
-    pelt(tint(at(capsule(0.075, 0.42, 6), 0, 0.5, -0.64, -0.9, 0, 0), low, 0.14, 6)),                     // a brush of a tail
     tint(at(sphere(0.016, 4, 3), 0.07, 0.85, 0.63), 0xd8b040, 0, 7), tint(at(sphere(0.016, 4, 3), -0.07, 0.85, 0.63), 0xd8b040, 0, 8),
-  ]));
+  ], 0, 0.72, 0.38), tail = pivoted([
+    pelt(tint(at(capsule(0.075, 0.42, 6), 0, 0.5, -0.64, -0.9, 0, 0), low, 0.14, 6)),                     // a brush of a tail
+  ], 0, 0.62, -0.42);
+  g.add(head, tail);
   g.userData.legs = [];
   for (const [x, z] of [[0.11, 0.32], [-0.11, 0.32], [0.11, -0.34], [-0.11, -0.34]]) {
     const leg = new THREE.Group(); leg.position.set(x, 0.52, z);
     jointed(leg, [pelt(tint(at(capsule(0.056, 0.17, 5), 0, -0.1, 0), fur, 0.12, 9))], [coat(tint(at(capsule(0.033, 0.22, 5), 0, -0.345, 0.01), low, 0.1, 15)), coat(tint(at(box(0.07, 0.04, 0.1), 0, -0.5, 0.025), 0x48484c, 0.05, 16))], -0.22, 1.2); // thigh, shank, paw
     g.add(leg); g.userData.legs.push(leg);
   }
-  return g;
+  return alive(g, head, tail, { nod: 0.2, look: 0.3, wag: 2.6, swing: 0.32, lift: 0.5 });
 }
 /** hide, dark: the colour of his coat, and of his mane, tail and lower legs. */
 export function horseModel(hide = 0x7a5636, dark = 0x2e2018) {
@@ -85,35 +104,45 @@ export function horseModel(hide = 0x7a5636, dark = 0x2e2018) {
     coat(tint(at(capsule(0.3, 0.96, 8), 0, 1.16, 0, Math.PI / 2, 0, 0, 1, 1, 1.05), hide, 0.1, 1)),
     coat(tint(at(sphere(0.34, 9, 7), 0, 1.2, 0.5, 0, 0, 0, 0.98, 1.06, 0.92), hide, 0.1, 10)),              // the chest
     coat(tint(at(sphere(0.36, 9, 7), 0, 1.22, -0.5, 0, 0, 0, 1.0, 1.04, 0.96), hide, 0.1, 11)),             // the quarters
+    tint(at(box(0.56, 0.05, 0.62), 0, 1.5, -0.05), 0x7a2a22, 0.1, 16), tint(at(box(0.44, 0.1, 0.5), 0, 1.55, -0.05), 0x4a3424, 0.1, 8), // a blanket, and the saddle on it
+  ]));
+  const head = pivoted([
     coat(tint(at(capsule(0.17, 0.56, 7), 0, 1.6, 0.74, 0.72, 0, 0, 0.85, 1, 1.15), hide, 0.1, 2)),          // the neck, deeper than it is wide
     coat(tint(at(sphere(0.15, 8, 6), 0, 1.97, 1.08, 0.55, 0, 0, 0.8, 0.9, 1.75), hide, 0.08, 3)),
     coat(tint(at(sphere(0.1, 7, 5), 0, 1.84, 1.29, 0.55, 0, 0, 0.85, 0.85, 1.2), hide === 0x7a5636 ? 0x5a3e28 : dark, 0.08, 12)), // the muzzle
     mane(tint(at(box(0.07, 0.62, 0.1), 0, 1.742, 0.579, 0.72, 0, 0), dark, 0.16, 4)),                         // the mane, lying along the crest of the neck
     mane(tint(at(box(0.07, 0.16, 0.12), 0, 2.07, 0.99, 0.9, 0, 0), dark, 0.16, 13)),                        // the forelock
-    mane(tint(at(capsule(0.075, 0.66, 6), 0, 0.92, -0.9, -0.22, 0, 0), dark, 0.16, 5)),                     // the tail, hanging
     tint(at(cone(0.04, 0.13, 4), 0.08, 2.12, 0.98), hide, 0.05, 6), tint(at(cone(0.04, 0.13, 4), -0.08, 2.12, 0.98), hide, 0.05, 7),
     tint(at(sphere(0.022, 5, 4), 0.105, 2.0, 1.1), 0x120c08, 0, 14), tint(at(sphere(0.022, 5, 4), -0.105, 2.0, 1.1), 0x120c08, 0, 15),
-    tint(at(box(0.56, 0.05, 0.62), 0, 1.5, -0.05), 0x7a2a22, 0.1, 16), tint(at(box(0.44, 0.1, 0.5), 0, 1.55, -0.05), 0x4a3424, 0.1, 8), // a blanket, and the saddle on it
-  ]));
+  ], 0, 1.36, 0.5), tail = pivoted([
+    mane(tint(at(capsule(0.075, 0.66, 6), 0, 0.92, -0.9, -0.22, 0, 0), dark, 0.16, 5)),                     // the tail, hanging
+  ], 0, 1.28, -0.74);
+  g.add(head, tail);
   g.userData.legs = [];
   for (const [x, z] of [[0.17, 0.52], [-0.17, 0.52], [0.17, -0.55], [-0.17, -0.55]]) {
     const leg = new THREE.Group(); leg.position.set(x, 1.0, z);
     jointed(leg, [coat(tint(at(capsule(0.09, 0.34, 6), 0, -0.2, 0), hide, 0.1, 9))], [coat(tint(at(capsule(0.046, 0.4, 5), 0, -0.68, 0), dark, 0.1, 17)), tint(at(cyl(0.06, 0.072, 0.09, 6), 0, -0.955, 0.01), 0x16110c, 0.05, 18)], -0.45, 1.1); // thigh, cannon, hoof
     g.add(leg); g.userData.legs.push(leg);
   }
-  return g;
+  return alive(g, head, tail, { nod: 0.14, look: 0.12, wag: 1.1, swing: 0.22, lift: 0.3 });
 }
 function sheepModel() {
   const g = new THREE.Group();
   const parts = [fleece(tint(at(sphere(0.34, 8, 6), 0, 0.55, 0, 0, 0, 0, 0.9, 0.85, 1.3), 0xd8d2c2, 0.14, 1)), coat(tint(at(sphere(0.12, 6, 5), 0, 0.68, 0.45, 0, 0, 0, 0.8, 0.9, 1.3), 0x3a3028, 0.1, 2))];
-  for (const [x, z] of [[0.14, 0.25], [-0.14, 0.25], [0.14, -0.25], [-0.14, -0.25]]) parts.push(tint(at(cyl(0.035, 0.035, 0.36, 4), x, 0.18, z), 0x3a3028, 0.05, 3));
   g.add(mesh(parts));
+  g.userData.legs = [];
+  for (const [x, z] of [[0.14, 0.25], [-0.14, 0.25], [0.14, -0.25], [-0.14, -0.25]]) {
+    const leg = new THREE.Group(); leg.position.set(x, 0.38, z);
+    jointed(leg, [coat(tint(at(cyl(0.04, 0.035, 0.2, 5), 0, -0.1, 0), 0x3a3028, 0.05, 3))], [coat(tint(at(cyl(0.03, 0.03, 0.18, 5), 0, -0.29, 0), 0x3a3028, 0.05, 4))], -0.2, 1.0);
+    g.add(leg); g.userData.legs.push(leg);
+  }
   return g;
 }
-/** A wing seen from above: broad at the body, narrowing to three spread fingers at the tip. side: +1 or -1. */
-function wingGeo(side) {
-  const pts = [[0.04, 0.09], [0.3, 0.11], [0.5, 0.07], [0.58, 0.03], [0.5, 0.0], [0.57, -0.04], [0.48, -0.05], [0.53, -0.1], [0.42, -0.1], [0.25, -0.14], [0.04, -0.12]];
-  const sh = new THREE.Shape(pts.map(([x, z]) => new THREE.Vector2(side * x, -z)));
+/** A wing seen from above, in two pieces: broad at the body, and a hand that narrows to three spread fingers.
+ *  side: +1 or -1. The hand hangs from the wrist (x = 0.3), so that it can bend further than the arm does. */
+function wingGeo(side, hand) {
+  const pts = hand ? [[0.3, 0.11], [0.5, 0.07], [0.58, 0.03], [0.5, 0.0], [0.57, -0.04], [0.48, -0.05], [0.53, -0.1], [0.42, -0.1], [0.3, -0.128]] : [[0.04, 0.09], [0.3, 0.11], [0.3, -0.128], [0.25, -0.14], [0.04, -0.12]];
+  const sh = new THREE.Shape(pts.map(([x, z]) => new THREE.Vector2(side * (x - (hand ? 0.3 : 0)), -z)));
   return at(new THREE.ExtrudeGeometry(sh, { depth: 0.012, bevelEnabled: false }), 0, -0.006, 0, -Math.PI / 2, 0, 0); // flat in the air, a finger thick
 }
 export function ravenModel(col = 0x14141a, beak = 0x2a2a30) {
@@ -128,9 +157,11 @@ export function ravenModel(col = 0x14141a, beak = 0x2a2a30) {
   g.userData.wings = [];
   for (const s of [-1, 1]) {
     const w = new THREE.Group();
-    const wm = mesh([feather(tint(wingGeo(s), col, 0.15, 4))]);
-    wm.onBeforeRender = () => { w.scale.x = Math.abs(w.rotation.z) > 1.1 ? 0.42 : 1; }; // a wing turned right down is folded: it lies short against his side
-    w.add(wm);
+    const wm = mesh([feather(tint(wingGeo(s, false), col, 0.15, 4))]), hand = new THREE.Group(); hand.position.x = s * 0.3;
+    hand.add(mesh([feather(tint(wingGeo(s, true), col, 0.15, 5))]));
+    // a wing turned right down is folded and lies short against his side; beating, the hand goes further than the arm, so the wing curls at the top and the bottom of the stroke
+    wm.onBeforeRender = () => { const f = Math.abs(w.rotation.z) > 1.1; w.scale.x = f ? 0.42 : 1; hand.rotation.z = f ? 0 : w.rotation.z * 0.6; };
+    w.add(wm, hand);
     g.add(w); g.userData.wings.push(w);
   }
   return g;

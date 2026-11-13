@@ -50,7 +50,7 @@ export class SeaWar {
     this.built = true;
     const g = this.g, s = this.ship, rec = this.open.fleet.rec;
     if (rec && rec.hull != null) s.hull = rec.hull;
-    this.darkSail = M.sail.clone(); this.darkSail.color.set(0x565a66);
+    this.darkSail = M.sail.clone(); this.darkSail.color.set(0x565a66); this.darkSail.onBeforeCompile = M.sail.onBeforeCompile; this.darkSail.customProgramCacheKey = M.sail.customProgramCacheKey; // a copy does not carry the wind with it
     const ag = new THREE.CylinderGeometry(0.016, 0.016, 0.8, 4); ag.rotateX(Math.PI / 2);
     const am = new THREE.MeshBasicMaterial({ color: 0x2a2018 });
     for (let i = 0; i < 28; i++) { const mesh = new THREE.Mesh(ag, am); mesh.visible = false; g.scene.add(mesh); this.arrows.push({ mesh, on: false, a: new THREE.Vector3(), b: new THREE.Vector3(), t: 0, T: 1, land: null }); }

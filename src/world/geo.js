@@ -251,6 +251,22 @@ export const STUFF = { wool: [0, 1, 0.16], fur: [1, 1, 0.4], mail: [2, 1, 0.22],
   pelt: [0, 1, 0.34], coat: [1, 1, 0.3], feather: [2, 1, 0.2], mane: [1, 0, 0.22], fleece: [2, 0, 0.3],
   // TEX.gear, for weapons and tools (M.gear): a haft's wood, a wrapped grip, steel (the one square that shines) / plain
   wood: [0, 1, 0.3], wrap: [1, 1, 0.1], steel: [2, 1, 0.22] };
+/** Cloth that moves in the wind. hung: it hangs from its top edge (a banner), which stays still; otherwise it is held
+ *  at both sides and bellies in the middle (a sail). It needs a few rows and columns of vertices to bend at. */
+function flutter(mat, amp, hung) {
+  mat.onBeforeCompile = (sh) => {
+    sh.uniforms.uTime = shared.uTime; sh.uniforms.uWind = shared.uWind;
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nuniform float uTime;\nuniform float uWind;')
+      .replace('#include <begin_vertex>', `#include <begin_vertex>
+        float fPh = position.x * 1.7 + position.z * 1.3;
+        float fK = ${hung ? '(1.0 - uv.y) * (1.0 - uv.y)' : 'sin(uv.x * 3.14159) * (0.45 + 0.55 * (1.0 - uv.y))'};
+        float fW = sin(uTime * 2.3 + fPh + uv.y * ${hung ? '5.0' : '2.0'}) + 0.45 * sin(uTime * 4.1 + fPh * 1.7 + uv.x * 9.0);
+        transformed += normal * fW * fK * ${amp.toFixed(4)} * (0.35 + uWind);`);
+  };
+  mat.customProgramCacheKey = () => 'flutter' + (hung ? 1 : 0) + amp;
+  return mat;
+}
 /** metal: whether the top right square of this material's sheet is metal (mail on TEX.figure, steel on TEX.gear). */
 function figureMat(mat, metal = true) {
   mat.color.setScalar(1 / 0.6105); // the sheet is a light grey (205) so that it can lighten as well as darken: this gives the colours back their strength
@@ -311,7 +327,7 @@ export function initMaterials() {
   }));
   TEX.banners = sheet(512, 384, (g) => { g.fillStyle = rgb(110, 36, 30); g.fillRect(0, 0, 256, 384); g.fillStyle = rgb(22, 22, 26); g.fillRect(256, 0, 256, 384); });
   for (const k of ['hull', 'door', 'carved', 'shields', 'sail', 'banners']) paint(TEX[k], W3[k]);
-  M.banner = std({ map: TEX.banners, roughness: 1, side: THREE.DoubleSide });
+  M.banner = flutter(std({ map: TEX.banners, roughness: 1, side: THREE.DoubleSide }), 0.11, true);
   M.hull = std({ map: TEX.hull, roughness: 0.85, side: THREE.DoubleSide });
   M.door = std({ map: TEX.door, roughness: 0.9 });
   M.carved = patch(std({ map: TEX.carved, color: 0xc4a07c, roughness: 0.9 })); // the picture is grey with age: warmed toward the timber beside it
@@ -326,7 +342,7 @@ export function initMaterials() {
   M.iron = std({ color: 0x565a60, roughness: 0.42, metalness: 0.85 });
   M.dark = std({ color: 0x0c0a08, roughness: 1 });
   M.rune = patch(std({ map: TEX.rune, roughness: 0.95 }), { snow: 0.6 });
-  M.sail = std({ map: TEX.sail, roughness: 1, side: THREE.DoubleSide });
+  M.sail = flutter(std({ map: TEX.sail, roughness: 1, side: THREE.DoubleSide }), 0.16, false);
   M.ember = std({ color: 0x331008, emissive: 0xff5a14, emissiveIntensity: 1.6, roughness: 1 });
   // vertex-coloured: one material for all characters, one for props/animals/items
   M.char = figureMat(std({ vertexColors: true, roughness: 0.82, side: THREE.DoubleSide, map: TEX.figure }));
@@ -397,7 +413,7 @@ export function shieldGeo(r, th, design = 0, seg = 16) {
 }
 /** A hanging banner (M.banner): 'raven', the crowned raven of King Halfdan, or 'wolf', Håkon's. Stands in the XY plane about its middle. */
 export function bannerGeo(w, h, which) {
-  const g = new THREE.PlaneGeometry(w, h), uv = g.attributes.uv, u0 = which === 'wolf' ? 0.5 : 0;
+  const g = new THREE.PlaneGeometry(w, h, 4, 6), uv = g.attributes.uv, u0 = which === 'wolf' ? 0.5 : 0; // rows and columns to wave with
   for (let i = 0; i < uv.count; i++) uv.setX(i, u0 + uv.getX(i) * 0.5);
   return g;
 }

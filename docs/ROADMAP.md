@@ -33,9 +33,10 @@ playtests; none are claimed until then.
 | 0.26 | **Halls and towns** | Halls built as halls (higher walls, a wide door under a carved porch, shields, a smoke louver, banners); the Hall of Wolves with a gable, a louvered roof, great doors, wolf banners and the old crowned-raven banners the story names; gates in the palisades of Ravenhold and Svartøy | Seen in screenshots of four halls, two gates and the Hall of Wolves inside and out; all 67 chapters pass the check | Built (by screenshot and script, not played) |
 | 0.27 | **Shield walls merged** | The branch `real-shield-walls` (Iron Shore and the Black Shore as rank and file, about 150 a side) merged with 0.23 to 0.26; the rank and file given the weave, leather, hair and painted shields of the jointed figures | Merged without conflicts; all 67 chapters pass the check; both walls looked at in screenshots | Built (by screenshot and script, not played) |
 | 0.28 | **Animals and weapons** | Pelt, coat, fleece, feathers and manes on the animals; the wolf, the horse and the ravens rebuilt with real chests, legs, heads and wings; steel, wood and wrapped grips on weapons and tools | Seen in a line-up of the animals and five armed men; all 67 chapters pass the check | Built (by screenshot and script, not played) |
-| 0.29 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: the raid, Kettil, the shore battle, Arne, Ulf, the deck fights, Rurik, the tannery yard, Skarde, Eydis, Bersi and all of Act VII above all, then the champions, the dive, riding, rowing and sailing feel, aim, stealth, camera | Three people finish everything built without help | Next |
-| 0.30 | **3D models in** | A source of models (Higgsfield's API has none); GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
-| 0.31 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or keep growing the web build | A written decision | Planned |
+| 0.29 | **Animation pass** | People: a new walk, run and way of standing, a lean into starts and stops and a bank into turns; animals: knees all round, nodding heads and swinging tails for the wolf and the horse, a wing that bends for the ravens; rank and file who step; banners and sails that move in the wind | Seen in film strips of a walk, a run, standing and a turn, in rows of animals mid-stride and in both battle lines; all 67 chapters and the four walls pass the check | Built (by picture and script, not played) |
+| 0.30 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: the raid, Kettil, the shore battle, Arne, Ulf, the deck fights, Rurik, the tannery yard, Skarde, Eydis, Bersi and all of Act VII above all, then the champions, the dive, riding, rowing and sailing feel, aim, stealth, camera | Three people finish everything built without help | Next |
+| 0.31 | **3D models in** | A source of models (Higgsfield's API has none); GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
+| 0.32 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or keep growing the web build | A written decision | Planned |
 | 1.0 | **Polish** | Side missions, minigames, voiced dialogue, recorded music, performance targets (60 fps at 1440p on suitable hardware as an objective), accessibility pass | Full playthrough signed off | Planned |
 
 ## Immediate next steps
@@ -45,7 +46,15 @@ playtests; none are claimed until then.
 3. Look at the world and the people in play and say what to change (the trees, the shore, the clothes, any figure that does not look like its portrait, the ships, the halls and gates, the animals); $4.99 of the approved $10 is unspent. Consider making a new Higgsfield key, since the pair was pasted into a chat.
 4. Decide where the project lives: a PC that can run UE5, or continue in the browser for the epilogue and the polish.
 
-## Known gaps in 0.28
+## Known gaps in 0.29
+
+- **Movement was judged from still pictures.** A film strip shows eight moments of a stride side by side; it cannot show whether the walk feels right at speed, whether the bank into a turn is too much, or whether a head that nods is charming or silly. Nobody has watched any of it run, and a person has not seen it at all.
+- **What was not touched**: the blows, guards, bow, dodges and falls (worked on in 0.19), faces and speech, crouching, swimming, the hare's hop, fish, and the ships' own motion on the water.
+- **The lean, the bank, the nod and the tail are read from what moves the figure**, not told to it: someone teleported or turned on the spot by a script banks for a moment as if he had turned.
+- **A hound and a wolf wag alike**, and every horse swishes its tail the same way.
+- **The rank and file step in place when the line creeps**: their legs follow how far the line moves, not their own feet on the ground.
+
+## Known gaps carried from 0.28
 
 - **The animals were looked at in three moments of a stride set by hand, not running in the game.** The wolf's and the horse's legs now have a knee: the game still swings the whole leg from the hip, and the lower piece folds by itself as the leg comes forward. A raven whose wings are turned right down (how the game says "perched") now holds them short against its sides. I looked at a stride forward, standing and a stride back, at wings up, down and folded, and at the wolf running in its own chapter (it covered 3.4 m with its knees folding to 0.8 of a radian); nobody has ridden the horse or watched the ravens circle since, and a person has watched none of it.
 - **Deer, hares, sheep, the goat, the pigs and the cow were covered, not rebuilt**: the same shapes as before under a coat or a fleece.
