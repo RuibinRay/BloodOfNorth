@@ -23,7 +23,8 @@ ground, comes up from the rear or runs · **cloth**: banners wave from their pol
 rim, the weapon drawn back) instead of holding it out to one side; the guard stance breathes and shifts with one foot
 forward; a roll turns him right over, forwards or backwards as he goes; the sidestep is a hop off the line; a man
 struck down buckles and lands and settles, and one cut down in a fight may fall forward onto his knees and his face,
-or half turned, and lies as he fell.
+or half turned, and lies as he fell. **Merged**: the two branches other sessions had made from 0.22 (`act7-fight-tuning`,
+`story-hints-stay`) are in, and `main` is level with all of it.
 
 **In 0.28.** Animals and weapons. **Animals** are covered in something: a wolf has a shaggy pelt, a horse a
 short coat and a mane and tail of hair, a sheep a curly fleece, deer and hares a coat, ravens feathers. Three were
@@ -50,8 +51,7 @@ fighters in the front rank, instead of skirmishes in pairs (see "Real shield wal
 [docs/ROADMAP.md](docs/ROADMAP.md) for how they work and what is not known about them). **The rank and file now wear
 what everyone else wears**: the same weave, leather and hair as the jointed figures beside them, and the four painted
 shields in place of flat quartered discs, ours in red and blue, Håkon's in black and yellow and bare boards, so the
-two lines can be told apart at a glance. Two branches from other sessions are still not merged: `act7-fight-tuning`
-and `story-hints-stay`.
+two lines can be told apart at a glance.
 
 **In 0.26.** Halls and towns. **A hall is now built as a hall**: any longhouse wide and long enough (the
 kings' halls on Jarnøy, Solvik and Myrholm, the hall at Bjornstead and Ravenhold, the elder's hall in Hrafnvik, the
