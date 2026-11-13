@@ -317,7 +317,7 @@ export class A3Battle {
 
   // =====================================================================================
   steps = {
-    'q_shore.trench'(r) { const c = this.c; c.setPhase('jprep', r); this.stages('jprep'); if (!r) c.sub('Eirik and Torvald spend six days preparing.', 5); },
+    'q_shore.trench'(r) { const c = this.c; c.setPhase('jprep', r); this.stages('jprep'); if (r && c.isle.away()) this.g.player.teleport(...this.J(170, 86), 0.3); if (!r) c.sub('Eirik and Torvald spend six days preparing.', 5); },
     'q_shore.leif'(r) { const c = this.c; c.setPhase('jprep', r); this.stages('jprep'); c.isle.post('leif', [186, 110, [190, 116]]); c.isle.post('ingrid', [187.6, 113, [186, 110]]); },
     'q_shore.ditch'(r) { this.c.setPhase('jprep', r); this.stages('jprep'); },
     'q_shore.dawn'(r) { const c = this.c; c.setPhase('jprep', r); this.stages('jprep'); if (!r) this.g.after(8.5, () => c.sub("Astrid's scouts report about two hundred, led by two champions: Arne Longshot, the archer, and Ulf Two-Blades, who has never been beaten in a duel.", 9)); },

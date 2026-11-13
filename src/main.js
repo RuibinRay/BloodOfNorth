@@ -21,6 +21,8 @@ import { Quests, Inventory, Dialogue, Cine } from './systems/systems.js';
 import { Combat } from './systems/combat.js';
 import { Skills } from './systems/skills.js';
 import { ITEMS, QUESTS, DIALOGUE } from './data/act1.js';
+import { ORDER } from './data/chapters.js';
+import { POI } from './world/layout.js';
 import { Act1 } from './story/act1.js';
 import { UI } from './ui/ui.js';
 
@@ -182,15 +184,42 @@ class Game {
     this.story.restore();
     this.ui.refreshTracker();
   }
-  /** Start at the opening of a later act, with everything before it taken as played. It is written to a slot of its own and loaded from there. */
+  /** Start at the opening of any chapter, with everything before it taken as played: the quests done, and what Eirik
+   *  carries and has learned by then. It is written to a slot of its own and loaded from there, like any save. */
   startAt(first) {
-    const order = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_farm', 'q_smoke', 'q_axe', 'q_wolf', 'q_peddlers', 'q_walls', 'q_captain', 'q_oath', 'q_isle', 'q_fifty', 'q_healer', 'q_shore', 'q_long', 'q_ulf', 'q_iron', 'q_price', 'q_gold', 'q_water', 'q_court', 'q_circle', 'q_six', 'q_council', 'q_sound', 'q_drift', 'q_carry', 'q_hunger', 'q_taken', 'q_ring', 'q_wing', 'q_ribbon', 'q_feast', 'q_marsh', 'q_lastforge', 'q_anvil', 'q_smith', 'q_judge', 'q_sigurd', 'q_nine', 'q_wedding', 'q_four', 'q_firewater', 'q_blades', 'q_blackshore', 'q_redhand', 'q_pens', 'q_vigdis', 'q_gorm', 'q_wolfhall', 'q_ironwolf', 'q_dead', 'q_crown', 'q_ravenhold', 'q_leifhouse', 'q_lesson'];
-    const st = freshState(), act2 = first === 'q_ten', act7 = first === 'q_firewater' || first === 'q_ravenhold', act5 = first === 'q_carry' || first === 'q_marsh' || act7, act4 = first === 'q_gold' || act5;
-    for (const id of order) { if (id === first) break; st.quests[id] = { status: 'done', step: QUESTS[id].steps.length, count: 0 }; }
+    if (first === 'q_morning') return this.startNewGame();
+    const i = ORDER.indexOf(first), at = (id) => ORDER.indexOf(id), past = (id) => i > at(id);
+    if (i < 0 || !QUESTS[first]) return;
+    const st = freshState(), inv = {}, fl = st.flags;
+    for (const id of ORDER.slice(0, i)) st.quests[id] = { status: 'done', step: QUESTS[id].steps.length, count: 0 };
     st.quests[first] = { status: 'active', step: 0, count: 0 };
-    Object.assign(st, { stage: 'act2', time: act2 ? 8.6 : 9.2, inventory: act2 ? { bow: 1, arrow: 14, flint: 1 } : { bow: 1, arrow: 14, flint: 1, father_axe: 1, shield: 1, wolf_brooch: 1, arm_ring: 1, ...(act4 ? { mail: 1 } : {}), ...(act5 ? { token: 1, safe_letter: 1 } : {}), ...(first === 'q_marsh' || act7 ? { halfdan_ring: 1 } : {}) } });
-    if (act4) st.flags.reforge = act7 ? 3 : 1;
-    Object.assign(st.flags, { a2v: 2, axeHidden: act2, lightning: true, spring: true });
+    let stage = 'act2', time = 9.2;
+    if (i < at('q_ten')) { // Act I: Eirik is nine
+      stage = i >= at('q_hearth') ? 'ch3' : i >= at('q_white') ? 'ch2' : 'day';
+      time = { q_wood: 8.9, q_hunt: 9.4, q_fire: 12.4, q_sword: 15.1, q_supper: 16.3, q_ashes: 16.6, q_white: 7.5, q_ice: 8, q_hearth: 10, q_wings: 10 }[first] ?? 9;
+      if (past('q_hunt')) Object.assign(inv, { bow: 1, arrow: 12 });
+      if (past('q_fire')) inv.flint = 1;
+      if (past('q_sword')) inv.woodsword = 1;
+      if (past('q_ashes')) inv.father_axe = 1;
+      if (stage === 'day') { const s = POI.spawn; st.player = { x: s.x, z: s.z, yaw: 1.2 }; }
+      if (first === 'q_white') Object.assign(st, { vitals: { health: 100, warmth: 70, hunger: 38 } });
+      if (past('q_hearth')) fl.spring = true;
+    } else {
+      time = { q_ten: 14.6, q_isle: 9.2, q_gold: 9.4, q_carry: 13.4, q_marsh: 15.5, q_firewater: 7.3, q_ravenhold: 8.4 }[first] ?? 9.2;
+      Object.assign(inv, { bow: 1, arrow: 14, flint: 1 });
+      Object.assign(fl, { a2v: 2, lightning: true, spring: true, axeHidden: !past('q_axe') });
+      if (past('q_axe')) Object.assign(inv, { father_axe: 1, shield: 1, wolf_brooch: 1 });
+      if (past('q_oath')) inv.arm_ring = 1;
+      if (past('q_iron')) { inv.mail = 1; fl.reforge = past('q_smith') ? 3 : past('q_lastforge') ? 2 : 1; }
+      if (past('q_court')) Object.assign(inv, { token: 1, safe_letter: 1 });
+      if (past('q_ring') && i <= at('q_ravenhold')) inv.halfdan_ring = 1;
+      if (past('q_four')) inv.raven_cloth = 1;
+      if (past('q_ironwolf') && i <= at('q_ravenhold')) inv.oath_ring = 1;
+      // each act opens once (its card and first scene); a later chapter of it has had its opening
+      for (const [f, q] of [['a3begun', 'q_isle'], ['a4begun', 'q_gold'], ['a5begun', 'q_carry'], ['a6begun', 'q_marsh'], ['a7begun', 'q_firewater'], ['e8begun', 'q_ravenhold']]) if (i >= at(q)) fl[f] = past(q);
+      if (i >= at('q_ravenhold')) fl.e8seen = [];
+    }
+    Object.assign(st, { stage, time, inventory: inv });
     writeSave('act', st, { quest: QUESTS[first].title, step: QUESTS[first].steps[0].text, playtime: 0 });
     this.loadGame('act');
   }
@@ -308,7 +337,7 @@ class Game {
       },
       /** Jump straight to a quest step (marks earlier main quests done). */
       jump: (qid, sid) => {
-        const order = ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_farm', 'q_smoke', 'q_axe', 'q_wolf', 'q_peddlers', 'q_walls', 'q_captain', 'q_oath', 'q_isle', 'q_fifty', 'q_healer', 'q_shore', 'q_long', 'q_ulf', 'q_iron', 'q_price', 'q_gold', 'q_water', 'q_court', 'q_circle', 'q_six', 'q_council', 'q_sound', 'q_drift', 'q_carry', 'q_hunger', 'q_taken', 'q_ring', 'q_wing', 'q_ribbon', 'q_feast', 'q_marsh', 'q_lastforge', 'q_anvil', 'q_smith', 'q_judge', 'q_sigurd', 'q_nine', 'q_wedding', 'q_four', 'q_firewater', 'q_blades', 'q_blackshore', 'q_redhand', 'q_pens', 'q_vigdis', 'q_gorm', 'q_wolfhall', 'q_ironwolf', 'q_dead', 'q_crown', 'q_ravenhold', 'q_leifhouse', 'q_lesson', 'q_open', 'q_sea'];
+        const order = [...ORDER, 'q_open', 'q_sea'];
         if (!g.started) { g.started = true; g.ui.hideMain(); g.setMode('play'); }
         for (const id of order) {
           if (id === qid) break;

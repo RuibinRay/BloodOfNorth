@@ -16,6 +16,8 @@ export class A3Isle {
   get JT() { return this.g.world.main.jarnoy; }
   /** A point on Jarnøy, by offset from the island's centre. */
   J(dx, dz) { const s = this.JT.s; return [s.x + dx, s.z + dz]; }
+  /** Eirik is nowhere near Jarnøy (a chapter started from the Acts menu has no place saved yet). */
+  away() { const s = this.JT.s, p = this.g.player.pos; return Math.hypot(p.x - s.x - 120, p.z - s.z - 40) > 600; }
   build() {
     const g = this.g, c = this.c, q = g.quests, w = g.world;
     for (const id of ['hroald', 'arvid', 'ingrid', 'hallgerd', 'fisher', 'jtrader']) { const n = g.addNPC(id, CAST3[id]); n.visible = false; n.talk = () => c.talkTo(id); }
@@ -150,7 +152,7 @@ export class A3Isle {
     'q_isle.demand'(r) { const g = this.g, c = this.c; if (r) return c.setPhase('jnine', r); c.fade(() => { c.setPhase('jnine', true); g.player.teleport(...this.J(86, 6), 3.2); return g.ui.card('', 'Nine days later', 3); }, 1.2, 1.2); },
     'q_healer.hall'(r) { const c = this.c; c.setPhase('jprep', r); if (!r) c.sub("On Jarnøy they meet King Hroald's daughter, Princess Ingrid.", 5); },
     'q_healer.ingrid'(r) { this.c.setPhase('jprep', r); },
-    'q_iron.gold'(r) { const g = this.g, c = this.c; if (r) return c.setPhase('jfeast', r); c.fade(() => { c.setPhase('jfeast', true); g.player.teleport(...this.J(...this.h(4, 20)), 3.3); if (g.player.equipped !== 'none') g.player.equip('none'); }, 1.4, 1.4); },
+    'q_iron.gold'(r) { const g = this.g, c = this.c; if (r) { c.setPhase('jfeast', r); if (this.away()) g.player.teleport(...this.J(...this.h(4, 20)), 3.3); return; } c.fade(() => { c.setPhase('jfeast', true); g.player.teleport(...this.J(...this.h(4, 20)), 3.3); if (g.player.equipped !== 'none') g.player.equip('none'); }, 1.4, 1.4); },
     'q_iron.ingrid'(r) { this.c.setPhase('jfeast', r); this.post('ingrid', [...this.h(8.4, 13.4), [...this.h(6.4, 11.4)]]); },
     'q_iron.home'(r) { const c = this.c; c.setPhase('jfeast', r); if (!r) c.sub('She joins Eirik\'s companions. Leif is delighted.', 4); },
     'q_price.hall'(r) { const g = this.g, c = this.c; c.setPhase('a3yew', r); if (r) return this.playPrice(); g.player.frozen = true; g.ui.fade(true, 1.4).then(() => this.playPrice()); },

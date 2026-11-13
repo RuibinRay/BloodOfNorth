@@ -244,8 +244,10 @@ All keyboard and mouse bindings can be changed in Settings.
 3. *The Last Lesson* — the evening walk up the hill with Little Brokk; the lesson (a scene); the young raven on the
    stone; the view rising out to sea; the end.
 
-The main menu has **Start at an Act**, which begins Act I, II, III, IV, V, VI, VII or the Epilogue at its opening
-with what came before taken as played.
+The main menu has **Start at an Act**, which begins Act I, II, III, IV, V, VI, VII or the Epilogue at its opening,
+or, under each act, any one of its chapters (67 in all), with what came before taken as played: the quests done, and
+the weapons, keepsakes and reforgings Eirik has by then. Every chapter has been started this way by script and checked
+for errors, the right place, the right people and a working objective; none has been played through by hand from there.
 
 **Open-world sandbox — "The Whale Road" (prototype).** Not a story chapter: a place to try the systems.
 

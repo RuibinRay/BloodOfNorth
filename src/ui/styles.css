@@ -250,6 +250,13 @@ ul.steps li.cur { font-weight: 700; }
 .keys button.wait { background: var(--blood); color: #fff; }
 .slot { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid rgba(74, 54, 38, 0.22); }
 .slot .info { flex: 1; } .slot .info b { font-size: 17px; } .slot .info span { display: block; font-size: 13.5px; color: var(--ink-soft); }
+details.chapters { margin: 0 0 4px; border-bottom: 1px solid rgba(74, 54, 38, 0.22); }
+details.chapters summary { cursor: pointer; padding: 6px 0 8px; font-size: 14px; color: var(--ink-soft); letter-spacing: 0.03em; }
+details.chapters summary:hover { color: var(--ink); }
+details.chapters ol { margin: 0 0 10px; padding-left: 26px; }
+details.chapters li { padding: 2px 0; font-size: 15px; } details.chapters li::marker { color: var(--ink-soft); font-size: 13px; }
+details.chapters li > span { display: inline-block; min-width: min(60%, 340px); }
+.btn.small { font-size: 13px; padding: 3px 12px; margin: 2px 0; }
 #map-wrap { position: relative; width: min(560px, 100%); aspect-ratio: 1; margin: 0 auto; border: 1px solid #6d5a3a; box-shadow: 0 0 0 3px var(--wood); cursor: crosshair; }
 #map-wrap canvas { width: 100%; height: 100%; display: block; }
 .maptabs { display: flex; gap: 8px; justify-content: center; margin: 0 0 10px; }

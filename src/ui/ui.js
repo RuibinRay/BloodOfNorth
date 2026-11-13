@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { codeLabel, ACTION_LABELS, DEFAULT_BINDINGS } from '../core/input.js';
 import { listSaves, saveSettings, deleteSave, latestSave, DEFAULT_SETTINGS } from '../core/save.js';
 import { ITEMS, QUESTS } from '../data/act1.js';
+import { ACTS } from '../data/chapters.js';
 import { SECRETS } from '../data/act1_ch3.js';
 import { TREES, POINT_EVERY } from '../systems/skills.js';
 import { POI, ISLES, DISTRICT_LINE, GREAT, MAIN, PLACES } from '../world/layout.js';
@@ -267,7 +268,7 @@ export class UI {
     this.buttons($('#menu-buttons'), [
       { label: 'Continue', sub: last ? `${last.save.meta.quest} · ${fmtTime(last.save.meta.playtime)}` : 'No saved game yet', disabled: !last, act: () => g.loadGame(last.slot) },
       { label: 'New Game', act: () => g.startNewGame() },
-      { label: 'Start at an Act', sub: 'All seven acts and the epilogue are built', act: () => this.openPanel('acts', ['acts', 'saves', 'settings', 'status']) },
+      { label: 'Start at an Act', sub: 'All seven acts and the epilogue, or any chapter of them', act: () => this.openPanel('acts', ['acts', 'saves', 'settings', 'status']) },
       { label: 'Load Game', act: () => this.openPanel('saves', ['saves', 'settings', 'status']) },
       { label: 'Settings', act: () => this.openPanel('settings', ['saves', 'settings', 'status']) },
       { label: 'Build Status', sub: 'What is playable, prototype and planned', act: () => this.openPanel('status', ['saves', 'settings', 'status']) },
@@ -555,20 +556,15 @@ export class UI {
   }
   /** Begin at the opening of any act that is built, with what came before taken as played. */
   render_acts(body) {
-    const g = this.g, acts = [
-      ['new', 'Act I · The Burning Snow', 'Eirik is nine. Hrafnvik, the night it burns, the winter alone, the Bear\'s house, two ravens, the lightning.'],
-      ['q_ten', "Act II · The Farmer's Axe", 'Eirik is nineteen. Bjornstead: the raid, Kettil Red-Hand, the walls, Kaupang and the Sea-Raven.'],
-      ['q_isle', 'Act III · The Wolves of Iron', 'Eirik is twenty. Jarnøy: fifty from Ravenhold, the Battle of Iron Shore, Arne Longshot, Ulf Two-Blades.'],
-      ['q_gold', 'Act IV · Blood Across the Sea', 'Eirik is twenty-two. The treasure ship, Rurik Shieldsplitter, Wessex, six islands burning, the council, Hedeby Sound.'],
-      ['q_carry', 'Act V · The Broken Raven', 'Eirik is twenty-four. The hunger winter and the whale, the raven taken, the ring of Halfdan, Skarde Bear-Maw on Vængr, the cell, the feast.'],
-      ['q_marsh', 'Act VI · The Nine Oaths', 'Eirik is twenty-six. The marsh queen and Eydis the Mire, the last forge, Bersi Black-Anvil, the judgment of Torvald, nine oaths on one ring, a wedding before war.'],
-      ['q_firewater', 'Act VII · The Raven King', 'Eirik is twenty-nine. Fire on the water and Ulf Two-Blades, the Black Shore, Kettil at the bend, Torvald at the pens, Vigdis on the burning bridge, Gorm at the gate, the Ironwolf in his hall, the law-rock at Gulen.'],
-      ['q_ravenhold', 'Epilogue · The Old Birch', 'Twelve years later. Eirik is forty-one. Ravenhold, the row of stones and the Thing-Ring; Leif\'s house; the walk up the hill with Little Brokk.'],
-    ];
-    body.innerHTML = `<h3>Start at an act</h3><p class="muted">Each starts at its opening, with the acts before it taken as played. From there the game autosaves as usual, so the autosave will follow the act you start. Saves in the three slots are not touched.</p>` +
-      acts.map(([id, title, text]) => `<div class="slot"><div class="info"><b>${esc(title)}</b><span>${esc(text)}</span></div><button class="btn" data-act="${id}">Start</button></div>`).join('');
-    body.querySelectorAll('[data-act]').forEach((b) => (b.onclick = () => (b.dataset.act === 'new' ? g.startNewGame() : g.startAt(b.dataset.act))));
+    const g = this.g;
+    body.innerHTML = `<h3>Start at an act or a chapter</h3><p class="muted">An act starts at its opening. Open its chapters to start at any one of them. Everything before is taken as played: the quests done, and what Eirik carries and has learned by then. From there the game autosaves as usual, so the autosave will follow what you start. Saves in the three slots are not touched.</p>` +
+      ACTS.map((a, ai) => `<div class="slot"><div class="info"><b>${esc(a.title)}</b><span>${esc(a.text)}</span></div><button class="btn" data-act="${a.quests[0]}">Start</button></div>` +
+        `<details class="chapters" data-ai="${ai}"${this.actsOpen === ai ? ' open' : ''}><summary>The ${a.quests.length} chapters</summary><ol>` +
+        a.quests.map((id) => `<li><span>${esc(QUESTS[id] ? QUESTS[id].title : id)}</span><button class="btn small" data-act="${id}">Play</button></li>`).join('') + '</ol></details>').join('');
+    body.querySelectorAll('details.chapters').forEach((d) => d.addEventListener('toggle', () => { if (d.open) { this.actsOpen = +d.dataset.ai; body.querySelectorAll('details.chapters').forEach((o) => { if (o !== d) o.open = false; }); } }));
+    body.querySelectorAll('[data-act]').forEach((b) => (b.onclick = () => g.startAt(b.dataset.act)));
   }
+
   render_saves(body) {
     const g = this.g, inGame = g.started && g.state.stage !== 'complete';
     const names = { auto: 'Autosave', slot1: 'Slot I', slot2: 'Slot II', slot3: 'Slot III' };
