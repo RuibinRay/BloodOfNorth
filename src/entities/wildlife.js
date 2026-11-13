@@ -8,6 +8,16 @@ import { makeItem, dress } from './humanoid.js';
 const _v = new THREE.Vector3(), _u = new THREE.Vector3();
 // Every piece of an animal says what it is covered in (TEX.beast: see STUFF in geo.js); one that says nothing is plain.
 const mesh = (geos) => { const m = new THREE.Mesh(merge(geos.map((g) => (g.attributes.cell ? g : dress(g, 'plain')))), M.beast); m.castShadow = true; return m; };
+/** A leg in two pieces: the game swings the whole leg from the hip (leg.rotation.x, forward when it is negative), and
+ *  the lower piece folds at the knee by itself as the leg comes forward, so that a stride lifts the foot instead of
+ *  swinging a stick. upper, lower: the pieces, built hanging from the hip; kneeY: how far down the knee is. */
+function jointed(leg, upper, lower, kneeY, bend = 1.0) {
+  const knee = new THREE.Group(); knee.position.y = kneeY;
+  const lo = mesh(lower.map((g) => at(g, 0, -kneeY, 0))), up = mesh(upper);
+  knee.add(lo); leg.add(up, knee);
+  up.onBeforeRender = () => { knee.rotation.x = Math.max(0, -leg.rotation.x) * bend + Math.max(0, leg.rotation.x) * 0.15; }; // read when it is drawn: one frame behind the hip, which cannot be seen
+  return leg;
+}
 const pelt = (g) => dress(g, 'pelt'), coat = (g) => dress(g, 'coat'), fleece = (g) => dress(g, 'fleece'), feather = (g) => dress(g, 'feather'), mane = (g) => dress(g, 'mane');
 
 function hareModel() {
@@ -63,7 +73,7 @@ export function wolfModel(fur = 0x6e6e72, low = 0x5c5c60) {
   g.userData.legs = [];
   for (const [x, z] of [[0.11, 0.32], [-0.11, 0.32], [0.11, -0.34], [-0.11, -0.34]]) {
     const leg = new THREE.Group(); leg.position.set(x, 0.52, z);
-    leg.add(mesh([pelt(tint(at(capsule(0.056, 0.17, 5), 0, -0.1, 0), fur, 0.12, 9)), coat(tint(at(capsule(0.033, 0.22, 5), 0, -0.345, 0.01), low, 0.1, 15)), coat(tint(at(box(0.07, 0.04, 0.1), 0, -0.5, 0.025), 0x48484c, 0.05, 16))])); // thigh, shank, paw
+    jointed(leg, [pelt(tint(at(capsule(0.056, 0.17, 5), 0, -0.1, 0), fur, 0.12, 9))], [coat(tint(at(capsule(0.033, 0.22, 5), 0, -0.345, 0.01), low, 0.1, 15)), coat(tint(at(box(0.07, 0.04, 0.1), 0, -0.5, 0.025), 0x48484c, 0.05, 16))], -0.22, 1.2); // thigh, shank, paw
     g.add(leg); g.userData.legs.push(leg);
   }
   return g;
@@ -88,7 +98,7 @@ export function horseModel(hide = 0x7a5636, dark = 0x2e2018) {
   g.userData.legs = [];
   for (const [x, z] of [[0.17, 0.52], [-0.17, 0.52], [0.17, -0.55], [-0.17, -0.55]]) {
     const leg = new THREE.Group(); leg.position.set(x, 1.0, z);
-    leg.add(mesh([coat(tint(at(capsule(0.09, 0.34, 6), 0, -0.2, 0), hide, 0.1, 9)), coat(tint(at(capsule(0.046, 0.4, 5), 0, -0.68, 0), dark, 0.1, 17)), tint(at(cyl(0.06, 0.072, 0.09, 6), 0, -0.955, 0.01), 0x16110c, 0.05, 18)])); // thigh, cannon, hoof
+    jointed(leg, [coat(tint(at(capsule(0.09, 0.34, 6), 0, -0.2, 0), hide, 0.1, 9))], [coat(tint(at(capsule(0.046, 0.4, 5), 0, -0.68, 0), dark, 0.1, 17)), tint(at(cyl(0.06, 0.072, 0.09, 6), 0, -0.955, 0.01), 0x16110c, 0.05, 18)], -0.45, 1.1); // thigh, cannon, hoof
     g.add(leg); g.userData.legs.push(leg);
   }
   return g;
@@ -118,7 +128,9 @@ export function ravenModel(col = 0x14141a, beak = 0x2a2a30) {
   g.userData.wings = [];
   for (const s of [-1, 1]) {
     const w = new THREE.Group();
-    w.add(mesh([feather(tint(wingGeo(s), col, 0.15, 4))]));
+    const wm = mesh([feather(tint(wingGeo(s), col, 0.15, 4))]);
+    wm.onBeforeRender = () => { w.scale.x = Math.abs(w.rotation.z) > 1.1 ? 0.42 : 1; }; // a wing turned right down is folded: it lies short against his side
+    w.add(wm);
     g.add(w); g.userData.wings.push(w);
   }
   return g;

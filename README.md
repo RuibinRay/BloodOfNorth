@@ -13,7 +13,7 @@ story built at full scale.
 **New in 0.28.** Animals and weapons. **Animals** are covered in something: a wolf has a shaggy pelt, a horse a
 short coat and a mane and tail of hair, a sheep a curly fleece, deer and hares a coat, ravens feathers. Three were
 rebuilt as well as covered: **the wolf** has a deep chest, lean haunches, a ruff, a jaw, a nose, a brush of a tail and
-legs with thighs and paws; **the horse** has a chest and quarters, a neck with the mane lying along its crest, a
+legs with thighs and paws that fold at the knee as they come forward; **the horse** has a chest and quarters, a neck with the mane lying along its crest, a
 muzzle, eyes, a forelock, a hanging tail, legs with hooves, and a blanket under the saddle; **the ravens**, white and
 black, have heads, eyes, heavy beaks, wedge tails and wings with spread fingers in place of a ball and two planks.
 **Weapons and tools** are made of something: blades and axe-heads are hammered steel that takes the light, hafts and
