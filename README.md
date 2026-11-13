@@ -22,7 +22,9 @@ the approved $10 in all), worked into two new sheets, `beast.jpg` and `gear.jpg`
 sheet does. The goat, the pigs and the cow at Bjornstead are covered too, and a horse or a hound of another colour is
 now built in that colour. **Fixed, three things that were never in the world** because a comment had been put in the
 middle of a line and swallowed the code after it: Bjorn's grey horse in Act IV (Eirik rode on nothing, since 0.16),
-Brokk's hammer at the smithy in the Epilogue, and the far downs of Wessex.
+Brokk's hammer at the smithy in the Epilogue, and the far downs of Wessex. **The shield walls were replayed** by a
+script after the merge and all three end as they should; the replay is now part of `npm run check` (see the roadmap's
+known gaps for what it found about how hard they are).
 
 **In 0.27.** The real shield walls are in. They were built in another session on a branch of their own
 (`real-shield-walls`, from 0.22) and are now merged with everything since: the Battle of Iron Shore (Act III) and both
@@ -471,7 +473,7 @@ the [story bible](docs/STORY_BIBLE.md).
 
 How it was tested: an automated playtest drives the real game loop through every quest step (see
 `debug` in [src/main.js](src/main.js)), and `npm run check` starts every chapter and compares it with a recorded
-known-good state. What each scene asks the machine to draw is counted exactly; the frame rate on an Apple M2 has not
+known-good state, and plays the three shield walls through with a scripted player (and once with one who does nothing). What each scene asks the machine to draw is counted exactly; the frame rate on an Apple M2 has not
 been measured since the early slices (Settings has a frame counter). It has **not** been
 played end to end by a person with mouse and keyboard, so feel and difficulty tuning are unverified.
 

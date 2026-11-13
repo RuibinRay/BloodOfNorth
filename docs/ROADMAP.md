@@ -57,7 +57,12 @@ playtests; none are claimed until then.
 
 ## Known gaps carried from 0.27
 
-- **The shield walls have been merged, not replayed.** They were checked by script on their own branch (see "Real shield walls" below); here, after the merge, every chapter starts and both walls stand and look right in screenshots, but neither battle has been played through again, by a script or by a person.
+- **The shield walls were replayed by a script after the merge, not by a person** (`npm run check -- --walls`). The script stands in the middle of the line, raises the shield when their horn sounds and sounds its own when they reel. It does not fight: a man who breaks through is taken out after six seconds, and Eirik's health is put back every quarter second, with what he lost counted. With that:
+  - **Iron Shore** is held: six rushes in 77 seconds, the line 2.3 m forward, 136 of 166 left against 118 of 210, and the story goes on to the side gate.
+  - **The Black Shore**, both pushes: their line breaks after five rushes and five pushes, in 51 and 53 seconds, with 138 of 161 and 132 of 152 left, and the story goes on to the men cut off behind.
+  - **Doing nothing** in the harbor town loses it in 84 seconds (20 of 161 left, 5.6 m lost) and the chapter asks for its checkpoint, as it should.
+  - **What it found about balance, which nobody has decided on:** a player who only braces at the horn loses 46 health at Iron Shore and 154 and 130 in the two pushes, so he must also guard or fight between rushes or he dies on the sand. A player who keeps his shield up the whole time loses none, 15 and none, and wins all three: holding the shield up costs him no breath, so the safest way to play the wall is also the dullest. And one who does nothing at Iron Shore, if he is kept alive, still sees it "held" with the line 2.7 m back (it breaks at 3): he would have died five times over, which is what loses it for him.
+  - **What it does not show:** whether cutting at their front rank, the thunder smash, the war cry or the companions' skills do what they should in a wall, how the men who come through fight, or anything about how it feels.
 - **Two branches made in other sessions are still not in this one** (and nothing is in `main`): `act7-fight-tuning` and `story-hints-stay`, both cut from 0.22. A dry run says they merge without conflicts.
 - **The rank and file are still one rigid figure** in one build: they now have cloth and painted shields, not faces, mail or walking legs. Their shield is painted on both faces, so the picture also shows on the side that faces the man.
 - **Which painted shield a man carries says which side he is on, and nothing else**: there is no shield for a particular king or island.

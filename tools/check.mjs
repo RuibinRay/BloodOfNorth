@@ -7,10 +7,14 @@
 //      somewhere, that Eirik's body is in the scene to be drawn, that nothing threw);
 //   2. counts what five heavy scenes ask the machine to draw (draw calls and triangles: exact numbers, the same on any
 //      machine) against a budget, so a change that makes the game heavier is noticed;
-//   3. plays one fight with two companions and calls both their skills.
+//   3. plays one fight with two companions and calls both their skills;
+//   4. plays the shield walls through (Iron Shore, and both pushes on the Black Shore) with a scripted player who
+//      stands in the line, braces when their horn sounds and sounds his own when they reel, and once with one who
+//      does nothing; each must end as it was recorded (held, broken, lost) and the story must go on from it.
 //
 //   npm run check                 everything (a few minutes)
 //   npm run check -- --quick      each act's opening chapter, the scenes and the fight (under a minute)
+//   npm run check -- --walls      only the shield walls (about three minutes)
 //   npm run check -- --only=q_shore,q_iron
 //   npm run check -- --update     record what is found as the new known-good (tools/check/expected.json)
 //   npm run check -- --jobs=3     pages at once (default 2)
@@ -27,7 +31,8 @@ import { ACTS, ORDER } from '../src/data/chapters.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..'), expectedPath = join(root, 'tools/check/expected.json');
 const args = process.argv.slice(2), flag = (n) => args.includes('--' + n), opt = (n, d) => { const a = args.find((x) => x.startsWith('--' + n + '=')); return a ? a.slice(n.length + 3) : d; };
-const update = flag('update'), quick = flag('quick'), only = opt('only', ''), jobs = Math.max(1, +opt('jobs', 2));
+const update = flag('update'), quick = flag('quick'), wallsOnly = flag('walls'), only = opt('only', ''), jobs = Math.max(1, +opt('jobs', 2));
+const WALLS = [['q_shore', 'wall', 'brace', 'Iron Shore, braced'], ['q_blackshore', 'town', 'brace', 'the Black Shore, the harbor town, braced'], ['q_blackshore', 'road', 'brace', 'the Black Shore, the road, braced'], ['q_blackshore', 'town', 'idle', 'the Black Shore, the harbor town, doing nothing']];
 const SCENES = ['hrafnvik', 'open world farm', 'iron shore gate', 'black shore battle', 'fleet at sea'];
 const title = (id) => { for (const a of ACTS) { const i = a.quests.indexOf(id); if (i >= 0) return `${a.title.split(' · ')[0]} · ${i + 1}`; } return id; };
 
@@ -73,8 +78,8 @@ const pool = async (items, fn) => { const q = [...items]; await Promise.all(Arra
 
 try {
   // 1. every chapter, started cold
-  const ids = only ? only.split(',').filter((x) => ORDER.includes(x)) : quick ? ACTS.map((a) => a.quests[0]) : ORDER;
-  console.log(`\nChapters started from the Acts menu (${ids.length} of ${ORDER.length}):`);
+  const ids = wallsOnly ? [] : only ? only.split(',').filter((x) => ORDER.includes(x)) : quick ? ACTS.map((a) => a.quests[0]) : ORDER;
+  if (ids.length) console.log(`\nChapters started from the Acts menu (${ids.length} of ${ORDER.length}):`);
   const found = {};
   await pool(ids, async (id) => {
     const name = `${title(id)} ${id}`;
@@ -90,7 +95,7 @@ try {
 
   // 2. what heavy scenes ask the machine to draw
   const sceneFound = {};
-  if (!only) {
+  if (!only && !wallsOnly) {
     console.log('\nWhat heavy scenes ask the machine to draw (draw calls, thousand triangles):');
     await pool(SCENES, async (name) => {
       try {
@@ -112,12 +117,30 @@ try {
     } catch (e) { fail(e.message); }
   }
 
+  // 4. the shield walls, played through
+  const wallFound = {};
+  if (wallsOnly || (!quick && !only)) {
+    console.log('\nThe shield walls, played through by a script (seeded dice; he does not fight, and is kept alive):');
+    await pool(WALLS, async ([q, st, how, name]) => {
+      const key = `${q}.${st}.${how}`;
+      try {
+        const { value } = await browser.run(base, inPage(`wall(${JSON.stringify(q)}, ${JSON.stringify(st)}, ${JSON.stringify(how)})`), 420000), r = JSON.parse(value), want = expected.walls && expected.walls[key], L = r.last || {};
+        wallFound[key] = { over: r.over, to: r.to };
+        const bad = [...(r.crash ? ['crashed: ' + r.crash] : []), ...(r.errs && r.errs.length ? ['threw: ' + r.errs.join(' ; ')] : []), ...(r.over === 'no wall' ? ['no wall ever formed'] : []),
+          ...(how !== 'idle' && r.reloads ? ['asked for a checkpoint reload'] : []), ...(!update && want && r.over !== want.over ? [`ended "${r.over}", was "${want.over}"`] : []), ...(!update && want && r.to !== want.to ? [`the story stands at ${r.to}, was ${want.to}`] : []),
+          ...(!update && !want ? ['nothing recorded for it yet: run with --update'] : [])];
+        const line = `${name}: ${r.over} in ${r.seconds} s after ${L.surges} rushes and ${L.pushes} pushes, ${L.mean} m of ground, ${L.ours} of ${L.start && L.start[0]} left against ${L.theirs} of ${L.start && L.start[1]}; he lost ${r.hurt} health; the story stands at ${r.to}`;
+        bad.length ? fail(`${name}: ${bad.join(' · ')}`) : ok(line);
+      } catch (e) { fail(`${name}: ${e.message}`); }
+    });
+  }
+
   if (update) {
     const next = { note: 'Recorded by `npm run check -- --update`: where each chapter stands a few seconds after it is started from the Acts menu, and the drawing budget of five heavy scenes (a third above what they drew when recorded).',
-      chapters: { ...expected.chapters, ...found }, scenes: { ...expected.scenes, ...sceneFound } };
+      chapters: { ...expected.chapters, ...found }, scenes: { ...expected.scenes, ...sceneFound }, walls: { ...(expected.walls || {}), ...wallFound } };
     next.chapters = Object.fromEntries(ORDER.filter((id) => next.chapters[id]).map((id) => [id, next.chapters[id]]));
     writeFileSync(expectedPath, JSON.stringify(next, null, 1).replace(/\[\n\s+(-?\d+),\n\s+(-?\d+)\n\s+\]/g, '[$1, $2]') + '\n');
-    console.log(`\nRecorded ${Object.keys(found).length} chapters and ${Object.keys(sceneFound).length} scenes in tools/check/expected.json`);
+    console.log(`\nRecorded ${Object.keys(found).length} chapters, ${Object.keys(sceneFound).length} scenes and ${Object.keys(wallFound).length} shield walls in tools/check/expected.json`);
   }
 } finally { browser.close(); await server.close(); }
 

@@ -492,5 +492,23 @@
    "calls": 200,
    "ktris": 350
   }
+ },
+ "walls": {
+  "q_blackshore.town.brace": {
+   "over": "broke",
+   "to": "q_blackshore.back1"
+  },
+  "q_shore.wall.brace": {
+   "over": "held",
+   "to": "q_shore.gate"
+  },
+  "q_blackshore.road.brace": {
+   "over": "broke",
+   "to": "q_blackshore.back2"
+  },
+  "q_blackshore.town.idle": {
+   "over": "lost",
+   "to": "q_blackshore.town"
+  }
  }
 }

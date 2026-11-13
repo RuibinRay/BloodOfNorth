@@ -94,7 +94,8 @@ tested the same way, including loading every step cold and the chapter-to-chapte
 `npm run check` (`tools/check.mjs`, with its in-page half in `tools/check/page.js`) runs the saved checks in a
 headless Chrome over the DevTools protocol, with no extra packages: every chapter started from the Acts menu and
 compared with `tools/check/expected.json` (and failed if Eirik has no body in the scene), five scenes held to a
-drawing budget, and one fight beside two companions.
+drawing budget, one fight beside two companions, and the three shield walls played through by a scripted player
+(`wall()` in `tools/check/page.js`; `npm run check -- --walls` runs only those).
 
 To look at the game without a window: `node tools/shot.mjs "<lines of JavaScript>"` runs lines in the game's page in a
 headless Chrome and saves pictures to `.playtest/`. `window.__check.lineup([...names])` stands any of the cast in a
