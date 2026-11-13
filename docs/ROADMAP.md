@@ -30,21 +30,31 @@ playtests; none are claimed until then.
 | 0.23 | **Painted art** | Higgsfield API working (images): 51 portraits beside dialogue and on the Companions page, 32 item paintings in the Inventory, a painting for each act behind its title cards and in the Acts menu, a title painting on the loading screen, four painted world textures, parchment under panels and the map; a batch tool with a spending ledger and a cap | 97 pictures in the game for $2.55; the checks pass | Built |
 | 0.24 | **The world wears its textures** | Generated pictures worked into the 3D world: grain on grass, sand and rock; a foaming waterline and clear shallows; pines and birches with bark and boughs; wool, fur, mail, leather and hair on every figure, with trim, buckles and brooches; the champions' figures matched to their portraits; a painting for each of the 67 chapters, 73 portraits; the grown Eirik drawn again (missing since 0.22) | Seen in screenshots of the shore, the woods and line-ups of the cast; all 67 chapters pass the check, which now also fails if Eirik has no body in the scene | Built (by screenshot and script, not played) |
 | 0.25 | **Ships and buildings** | Clinker-built hulls with a painted board and rivets on every strake, decks cut to the hull, carved stem posts, rigging, a steering oar, a painted sail; four painted round shields on rails, walls and arms; painted doors, carved door frames and gable boards, eave logs | Seen in screenshots of a longship from four sides, the fleet under sail and a longhouse; all 67 chapters pass the check | Built (by screenshot and script, not played) |
-| 0.26 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: the raid, Kettil, the shore battle, Arne, Ulf, the deck fights, Rurik, the tannery yard, Skarde, Eydis, Bersi and all of Act VII above all, then the champions, the dive, riding, rowing and sailing feel, aim, stealth, camera | Three people finish everything built without help | Next |
-| 0.27 | **3D models in** | A source of models (Higgsfield's API has none); GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
-| 0.28 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or keep growing the web build | A written decision | Planned |
+| 0.26 | **Halls and towns** | Halls built as halls (higher walls, a wide door under a carved porch, shields, a smoke louver, banners); the Hall of Wolves with a gable, a louvered roof, great doors, wolf banners and the old crowned-raven banners the story names; gates in the palisades of Ravenhold and Svartøy | Seen in screenshots of four halls, two gates and the Hall of Wolves inside and out; all 67 chapters pass the check | Built (by screenshot and script, not played) |
+| 0.27 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: the raid, Kettil, the shore battle, Arne, Ulf, the deck fights, Rurik, the tannery yard, Skarde, Eydis, Bersi and all of Act VII above all, then the champions, the dive, riding, rowing and sailing feel, aim, stealth, camera | Three people finish everything built without help | Next |
+| 0.28 | **3D models in** | A source of models (Higgsfield's API has none); GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
+| 0.29 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or keep growing the web build | A written decision | Planned |
 | 1.0 | **Polish** | Side missions, minigames, voiced dialogue, recorded music, performance targets (60 fps at 1440p on suitable hardware as an objective), accessibility pass | Full playthrough signed off | Planned |
 
 ## Immediate next steps
 
 1. Play Acts II to VII and the Epilogue by hand (main menu, Start at an Act) and say where they are unfair, unclear, too easy or too slow: Act VII's fights first (Ulf, Kettil, Vigdis, Gorm, Håkon), then the raid, the shore battle, Arne, the fights on the Sea-Raven's deck, Rurik, the tannery yard, Skarde, Eydis and Bersi.
 2. Rule on the items under "Under review" in the story bible (Act I's Bjornstead is still the old farm in the dale).
-3. Look at the world and the people in play and say what to change (the trees, the shore, the clothes, any figure that does not look like its portrait, the ships, the doors); $5.13 of the approved $10 is unspent. Consider making a new Higgsfield key, since the pair was pasted into a chat.
+3. Look at the world and the people in play and say what to change (the trees, the shore, the clothes, any figure that does not look like its portrait, the ships, the halls and gates); $5.10 of the approved $10 is unspent. Consider making a new Higgsfield key, since the pair was pasted into a chat.
 4. Decide where the project lives: a PC that can run UE5, or continue in the browser for the epilogue and the polish.
 
-## Known gaps in 0.25
+## Known gaps in 0.26
 
-- **Only the longhouse got the new door and carving.** Every house built by `longhouse()` has them (that is nearly all of them), and three other doors were swapped for the painted one; the great halls, towers, piers, palisades and tents are otherwise as they were.
+- **Three branches made in other sessions are not in this one**, and none is in `main`: `real-shield-walls` (Iron Shore and the Black Shore as rank and file), `act7-fight-tuning` and `story-hints-stay`. Each was cut from 0.22. Until they are merged, the game on this branch still fights those battles in pairs.
+- **The hall's porch and banners were placed by rule, not by hand**: each hall was looked at once from the front. A bench, a stone or a person the story stands by a hall's door may now be under the porch or beside a banner pole.
+- **A hall's banners are plain cloth in one of four colours picked by where it stands**; only the wolf and the crowned raven are painted, and the crowned raven hangs only where the story puts it (the Hall of Wolves). Ravenhold flies plain blue.
+- **Only Ravenhold and Svartøy have gates.** Jarnøy's town wall and the camp in Act V still have plain gaps, and Kaupang, Solvik and Myrholm have no walls. The gate leaves do not move, and nothing about them stops anyone.
+- **The Hall of Wolves is still open at its far end under the roof**, so that it can be seen into; the light inside is the same as outside.
+- **Towns are otherwise as they were**: the same houses in the same places, stalls, wells, piers and quays.
+
+## Known gaps carried from 0.25
+
+- **Towers, piers, palisade walls and tents are as they were**; three doors outside `longhouse()` use the painted leaf.
 - **The boss and rim of a painted shield are flat**: they are in the picture, not modelled. Rurik's black-and-white shield and Gorm's iron-bound one are still built in flat colours, as the story describes them.
 - **All ships share one hull board, one sail and one carving**, in whatever size; Håkon's ships differ from the alliance's only by the darker tint the sea battles already gave their sails.
 - **Ships with their sails down show a bare yard**, not a furled sail (the ships the player and the sea battles work have sails that furl; the moored ones do not).

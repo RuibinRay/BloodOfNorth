@@ -2,7 +2,7 @@
 // PLACES in layout.js. Everything here is a procedural stand-in for real art. The places where the champions are
 // fought (the watchtower, the bridge, the hall, two ships' decks...) are returned in world.realm for the story code.
 import * as THREE from 'three';
-import { M, at, box, cyl, cone, sphere, tint, patch, doorLeaf } from './geo.js';
+import { M, at, box, cyl, cone, sphere, tri, tint, patch, doorLeaf, shieldGeo, bannerGeo } from './geo.js';
 import { heightAt } from './terrain.js';
 import * as P from './props.js';
 import { GREAT, place } from './layout.js';
@@ -97,11 +97,31 @@ export function mooredShip(scene, world, x, z, yaw, L = 21, seed = 5) {
   m.position.set(x, -0.15, z); m.rotation.y = yaw; scene.add(m);
   return world.addDeck({ x, z, yaw, hw: 2.35, hl: L / 2 - 2.4, y: -0.15 + m.userData.deckY });
 }
-export const pole = (ctx, x, z, h, cloth) => { // a banner on a pole
-  const y = heightAt(x, z);
+export const pole = (ctx, x, z, h, cloth, yaw = 0) => { // a banner on a pole: cloth is a colour, or 'raven' / 'wolf' for the two the story names; yaw turns which way it hangs
+  const y = heightAt(x, z), [bx, bz] = P.toWorld(x, z, yaw, 0, 0.6);
   ctx.b.add(at(cyl(0.06, 0.08, h, 5), x, y + h / 2, z), M.timber);
-  ctx.b.add(tint(at(box(0.05, 1.7, 1.1), x, y + h - 1.0, z + 0.6), cloth, 0.15, 4), M.vcPlain);
+  ctx.b.add(at(cyl(0.03, 0.03, 1.3, 4), ...((q) => [q[0], y + h - 0.12, q[1]])(P.toWorld(x, z, yaw, 0, 0.55)), Math.PI / 2, yaw, 0), M.timber); // the yard it hangs from
+  if (typeof cloth === 'string') ctx.b.add(at(bannerGeo(1.1, 1.7, cloth), bx, y + h - 1.0, bz, 0, yaw + Math.PI / 2, 0), M.banner);
+  else ctx.b.add(tint(at(box(0.05, 1.7, 1.1), bx, y + h - 1.0, bz, 0, yaw, 0), cloth, 0.15, 4), M.vcPlain);
 };
+/** A gate in a palisade: two great carved posts where the wall stops, a beam across them with a fighting walk and a
+ *  rail above it, both leaves standing open inward, and a banner hung over the way in (cloth as for pole()).
+ *  The way through runs along the gate's own z, inward being +z; w: between the posts. Nothing here bars the way. */
+export function gate(ctx, x, z, ry = 0, w = 6.8, h = 5.0, cloth) {
+  const L = (lx, lz) => P.toWorld(x, z, ry, lx, lz), y = Math.min(heightAt(x, z), heightAt(...L(-w / 2, 0)), heightAt(...L(w / 2, 0))) - 0.1, lw = w / 2 - 0.35, open = 1.25;
+  for (const k of [-1, 1]) {
+    const [px, pz] = L((k * w) / 2, 0); ctx.b.add(at(box(0.6, h + 0.7, 0.6, 0.75), px, y + h / 2, pz, 0, ry, 0), M.carved);
+    const [dx, dz] = L(k * (w / 2 - 0.3 - (Math.cos(open) * lw) / 2), 0.3 + (Math.sin(open) * lw) / 2); // the leaf, swung in on its post
+    ctx.b.add(at(doorLeaf(lw, h - 0.8, 0.14), dx, y + (h - 0.8) / 2 + 0.15, dz, 0, ry + k * open, 0), M.door);
+    const [rx, rz] = L(0, k * 0.85); ctx.b.add(at(box(w + 1.0, 0.1, 0.1), rx, y + h + 1.4, rz, 0, ry, 0), M.timber);
+    for (const e of [-1, 0, 1]) { const [qx, qz] = L(e * (w / 2 + 0.3), k * 0.85); ctx.b.add(at(box(0.1, 1.0, 0.1), qx, y + h + 0.95, qz), M.timber); }
+  }
+  ctx.b.add(at(box(w + 1.6, 0.5, 0.7, 0.75), x, y + h + 0.1, z, 0, ry, 0), M.carved);
+  ctx.b.add(at(box(w + 1.0, 0.14, 1.9), x, y + h + 0.44, z, 0, ry, 0), M.plank);
+  if (cloth !== undefined) { const [bx, bz] = L(0, -0.42);
+    if (typeof cloth === 'string') ctx.b.add(at(bannerGeo(1.5, 2.3, cloth), bx, y + h - 1.35, bz, 0, ry, 0), M.banner);
+    else ctx.b.add(tint(at(box(1.5, 2.3, 0.05), bx, y + h - 1.35, bz, 0, ry, 0), cloth, 0.15, 4), M.vcPlain); }
+}
 
 function jarnoy(ctx, world) {
   const W = (n, dx = 0, dz = 0) => { const p = place('jarnoy', n, dx, dz); return [p.x, p.z]; };
@@ -151,9 +171,9 @@ function svartoy(ctx, world, scene) {
   house(ctx, ...W('harbor', -12, 4), 0.1, 12, { roof: 'thatch' }); house(ctx, ...W('harbor', 12, 8), 1.5, 10, { smoke: true });
   const pier = deck(ctx, world, ...W('harbor', 30, -55), 0, 25, { y: 1.2 }); deck(ctx, world, ...W('harbor', -30, -50), 0, 20, { y: 1.2 });
   const fa = mooredShip(scene, world, pier.x + 3.9, pier.z - 8, 0, 22, 9), fb = mooredShip(scene, world, pier.x + 8.5, pier.z - 8, 0, 19, 11);
-  for (const dx of [-36, 36]) pole(ctx, ...W('harbor', dx, -18), 6, 0x16161a);
+  for (const dx of [-36, 36]) pole(ctx, ...W('harbor', dx, -18), 6, 'wolf');
   // the bend in the road below the bridge, where the reserve waits
-  stakes(ctx, ...W('bend', -12, 6), ...W('bend', 12, 8), -0.6); pole(ctx, ...W('bend', -9, -4), 5.5, 0x16161a); pole(ctx, ...W('bend', 9, -4), 5.5, 0x16161a);
+  stakes(ctx, ...W('bend', -12, 6), ...W('bend', 12, 8), -0.6); pole(ctx, ...W('bend', -9, -4), 5.5, 'wolf'); pole(ctx, ...W('bend', 9, -4), 5.5, 'wolf');
   // the long bridge over the ravine
   const bn = place('svartoy', 'bridgeN'), bs = place('svartoy', 'bridgeS'), by = heightAt(bn.x, bn.z) + 0.05;
   const bridge = deck(ctx, world, bn.x, (bn.z + bs.z) / 2, 0, (bs.z - bn.z) / 2 - 7, { hw: 2.4, y: by, rails: true });
@@ -161,18 +181,31 @@ function svartoy(ctx, world, scene) {
   const t = place('svartoy', 'town'), ring = [];
   for (let i = 0; i <= 16; i++) { const a = (i / 16) * 6.283 + 0.196; ring.push([t.x + Math.sin(a) * 68, t.z - Math.cos(a) * 60]); }
   palisade(ctx, [[t.x + 4, t.z - 60], ...ring.slice(0, 8), [t.x + 4, t.z + 60]]); palisade(ctx, [[t.x - 4, t.z + 60], ...ring.slice(8, 16), [t.x - 4, t.z - 60]]); // gates north (the bridge road) and south (the hall road)
+  gate(ctx, t.x, t.z - 60, 0, 8, 5.0, 'wolf'); gate(ctx, t.x, t.z + 60, Math.PI, 8, 5.0, 'wolf');
   for (const [dx, dz, ry, len] of [[-30, -18, 0.2, 12], [30, -16, -0.2, 12], [-36, 16, 1.5, 10], [36, 18, 1.6, 10], [-14, 34, 0.1, 9], [16, 36, -0.1, 9]]) house(ctx, ...W('town', dx, dz), ry, len, { smoke: N % 2 === 0 });
   P.well(ctx, ...W('town', 8, 0)); P.smithy(ctx, ...W('town', -12, -34), 0.2); P.pell(ctx, ...W('town', 18, -8)); P.pell(ctx, ...W('town', 21, -4));
   // the Hall of Wolves: long axis north to south, the gate at the north end, the high seat at the south
   const h = place('svartoy', 'hall'), y0 = heightAt(h.x, h.z), L = 36, Wd = 14, hl = L / 2, hw = Wd / 2;
   ctx.b.add(at(box(Wd, 0.1, L, 2.2), h.x, y0 - 0.02, h.z), M.plank);
-  for (const s of [-1, 1]) { ctx.b.add(at(box(0.5, 4.4, L, 2), h.x + s * hw, y0 + 2.1, h.z), M.plank); ctx.addBox(h.x + s * hw, h.z, 0.3, hl, 0, 4.4); ctx.b.add(at(box(4.4, 0.3, L + 0.8, 2.4), h.x + s * (hw - 1.7), y0 + 5.3, h.z, 0, 0, -s * 0.55), M.turf); }
+  for (const s of [-1, 1]) { ctx.b.add(at(box(0.5, 4.4, L, 2), h.x + s * hw, y0 + 2.1, h.z), M.plank); ctx.addBox(h.x + s * hw, h.z, 0.3, hl, 0, 4.4);
+    ctx.b.add(at(box(6.4, 0.34, L + 0.8, 2.4), h.x + s * 5.01, y0 + 6.26, h.z, 0, 0, -s * 0.68), M.turf); // the roof, up to a smoke slot five paces wide over the long fire
+    ctx.b.add(at(box(6.3, 0.08, L + 0.6, 2.4), h.x + s * 4.9, y0 + 6.07, h.z, 0, 0, -s * 0.68), M.plank); // boarded underneath
+    ctx.b.add(at(box(1.7, 0.26, L + 1.2, 2.4), h.x + s * 0.74, y0 + 9.72, h.z, 0, 0, -s * 0.45), M.turf); // and a louver roof over the ridge, with the light and the smoke passing either side of it
+    ctx.b.add(at(cyl(0.16, 0.16, L + 1.2, 6), h.x + s * (hw + 0.62), y0 + 4.32, h.z, Math.PI / 2, 0, 0), M.bark);
+    for (let zz = -14; zz <= 14.01; zz += 4) ctx.b.add(at(shieldGeo(0.5, 0.06, zz % 8 ? 2 : 3, 14), h.x + s * (hw + 0.34), y0 + 2.7, h.z + zz, 0, 0, -s * Math.PI / 2), M.shield); } // shields along the outside of both walls
   ctx.b.add(at(box(Wd + 0.5, 4.4, 0.5, 2), h.x, y0 + 2.1, h.z + hl), M.plank); ctx.addBox(h.x, h.z + hl, hw + 0.3, 0.3, 0, 4.4);
-  for (const s of [-1, 1]) { ctx.b.add(at(box(hw - 2, 4.4, 0.5, 2), h.x + s * (hw + 2) / 2, y0 + 2.1, h.z - hl), M.plank); ctx.addBox(h.x + s * (hw + 2) / 2, h.z - hl, (hw - 2) / 2, 0.3, 0, 4.4); ctx.b.add(at(box(0.5, 5.2, 0.6), h.x + s * 2.1, y0 + 2.6, h.z - hl - 0.1), M.timber); }
-  ctx.b.add(at(box(5.2, 0.5, 0.7), h.x, y0 + 5.0, h.z - hl - 0.1), M.timber); ctx.b.add(tint(at(cone(0.5, 1.3, 4), h.x, y0 + 5.9, h.z - hl - 0.1), 0x14110f, 0.2, 2), M.vcPlain);
+  for (const s of [-1, 1]) { ctx.b.add(at(box(hw - 2, 4.4, 0.5, 2), h.x + s * (hw + 2) / 2, y0 + 2.1, h.z - hl), M.plank); ctx.addBox(h.x + s * (hw + 2) / 2, h.z - hl, (hw - 2) / 2, 0.3, 0, 4.4); ctx.b.add(at(box(0.5, 5.2, 0.6, 0.75), h.x + s * 2.1, y0 + 2.6, h.z - hl - 0.1), M.carved);
+    ctx.b.add(at(doorLeaf(2.0, 4.5, 0.16), h.x + s * 2.42, y0 + 2.3, h.z - hl - 1.26, 0, s * 1.142, 0), M.door); // the great doors, standing open
+    ctx.b.add(at(box(10.3, 0.42, 0.16, 0.75), h.x + s * 3.06, y0 + 7.35, h.z - hl - 0.36, 0, 0, -s * 0.622), M.carved); // carved boards up the gable, crossing over the ridge
+    ctx.b.add(at(box(0.75, 0.38, 0.22, 0.75), h.x - s * 1.35, y0 + 10.5, h.z - hl - 0.36, 0, 0, s * 0.3), M.carved); // and ending in wolves' heads
+    pole(ctx, h.x + s * 6.2, h.z - hl - 3.4, 6.5, 'wolf', -s * Math.PI / 2); // facing whoever comes up the road
+    const bx = h.x + s * 3.9, bz = h.z - hl - 3.0; // a brazier either side of the steps
+    ctx.b.add(at(cyl(0.05, 0.07, 1.0, 5), bx, y0 + 0.4, bz), M.iron); ctx.b.add(at(cyl(0.42, 0.26, 0.32, 8), bx, y0 + 1.0, bz), M.iron); ctx.b.add(at(cyl(0.36, 0.36, 0.06, 8), bx, y0 + 1.15, bz), M.ember); }
+  ctx.b.add(at(tri(Wd + 0.5, 5.25, 0.4), h.x, y0 + 4.3, h.z - hl), M.plank); // the gable over the gate (the far end is left open under the roof)
+  ctx.b.add(at(box(5.2, 0.5, 0.7, 0.75), h.x, y0 + 5.0, h.z - hl - 0.1), M.carved); ctx.b.add(tint(at(cone(0.5, 1.3, 4), h.x, y0 + 5.9, h.z - hl - 0.1), 0x14110f, 0.2, 2), M.vcPlain);
   for (let i = 0; i < 3; i++) ctx.b.add(at(box(5.4 + i * 0.8, 0.16, 0.8), h.x, y0 - 0.1 - i * 0.14, h.z - hl - 0.9 - i * 0.8), M.stone); // the steps
   for (let zz = -14; zz <= 14.01; zz += 5.6) {
-    for (const s of [-1, 1]) { ctx.b.add(at(cyl(0.26, 0.3, 7.2, 8), h.x + s * 3.5, y0 + 3.6, h.z + zz), M.timber); ctx.addCircle(h.x + s * 3.5, h.z + zz, 0.36, 7); ctx.b.add(at(box(4.7, 0.24, 0.24), h.x + s * 1.85, y0 + 8.3, h.z + zz, 0, 0, s * 0.6), M.timber); }
+    for (const s of [-1, 1]) { ctx.b.add(at(cyl(0.26, 0.3, 7.2, 8), h.x + s * 3.5, y0 + 3.6, h.z + zz), M.timber); ctx.addCircle(h.x + s * 3.5, h.z + zz, 0.36, 7); ctx.b.add(at(box(4.7, 0.24, 0.24), h.x + s * 1.85, y0 + 8.3, h.z + zz, 0, 0, -s * 0.6), M.timber); } // rafters, rising to the ridge under the roof
     ctx.b.add(at(box(7.6, 0.3, 0.3), h.x, y0 + 7.1, h.z + zz), M.timber);
   }
   ctx.b.add(at(box(0.3, 0.3, L + 1), h.x, y0 + 9.5, h.z), M.timber);
@@ -186,7 +219,7 @@ function svartoy(ctx, world, scene) {
   for (const s of [-1, 1]) for (const zz of [-10, -2, 6]) { // weapon racks along the walls, and the old banners
     ctx.b.add(at(box(0.16, 1.7, 3.2), h.x + s * (hw - 0.5), y0 + 0.95, h.z + zz), M.dark);
     for (let k = 0; k < 4; k++) ctx.b.add(at(cyl(0.022, 0.022, 1.9, 5), h.x + s * (hw - 0.72), y0 + 1.0, h.z + zz - 1.2 + k * 0.8, 0.1, 0, 0), M.iron);
-    ctx.b.add(tint(at(box(0.05, 2.6, 1.5), h.x + s * 3.5, y0 + 5.4, h.z + zz + 3.4), zz === -2 ? 0x3a2622 : 0x17171c, 0.2, 3 + zz), M.vcPlain);
+    ctx.b.add(at(bannerGeo(1.5, 2.6, zz === -2 ? 'raven' : 'wolf'), h.x + s * 3.5, y0 + 5.4, h.z + zz + 3.4, 0, Math.PI / 2, 0), M.banner); // "some of them carrying the crowned raven of King Halfdan"
   }
   // the thrall pens on the far side, and the hidden cove below them
   for (const [dx, dz, ry] of [[-14, -10, 0.1], [12, 2, 0.1], [-10, 16, 0.1]]) { const [px, pz] = W('pens', dx, dz), py = heightAt(px, pz); ctx.b.add(at(box(17, 2.1, 5.2, 2.2), px, py + 0.95, pz, 0, ry, 0), M.stone); ctx.b.add(at(box(17.8, 0.34, 6, 2.4), px, py + 2.15, pz, 0, ry, 0), M.turf); ctx.b.add(at(box(1.1, 1.6, 0.1), ...((q) => [q[0], py + 0.8, q[1]])(P.toWorld(px, pz, ry, 3, 2.64)), 0, ry, 0), M.dark); ctx.addBox(px, pz, 8.6, 2.7, ry, 2.2); }

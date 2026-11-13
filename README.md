@@ -2,7 +2,7 @@
 
 A third-person Viking action RPG that follows the owner's story, *The Rise of the Raven King*
 ([docs/story](docs/story/THE_RISE_OF_THE_RAVEN_KING.md): seven acts and an epilogue). This repository holds
-**slice 0.25**: Act I (Eirik's childhood), Act II (nineteen: Bjornstead, the raid, the walls, Kaupang and the
+**slice 0.26**: Act I (Eirik's childhood), Act II (nineteen: Bjornstead, the raid, the walls, Kaupang and the
 Sea-Raven), Act III (twenty: Jarnøy and the Battle of Iron Shore), Act IV (twenty-two: the treasure voyage,
 Wessex, six islands burning, Hedeby Sound), Act V (twenty-four: the hunger winter, the tannery yard, the ring,
 Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, the wedding) and Act VII
@@ -10,7 +10,19 @@ Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, th
 (forty-one: Ravenhold twelve years on, Leif's house, the old birch), each as the story tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
-**New in 0.25.** Ships and buildings. **Ships** are clinker-built: each side is six strakes, the lower edge of
+**New in 0.26.** Halls and towns. **A hall is now built as a hall**: any longhouse wide and long enough (the
+kings' halls on Jarnøy, Solvik and Myrholm, the hall at Bjornstead and Ravenhold, the elder's hall in Hrafnvik, the
+hall in Wessex) has higher walls, a wide door under a carved porch with its own little roof, a row of painted shields
+along the wall, a smoke louver on the ridge, bigger beasts' heads on the gables and a banner on a pole either side of
+the porch · **the Hall of Wolves** has a gable over its gate, a roof up to a louvered ridge with boards under it,
+great doors standing open, wolves' heads on the gable, braziers by the steps, shields along both walls, Håkon's wolf
+banner outside, and inside, as the story has it, old banners "some of them carrying the crowned raven of King
+Halfdan" · **town gates**: the gaps in Ravenhold's and Svartøy's palisades are gates now, with carved posts, a beam
+and a fighting walk across them, both leaves standing open, and a banner over the way in · **two painted banners**
+(the crowned raven, the wolf) replace the black cloths on Svartøy. Two more Higgsfield pictures (3 cents; $4.90 of
+the approved $10 in all).
+
+**In 0.25.** Ships and buildings. **Ships** are clinker-built: each side is six strakes, the lower edge of
 each standing out over the one below, with a board of tarred oak and a row of rivets on every strake; the deck is cut
 to the shape of the hull; the stem and stern posts are carved, and the prow has a jaw; there are stays to stem and
 stern, shrouds, and a steering oar on the right quarter; the sail is a painted striped wool sail · **shields** on

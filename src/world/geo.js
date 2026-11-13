@@ -302,7 +302,9 @@ export function initMaterials() {
     const x = (i % 2) * 256, y = (i >> 1) * 256; g.fillStyle = '#' + hex.toString(16).padStart(6, '0'); g.fillRect(x, y, 256, 256);
     g.fillStyle = rgb(120, 122, 126); g.beginPath(); g.arc(x + 128, y + 128, 26, 0, 6.3); g.fill();
   }));
-  for (const k of ['hull', 'door', 'carved', 'shields', 'sail']) paint(TEX[k], W3[k]);
+  TEX.banners = sheet(512, 384, (g) => { g.fillStyle = rgb(110, 36, 30); g.fillRect(0, 0, 256, 384); g.fillStyle = rgb(22, 22, 26); g.fillRect(256, 0, 256, 384); });
+  for (const k of ['hull', 'door', 'carved', 'shields', 'sail', 'banners']) paint(TEX[k], W3[k]);
+  M.banner = std({ map: TEX.banners, roughness: 1, side: THREE.DoubleSide });
   M.hull = std({ map: TEX.hull, roughness: 0.85, side: THREE.DoubleSide });
   M.door = std({ map: TEX.door, roughness: 0.9 });
   M.carved = patch(std({ map: TEX.carved, color: 0xc4a07c, roughness: 0.9 })); // the picture is grey with age: warmed toward the timber beside it
@@ -380,6 +382,12 @@ export function cyl(rt, rb, h, seg = 8, tile = 1.6, open = false) {
 export function shieldGeo(r, th, design = 0, seg = 16) {
   const g = new THREE.CylinderGeometry(r, r, th, seg), p = g.attributes.position, uv = g.attributes.uv, cx = design & 1, cy = 1 - ((design >> 1) & 1);
   for (let i = 0; i < p.count; i++) uv.setXY(i, (cx + 0.5 + (p.getX(i) / r) * 0.485) / 2, (cy + 0.5 - (p.getZ(i) / r) * 0.485) / 2); // the rim takes the picture's own edge
+  return g;
+}
+/** A hanging banner (M.banner): 'raven', the crowned raven of King Halfdan, or 'wolf', Håkon's. Stands in the XY plane about its middle. */
+export function bannerGeo(w, h, which) {
+  const g = new THREE.PlaneGeometry(w, h), uv = g.attributes.uv, u0 = which === 'wolf' ? 0.5 : 0;
+  for (let i = 0; i < uv.count; i++) uv.setX(i, u0 + uv.getX(i) * 0.5);
   return g;
 }
 /** A door leaf with the whole of the door picture on its face (M.door). */

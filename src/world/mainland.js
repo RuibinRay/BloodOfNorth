@@ -7,7 +7,7 @@ import { M, Builder, at, box, cyl, cone, sphere, tint } from './geo.js';
 import { heightAt } from './terrain.js';
 import * as P from './props.js';
 import { MAIN, place } from './layout.js';
-import { house, palisade, deck, ruin, stakes, pole } from './realm_props.js';
+import { house, palisade, deck, ruin, stakes, pole, gate } from './realm_props.js';
 import { rng } from '../core/util.js';
 
 /** A switchable part of a place. build(ctx, w, objs) adds geometry to ctx.b, colliders through ctx and w, and whole
@@ -133,7 +133,7 @@ function bjornstead(ctx, world, scene) {
     }
     stakes(c, a[0], a[1], b[0], b[1], 0.5, 1.4);
   } });
-  st('wall', false, (c) => { for (const seg of RING) palisade(c, seg.map(([dx, dz]) => B(dx, dz)), 3.7); for (const g of ['gateE', 'gateW', 'gateN', 'gateS']) { const [x, z] = W(g); for (const k of [-1, 1]) { const ns = g === 'gateN' || g === 'gateS', px = x + (ns ? k * 3.4 : 0), pz = z + (ns ? 0 : k * 4.4); c.b.add(at(box(0.5, 5, 0.5), px, gy(px, pz) + 2.4, pz), M.timber); } } });
+  st('wall', false, (c) => { for (const seg of RING) palisade(c, seg.map(([dx, dz]) => B(dx, dz)), 3.7); for (const g of ['gateE', 'gateW', 'gateN', 'gateS']) { const [x, z] = W(g), [cx, cz] = B(0, 0), ns = g === 'gateN' || g === 'gateS'; gate(c, x, z, ns ? (cz > z ? 0 : Math.PI) : (cx > x ? Math.PI / 2 : -Math.PI / 2), ns ? 6.8 : 8.8, 5.0, 0x2f4a5c); } });
   st('tower', false, (c) => { // the watchtower on the hill by the old birch
     const x = bi[0] + 8, z = bi[1] + 5, y = gy(x, z);
     for (const sx of [-1, 1]) for (const sz of [-1, 1]) c.b.add(at(cyl(0.16, 0.2, 9, 6), x + sx * 1.5, y + 4.4, z + sz * 1.5, sz * 0.05, 0, -sx * 0.05), M.bark);

@@ -52,6 +52,9 @@ The frame rate has not been measured since the first slices; what follows is cou
   board of `TEX.hull` across it, its lower edge pushed out over the strake below. Round shields are `shieldGeo(r,
   thickness, design)` on `M.shield` (four designs on one sheet), doors are `doorLeaf` on `M.door`, carved timber is
   `M.carved`. Each of these textures starts as something plain drawn in code and is painted over when its picture loads.
+- **A hall is a longhouse that is big enough** (`longhouse()` in `src/world/props.js`: `hall`, by default 6.8 m wide
+  and 15 m long or more): the same function then builds the porch, the louver, the shields and the banners. Gates are
+  `gate()` and banners on poles `pole()` in `src/world/realm_props.js`; both take a colour or 'raven' / 'wolf'.
 - **Resolution follows the frame rate** (`Game.adaptRes`), and Settings has a frame counter.
 
 Counted in one frame, before and after: Hrafnvik 4.8 million triangles to 0.96 million; the open-world farm 4.9 to

@@ -1,7 +1,7 @@
 // Procedural Viking-age props: longhouses, fences, boats and village clutter.
 // Static props are baked into the shared world Builder (ctx.b); ships are separate groups so they can move.
 import * as THREE from 'three';
-import { M, Builder, at, box, cyl, cone, sphere, tri, tint, shieldGeo, doorLeaf, rope } from './geo.js';
+import { M, Builder, at, box, cyl, cone, sphere, tri, tint, shieldGeo, doorLeaf, rope, bannerGeo } from './geo.js';
 import { heightAt } from './terrain.js';
 import { rng } from '../core/util.js';
 
@@ -12,21 +12,46 @@ export function toWorld(x, z, ry, lx, lz) {
 }
 const placer = (ctx, x, z, ry, y = heightAt(x, z)) => (g, m) => ctx.b.add(at(g, x, y, z, 0, ry, 0), m);
 
+/** A longhouse. One that is wide and long enough (or told `hall: true`) is built as a hall: higher walls, a wide door
+ *  under a carved porch, shields along the wall beside it, a smoke louver on the ridge, a banner either side of the
+ *  porch (`banner`: a colour, or 'raven' / 'wolf' for the two the story names) and bigger heads on the gables. */
 export function longhouse(ctx, o) {
-  const { x, z, ry, len, wid, ridge, roof, door, doorX = 0 } = o;
+  const { x, z, ry, len, wid, ridge, roof, door, doorX = 0 } = o, hall = o.hall ?? (wid >= 6.8 && len >= 15);
   const add = placer(ctx, x, z, ry, heightAt(x, z) - 0.12);
-  const wallH = 1.75, base = 0.38, hw = wid / 2, hl = len / 2, wy = base + wallH / 2;
+  const wallH = hall ? 2.45 : 1.75, base = 0.38, hw = wid / 2, hl = len / 2, wy = base + wallH / 2;
+  const eaveY = base + wallH - 0.45, run = hw + 0.8, rise = ridge - eaveY, sl = Math.hypot(run, rise), th = Math.atan2(rise, run);
+  const roofMat = roof === 'turf' ? M.turf : M.thatch;
   add(at(box(len + 0.6, 0.6, wid + 0.6), 0, 0.12, 0), M.stone);
   for (const s of [-1, 1]) {
     if (s === door) {
-      const dw = 1.25, l1 = doorX - dw / 2 + hl, l2 = hl - (doorX + dw / 2);
+      const dw = hall ? 2.3 : 1.25, l1 = doorX - dw / 2 + hl, l2 = hl - (doorX + dw / 2), pt = hall ? 0.3 : 0.22;
       add(at(box(l1, wallH, 0.3), -hl + l1 / 2, wy, s * hw), M.plank);
       add(at(box(l2, wallH, 0.3), hl - l2 / 2, wy, s * hw), M.plank);
       add(at(doorLeaf(dw, wallH), doorX, wy, s * (hw - 0.04), 0, s > 0 ? 0 : Math.PI, 0), M.door);
-      for (const k of [-1, 1]) add(at(box(0.22, wallH + 0.12, 0.4, 0.75), doorX + k * (dw / 2 + 0.08), wy, s * hw), M.carved); // carved door posts and lintel
+      for (const k of [-1, 1]) add(at(box(pt, wallH + 0.12, 0.4, 0.75), doorX + k * (dw / 2 + pt / 2 - 0.03), wy, s * hw), M.carved); // carved door posts and lintel
       add(at(box(dw + 0.7, 0.24, 0.44, 0.75), doorX, base + wallH + 0.06, s * hw), M.carved);
-      if (len >= 13) for (const k of [-1, 1]) add(at(shieldGeo(0.42, 0.05, (Math.abs(Math.round(x * 3 + z * 7)) + (k > 0 ? 1 : 0)) % 4), doorX + k * (dw / 2 + 1.25), wy - 0.08, s * (hw + 0.2), s * Math.PI / 2, 0, 0), M.shield); // a hall hangs shields by its door
       add(at(box(dw + 0.5, 0.12, 0.9), doorX, base - 0.06, s * (hw + 0.45)), M.stone); // threshold slab
+      const pick = (k, n) => (Math.abs(Math.round(x * 3 + z * 7)) + (k > 0 ? 1 : 0) + n) % 4;
+      if (hall || len >= 13) for (const k of [-1, 1]) for (let n = 0; n < (hall ? 3 : 1); n++) { // shields hang by the door: one a side on a big house, a row on a hall
+        const sx = doorX + k * (dw / 2 + (hall ? 2.3 : 1.25) + n * 1.15);
+        if (Math.abs(sx) < hl - 0.7) add(at(shieldGeo(0.42, 0.05, pick(k, n)), sx, wy - 0.08 + (hall ? 0.25 : 0), s * (hw + 0.2), s * Math.PI / 2, 0, 0), M.shield);
+      }
+      if (hall) { // the porch: two carved posts out in front, a beam on them, and a little roof of its own running back into the big one
+        const pd = 1.9, pw = dw / 2 + 0.75, ph = wallH + 0.55, pr = 1.0, half = pw + 0.4, psl = Math.hypot(half, pr), pth = Math.atan2(pr, half);
+        const back = (base + ph + pr - eaveY) / (rise / run) - 0.8 + 0.25, deep = pd + 0.55 + back, mid = hw + (pd + 0.55 - back) / 2;
+        for (const k of [-1, 1]) {
+          add(at(box(0.3, ph, 0.3, 0.75), doorX + k * pw, base + ph / 2, s * (hw + pd)), M.carved);
+          add(at(box(psl + 0.12, 0.22, deep, 2.4), doorX + (k * half) / 2, base + ph + pr / 2 + 0.12, s * mid, 0, 0, -k * pth), roofMat);
+          add(at(box(psl + 0.7, 0.24, 0.1, 0.75), doorX + k * (half / 2 - 0.2), base + ph + pr / 2 + 0.3, s * (hw + pd + 0.56), 0, 0, -k * pth), M.carved); // carved boards across its front, crossing at the top
+          const [bx, bz] = [doorX + k * (pw + 1.5), s * (hw + pd + 0.3)], bh = 4.4, cloth = o.banner ?? [0x7a2a22, 0x2f4a5c, 0x5a4a22, 0x3a5a3a][pick(0, 0)]; // a banner on a pole either side
+          add(at(cyl(0.06, 0.08, bh, 5), bx, base + bh / 2 - 0.3, bz), M.timber); add(at(cyl(0.03, 0.03, 1.2, 4), bx, base + bh - 0.45, bz + s * 0.5, Math.PI / 2, 0, 0), M.timber);
+          if (typeof cloth === 'string') add(at(bannerGeo(1.05, 1.6, cloth), bx, base + bh - 1.3, bz + s * 0.55, 0, Math.PI / 2, 0), M.banner);
+          else add(tint(at(box(0.04, 1.6, 1.05), bx, base + bh - 1.3, bz + s * 0.55), cloth, 0.15, 4), M.vcPlain);
+        }
+        add(at(box(pw * 2 + 0.34, 0.26, 0.32, 0.75), doorX, base + ph - 0.02, s * (hw + pd)), M.carved);
+        add(at(box(0.16, 0.2, deep + 0.1), doorX, base + ph + pr + 0.24, s * mid), M.timber);
+        add(at(box(dw + 1.7, 0.14, pd + 0.7), doorX, base - 0.08, s * (hw + pd / 2 + 0.25)), M.stone); // the step up to it
+      }
     } else add(at(box(len, wallH, 0.3), 0, wy, s * hw), M.plank);
   }
   for (const s of [-1, 1]) {
@@ -35,18 +60,17 @@ export function longhouse(ctx, o) {
   }
   const bays = Math.max(2, Math.round(len / 2.6));
   for (let i = 0; i <= bays; i++) for (const s of [-1, 1]) add(at(box(0.24, wallH + 0.1, 0.24), -hl + (len * i) / bays, wy, s * (hw + 0.1)), M.timber);
-  const eaveY = base + wallH - 0.45, run = hw + 0.8, rise = ridge - eaveY, sl = Math.hypot(run, rise), th = Math.atan2(rise, run);
-  const roofMat = roof === 'turf' ? M.turf : M.thatch;
   for (const s of [-1, 1]) add(at(box(len + 1.5, 0.36, sl + 0.12, 2.4), 0, eaveY + rise / 2 + 0.14, (s * run) / 2, s * th, 0, 0), roofMat);
   if (roof === 'turf') for (const s of [-1, 1]) add(at(cyl(0.13, 0.13, len + 1.6, 6), 0, eaveY + 0.16, s * (run + 0.12), 0, 0, Math.PI / 2), M.bark); // the log that keeps the turf from sliding off
   add(at(box(len + 1.8, 0.22, 0.3), 0, ridge + 0.24, 0), M.timber);
-  const fl = sl + 1.1;
+  const fl = sl + (hall ? 1.7 : 1.1), hs = hall ? 1.7 : 1;
   for (const e of [-1, 1]) for (const s of [-1, 1]) { // the gable boards, carved, crossing above the ridge
-    add(at(box(0.12, 0.26, fl, 0.75), e * (hl + 0.78), eaveY + (Math.sin(th) * fl) / 2 + 0.24, s * (run - (Math.cos(th) * fl) / 2), s * th, 0, 0), M.carved);
+    add(at(box(0.12 * hs, 0.26 * hs, fl, 0.75), e * (hl + 0.78), eaveY + (Math.sin(th) * fl) / 2 + 0.24, s * (run - (Math.cos(th) * fl) / 2), s * th, 0, 0), M.carved);
     const top = [eaveY + Math.sin(th) * fl + 0.24, s * (run - Math.cos(th) * fl)]; // each ends in a beast's head looking out along the ridge
-    add(at(box(0.14, 0.2, 0.42), e * (hl + 0.78), top[0] + 0.06, top[1] - s * 0.1, s * (th - 0.9), 0, 0), M.carved);
+    add(at(box(0.14 * hs, 0.2 * hs, 0.42 * hs), e * (hl + 0.78), top[0] + 0.06, top[1] - s * 0.1, s * (th - 0.9), 0, 0), M.carved);
   }
-  add(at(box(1.0, 0.16, 0.6), 0.6, ridge + 0.36, 0), M.dark);
+  if (hall) { add(at(box(len * 0.3, 0.5, 0.9), 0, ridge + 0.45, 0), M.dark); add(at(box(len * 0.3 + 0.7, 0.16, 1.7, 2.4), 0, ridge + 0.78, 0), roofMat); } // the smoke louver along the ridge
+  else add(at(box(1.0, 0.16, 0.6), 0.6, ridge + 0.36, 0), M.dark);
   const y0 = heightAt(x, z);
   const [sx, sz] = toWorld(x, z, ry, 0.6, 0);
   ctx.smoke.push({ x: sx, y: y0 + ridge + 0.5, z: sz, id: o.id });

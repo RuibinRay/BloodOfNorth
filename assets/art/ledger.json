@@ -2205,6 +2205,20 @@
    "usd": 0.015,
    "request_id": "01a1d605-ad19-7bf5-9309-5c0d377ad883",
    "at": "2026-11-13T17:47:57.792Z"
+  },
+  {
+   "id": "b_banner_raven",
+   "model": "z-image/turbo",
+   "usd": 0.015,
+   "request_id": "01a1d62b-6ad4-7d77-9860-b804aaad4475",
+   "at": "2026-11-13T18:29:05.556Z"
+  },
+  {
+   "id": "b_banner_wolf",
+   "model": "z-image/turbo",
+   "usd": 0.015,
+   "request_id": "01a1d62b-6b9d-7188-a49d-8b01f8e32f4f",
+   "at": "2026-11-13T18:29:06.955Z"
   }
  ]
 }

@@ -250,7 +250,7 @@ def ships():
 
 
 def buildings():
-    """door.jpg: the door alone, out of its frame. carved.jpg: carved timber that repeats."""
+    """door.jpg: the door alone, out of its frame. carved.jpg: carved timber that repeats. banners.jpg: two banners."""
     im = src('b_door')
     if im:
         w, h = im.size
@@ -258,6 +258,13 @@ def buildings():
     im = src('b_carved')
     if im:
         save(level(im.resize((512, 512), Image.LANCZOS), 70), 'carved.jpg', 88)
+    pair = [src('b_banner_raven'), src('b_banner_wolf')]
+    if all(pair):                                                  # banners.jpg: the crowned raven and the wolf, side by side
+        at = Image.new('RGB', (512, 384))
+        for i, im in enumerate(pair):
+            w, h = im.size
+            at.paste(im.crop((int(w * 0.045), int(h * 0.045), int(w * 0.955), int(h * 0.935))).resize((256, 384), Image.LANCZOS), (i * 256, 0))
+        save(at, 'banners.jpg', 88)
 
 
 for f in (ground, pine, birch, figure, ships, buildings):

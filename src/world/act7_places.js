@@ -46,7 +46,7 @@ function svart7(world, scene) {
     for (let i = 0; i < 4; i++) { const x = bh[0] + 6 + (i % 2) * 2.2, z = bh[1] + 1 + Math.floor(i / 2) * 2.4; c.b.add(tint(at(box(1.9, 0.14, 0.8), x, gy(x, z) + 0.1, z, 0, 0.3, 0), 0xc9b060, 0.2, i), M.vcPlain); }
     // what Håkon's men have put across the slopes
     stakes(c, ...X(-40, -184), ...X(-12, -180), -0.6); stakes(c, ...X(14, -180), ...X(44, -186), -0.6); stakes(c, ...X(-30, -164), ...X(-6, -160), -0.6); stakes(c, ...X(28, -162), ...X(52, -168), -0.6);
-    for (const [dx, dz] of [[-22, -176], [26, -174], [-8, -128], [30, -132], [-18, -120]]) pole(c, ...X(dx, dz), 5.5, 0x16161a);
+    for (const [dx, dz] of [[-22, -176], [26, -174], [-8, -128], [30, -132], [-18, -120]]) pole(c, ...X(dx, dz), 5.5, 'wolf');
     P.cart(c, ...X(8, -152), 1.2); P.cart(c, ...X(20, -146), -0.4); // the reserve's barricade at the bend
     return { hospital: [bh[0] + 7, bh[1] + 2], land: X(0, -238) };
   });

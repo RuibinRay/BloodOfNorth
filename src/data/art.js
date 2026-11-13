@@ -205,6 +205,7 @@ export const ART = {
     "parchment": "art/ui/parchment.webp"
   },
   "world": {
+    "banners": "art/world/banners.jpg",
     "birch": "art/world/birch.webp",
     "carved": "art/world/carved.jpg",
     "door": "art/world/door.jpg",

@@ -1,7 +1,7 @@
 # Higgsfield integration
 
 **State (13 Nov 2026): working for images, and in the game.** The key pair in `.env` is accepted by the official API,
-315 generations have been charged ($4.87 of an approved $10), and 203 files made from them are in the game.
+317 generations have been charged ($4.90 of an approved $10), and 204 files made from them are in the game.
 **Not possible through this API: 3D models.** Its catalogue is image and video models only.
 
 ## What is in the game
@@ -14,15 +14,15 @@
 | Act paintings | 9 | One for each act and the Epilogue (used where a chapter has none), and the title painting behind the loading screen |
 | Building textures | 4 | Plank walls, turf roofs, thatch, stone: drawn into the materials the buildings already use |
 | Parchment and compass | 2 | Under every panel and over the map; the compass rose on the map |
-| **Textures of the 3D world** | 12 files from 23 pictures | See below |
+| **Textures of the 3D world** | 13 files from 25 pictures | See below |
 
 Everything falls back to what the game drew before if a file is missing (`src/ui/art.js`, `src/world/geo.js`,
 `src/world/vegetation.js`).
 
-### The 3D world (0.24, 0.25)
+### The 3D world (0.24 to 0.26)
 
 The API makes no models, so the shapes of the world are still built in code. What its pictures can do is cover them.
-Twenty-three pictures (`group:world3d` in the plan) are worked into twelve texture files in `public/art/world/` by
+Twenty-five pictures (`group:world3d` in the plan) are worked into thirteen texture files in `public/art/world/` by
 [tools/art/world.py](../tools/art/world.py), which runs on every `make`, `post` and `manifest`:
 
 | File | Made from | What the game does with it |
@@ -37,6 +37,7 @@ Twenty-three pictures (`group:world3d` in the plan) are worked into twelve textu
 | `shields` | Four round shields on white | Two by two on one sheet: the shields on ships' rails, by halls' doors and in fighters' hands (`shieldGeo`) |
 | `door` | A longhouse door | The door of every longhouse, and three other doors |
 | `carved` | Carved knotwork oak | Door posts and lintels, gable boards, the stem and stern posts of ships and the dragon's head |
+| `banners` | Two war banners | Side by side on one sheet: the crowned raven of King Halfdan (inside the Hall of Wolves, where the story hangs it) and Håkon's wolf (on Svartøy's poles, gates and hall) (`bannerGeo`) |
 
 Also in 0.24, drawn by the game and not generated: clear water over the shallows that darkens with depth, wet sand
 behind the foam, a band of trim at every hem and cuff, belt buckles, cloak brooches, and ring mail on those the story
