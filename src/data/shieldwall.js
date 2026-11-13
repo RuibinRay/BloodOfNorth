@@ -25,6 +25,8 @@ export const WALL = {
   inLine: 4.2,            // how near the front counts as standing in the line
   braceR: 9,              // metres along the line that a man braced in it steadies
   braceCost: 10,          // breath a braced rush costs
+  guard: 11,              // breath a second a raised shield costs him while he stands in the line, and none comes back while it is up (half with the Shield Wall skill): it cannot be held up from one rush to the next
+  braceNeed: 10,          // the breath he must have left for a brace to count: with less his arm gives, and the rush goes through him
   stand: 0.42,            // the chance a sector holds a rush with nobody to steady it, man for man (more men, more chance; a named anchor nearly always holds)
   give: 1.3,              // ground lost where a rush is not held
   gain: 1.6,              // ground won by a push when they are reeling

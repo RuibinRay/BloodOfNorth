@@ -65,19 +65,20 @@ async function party() {
 /** Play one shield-wall step of a battle the way someone who has understood it would, and say how it went.
  *  how 'brace': stand in the middle of the line, raise the shield when their horn sounds, sound his own when they reel.
  *  how 'guard': the same, with his shield kept up between rushes as well.
+ *  how 'parry': as 'brace', and the shield also goes up whenever one of them draws back to thrust at him.
  *  how 'idle':  stand in the line and do nothing at all.
  *  It does not fight: a man who breaks through is taken out after six seconds, and Eirik's health is put back every
  *  second (what he lost is counted). So it shows that the wall runs to its end and the story goes on from it, and what
  *  the two ways of playing do to the line; it does not show that the fight is fair. The dice are seeded, so a run
  *  gives the same answer every time. */
-async function wall(quest, step, how = 'brace', maxSec = 300, seed = 7) {
+async function wall(quest, step, how = 'brace', maxSec = 300, seed = 7, linger = 6) { // linger: seconds a man who has broken through is left to fight him
   const real = Math.random; let sd = seed >>> 0;
   Math.random = () => { sd = (sd + 0x6d2b79f5) >>> 0; let t = Math.imul(sd ^ (sd >>> 15), 1 | sd); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
   try {
     try { d.jump(quest, step); } catch (e) { return { quest, step, how, crash: e.message }; }
     d.manual(true); await d.run(1); await cine();
     const W = () => g.story.a2.battle.wall, pl = p(), seen = new Map(), start = at();
-    let t = 0, hurt = 0, w = null, began = -1, first = null, last = null, low = 100;
+    let t = 0, hurt = 0, w = null, began = -1, first = null, last = null, low = 100, breath = 100;
     const press = (code, on) => g.input.simulate(code, on);
     for (; t < maxSec; t += 0.25) {
       w = W();
@@ -88,18 +89,18 @@ async function wall(quest, step, how = 'brace', maxSec = 300, seed = 7) {
         if (!w.inLine || Math.abs(w.pt - w.L / 2) > 5) { // back to the middle of the line, a pace and a half behind the front rank
           const o = w.offAt(w.N / 2) - 1.4; pl.teleport(w.ax + w.ux * (w.L / 2) + w.nx * o, w.az + w.uz * (w.L / 2) + w.nz * o, Math.atan2(w.nx, w.nz));
         }
-        if (how === 'brace' || how === 'guard') { // 'guard': as 'brace', and he keeps his shield up between rushes too
-          press('Mouse2', how === 'guard' || w.phase === 'warn');
+        if (how !== 'idle') { // 'guard': the shield up all the time; 'parry': up at their horn and whenever one of them draws back to thrust at him
+          press('Mouse2', how === 'guard' || w.phase === 'warn' || (how === 'parry' && !!w.stk));
           if (w.phase === 'reel' && w.pushCd <= 0) { press('KeyG', true); g.frame(1 / 60, false); press('KeyG', false); }
         }
-        for (const e of w.live()) { if (!seen.has(e)) seen.set(e, t); else if (t - seen.get(e) > 6 && !e.dead) g.combat.kill(e); }
+        for (const e of w.live()) { if (!seen.has(e)) { seen.set(e, t); if (!linger && !e.dead) g.combat.kill(e); } else if (t - seen.get(e) >= linger && !e.dead) g.combat.kill(e); }
       } else if (began >= 0 && (!w || w.gone || w.over || w.mode === 'auto')) break; // it is over, or goes on without him
-      low = Math.min(low, pl.health); hurt += Math.max(0, 100 - pl.health); pl.health = 100;
+      low = Math.min(low, pl.health); hurt += Math.max(0, 100 - pl.health); pl.health = 100; breath = Math.min(breath, pl.stamina);
       await d.run(0.25); if (Math.round(t * 4) % 8 === 0) await wait(10);
     }
     press('Mouse2', false);
     for (let i = 0; i < 16; i++) { pl.health = 100; await d.run(0.5); if (g.mode === 'cutscene') await cine(); } // what the story does next
-    return { quest, step, how, began, seconds: +(t - began).toFixed(1), over: last ? last.over || (w && w.mode === 'auto' ? 'held' : false) : 'no wall', from: start, to: at(), first, last, through: seen.size, hurt: Math.round(hurt), low: Math.round(low), reloads, mode: g.mode, errs: errs.slice(0, 3) };
+    return { quest, step, how, began, seconds: +(t - began).toFixed(1), over: last ? last.over || (w && w.mode === 'auto' ? 'held' : false) : 'no wall', from: start, to: at(), first, last, through: seen.size, hurt: Math.round(hurt), low: Math.round(low), breath: Math.round(breath), reloads, mode: g.mode, errs: errs.slice(0, 3) };
   } finally { Math.random = real; }
 }
 

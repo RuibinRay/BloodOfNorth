@@ -190,7 +190,8 @@ export class ShieldWall {
   rush() {
     const g = this.g, C = this.cfg, p = g.player, W = this.L / this.S;
     this.surges++; this.drawTo = 0; this.draw = -0.25; this.heave[1] = 1; this.heave[0] = 0.5;
-    const braced = this.inLine && (p.blocking || g.input.held('block') || this.T - this.cryAt < 2.5), gave = [];
+    const up = p.blocking || g.input.held('block'), cried = this.T - this.cryAt < 2.5, braced = this.inLine && ((up && p.stamina >= C.braceNeed) || cried), gave = [];
+    if (this.inLine && up && !braced) g.ui.toast('No breath left to brace. The rush goes through you');
     let held = 0;
     for (let s = 0; s < this.S; s++) {
       const o = this.cnt[0][s], e = Math.max(1, this.cnt[1][s]), near = braced && Math.abs(this.pt - (s + 0.5) * W) <= C.braceR + W / 2;
@@ -369,6 +370,10 @@ export class ShieldWall {
     this.T += dt; this.count();
     if (live && !this.over && !this.o.rest) {
       this.locate();
+      // a raised shield is heavy: while he stands in the line with it up his breath goes, and none comes back
+      const p = g.player, up = this.inLine && p.blocking && this.phase !== 'wait' && this.phase !== 'advance';
+      if (up) { p.stamina = Math.max(0, p.stamina - this.cfg.guard * (g.skills.has('s_wall') ? 0.5 : 1) * dt); p.staminaDelay = Math.max(p.staminaDelay, 0.5); }
+      this.spent = up && p.stamina < this.cfg.braceNeed; this.heavy = up && !this.spent && p.stamina < 40;
       if (this.phase === 'wait') this.threat(dt);
       else if (this.phase === 'advance') { this.approach = Math.max(0, this.approach - this.cfg.pace * dt); this.threat(dt); if (this.approach <= 0) this.crash(); }
       else {
@@ -456,7 +461,9 @@ export class ShieldWall {
     const state = order.map((s) => (this.open[s] ? 'open' : this.phase === 'reel' && this.reeling[s] ? 'reel' : this.off[s] < mean - 0.9 || this.cnt[0][s] < this.cnt[1][s] * 0.55 ? 'sag' : ''));
     let text, tone = '';
     if (this.phase === 'advance') text = 'They are coming on';
-    else if (this.phase === 'warn') { text = this.inLine ? 'Their horn. Brace: hold {block}' : 'Their horn. Get into the line and hold {block}'; tone = 'red'; }
+    else if (this.phase === 'warn') { text = !this.inLine ? 'Their horn. Get into the line and hold {block}' : this.spent ? 'Their horn, and no breath to brace' : 'Their horn. Brace: hold {block}'; tone = 'red'; }
+    else if (this.spent) { text = 'Your arm is spent. Lower the shield and breathe'; tone = 'red'; }
+    else if (this.heavy && this.phase !== 'reel') text = 'The shield is heavy. Lower it between rushes';
     else if (this.phase === 'reel') { text = 'They reel. Sound the horn: {horn}'; tone = 'hot'; }
     else if (!this.inLine && this.pd < -C.inLine) text = 'Stand in the line: the men near you hold';
     else text = push ? `Ground won: ${Math.max(0, Math.round(mean))} of ${C.goal} paces` : `Rushes stood: ${this.surges} of ${C.surges}`;

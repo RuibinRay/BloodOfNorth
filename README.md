@@ -24,7 +24,9 @@ now built in that colour. **Fixed, three things that were never in the world** b
 middle of a line and swallowed the code after it: Bjorn's grey horse in Act IV (Eirik rode on nothing, since 0.16),
 Brokk's hammer at the smithy in the Epilogue, and the far downs of Wessex. **The shield walls were replayed** by a
 script after the merge and all three end as they should; the replay is now part of `npm run check` (see the roadmap's
-known gaps for what it found about how hard they are).
+known gaps for what it found about how hard they are). **A raised shield in the wall now costs breath**: it found
+that keeping the shield up the whole time cost nothing and won every wall, so holding it up now drains breath, none
+comes back while it is up, and a brace needs breath to count; the player who does that now loses the harbor town.
 
 **In 0.27.** The real shield walls are in. They were built in another session on a branch of their own
 (`real-shield-walls`, from 0.22) and are now merged with everything since: the Battle of Iron Shore (Act III) and both
