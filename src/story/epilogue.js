@@ -36,7 +36,8 @@ export class E8Part extends A7Part {
     const F = c.W.stages.forge2, ax = F.anvil.x, az = F.anvil.z, ay = w.groundAt(ax, az) + 0.77;
     this.ring = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.034, 8, 22), new THREE.MeshStandardMaterial({ color: 0xd8b04a, metalness: 0.9, roughness: 0.3, emissive: 0x3a2a08 }));
     this.ring.rotation.x = Math.PI / 2; this.ring.position.set(ax, ay, az); this.ring.visible = false; g.scene.add(this.ring);
-    this.hammer = makeItem('hammer'); this.hammer.scale.setScalar(1.5); this.hammer.rotation.set(-Math.PI / 2, 0, 0); this.hammer.position.set(ax - 1.8, w.groundAt(ax, az) + 2.25, az + 0.6); // the smithy is open on its west side, toward the yard this.hammer.visible = false; g.scene.add(this.hammer);
+    // the smithy is open on its west side, toward the yard
+    this.hammer = makeItem('hammer'); this.hammer.scale.setScalar(1.5); this.hammer.rotation.set(-Math.PI / 2, 0, 0); this.hammer.position.set(ax - 1.8, w.groundAt(ax, az) + 2.25, az + 0.6); this.hammer.visible = false; g.scene.add(this.hammer);
     w.addInteractable({ id: 'e8kneel', pos: () => { const s = this.E.birch.stone; return { x: s.x + 0.9, z: s.z + 0.9 }; }, x: 0, z: 0, r: 2.6, priority: 3, label: 'Kneel beside the young raven', enabled: () => q.at('q_lesson', 'home') && this.landed && !this.busy, use: () => this.playHome() });
   }
   clear(phase) {

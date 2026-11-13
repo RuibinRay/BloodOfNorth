@@ -44,15 +44,16 @@ function deerModel(stag) {
   }
   return g;
 }
-export function wolfModel() {
-  const g = new THREE.Group(), fur = 0x6e6e72, low = 0x5c5c60;
+/** fur, low: the colour of his pelt, and of his legs, muzzle and tail (a hound is a wolf in brown). */
+export function wolfModel(fur = 0x6e6e72, low = 0x5c5c60) {
+  const g = new THREE.Group(), wild = fur === 0x6e6e72, pale = (hex) => (wild ? hex : fur);
   g.add(mesh([
     pelt(tint(at(capsule(0.18, 0.58, 8), 0, 0.6, 0, Math.PI / 2, 0, 0, 1, 1, 1.02), fur, 0.14, 1)),
-    pelt(tint(at(sphere(0.22, 8, 6), 0, 0.61, 0.27, 0, 0, 0, 0.95, 1.08, 1.0), 0x747478, 0.14, 11)),   // a deep chest
+    pelt(tint(at(sphere(0.22, 8, 6), 0, 0.61, 0.27, 0, 0, 0, 0.95, 1.08, 1.0), pale(0x747478), 0.14, 11)),   // a deep chest
     pelt(tint(at(sphere(0.2, 8, 6), 0, 0.6, -0.3, 0, 0, 0, 0.95, 1.0, 1.05), fur, 0.14, 12)),          // and lean haunches
-    pelt(tint(at(sphere(0.2, 7, 5), 0, 0.7, 0.34, 0.3, 0, 0, 1.0, 1.1, 0.9), 0x77777b, 0.14, 10)),     // the ruff of his neck
-    pelt(tint(at(sphere(0.15, 7, 6), 0, 0.8, 0.52, 0, 0, 0, 0.9, 0.92, 1.15), 0x7a7a7e, 0.1, 2)),
-    coat(tint(at(cone(0.075, 0.26, 6), 0, 0.77, 0.76, Math.PI / 2, 0, 0, 1, 1, 0.8), 0x55555a, 0.08, 3)), // the muzzle
+    pelt(tint(at(sphere(0.2, 7, 5), 0, 0.7, 0.34, 0.3, 0, 0, 1.0, 1.1, 0.9), pale(0x77777b), 0.14, 10)),     // the ruff of his neck
+    pelt(tint(at(sphere(0.15, 7, 6), 0, 0.8, 0.52, 0, 0, 0, 0.9, 0.92, 1.15), pale(0x7a7a7e), 0.1, 2)),
+    coat(tint(at(cone(0.075, 0.26, 6), 0, 0.77, 0.76, Math.PI / 2, 0, 0, 1, 1, 0.8), wild ? 0x55555a : low, 0.08, 3)), // the muzzle
     coat(tint(at(box(0.07, 0.022, 0.18), 0, 0.715, 0.72, 0.12, 0, 0), 0x3c3c40, 0.05, 13)),             // the lower jaw, a little open
     tint(at(sphere(0.022, 5, 4), 0, 0.775, 0.885), 0x141416, 0, 14),                                      // the nose
     pelt(tint(at(cone(0.05, 0.15, 4), 0.085, 0.97, 0.47, -0.15, 0, -0.15), fur, 0.05, 4)), pelt(tint(at(cone(0.05, 0.15, 4), -0.085, 0.97, 0.47, -0.15, 0, 0.15), fur, 0.05, 5)),
@@ -67,15 +68,16 @@ export function wolfModel() {
   }
   return g;
 }
-export function horseModel() {
-  const g = new THREE.Group(), hide = 0x7a5636, dark = 0x2e2018;
+/** hide, dark: the colour of his coat, and of his mane, tail and lower legs. */
+export function horseModel(hide = 0x7a5636, dark = 0x2e2018) {
+  const g = new THREE.Group();
   g.add(mesh([
     coat(tint(at(capsule(0.3, 0.96, 8), 0, 1.16, 0, Math.PI / 2, 0, 0, 1, 1, 1.05), hide, 0.1, 1)),
     coat(tint(at(sphere(0.34, 9, 7), 0, 1.2, 0.5, 0, 0, 0, 0.98, 1.06, 0.92), hide, 0.1, 10)),              // the chest
     coat(tint(at(sphere(0.36, 9, 7), 0, 1.22, -0.5, 0, 0, 0, 1.0, 1.04, 0.96), hide, 0.1, 11)),             // the quarters
     coat(tint(at(capsule(0.17, 0.56, 7), 0, 1.6, 0.74, 0.72, 0, 0, 0.85, 1, 1.15), hide, 0.1, 2)),          // the neck, deeper than it is wide
     coat(tint(at(sphere(0.15, 8, 6), 0, 1.97, 1.08, 0.55, 0, 0, 0.8, 0.9, 1.75), hide, 0.08, 3)),
-    coat(tint(at(sphere(0.1, 7, 5), 0, 1.84, 1.29, 0.55, 0, 0, 0.85, 0.85, 1.2), 0x5a3e28, 0.08, 12)),      // the muzzle
+    coat(tint(at(sphere(0.1, 7, 5), 0, 1.84, 1.29, 0.55, 0, 0, 0.85, 0.85, 1.2), hide === 0x7a5636 ? 0x5a3e28 : dark, 0.08, 12)), // the muzzle
     mane(tint(at(box(0.07, 0.62, 0.1), 0, 1.742, 0.579, 0.72, 0, 0), dark, 0.16, 4)),                         // the mane, lying along the crest of the neck
     mane(tint(at(box(0.07, 0.16, 0.12), 0, 2.07, 0.99, 0.9, 0, 0), dark, 0.16, 13)),                        // the forelock
     mane(tint(at(capsule(0.075, 0.66, 6), 0, 0.92, -0.9, -0.22, 0, 0), dark, 0.16, 5)),                     // the tail, hanging

@@ -350,8 +350,7 @@ export class Act2 {
   /** Kettil on his black horse and six men on foot: built once, driven along a path. */
   column() {
     if (this.riders) return this.riders;
-    const g = this.g, horse = horseModel();
-    horse.traverse((o) => { if (o.material) { o.material = o.material.clone(); o.material.color.set(0x34302e); } }); g.scene.add(horse);
+    const g = this.g, horse = horseModel(0x221c18, 0x0e0c0a); g.scene.add(horse); // a black horse
     const k = g.addNPC('kettil', CAST2.kettil); k.h.hold('R', 'smallaxe'); k.h.hold('L', 'buckler'); k.mode = 'crew';
     const men = this.raid.pool.slice(0, 6);
     return (this.riders = { horse, k, men, pos: horse.position, yaw: 0, path: [], speed: 0, hop: 0, on: false, mounted: true });

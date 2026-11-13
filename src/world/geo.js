@@ -269,6 +269,7 @@ function figureMat(mat, metal = true) {
       .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, 0.5, fMail);');
     if (!metal) sh.fragmentShader = sh.fragmentShader.replace('float fMail = step(0.6, vCell.x) * step(0.4, vCell.y);', 'float fMail = 0.0;');
   };
+  mat.customProgramCacheKey = () => 'sheet' + (metal ? 1 : 0); // the two kinds must not share one compiled program
   return mat;
 }
 

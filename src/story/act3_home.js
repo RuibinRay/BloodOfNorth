@@ -16,8 +16,8 @@ export class A3Home {
   build() {
     const g = this.g, c = this.c, q = g.quests, w = g.world;
     for (const id of ['brokk', 'astrid', 'torvald', 'ari', 'bowyer']) { const n = g.addNPC(id, CAST3[id]); n.visible = false; n.talk = () => c.talkTo(id); }
-    const beast = (col, sc) => { const m = horseModel(); m.traverse((o) => { if (o.material) { o.material = o.material.clone(); o.material.color.set(col); } }); m.scale.setScalar(sc); m.visible = false; g.scene.add(m); return m; };
-    this.mule = beast(0xb8b0a4, 0.8); this.horse = beast(0xc8a888, 1.1);
+    const beast = (hide, dark, sc) => { const m = horseModel(hide, dark); m.scale.setScalar(sc); m.visible = false; g.scene.add(m); return m; };
+    this.mule = beast(0x6e6258, 0x2e2822, 0.8); this.horse = beast(0x7a4e2c, 0x2a1c12, 1.1);
     const I = (id, pos, label, enabled, use, o = {}) => w.addInteractable({ id, x: pos[0], z: pos[1], r: 3, priority: 3, label, enabled, use, ...o });
     I('a3sail', c.B(-2.2, 236), 'Board the Sea-Raven', () => q.at('q_isle', 'sail') || q.at('q_healer', 'sail'), () => this.sail(), { r: 3.6 });
     I('a3thing', c.B(-92, 92), 'Call the people to the Thing stones', () => q.at('q_fifty', 'thing') && !this.called, () => this.thing(), { r: 3.4 });

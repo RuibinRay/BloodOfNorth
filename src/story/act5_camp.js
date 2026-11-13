@@ -19,7 +19,8 @@ export class A5Camp extends A4Part {
   build() {
     const g = this.g, c = this.c, q = g.quests, w = g.world, HC = this.HC;
     this.ottar = g.addNPC('ottar', CAST5.ottar); this.ottar.visible = false;
-    for (let i = 0; i < 4; i++) { const m = wolfModel(); m.traverse((o) => { if (o.material) { o.material = o.material.clone(); o.material.color.set(i % 2 ? 0x9a7a5a : 0x6a5a48); } }); m.scale.setScalar(0.85); m.visible = false; g.scene.add(m); this.dogs.push(m); }
+    // the hounds are wolves in brown
+    for (let i = 0; i < 4; i++) { const m = i % 2 ? wolfModel(0x7a5e44, 0x5a4634) : wolfModel(0x54463a, 0x3e342c); m.scale.setScalar(0.85); m.visible = false; g.scene.add(m); this.dogs.push(m); }
     const I = (id, pos, label, enabled, use, o = {}) => w.addInteractable({ id, x: pos[0], z: pos[1], r: 2.8, priority: 3, label, enabled, use, ...o });
     HC.pits.forEach((pt, i) => I('a5pit' + i, [pt.x, pt.z], 'Climb into the pit', () => q.at('q_taken', 'pits') && !this.inPit, () => this.enterPit(i), { r: 3.2 }));
     I('a5free', this.X(-64.4, 18.6), 'Cut them loose', () => q.at('q_taken', 'free') && !g.activity, () => this.free());

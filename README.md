@@ -19,7 +19,10 @@ black, have heads, eyes, heavy beaks, wedge tails and wings with spread fingers 
 **Weapons and tools** are made of something: blades and axe-heads are hammered steel that takes the light, hafts and
 bows are wood with a grain, sword and seax grips are wrapped. Seven more Higgsfield pictures (about 10 cents; $5.01 of
 the approved $10 in all), worked into two new sheets, `beast.jpg` and `gear.jpg`, that work the way the figures'
-sheet does.
+sheet does. The goat, the pigs and the cow at Bjornstead are covered too, and a horse or a hound of another colour is
+now built in that colour. **Fixed, three things that were never in the world** because a comment had been put in the
+middle of a line and swallowed the code after it: Bjorn's grey horse in Act IV (Eirik rode on nothing, since 0.16),
+Brokk's hammer at the smithy in the Epilogue, and the far downs of Wessex.
 
 **In 0.27.** The real shield walls are in. They were built in another session on a branch of their own
 (`real-shield-walls`, from 0.22) and are now merged with everything since: the Battle of Iron Shore (Act III) and both

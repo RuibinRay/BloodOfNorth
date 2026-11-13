@@ -24,7 +24,9 @@ export class A4Six extends A4Part {
     const cat = new THREE.Group(), fur = (geo) => new THREE.Mesh(tint(geo, 0x8a8478, 0.2, 3), M.vcPlain);
     cat.add(fur(at(box(0.34, 0.15, 0.13), 0, 0.17, 0)), fur(at(box(0.12, 0.12, 0.12), 0.2, 0.25, 0)), fur(at(cyl(0.015, 0.02, 0.3, 4), -0.24, 0.26, 0, 0, 0, 0.8)));
     cat.visible = false; g.scene.add(cat); this.cat = cat;
-    const hm = horseModel(), grey = new THREE.MeshLambertMaterial({ color: 0xa4a4a8 }), dark = new THREE.MeshLambertMaterial({ color: 0x5a5a60 }); let k = 0; hm.traverse((o) => { if (o.isMesh) o.material = k++ % 3 === 2 ? dark : grey; }); // Bjorn's grey hm.visible = false; g.scene.add(hm);
+    // Bjorn's grey. (From 0.16 until 0.28 the comment sat in the middle of this line and swallowed the two statements
+    // after it, so the horse was never put in the world: Eirik rode on nothing.)
+    const hm = horseModel(0xa4a4a8, 0x5a5a60); hm.visible = false; g.scene.add(hm);
     this.ride = { model: hm, pos: hm.position, yaw: 1, speed: 0, hop: 0, on: false, load: null };
     this.tracks = w.makeTracks(IS.fedje.trail); this.tracks.visible = false;
     this.ruin = [place('solvik', 'quay', 44, 40).x, place('solvik', 'quay', 44, 40).z]; this.cave = [place('solvik', 'cave').x, place('solvik', 'cave').z]; this.rest = [place('solvik', 'quay', 30, 14.4).x, place('solvik', 'quay', 30, 14.4).z];

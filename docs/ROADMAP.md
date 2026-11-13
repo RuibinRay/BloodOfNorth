@@ -48,7 +48,9 @@ playtests; none are claimed until then.
 ## Known gaps in 0.28
 
 - **The animals were looked at standing still, in a line-up.** The wolf's and the horse's legs are now two pieces and a foot that swing from the hip as one, as the single stick did; nobody has watched them run, or ridden the horse, since. The ravens were not looked at perched or in flight.
-- **Deer, hares and sheep were covered, not rebuilt**: the same shapes as before under a coat or a fleece.
+- **Deer, hares, sheep, the goat, the pigs and the cow were covered, not rebuilt**: the same shapes as before under a coat or a fleece.
+- **Three things were missing from the world for a long time and nothing noticed**: Bjorn's grey horse (Act IV, since 0.16), Brokk's hammer (Epilogue), the far downs of Wessex. In each a comment in the middle of a line had swallowed the statement that put the thing in the scene. I searched the source for the same mistake and found no more, with a search that looks for code-like text after a comment; it cannot prove there are none. The checks did not see any of the three, because they do not look at what is drawn.
+- **The full check failed once on one chapter with "the game did not start"** (Act VI, q_anvil) and passed on it twice straight after, alone, and in a second full run: a page that was slow to load while two others ran, not a fault in the chapter. The check has no retry, so this can happen again.
 - **What a weapon's piece is made of is told from its colour** (greys steel, browns wood): a bronze guard has a wood grain, and so has a loaf of bread. Two were set by hand: Rurik's painted shield is boards, sword and seax grips are wrapped.
 - **The rank and file's spears and axes, arrows in flight and thrown axes** are still flat colour.
 - **The short coat is nearly smooth**: the picture for it came back almost flat, and what shows on a horse is mostly its colour.

@@ -74,7 +74,8 @@ function wessex(ctx, world, scene) {
   const wl = W('wall'); ctx.b.add(at(box(0.7, 1.0, 22, 2.2), wl[0], gy(...wl) + 0.4, wl[1]), M.stone); ctx.addBox(wl[0], wl[1], 0.35, 11, 0, 1);
   // the ships, while they are here
   st('ships', false, (c, w, objs) => { const a = afloat(w, objs, { ...SR, sail: false }, ...W('ship'), Math.PI / 2, 2.2, 7.6), b = afloat(w, objs, { ...KNARR, sail: false }, ...W('knarr'), Math.PI / 2, 3.2, 8.6); return { searaven: a, knarr: b }; });
-  const far = new Builder(); range(far, [[-2090, 1990, 44, 270], [-2140, 2230, 54, 330], [-2080, 2470, 46, 280], [-1760, 2570, 38, 250], [-1700, 1840, 34, 230]], 13); // low downs, not mountains scene.add(far.build({ cast: false, receive: false }));
+  // low downs, not mountains
+  const far = new Builder(); range(far, [[-2090, 1990, 44, 270], [-2140, 2230, 54, 330], [-2080, 2470, 46, 280], [-1760, 2570, 38, 250], [-1700, 1840, 34, 230]], 13); scene.add(far.build({ cast: false, receive: false }));
   return { id: 'wessex', s, stages, quayY: qy, stalls, hall: hall.door, farm: farm.door, church: { x: ch[0], z: ch[1] }, bell, wall: { x: wl[0], z: wl[1], y: gy(...wl) + 0.9 }, X };
 }
 
