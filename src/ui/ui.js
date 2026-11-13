@@ -59,7 +59,16 @@ export class UI {
   pulse(kind, k = 1) { const e = this.e.pulse || (this.e.pulse = document.getElementById('pulse')); if (!e) return; e.className = ''; void e.offsetWidth; e.style.setProperty('--k', k.toFixed(2)); e.className = kind + ' on'; }
   /** The arrow struck: a mark on the crosshair (heavier for a kill or a head). */
   hitMark(kind = '') { const e = this.e.crosshair; e.classList.remove('hit', 'kill', 'head'); void e.offsetWidth; e.classList.add('hit'); if (kind) e.classList.add(kind); clearTimeout(this._hm); this._hm = setTimeout(() => e.classList.remove('hit', 'kill', 'head'), 380); }
-  hint(text) { const h = this.e.hint; if (!text) { h.classList.remove('on'); return; } h.innerHTML = this.keys(text); h.classList.add('on'); }
+  /** What the story asks of the player now. It stays until the story changes or clears it. */
+  hint(text) { this.storyHint = text || null; this.drawHint(); }
+  /** A one-time lesson (lock-on, a red flash, the Stormguard...): it sits under the story's hint for a while instead of
+   *  replacing it, so a lesson that fires mid-fight can never wipe out what the fight needs (Eydis's raven, the ledge). */
+  tip(text, sec = Math.max(10, 4 + text.length * 0.05)) { this.tipText = text; this.tipT = sec; this.drawHint(); } // long enough to read
+  drawHint() {
+    const h = this.e.hint, s = this.storyHint, t = this.tipT > 0 ? this.tipText : null;
+    if (!s && !t) { h.classList.remove('on'); return; }
+    h.innerHTML = (s ? this.keys(s) : '') + (t ? `<div class="tip${s ? '' : ' alone'}">${this.keys(t)}</div>` : ''); h.classList.add('on');
+  }
   toast(text) {
     const d = document.createElement('div'); d.textContent = text; this.e.toasts.appendChild(d);
     while (this.e.toasts.children.length > 5) this.e.toasts.firstChild.remove();
@@ -169,6 +178,7 @@ export class UI {
   update(dt) {
     const g = this.g, p = g.player;
     if (this.subT > 0) { this.subT -= dt; if (this.subT <= 0) this.e.subtitle.classList.remove('on'); }
+    if (this.tipT > 0 && (this.tipT -= dt) <= 0) this.drawHint(); // the lesson has been on long enough: the story's hint stays
     if (this.fadeS) {
       const f = this.fadeS; f.t += dt; const k = Math.min(1, f.t / f.dur);
       this.fadeV = f.from + (f.to - f.from) * k; this.e.fade.style.opacity = this.fadeV;

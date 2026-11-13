@@ -97,7 +97,7 @@ export class Fleet {
     });
     g.events.on('mounted', (type) => { if (type !== 'horse' && this.ashore) this.recall(true); });
     g.events.on('allyDown', (n, by) => this.wound(n, by));
-    g.events.on('dismounted', (type) => { if (type === 'ship' && this.crew.length && !this.hornTold) { this.hornTold = true; g.ui.hint('{horn} sounds the horn: the crew come ashore and fight beside you. Sound it again to send them back.'); } });
+    g.events.on('dismounted', (type) => { if (type === 'ship' && this.crew.length && !this.hornTold) { this.hornTold = true; g.ui.tip('{horn} sounds the horn: the crew come ashore and fight beside you. Sound it again to send them back.'); } });
   }
   onSave() {
     const rec = this.rec, s = this.ship;

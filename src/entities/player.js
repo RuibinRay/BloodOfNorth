@@ -216,7 +216,7 @@ export class Player {
     const g = this.game;
     if (this.lock) { this.lock = null; g.audio.play('uiBack'); return; }
     const e = g.combat.active ? g.combat.pickLock(null) : null;
-    if (e) { this.lock = e; g.audio.play('ui'); if (!g.state.flags.lockHint) { g.state.flags.lockHint = true; g.ui.hint('Locked on. The camera and Eirik keep to that man: move round him with {left} and {right}. Flick the mouse to change man; {lock} again lets go.'); } }
+    if (e) { this.lock = e; g.audio.play('ui'); if (!g.state.flags.lockHint) { g.state.flags.lockHint = true; g.ui.tip('Locked on. The camera and Eirik keep to that man: move round him with {left} and {right}. Flick the mouse to change man; {lock} again lets go.'); } }
     else g.ui.toast('No one to lock on to');
   }
   /** Can a storm skill be used: learned, the bar full enough, nothing else in hand. Says why not. */
@@ -312,7 +312,7 @@ export class Player {
     if (g.inventory.has('mail')) dmg *= MAIL; // a mail shirt takes the edge off every blow (Act III)
     // death a heartbeat away: the scar burns, and the Stormguard answers on its own, if he has kept his head
     if (!guarded && this.health - dmg <= STORM.near && this.isMelee() && this.canGuard()) { this.ward -= this.guardCost(); g.events.emit('ward', true); this.wardFlash(attacker.pos); return 'warded'; }
-    if (!guarded && this.health - dmg <= STORM.near && this.adult && !this.calm() && !this.stormDead && this.ward >= this.guardCost() && !g.state.flags.calmHint) { g.state.flags.calmHint = true; g.ui.hint('The Stormguard did not answer: Eirik is too angry. Every blow he throws feeds the anger (the storm bar turns red). Hold {block} and breathe, and it comes back.'); }
+    if (!guarded && this.health - dmg <= STORM.near && this.adult && !this.calm() && !this.stormDead && this.ward >= this.guardCost() && !g.state.flags.calmHint) { g.state.flags.calmHint = true; g.ui.tip('The Stormguard did not answer: Eirik is too angry. Every blow he throws feeds the anger (the storm bar turns red). Hold {block} and breathe, and it comes back.'); }
     if (guarded) {
       if (this.blockT < this.weaponDef().parry + (g.skills.has('s_turn') ? 0.1 : 0)) {
         g.audio.play('parry'); this.h.play('parry', 0.3);
