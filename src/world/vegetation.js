@@ -5,6 +5,7 @@
 import * as THREE from 'three';
 import { rng, noise2, clamp } from '../core/util.js';
 import { M, at, cyl, cone, tint, merge, patch, hazeRange } from './geo.js';
+import { ART } from '../data/art.js';
 import { heightAt, slopeAt, forestDensity, distToPaths, inField, riverX, HALF } from './terrain.js';
 import { VILLAGE, POI, ISLES, SEA_CLEAR, GREAT, MAIN } from './layout.js';
 import { realmClear } from './realm.js';
@@ -20,6 +21,48 @@ function birchGeo() {
   const blobs = [[0, 6.4, 0, 1.9], [0.9, 5.5, 0.4, 1.4], [-0.8, 5.7, -0.5, 1.5], [0.2, 7.5, -0.3, 1.2]];
   blobs.forEach(([x, y, z, s], i) => parts.push(tint(at(new THREE.IcosahedronGeometry(1, 1), x, y, z, 0, i, 0, s, s * 0.85, s), i % 2 ? 0xc79a2e : 0xb9832a, 0.35, i + 5)));
   parts.push(tint(at(cyl(0.03, 0.05, 2.2, 4), 0.5, 5.0, 0.2, 0, 0, -0.7), 0xcfcabd, 0.2, 9));
+  return merge(parts);
+}
+// ---- trees with bark and boughs -----------------------------------------------------------------------------------
+// Close to, a tree wears a picture (public/art/world, built by tools/art/world.py from Higgsfield originals): bark down
+// its left quarter, foliage in the rest. A piece's own UVs are squeezed into its strip of that picture.
+const strip = (g, u0, u1, vr = 1) => { const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, u0 + uv.getX(i) * (u1 - u0), uv.getY(i) * vr); return g; };
+/** A pine: a barked trunk and five skirts of boughs. Each skirt is an open cone whose top is solid needles and whose
+ *  lower third is hanging boughs cut out of the picture, so the layers below show through its ragged edge. */
+function pineNearGeo() {
+  const parts = [tint(strip(at(new THREE.CylinderGeometry(0.1, 0.3, 10, 6, 1, true), 0, 5, 0), 0.012, 0.238, 3), 0xe6dcd2, 0.2, 1)];
+  const layers = [[3.1, 4.5, 2.9], [2.7, 4.2, 4.6], [2.2, 3.9, 6.2], [1.65, 3.6, 7.8], [1.1, 3.3, 9.5]];
+  layers.forEach(([r, h, y], i) => parts.push(tint(strip(at(new THREE.ConeGeometry(r, h, 10, 1, true), 0, y, 0, 0, i * 0.9, 0), 0.262, 0.992), i % 2 ? 0x9cb4c4 : 0x86a0b2, 0.25, i + 2))); // a cool tint: the picture is a yellower, lighter green than the far trees
+  return merge(parts);
+}
+/** A birch: a white barked trunk, a small core of leaf-covered masses, and sprays of twigs bursting outward from it
+ *  in every direction, so that the crown's whole outline is leaves against the sky. */
+function birchNearGeo() {
+  const parts = [tint(strip(at(new THREE.CylinderGeometry(0.07, 0.16, 7, 6, 1, true), 0, 3.5, 0), 0.012, 0.238, 2), 0xffffff, 0.1, 3)];
+  const core = [[0, 6.3, 0, 1.3], [0.7, 5.6, 0.3, 1.0], [-0.6, 5.8, -0.4, 1.05], [0.15, 7.2, -0.2, 0.9]];
+  core.forEach(([x, y, z, sc], i) => parts.push(tint(strip(at(new THREE.IcosahedronGeometry(1, 1), x, y, z, 0, i, 0, sc, sc * 0.85, sc), 0.262, 0.618), i % 2 ? 0xd2bc8e : 0xbea878, 0.3, i + 5)));
+  const R = rng(77), m = new THREE.Matrix4(), q = new THREE.Quaternion(), roll = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), dir = new THREE.Vector3(), one = new THREE.Vector3(1, 1, 1);
+  const spray = (cx, cy, cz, w, seed) => { // one spray, growing out of (cx, cy, cz) along dir; lit as part of a round crown, not as a flat card
+    const g = new THREE.PlaneGeometry(w, w * 1.12), n = g.attributes.normal;
+    g.translate(0, w * 0.46, 0);
+    q.setFromUnitVectors(up, dir); roll.setFromAxisAngle(up, R() * 6.28); q.multiply(roll);
+    g.applyMatrix4(m.compose(new THREE.Vector3(cx, cy, cz), q, one));
+    const nx = dir.x * 0.75, ny = dir.y * 0.75 + 0.45, nz = dir.z * 0.75, nl = Math.hypot(nx, ny, nz);
+    for (let k = 0; k < n.count; k++) n.setXYZ(k, nx / nl, ny / nl, nz / nl);
+    parts.push(tint(strip(g, 0.632, 0.992), seed % 3 ? 0xf6e6c4 : 0xe2cea4, 0.2, 20 + seed));
+  };
+  const N = 16;
+  for (let i = 0; i < N; i++) { // the crown: sprays spread evenly round a sphere (a spiral), each knocked a little off true
+    const yy = 1 - (i + 0.5) / N * 1.5, rr = Math.sqrt(Math.max(0, 1 - yy * yy)), a = i * 2.39996 + R() * 0.5;
+    dir.set(Math.cos(a) * rr + (R() - 0.5) * 0.5, yy + (R() - 0.5) * 0.4, Math.sin(a) * rr + (R() - 0.5) * 0.5).normalize();
+    spray(dir.x * 0.25, 6.2 + dir.y * 0.3, dir.z * 0.25, 3.0 + R() * 0.9, i);
+  }
+  for (let i = 0; i < 7; i++) { // and lower boughs, hanging outward and down from the trunk
+    const a = i * 0.9 + R() * 0.5;
+    dir.set(Math.cos(a), -0.35 - R() * 0.35, Math.sin(a)).normalize();
+    spray(dir.x * 0.3, 5.0 + R() * 0.9, dir.z * 0.3, 2.4 + R() * 0.7, 40 + i);
+  }
+  parts.push(tint(strip(at(new THREE.CylinderGeometry(0.03, 0.05, 2.2, 4, 1, true), 0.5, 5.0, 0.2, 0, 0, -0.7), 0.012, 0.238), 0xffffff, 0.1, 9));
   return merge(parts);
 }
 /** The same trees as seen from far off: the same height, spread and colours in a few flat-sided pieces. */
@@ -88,7 +131,7 @@ export function scatterVegetation(scene, world, quality) {
   const cells = []; // { near, far, x, y, z, r, lodAt, range }
   const lodAt = quality === 'high' ? 300 : quality === 'low' ? 120 : 200, grassRange = quality === 'high' ? 110 : quality === 'low' ? 70 : 90;
   /** Put a batch of instances (each 16 numbers of matrix and 3 of colour, indexed by `idx`) on the map as one cell. */
-  const cellOf = (geo, mat, mats, cols, idx, { cast, low = null, range = Infinity }) => {
+  const cellOf = (geo, mat, mats, cols, idx, { cast, low = null, lowMat = null, ready = null, range = Infinity }) => {
     const mesh = new THREE.InstancedMesh(geo, mat, idx.length), ic = new Float32Array(idx.length * 3);
     idx.forEach((i, k) => { mesh.instanceMatrix.array.set(mats.subarray(i * 16, i * 16 + 16), k * 16); ic.set(cols.subarray(i * 3, i * 3 + 3), k * 3); });
     mesh.instanceColor = new THREE.InstancedBufferAttribute(ic, 3); mesh.instanceMatrix.needsUpdate = true;
@@ -96,16 +139,16 @@ export function scatterVegetation(scene, world, quality) {
     scene.add(mesh);
     let far = null;
     if (low) { // the same instances, drawn with the simpler shape
-      far = new THREE.InstancedMesh(low, mat, 0); far.count = idx.length; far.instanceMatrix = mesh.instanceMatrix; far.instanceColor = mesh.instanceColor;
+      far = new THREE.InstancedMesh(low, lowMat || mat, 0); far.count = idx.length; far.instanceMatrix = mesh.instanceMatrix; far.instanceColor = mesh.instanceColor;
       far.boundingSphere = mesh.boundingSphere.clone(); far.castShadow = false; far.receiveShadow = true; far.visible = false; scene.add(far);
     }
     const c = mesh.boundingSphere.center;
-    cells.push({ near: mesh, far, x: c.x, y: c.y, z: c.z, r: mesh.boundingSphere.radius, lodAt, range });
+    cells.push({ near: mesh, far, ready, x: c.x, y: c.y, z: c.z, r: mesh.boundingSphere.radius, lodAt, range });
   };
   const byCell = (n, size, xz) => { const m = new Map(); for (let i = 0; i < n; i++) { const [x, z] = xz(i), k = Math.floor(x / size) + ',' + Math.floor(z / size); let a = m.get(k); if (!a) m.set(k, (a = [])); a.push(i); } return [...m.values()]; };
   /** A list of things of one shape, in cells `size` metres across. The matrices and colours are made in the list's own
    *  order, so the random stream, and with it every tree in the valley, is exactly where it was. */
-  const instanced = (geo, mat, list, { cast = true, collide = 0, hue = 0.12, size = 128, low = null, range = Infinity } = {}) => {
+  const instanced = (geo, mat, list, { cast = true, collide = 0, hue = 0.12, size = 128, low = null, lowMat = null, ready = null, range = Infinity } = {}) => {
     const mats = new Float32Array(list.length * 16), cols = new Float32Array(list.length * 3);
     list.forEach((t, i) => {
       e.set((R() - 0.5) * 0.06, t.ry, (R() - 0.5) * 0.06); q.setFromEuler(e);
@@ -115,13 +158,24 @@ export function scatterVegetation(scene, world, quality) {
       col.setRGB(k * (1 + (R() - 0.5) * hue), k, k * (1 - R() * hue)).toArray(cols, i * 3);
       if (collide) world.addCircle(t.x, t.z, collide * t.sc, 8);
     });
-    for (const idx of byCell(list.length, size, (i) => [list[i].x, list[i].z])) cellOf(geo, mat, mats, cols, idx, { cast, low, range });
+    for (const idx of byCell(list.length, size, (i) => [list[i].x, list[i].z])) cellOf(geo, mat, mats, cols, idx, { cast, low, lowMat, ready, range });
   };
   const treeMat = patch(new THREE.MeshLambertMaterial({ vertexColors: true }), { sway: 0.0032, snow: 0.8 });
   const birchMat = patch(new THREE.MeshLambertMaterial({ vertexColors: true }), { sway: 0.006, snow: 0.7 });
-  const pine = pineGeo(), birch = birchGeo(), pineFar = pineFarGeo(), birchFar = birchFarGeo(), rock = rockGeo();
-  instanced(pine, treeMat, pines, { collide: 0.36, low: pineFar });
-  instanced(birch, birchMat, birches, { collide: 0.2, hue: 0.2, low: birchFar });
+  // Close to, trees wear their pictures (when the game has them); far off, and until a picture has loaded, they are
+  // the plain shapes. One draw for a cell of trees either way.
+  const W3 = ART.world || {}, pineFar = pineFarGeo(), birchFar = birchFarGeo(), rock = rockGeo();
+  const pictured = (url, sway, snow) => {
+    const ready = { ok: false }, map = new THREE.TextureLoader().load(url, () => { ready.ok = true; });
+    map.colorSpace = THREE.SRGBColorSpace; map.wrapS = THREE.ClampToEdgeWrapping; map.wrapT = THREE.RepeatWrapping; map.anisotropy = 4;
+    return { ready, mat: patch(new THREE.MeshLambertMaterial({ map, vertexColors: true, side: THREE.DoubleSide, alphaTest: 0.42 }), { sway, snow, upNormal: true }) }; // both sides of a bough take the light alike
+  };
+  const pinePic = W3.pine ? pictured(W3.pine, 0.0032, 0.8) : null, birchPic = W3.birch ? pictured(W3.birch, 0.006, 0.7) : null;
+  const pine = pinePic ? pineNearGeo() : pineGeo(), birch = birchPic ? birchNearGeo() : birchGeo();
+  const pineOpt = { collide: 0.36, low: pineFar, ...(pinePic ? { lowMat: treeMat, ready: pinePic.ready } : {}) }, pineMat = pinePic ? pinePic.mat : treeMat;
+  const birchOpt = { collide: 0.2, hue: 0.2, low: birchFar, ...(birchPic ? { lowMat: birchMat, ready: birchPic.ready } : {}) }, birchNearMat = birchPic ? birchPic.mat : birchMat;
+  instanced(pine, pineMat, pines, pineOpt);
+  instanced(birch, birchNearMat, birches, birchOpt);
 
   // bushes along the forest edge, rocks everywhere
   const bushes = [], rocks = [];
@@ -219,8 +273,8 @@ export function scatterVegetation(scene, world, quality) {
       ir.push({ x, z, y: h - sc * 0.2, sc, sx: 0.8 + R4() * 0.6, sy: 0.7 + R4() * 0.5, sz: 0.8 + R4() * 0.6, ry: R4() * 6.28, big: sc > 1.05 });
     }
   }
-  instanced(pine, treeMat, ip, { collide: 0.36, low: pineFar });
-  instanced(birch, birchMat, ib, { collide: 0.2, hue: 0.2, low: birchFar });
+  instanced(pine, pineMat, ip, pineOpt);
+  instanced(birch, birchNearMat, ib, birchOpt);
   instanced(rock, M.vc, ir, { hue: 0.05 });
   ir.forEach((r) => { if (r.big) world.addCircle(r.x, r.z, 0.78 * r.sc, 1.2 * r.sc); });
   /** Each frame, before drawing: which cells are worth drawing from where the camera is (and nothing past the haze). */
@@ -228,7 +282,7 @@ export function scatterVegetation(scene, world, quality) {
     const haze = hazeRange(cam, density), cx = cam.position.x, cy = cam.position.y, cz = cam.position.z;
     let shown = 0;
     for (const c of cells) {
-      const d = Math.hypot(c.x - cx, c.y - cy, c.z - cz) - c.r, seen = d < Math.min(haze, c.range), near = seen && (!c.far || d < c.lodAt);
+      const d = Math.hypot(c.x - cx, c.y - cy, c.z - cz) - c.r, seen = d < Math.min(haze, c.range), near = seen && (!c.far || (d < c.lodAt && (!c.ready || c.ready.ok)));
       c.near.visible = near; if (c.far) c.far.visible = seen && !near;
       if (seen) shown++;
     }
