@@ -41,6 +41,13 @@ The frame rate has not been measured since the first slices; what follows is cou
   and those areas and each island's ground are not drawn once the haze has taken them (`hazeCull`, `cullHazed`).
 - **A person is one skinned mesh and a face** (`fuse` in `src/entities/humanoid.js`): each piece is bound with full
   weight to the joint it hangs from, so the joints are the bones and the animation code is unchanged.
+  A figure's joints (`h.body`) and its two meshes (`h.bodyMesh`, `h.faceMesh`) are three separate children of its
+  root: anything that swaps one figure for another must move all three (`Player.setLook`).
+- **What a figure wears is one sheet of six squares** (`TEX.figure`: wool, fur, mail, plain, hair, leather). Each
+  piece is told apart by the colour it was given (`stuffOf`), says which square it is made of in a `cell` attribute,
+  and has its uv turned into repeats of that stuff by its real size (`dress`); the material picks the square in the
+  shader (`figureMat` in `src/world/geo.js`), so it is still one material and one draw. The ground, the shore and the
+  water are patched the same way (`GROUND`, `waterPatch`), and the trees draw bark and boughs from one picture each.
 - **Resolution follows the frame rate** (`Game.adaptRes`), and Settings has a frame counter.
 
 Counted in one frame, before and after: Hrafnvik 4.8 million triangles to 0.96 million; the open-world farm 4.9 to
@@ -71,7 +78,13 @@ tested the same way, including loading every step cold and the chapter-to-chapte
 
 `npm run check` (`tools/check.mjs`, with its in-page half in `tools/check/page.js`) runs the saved checks in a
 headless Chrome over the DevTools protocol, with no extra packages: every chapter started from the Acts menu and
-compared with `tools/check/expected.json`, five scenes held to a drawing budget, and one fight beside two companions.
+compared with `tools/check/expected.json` (and failed if Eirik has no body in the scene), five scenes held to a
+drawing budget, and one fight beside two companions.
+
+To look at the game without a window: `node tools/shot.mjs "<lines of JavaScript>"` runs lines in the game's page in a
+headless Chrome and saves pictures to `.playtest/`. `window.__check.lineup([...names])` stands any of the cast in a
+row to be looked at, and `(await import('/tools/check/looks.js')).report()` lists where a figure and its portrait's
+description disagree.
 
 Not covered: human play feel, real pointer-lock mouse aiming, gamepad on hardware, browsers other
 than the embedded Chromium, and long-session memory.

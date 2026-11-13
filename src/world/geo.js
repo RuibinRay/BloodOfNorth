@@ -240,6 +240,32 @@ export function initTextures() {
   })();
 }
 
+// ---- what the figures wear ---------------------------------------------------------------------------------
+// One material and one draw for a whole figure, yet wool, fur, mail, leather and hair on it: TEX.figure is a sheet of
+// six squares, every vertex says which square its piece is made of (`cell`: the square's corner on the sheet) and its
+// uv counts repeats of that stuff, so a cloak can carry three repeats of the weave and a belt half of one. Each square
+// holds one repeat with a border of itself round it (tools/art/world.py), so nothing shows where a repeat ends.
+/** Where each stuff is on the sheet, as [column, row from the bottom], and how many metres one repeat of it covers. */
+export const STUFF = { wool: [0, 1, 0.16], fur: [1, 1, 0.4], mail: [2, 1, 0.22], plain: [0, 0, 1], hair: [1, 0, 0.2], leather: [2, 0, 0.4] };
+function figureMat(mat) {
+  mat.color.setScalar(1 / 0.6105); // the sheet is a light grey (205) so that it can lighten as well as darken: this gives the colours back their strength
+  mat.onBeforeCompile = (sh) => {
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nattribute vec2 cell;\nvarying vec2 vCell;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvCell = cell;');
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nvarying vec2 vCell;')
+      .replace('#include <map_fragment>', `
+        vec2 fSize = vec2(0.875 / 3.0, 0.875 / 2.0);
+        vec2 fAt = vCell + vec2(0.0625 / 3.0, 0.0625 / 2.0) + fract(vMapUv) * fSize;
+        diffuseColor *= textureGrad(map, fAt, dFdx(vMapUv) * fSize, dFdy(vMapUv) * fSize);
+        float fMail = step(0.6, vCell.x) * step(0.4, vCell.y);`)
+      .replace('#include <metalnessmap_fragment>', '#include <metalnessmap_fragment>\nmetalnessFactor = mix(metalnessFactor, 0.62, fMail);')
+      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, 0.5, fMail);');
+  };
+  return mat;
+}
+
 // ---------------------------------------------------------------------------------------
 // Materials
 // ---------------------------------------------------------------------------------------
@@ -259,7 +285,7 @@ export function initMaterials() {
     TEX[k] = canvasTex(512, (g, sz) => { g.fillStyle = rgb(flat, flat, flat); g.fillRect(0, 0, sz, sz); }, { srgb: false });
     paint(TEX[k], W3[file]);
   }
-  TEX.figure = (() => { // six squares: wool fur mail / leather hair plain
+  TEX.figure = (() => { // six squares: wool fur mail / plain hair leather
     const c = document.createElement('canvas'); c.width = 768; c.height = 512;
     const g = c.getContext('2d'); g.fillStyle = rgb(205, 205, 205); g.fillRect(0, 0, 768, 512);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
@@ -279,7 +305,7 @@ export function initMaterials() {
   M.sail = std({ map: TEX.sail, roughness: 1, side: THREE.DoubleSide });
   M.ember = std({ color: 0x331008, emissive: 0xff5a14, emissiveIntensity: 1.6, roughness: 1 });
   // vertex-coloured: one material for all characters, one for props/animals/items
-  M.char = std({ vertexColors: true, roughness: 0.82, side: THREE.DoubleSide });
+  M.char = figureMat(std({ vertexColors: true, roughness: 0.82, side: THREE.DoubleSide, map: TEX.figure }));
   M.vc = patch(std({ vertexColors: true, roughness: 0.9 }));
   M.vcPlain = std({ vertexColors: true, roughness: 0.85 });
   M.cloth = (hex) => {
@@ -307,12 +333,13 @@ export function tint(g, hex, jitter = 0, seed = 1) {
     arr[i * 3] = c.r * k; arr[i * 3 + 1] = c.g * k; arr[i * 3 + 2] = c.b * k;
   }
   g.setAttribute('color', new THREE.BufferAttribute(arr, 3));
+  g.userData.hex = hex; // what it was asked to be: a figure's pieces are told apart by it (cloth, skin, hair, leather)
   return g;
 }
 export function merge(geos) {
   const list = geos.map((g) => {
     const n = g.index ? g.toNonIndexed() : g;
-    for (const k of Object.keys(n.attributes)) if (!['position', 'normal', 'uv', 'color'].includes(k)) n.deleteAttribute(k);
+    for (const k of Object.keys(n.attributes)) if (!['position', 'normal', 'uv', 'color', 'cell'].includes(k)) n.deleteAttribute(k); // cell: a figure's pieces (see STUFF)
     return n;
   });
   if (list.some((g) => g.attributes.color)) for (const g of list) if (!g.attributes.color) tint(g, 0xffffff);

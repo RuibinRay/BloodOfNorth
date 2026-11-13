@@ -26,12 +26,12 @@ export const CAST = {
   asa: { name: 'Asa', role: 'Weaver', look: { female: true, scale: 0.95, build: 0.92, hair: 0x4a3a2a, hairStyle: 'bun', tunic: 0x6a5a7a, apron: 0xcfc6ae } },
   farmer1: { name: 'Ketil', role: 'Farmer', look: { hair: 0x7a5a3a, tunic: 0x7a6a4a, beard: 'short' } },
   farmer2: { name: 'Dagny', role: 'Farmer', look: { female: true, scale: 0.94, build: 0.92, hair: 0xb89a5a, hairStyle: 'braids', tunic: 0x8a6a4a, apron: 0xbfb49a } },
-  hakon: { name: 'Jarl Håkon Ironwolf', role: 'Antagonist', look: { scale: 1.12, build: 1.26, hair: 0x2a2420, hairStyle: 'long', beard: 'short', tunic: 0x2e2e34, trim: 0x8a8a90, legs: 0x24221f, cloak: 0x34343a, fur: true, helmet: true, sleeve: 0x2e2e34 } },
+  hakon: { name: 'Jarl Håkon Ironwolf', role: 'Antagonist', look: { scale: 1.12, build: 1.26, hair: 0x2a2420, hairStyle: 'long', beard: 'short', tunic: 0x2e2e34, trim: 0x8a8a90, legs: 0x24221f, cloak: 0x34343a, fur: true, helmet: true, mail: true, sleeve: 0x2e2e34 } },
 };
 export const RAIDER_LOOKS = [
   { build: 1.15, tunic: 0x3a2e2a, trim: 0x6a1a14, legs: 0x2a2420, helmet: true, beard: 'short', hair: 0x4a3a2a, cloak: 0x2a2a2e, sleeve: 0x3a2e2a },
   { build: 1.1, tunic: 0x4a3a30, trim: 0x2a2a2a, legs: 0x2e2a24, hairStyle: 'long', beard: 'long', hair: 0x8a5a2a, sleeve: 0x4a3a30 },
-  { build: 1.2, scale: 1.05, tunic: 0x2e3438, trim: 0x6a1a14, legs: 0x26221e, helmet: true, beard: 'short', hair: 0x2a2018, fur: true, sleeve: 0x2e3438 },
+  { build: 1.2, scale: 1.05, tunic: 0x2e3438, trim: 0x6a1a14, legs: 0x26221e, helmet: true, mail: true, beard: 'short', hair: 0x2a2018, fur: true, sleeve: 0x2e3438 },
   { build: 1.08, tunic: 0x54402e, trim: 0x1e1e1e, legs: 0x2a2620, hairStyle: 'bald', beard: 'short', hair: 0x6a4a2a, cloak: 0x3a2a22, sleeve: 0x54402e },
 ];
 

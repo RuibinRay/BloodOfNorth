@@ -293,10 +293,10 @@ const RAW = {
   w_leaves: texture('a dense mass of small golden-yellow autumn birch leaves overlapping'),
   w_bough: [onWhite('A single spruce bough with dense dark green needles hanging straight down, its woody stem at the top of the picture and its drooping tips at the bottom'), '3:4'],
   w_twig: [onWhite('A spray of thin birch twigs covered in many small golden-yellow autumn leaves, spreading outward from the centre and filling the picture')],
-  c_wool: texture('coarse hand-woven wool twill cloth in plain undyed light grey, the diagonal weave clearly visible'),
+  c_wool: texture('very coarse homespun wool cloth seen extremely close: thick uneven hand-spun yarns in a plain basket weave, every yarn clearly separate with dark gaps between them and a few loose fibres, in undyed light grey'),
   c_fur: texture('thick shaggy animal fur in light grey, the hairs lying downward'),
   c_mail: texture('riveted iron chain mail: rows of small interlinked iron rings, close up'),
-  c_leather: texture('worn vegetable-tanned leather in pale grey-tan with fine creases and scuffs'),
+  c_leather: texture('old cracked leather hide seen very close: deep wrinkles, creases and a pebbled grain like a worn boot, lit from the side so that every crease casts a shadow, in pale grey-tan'),
   c_hair: texture('straight combed human hair in pale ash blonde, the strands running vertically'),
 };
 const raw = Object.entries(RAW).map(([id, v]) => ({ id, group: 'world3d', kind: 'raw', ...z(Array.isArray(v) ? v[0] : v, Array.isArray(v) && v[1] ? v[1] : '1:1'), post: ['fit', 256, 256], out: `assets/art/raw/${id}.jpg` }));

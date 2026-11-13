@@ -6,12 +6,12 @@
 import * as THREE from 'three';
 import { clamp, smoothstep, damp, angleDiff } from '../core/util.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { M, at, box, cyl, cone, sphere, capsule, tint, merge } from '../world/geo.js';
+import { M, STUFF, at, box, cyl, cone, sphere, capsule, tint, merge } from '../world/geo.js';
 
 const D = { hip: 0.94, thigh: 0.44, shin: 0.44, chestY: 0.2, shoulderY: 0.3, shoulderX: 0.2, neckY: 0.42, upper: 0.29, fore: 0.27 };
 const DEFAULT_LOOK = {
   scale: 1, child: false, female: false, build: 1, skin: 0xd8a888, hair: 0x6b4a2b, hairStyle: 'short', beard: null,
-  tunic: 0x6f6048, trim: 0x8a2f25, legs: 0x4b4034, boots: 0x33261a, cloak: null, fur: false, helmet: false, apron: null,
+  tunic: 0x6f6048, trim: 0x8a2f25, legs: 0x4b4034, boots: 0x33261a, cloak: null, fur: false, helmet: false, apron: null, mail: false, // mail: a ring shirt over the tunic
   eyes: 0x5a4632, face: 'even', scar: null, scar2: null, // eye colour; face shape: even | lean | broad | long; scar: 'lightning' (over the left eye) | 'cheek' | 'brow'
 };
 /** Head proportions by face shape: [width, height, depth] of the skull. */
@@ -174,12 +174,53 @@ const BLADE = { woodsword: [0.12, 0.58], woodsword_big: [0.12, 0.85], sword: [0.
   club: [0.55, 1.15], woodaxe: [0.45, 0.8], longaxe: [0.75, 1.25], seax: [0.1, 0.52], maul: [0.75, 1.25], smallaxe: [0.2, 0.45], throwaxe: [0.2, 0.45], spear: [1.05, 1.7], hammer: [0.2, 0.38] };
 
 const grp = (parent, x, y, z) => { const g = new THREE.Group(); g.position.set(x, y, z); parent.add(g); return g; };
+// ---- what a figure's pieces are made of -----------------------------------------------------------------
+const MAIL = 0x8f949b, FUR = 0x6c6a66, BELT = 0x3b2a1a, BRONZE = 0xb0905a;
+/** The stuff a piece is made of, told from the colour it was given: skin and metal are plain; the rest has a grain. */
+function stuffOf(hex, L) {
+  if (hex === L.skin) return 'plain';
+  if (hex === MAIL) return 'mail';
+  if (hex === FUR) return 'fur';
+  if (hex === L.boots || hex === BELT) return 'leather';
+  if (hex === L.apron) return ((hex >> 16) + ((hex >> 8) & 255) + (hex & 255)) / 765 < 0.4 ? 'leather' : 'wool'; // a smith's apron is hide, a weaver's is linen
+  if (hex === L.tunic || hex === L.legs || hex === L.cloak || hex === L.trim || hex === L.sleeve || hex === L.wraps) return 'wool';
+  if (hex === L.hair) return 'hair';
+  return 'plain';
+}
+/** Lay a stuff over a piece: say which square of the sheet it is made of (`cell`), and turn the piece's own uv into
+ *  repeats of that stuff, as many as its real size takes. A piece that closes on itself (a sleeve, a leg, a cap of
+ *  hair) gets a whole number round it, so the weave meets itself at the seam. */
+const _va = new THREE.Vector3(), _vb = new THREE.Vector3(), _vc = new THREE.Vector3();
+function dress(g, stuff) {
+  const [cx, cy, size] = STUFF[stuff], P = g.attributes.position, uv = g.attributes.uv, ix = g.index, n = P.count, cell = new Float32Array(n * 2);
+  for (let i = 0; i < n; i++) { cell[i * 2] = cx / 3; cell[i * 2 + 1] = cy / 2; }
+  g.setAttribute('cell', new THREE.BufferAttribute(cell, 2));
+  if (stuff === 'plain' || !uv) return g;
+  let u0 = Infinity, u1 = -Infinity, v0 = Infinity, v1 = -Infinity, lu = 0, lv = 0, w = 0;
+  for (let i = 0; i < n; i++) { const u = uv.getX(i), v = uv.getY(i); u0 = Math.min(u0, u); u1 = Math.max(u1, u); v0 = Math.min(v0, v); v1 = Math.max(v1, v); }
+  for (let t = 0, tris = (ix ? ix.count : n) / 3; t < tris; t++) { // how many metres one unit of its u and of its v cover, over the whole piece
+    const a = ix ? ix.getX(t * 3) : t * 3, b = ix ? ix.getX(t * 3 + 1) : t * 3 + 1, c = ix ? ix.getX(t * 3 + 2) : t * 3 + 2;
+    _va.fromBufferAttribute(P, a); _vb.fromBufferAttribute(P, b).sub(_va); _vc.fromBufferAttribute(P, c).sub(_va);
+    const du1 = uv.getX(b) - uv.getX(a), dv1 = uv.getY(b) - uv.getY(a), du2 = uv.getX(c) - uv.getX(a), dv2 = uv.getY(c) - uv.getY(a), det = Math.abs(du1 * dv2 - du2 * dv1), area = _va.crossVectors(_vb, _vc).length();
+    if (det < 1e-9 || area < 1e-10) continue;
+    lu += (_va.copy(_vb).multiplyScalar(dv2).addScaledVector(_vc, -dv1).length() / det) * area;
+    lv += (_va.copy(_vc).multiplyScalar(du1).addScaledVector(_vb, -du2).length() / det) * area;
+    w += area;
+  }
+  if (!w || u1 - u0 < 1e-6 || v1 - v0 < 1e-6) return g;
+  const wide = (lu / w) * (u1 - u0), tall = (lv / w) * (v1 - v0), q = g.parameters || {};
+  const closes = /Capsule|Icosahedron/.test(g.type) || (/Cylinder|Cone/.test(g.type) && !(q.thetaLength < 6.28)) || (/Sphere/.test(g.type) && !(q.phiLength < 6.28));
+  const nu = closes ? Math.max(1, Math.round(wide / size)) : wide / size, nv = tall / (wide / nu); // the same grain up it as round it
+  for (let i = 0; i < n; i++) uv.setXY(i, ((uv.getX(i) - u0) / (u1 - u0)) * nu, ((uv.getY(i) - v0) / (v1 - v0)) * nv);
+  return g;
+}
 /** One figure, one draw. Every piece of a figure hangs from one joint, so instead of a mesh per piece (thirty-odd draws a
  *  person, counting their shadow) the pieces are fused into a single skinned mesh in which each vertex follows its one
  *  joint with full weight. The joints are the bones; nothing about how they are posed changes.
  *  pieces: [{ bone, geos }] with the geometry in the bone's own space. reach: how big the figure is, for its bounds. */
-function fuse(pieces, bones, skeleton, cast, reach) {
+function fuse(pieces, bones, skeleton, cast, reach, L) {
   const geos = pieces.map(({ bone, geos }) => {
+    for (const x of geos) dress(x, L ? stuffOf(x.userData.hex, L) : 'plain'); // L: whose clothes these are; without it (a face) all is plain
     const g = merge(geos), n = g.attributes.position.count, bi = bones.indexOf(bone), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4);
     for (let i = 0; i < n; i++) { si[i * 4] = bi; sw[i * 4] = 1; }
     g.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4)); g.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4));
@@ -207,25 +248,28 @@ export class Humanoid {
     if (L.child) j.head.scale.setScalar(1.24);
 
     // pelvis + hem
-    const hip = [tint(at(capsule(0.15, 0.1, 8), 0, 0.02, 0, 0, 0, Math.PI / 2, 1, 1, 0.75), L.tunic, 0.06, 1)];
-    if (L.female) hip.push(tint(at(cyl(0.17, 0.34, 0.9, 12, 1.6, true), 0, -0.43, 0, 0, 0, 0, 1, 1, 0.86), L.tunic, 0.08, 2));
-    else hip.push(tint(at(cyl(0.176, 0.24, 0.36, 10, 1.6, true), 0, -0.16, 0, 0, 0, 0, 1, 1, 0.8), L.tunic, 0.08, 2));
-    hip.push(tint(at(cyl(0.182, 0.182, 0.055, 10), 0, 0.06, 0, 0, 0, 0, 1, 1, 0.8), 0x3b2a1a, 0.05, 3));
-    if (L.apron) hip.push(tint(at(box(0.26, 0.62, 0.02), 0, -0.25, 0.16), L.apron, 0.05, 4));
+    const wear = L.mail ? MAIL : L.tunic; // a mail shirt covers the body and the upper arms; the tunic shows below it
+    const hip = [tint(at(capsule(0.15, 0.1, 8), 0, 0.02, 0, 0, 0, Math.PI / 2, 1, 1, 0.75), wear, 0.06, 1)];
+    if (L.female) hip.push(tint(at(cyl(0.17, 0.34, 0.9, 12, 1.6, true), 0, -0.43, 0, 0, 0, 0, 1, 1, 0.86), L.tunic, 0.08, 2), tint(at(cyl(0.335, 0.346, 0.055, 12, 1.6, true), 0, -0.855, 0, 0, 0, 0, 1, 1, 0.86), L.trim, 0.05, 46));
+    else hip.push(tint(at(cyl(0.176, 0.24, 0.36, 10, 1.6, true), 0, -0.16, 0, 0, 0, 0, 1, 1, 0.8), L.tunic, 0.08, 2), tint(at(cyl(0.2375, 0.245, 0.04, 10, 1.6, true), 0, -0.323, 0, 0, 0, 0, 1, 1, 0.8), L.trim, 0.05, 46)); // the hem, in the colour of the trim
+    hip.push(tint(at(cyl(0.182, 0.182, 0.055, 10), 0, 0.06, 0, 0, 0, 0, 1, 1, 0.8), BELT, 0.05, 3));
+    if (L.apron) hip.push(L.female ? tint(at(box(0.26, 0.62, 0.02), 0, -0.25, 0.204, -0.165), L.apron, 0.05, 4) : tint(at(box(0.26, 0.62, 0.02), 0, -0.25, 0.192, -0.14), L.apron, 0.05, 4)); // lying on the slope of the skirt
+    else hip.push(tint(at(box(0.05, 0.046, 0.012), 0, 0.06, 0.149), BRONZE, 0.04, 47)); // the buckle
     part(j.hips, hip);
 
     // torso
     const ch = [
-      tint(at(cyl(0.2 * b, 0.165, 0.5, 10), 0, 0.06, 0, 0, 0, 0, 1, 1, 0.68), L.tunic, 0.06, 5),
-      tint(at(sphere(0.086, 8, 6), D.shoulderX * b, D.shoulderY, 0), L.tunic, 0.05, 6),
-      tint(at(sphere(0.086, 8, 6), -D.shoulderX * b, D.shoulderY, 0), L.tunic, 0.05, 7),
+      tint(at(cyl(0.2 * b, 0.165, 0.5, 10), 0, 0.06, 0, 0, 0, 0, 1, 1, 0.68), wear, 0.06, 5),
+      tint(at(sphere(0.086, 8, 6), D.shoulderX * b, D.shoulderY, 0), wear, 0.05, 6),
+      tint(at(sphere(0.086, 8, 6), -D.shoulderX * b, D.shoulderY, 0), wear, 0.05, 7),
       tint(at(cyl(0.05, 0.058, 0.13, 8), 0, 0.37, 0), L.skin, 0.03, 8),
       tint(at(cyl(0.085, 0.1, 0.045, 10), 0, 0.322, 0, 0, 0, 0, 1, 1, 0.8), L.trim, 0.05, 9),
     ];
-    if (L.apron) ch.push(tint(at(box(0.24, 0.3, 0.02), 0, 0.05, 0.135), L.apron, 0.05, 10));
+    if (L.apron) ch.push(tint(at(box(0.24, 0.3, 0.02), 0, 0.05, 0.126 + (0.136 * b - 0.112) * 0.48, Math.atan((0.136 * b - 0.112) / 0.5)), L.apron, 0.05, 10)); // and on the slope of the chest
+    if (L.cloak) ch.push(tint(at(sphere(0.03, 7, 5), 0.105 * b, 0.275, 0.118 * b, 0, 0, 0, 1, 1, 0.4), BRONZE, 0.04, 48)); // the brooch that holds it
     if (L.cloak) { j.cloak = grp(j.chest, 0, 0.31, -0.02); part(j.cloak, [tint(at(new THREE.CylinderGeometry(0.23 * b, 0.37, 1.02, 10, 1, true, Math.PI * 0.5, Math.PI), 0, -0.51, 0), L.cloak, 0.1, 11)]); } // hangs from the shoulders
     if (L.fur) for (const [x, y, z, s] of [[0.17, 0.33, -0.02, 0.13], [-0.17, 0.33, -0.02, 0.13], [0, 0.31, -0.1, 0.15], [0, 0.2, -0.13, 0.13]])
-      ch.push(tint(at(new THREE.IcosahedronGeometry(1, 1), x * b, y, z, 0, 0, 0, s * 1.25, s * 0.8, s), 0x6c6a66, 0.3, 12 + x * 10));
+      ch.push(tint(at(new THREE.IcosahedronGeometry(1, 1), x * b, y, z, 0, 0, 0, s * 1.25, s * 0.8, s), FUR, 0.3, 12 + x * 10));
     this.chestMesh = part(grp(j.chest, 0, 0, 0), ch); // its own joint, so the chest can swell with breath
 
     // head
@@ -265,8 +309,9 @@ export class Humanoid {
       const sh = (j['sh' + side] = grp(j.chest, sx * D.shoulderX * b, D.shoulderY, 0)); sh.rotation.order = 'YXZ';
       const el = (j['el' + side] = grp(sh, 0, -D.upper, 0));
       j['ha' + side] = grp(el, 0, -D.fore, 0);
-      part(sh, [tint(at(capsule(0.054 * Math.sqrt(b), 0.2, 6), 0, -0.145, 0), L.tunic, 0.06, 40)]);
-      part(el, [tint(at(capsule(0.045 * Math.sqrt(b), 0.19, 6), 0, -0.13, 0), L.sleeve ?? L.skin, 0.04, 41), tint(at(sphere(0.048, 6, 5), 0, -0.285, 0, 0, 0, 0, 0.9, 1.15, 0.7), L.skin, 0.03, 42)]);
+      const ru = 0.054 * Math.sqrt(b), rf = 0.045 * Math.sqrt(b), cuff = (r, y) => tint(at(cyl(r + 0.0035, r + 0.0035, 0.03, 6, 1.6, true), 0, y, 0), L.trim, 0.05, 49);
+      part(sh, [tint(at(capsule(ru, 0.2, 6), 0, -0.145, 0), wear, 0.06, 40), ...(L.sleeve == null && !L.mail ? [cuff(ru, -0.228)] : [])]); // a short sleeve ends in a band above the elbow
+      part(el, [tint(at(capsule(rf, 0.19, 6), 0, -0.13, 0), L.sleeve ?? L.skin, 0.04, 41), tint(at(sphere(0.048, 6, 5), 0, -0.285, 0, 0, 0, 0, 0.9, 1.15, 0.7), L.skin, 0.03, 42), ...(L.sleeve != null ? [cuff(rf, -0.205)] : [])]); // a long one at the wrist
       const lg = (j['lg' + side] = grp(j.hips, sx * 0.095, 0, 0));
       const kn = (j['kn' + side] = grp(lg, 0, -D.thigh, 0));
       part(lg, [tint(at(capsule(0.076, 0.3, 6), 0, -0.22, 0), L.legs, 0.06, 43)]);
@@ -275,7 +320,7 @@ export class Humanoid {
 
     // one skinned mesh for the body and one for the face (drawn only near the camera), on the same bones
     const bones = [...new Set([...skin, ...faceSkin].map((x) => x.bone))], sk = new THREE.Skeleton(bones, bones.map(() => new THREE.Matrix4())), reach = Math.max(1, L.scale);
-    this.bodyMesh = fuse(skin, bones, sk, true, reach); this.faceMesh = fuse(faceSkin, bones, sk, false, reach);
+    this.bodyMesh = fuse(skin, bones, sk, true, reach, L); this.faceMesh = fuse(faceSkin, bones, sk, false, reach);
     this.root.add(this.bodyMesh, this.faceMesh);
 
     this.cur = {}; this.tgt = {};

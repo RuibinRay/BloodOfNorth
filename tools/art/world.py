@@ -8,7 +8,8 @@ Reads assets/generated/<id>.png and writes public/art/world/:
   pine.webp     [bark | skirt of boughs]               one picture for a pine: bark down the left quarter, and a skirt whose
                                                        top is solid needles and whose bottom edge is cut-out hanging boughs
   birch.webp    [bark | leaves | twigs]                bark, a solid mass of leaves, and a cut-out spray of twigs
-  figure.jpg    wool fur mail / leather hair plain     six squares of grain for the figures (grey, to multiply their colours)
+  figure.jpg    wool fur mail / plain hair leather     six squares of grain for the figures (grey, to multiply their colours),
+                                                       each one repeat with a border of itself round it
 A piece whose original is missing is skipped, and the game falls back to what it drew before.
 """
 import os, sys
@@ -150,16 +151,48 @@ def birch():
     save(at, 'birch.webp', 90)
 
 
+def repeatable(im, size, fine=0):
+    """One repeat of a stuff, for things with a pattern or a lie to them (a weave, rings, strands), which the plain
+    tile() above smears or cuts across. Along each side it finds how far along the picture best matches its own
+    start (so a weave is cut on a whole number of threads), and fades the start into what follows that cut.
+    fine: take out light and dark broader than this many pixels (of 512), leaving the fine marks."""
+    a = np.asarray(im.convert('L').resize((512, 512), Image.LANCZOS), dtype=np.float32)
+    if fine:
+        a = a - np.asarray(Image.fromarray(a.clip(0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(fine)), dtype=np.float32) + a.mean()
+    o = 64
+    for axis in (0, 1):
+        a = np.moveaxis(a, axis, 0)
+        s = min(range(330, 512 - o + 1), key=lambda k: float(np.abs(a[:o] - a[k:k + o]).mean()))
+        w = ((np.arange(o) + 0.5) / o)[:, None]
+        out = a[:s].copy()
+        out[:o] = a[:o] * w + a[s:s + o] * (1 - w)
+        a = np.moveaxis(out, 0, axis)
+    return Image.fromarray(a.clip(0, 255).astype(np.uint8)).resize((size, size), Image.LANCZOS).convert('RGB')
+
+
 def figure():
-    cells = ['c_wool', 'c_fur', 'c_mail', 'c_leather', 'c_hair', None]
+    """Six squares, each holding one repeat of its stuff 224 pixels across with the repeat carried on into a 16-pixel
+    border, so the game can lay any number of repeats over a sleeve or a cloak out of one picture without a seam."""
+    cells = ['c_wool', 'c_fur', 'c_mail', None, 'c_hair', 'c_leather']   # the plain square is the one a piece gets if it says nothing
     if not all(src(c) for c in cells if c):
         return
     at = Image.new('RGB', (768, 512), (205, 205, 205))
-    gains = {'c_wool': 3.0, 'c_fur': 1.0, 'c_mail': 1.0, 'c_leather': 2.4, 'c_hair': 1.0}  # the woven cloth and the leather came out nearly flat
+    gains = {'c_wool': 0.55, 'c_fur': 0.85, 'c_mail': 0.75, 'c_leather': 1.7, 'c_hair': 0.9}
+    to_lin = lambda v: np.where(v <= 0.04045, v / 12.92, ((v + 0.055) / 1.055) ** 2.4)
+    to_srgb = lambda v: np.where(v <= 0.0031308, v * 12.92, 1.055 * v ** (1 / 2.4) - 0.055)
+    flat = float(to_lin(np.float32(205 / 255.0)))   # what the game divides by: each square must average this in light, not in paint
     for i, c in enumerate(cells):
-        if c:
-            at.paste(grain(tile(src(c), 256), mean=205.0, gray=True, gain=gains[c]), ((i % 3) * 256, (i // 3) * 256))
-    save(at, 'figure.jpg', 90)
+        if not c:
+            continue
+        t = grain(repeatable(src(c), 224, fine=14 if c == 'c_leather' else 0), mean=205.0, gray=True, gain=gains[c])
+        lin = to_lin(np.asarray(t, dtype=np.float32) / 255.0)
+        t = Image.fromarray((to_srgb((lin * (flat / lin.mean())).clip(0, 1)) * 255).round().astype(np.uint8))
+        cell = Image.new('RGB', (256, 256))
+        for x in (-208, 16, 240):
+            for y in (-208, 16, 240):
+                cell.paste(t, (x, y))
+        at.paste(cell, ((i % 3) * 256, (i // 3) * 256))
+    save(at, 'figure.jpg', 92)
 
 
 for f in (ground, pine, birch, figure):

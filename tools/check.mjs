@@ -4,7 +4,7 @@
 // and through the game's own test hooks:
 //   1. starts every chapter of every act the way the Acts menu does, and compares where it stands with what was
 //      recorded when it was last known good (the step in hand, the stage, where Eirik is, that the objective points
-//      somewhere, that nothing threw);
+//      somewhere, that Eirik's body is in the scene to be drawn, that nothing threw);
 //   2. counts what five heavy scenes ask the machine to draw (draw calls and triangles: exact numbers, the same on any
 //      machine) against a budget, so a change that makes the game heavier is noticed;
 //   3. plays one fight with two companions and calls both their skills.
@@ -41,6 +41,7 @@ function judgeChapter(r, want) {
   if (r.reloads) bad.push('asked for a checkpoint reload (he died or was caught) ' + r.reloads + '×');
   if (r.marker === 'lost') bad.push('the objective points at nothing');
   if (Math.abs(r.off) > 1.5) bad.push(`Eirik is ${r.off} m off the ground`);
+  if (r.body === false) bad.push('Eirik has no body in the scene: he would not be drawn');
   if (!want) return bad;
   if (r.at !== want.at) bad.push(`step is ${r.at}, was ${want.at}`);
   if (r.stage !== want.stage) bad.push(`stage is ${r.stage}, was ${want.stage}`);

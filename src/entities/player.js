@@ -274,7 +274,10 @@ export class Player {
     for (const k in mine) if (mine[k] === undefined) delete mine[k];
     this.baseLook = look; look = Object.assign({}, look, mine, { scar: look.scar }); // the lightning scar is his, whatever else changes
     const nh = new Humanoid(look);
-    this.root.remove(this.h.body); this.root.add(nh.body);
+    // a figure is its joints and the two meshes that follow them (body and face): all three change hands, or the new body is never drawn
+    const old = this.h;
+    this.root.remove(old.body, old.bodyMesh, old.faceMesh); this.root.add(nh.body, nh.bodyMesh, nh.faceMesh);
+    for (const m of [old.bodyMesh, old.faceMesh]) { m.geometry.dispose(); m.skeleton.dispose(); }
     nh.root = this.root; nh.onStep = this.h.onStep; nh.lift = this.h.lift; this.look = look;
     this.h = nh; this.adult = adult; this.backAxe = null; this.equipped = 'none';
     this.speedMul = adult ? 1.28 : 1; this.cam.maxDist = adult ? 4.9 : 4.1;

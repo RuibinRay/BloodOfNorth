@@ -27,6 +27,7 @@ async function chapter(id, secs = 14) {
     off: +(pl.y - g.world.groundAt(pl.x, pl.z)).toFixed(1),                                   // how far he is off the ground
     marker: mk ? Math.round(Math.hypot(mk.x - pl.x, mk.z - pl.z)) : tr && tr.step.marker ? (tr.step.marker.until ? 'reached' : 'lost') : 'none',
     people: [...g.npcs.values()].filter((n) => n.visible && Math.hypot(n.pos.x - pl.x, n.pos.z - pl.z) < 60).length,
+    body: (() => { let o = p().h.bodyMesh; while (o && o !== g.scene) o = o.parent; return !!o; })(),  // his body is in the world to be drawn (after he grows up it is a new one)
     errs: errs.slice(0, 3), reloads,
   };
 }
@@ -61,4 +62,20 @@ async function party() {
   return { joined, called, seconds: t, standing: foes.filter((e) => !e.dead).length, strip: C.hud().map((h) => h.name), errs: errs.slice(0, 3) };
 }
 
-window.__check = { chapter, scene, party, scenes: Object.keys(SCENES) };
+/** Stand people in a row three metres in front of Eirik, facing back at him, to look at what they wear
+ *  (node tools/shot.mjs "... await __check.lineup(['ylva', 'hakon', 'gorm'])"). Names: anyone in the cast lists, a
+ *  champion by id, eirik, raider0 to raider3. Gives back where the middle of the row stands. */
+async function lineup(names, gap = 0.95) {
+  const [{ Humanoid }, { CAST, RAIDER_LOOKS }, { CAST2 }, { COMPANIONS }, { FOES }, { EIRIK_ADULT, EIRIK_CHILD }] = await Promise.all(['/src/entities/humanoid.js', '/src/data/act1.js', '/src/data/act2.js', '/src/data/companions.js', '/src/story/champions.js', '/src/entities/player.js'].map((f) => import(f)));
+  const looks = { ...Object.fromEntries([...Object.entries(CAST), ...Object.entries(CAST2), ...Object.entries(COMPANIONS)].map(([k, v]) => [k, v.look])), ...Object.fromEntries(FOES.map((f) => [f.id, f.look])),
+    ...Object.fromEntries(RAIDER_LOOKS.map((l, i) => ['raider' + i, l])), hakon_young: CAST.hakon.look, eirik: EIRIK_ADULT, eirik_child: EIRIK_CHILD };
+  const pl = p().pos, z = pl.z + 3;
+  names.forEach((n, i) => {
+    if (!looks[n]) throw new Error('no look for "' + n + '"');
+    const h = new Humanoid(looks[n]), x = pl.x + (i - (names.length - 1) / 2) * gap;
+    h.root.position.set(x, g.world.groundAt(x, z), z); g.scene.add(h.root); h.update(0.05); h.faceMesh.visible = true;
+  });
+  return [pl.x, g.world.groundAt(pl.x, z), z];
+}
+
+window.__check = { chapter, scene, party, lineup, scenes: Object.keys(SCENES) };
