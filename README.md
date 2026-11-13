@@ -2,15 +2,25 @@
 
 A third-person Viking action RPG that follows the owner's story, *The Rise of the Raven King*
 ([docs/story](docs/story/THE_RISE_OF_THE_RAVEN_KING.md): seven acts and an epilogue). This repository holds
-**slice 0.19**: Act I (Eirik's childhood), Act II (nineteen: Bjornstead, the raid, the walls, Kaupang and the
+**slice 0.20**: Act I (Eirik's childhood), Act II (nineteen: Bjornstead, the raid, the walls, Kaupang and the
 Sea-Raven), Act III (twenty: Jarnøy and the Battle of Iron Shore), Act IV (twenty-two: the treasure voyage,
 Wessex, six islands burning, Hedeby Sound), Act V (twenty-four: the hunger winter, the tannery yard, the ring,
 Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, the wedding) and Act VII
-(twenty-nine: the fleet off Svartøy, the Black Shore, the Hall of Wolves, the law-rock at Gulen), each as the story
-tells it, and an open world that runs from the home valley across the home waters to five great islands of the
+(twenty-nine: the fleet off Svartøy, the Black Shore, the Hall of Wolves, the law-rock at Gulen) and the Epilogue
+(forty-one: Ravenhold twelve years on, Leif's house, the old birch), each as the story tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
-**New in 0.19.** Act VII, "The Raven King", all eleven chapters in the story's order and words · fire arrows on
+**New in 0.20.** The Epilogue, "The Old Birch", the last of the story, in its order and words · Ravenhold
+twelve years on: the town spilled past the old palisade, houses, workshops and gardens, a market on the strand,
+ships from Wessex, Frisia, Dublin and the eastern rivers · the row of carved stones, Torvald with a broom at Ari's,
+Hauk with two cups of ale · Halvar at Brokk's old forge, the apprentice, and the Thing-Ring on the anvil · the
+people the war left (Svanhild's young warriors, Astrid and Kári and his son, Hrefna and Ingrid, Signe and Freydis,
+Leif and Hallvard and a goat that cannot be sued) · Leif's house, the one building you can walk into: Liv, the dice,
+"He lost two", the Twins over the hearth · the evening walk up the hill with Little Brokk, Bjorn's mound under the
+grown birch, the lesson, the young raven with one white feather · the view rising over Ravenhold and out to sea.
+Eirik is forty-one, a little grey, in the High King's cloak; the ravens no longer follow him.
+
+**In 0.19.** Act VII, "The Raven King", all eleven chapters in the story's order and words · fire arrows on
 the fleet in the rain, the ship whose archers rake the decks, Leif's passage past the rocks, the ram · Leif and
 Ulf on the benches, the boarders, Ulf Two-Blades across two burning decks, the black raven, the rail · the Black
 Shore: two pushes up from the sand, and twice going back for men who are cut off · Kettil Red-Hand at the bend,
@@ -46,11 +56,12 @@ could reload Eirik where the last chapter ended.
 Earlier: [0.16](docs/ROADMAP.md) built Act IV; 0.15 built Act III; 0.14 built Act II, Bjornstead and Kaupang;
 0.13 stored the story and drew the map.
 
-> **What this is, plainly.** All seven acts of the story (the epilogue is not built), and a large sandbox, running
-> in a browser. Of the story's 89 missions, 79 are built, 4 partly, and 6 are still to build. It is not the 40-hour
+> **What this is, plainly.** The whole of the owner's story, seven acts and the epilogue, and a large sandbox,
+> running in a browser. Of the story's 89 missions, 82 are built, 4 partly (all in Act I), and 3 are still to build
+> (all in Act I). It is not the 40-hour
 > game, it is not Unreal Engine 5, and it is not photorealistic: every character, prop and sound is generated in
 > code as a placeholder. Everything has been checked by scripted playtest only: no person has played Acts III
-> to VII through. See [Status](#status) for exactly what exists.
+> to VII or the epilogue through. See [Status](#status) for exactly what exists.
 
 ## Run it
 
@@ -225,8 +236,16 @@ All keyboard and mouse bindings can be changed in Settings.
 10. *What the Dead Leave Behind* — Leif on the steps; three days; Hauk's stone.
 11. *The Crown of the North* — the law-rock at Gulen (a scene).
 
-The main menu has **Start at an Act**, which begins Act I, II, III, IV, V, VI or VII at its opening with the
-earlier acts taken as played. The epilogue is not built.
+**Epilogue — "The Old Birch."** Twelve years later. Eirik is forty-one. Three parts, in the story's order and words.
+
+1. *Ravenhold* — up from the pier to the market; the row of stones (a scene); Halvar, the apprentice and the
+   Thing-Ring; five people to see.
+2. *Leif's House* — walk in; Liv and the dice (a scene).
+3. *The Last Lesson* — the evening walk up the hill with Little Brokk; the lesson (a scene); the young raven on the
+   stone; the view rising out to sea; the end.
+
+The main menu has **Start at an Act**, which begins Act I, II, III, IV, V, VI, VII or the Epilogue at its opening
+with what came before taken as played.
 
 **Open-world sandbox — "The Whale Road" (prototype).** Not a story chapter: a place to try the systems.
 
@@ -330,10 +349,10 @@ the [story bible](docs/STORY_BIBLE.md).
 
 | | |
 |---|---|
-| **Playable and tested** | All of Act I (chapters 1–3), Act II (nine chapters), Act III (eight chapters), Act IV (eight chapters), Act V (seven chapters), Act VI (nine chapters) and Act VII (eleven chapters) start to finish, by scripted playtest; a sea battle played from one deck (fire arrows, a ship of archers to shoot, a ram); a landing with two pushes and two rescues; a chapter played as another character; a final fight in four parts whose last is won by waiting and guarding; a hunt across a marsh with the white raven; two champion fights that are won by something other than damage (the black raven; a ledge); a night infiltration with patrols, dogs and hiding places; seeing through the black raven; a duel with a scripted fall and recovery; fights on a ship's deck; a duel with scripted turns; a horse to ride in the story; a battle with allies who hold attackers along a line; four companions who join in their scenes; start-at-an-act; a village that burns, is walled and gains a ship as the story goes; timed work, a wrestling and shield-wall game, a dive with breath; melee combat against enemies that guard, take turns and flank, with a two-phase captain; an ally who fights; the black raven harrying a target; raven companions and Raven's Eye; five hidden omens; hunger and warmth, shelter, cooking, a wolf encounter with two outcomes, thin-ice crossing; movement, camera, stamina; dialogue with choices; quests, journal, tracker, map with waypoint; woodcutting, archery, tracking, fishing, fire-making; sparring; stealth with raider sight and hearing; cold survival; day/night, snow, fire; in-engine cutscenes; save/load with autosave; settings, key rebinding, gamepad |
+| **Playable and tested** | All of Act I (chapters 1–3), Act II (nine chapters), Act III (eight chapters), Act IV (eight chapters), Act V (seven chapters), Act VI (nine chapters), Act VII (eleven chapters) and the Epilogue (three parts) start to finish, by scripted playtest; a building that can be walked into; a sea battle played from one deck (fire arrows, a ship of archers to shoot, a ram); a landing with two pushes and two rescues; a chapter played as another character; a final fight in four parts whose last is won by waiting and guarding; a hunt across a marsh with the white raven; two champion fights that are won by something other than damage (the black raven; a ledge); a night infiltration with patrols, dogs and hiding places; seeing through the black raven; a duel with a scripted fall and recovery; fights on a ship's deck; a duel with scripted turns; a horse to ride in the story; a battle with allies who hold attackers along a line; four companions who join in their scenes; start-at-an-act; a village that burns, is walled and gains a ship as the story goes; timed work, a wrestling and shield-wall game, a dive with breath; melee combat against enemies that guard, take turns and flank, with a two-phase captain; an ally who fights; the black raven harrying a target; raven companions and Raven's Eye; five hidden omens; hunger and warmth, shelter, cooking, a wolf encounter with two outcomes, thin-ice crossing; movement, camera, stamina; dialogue with choices; quests, journal, tracker, map with waypoint; woodcutting, archery, tracking, fishing, fire-making; sparring; stealth with raider sight and hearing; cold survival; day/night, snow, fire; in-engine cutscenes; save/load with autosave; settings, key rebinding, gamepad |
 | **Prototype** | The open-world sandbox (two law-districts, fourteen islands, one horse, a rowing boat and a crewed ship, sea battles with volleys, ramming and boarding, paid passage, one secret weapon, one crew raid); procedural characters and animation; procedural audio and score; villager routines; wildlife AI; combat balance and the new enemy kinds (tuned against scripted players only) |
 | **Blocked** | Higgsfield asset generation — the API needs a key ID *and* a secret; only one value was supplied. See [docs/HIGGSFIELD.md](docs/HIGGSFIELD.md) |
-| **Planned** | Everything else in the brief: the epilogue; the rest of the sea map (about forty islands of which fourteen exist as a sandbox; a longship of your own, fleets and crew who can be hurt; wind and weather at sea; more districts — designed in [docs/OPEN_WORLD.md](docs/OPEN_WORLD.md)); adult combat and nine weapons, skill trees, companions, sailing, settlement, factions, 50 side missions, UE5 port. See [docs/ROADMAP.md](docs/ROADMAP.md) |
+| **Planned** | Everything else in the brief: Act I's last missing scenes (Old Hrefna's bones, the stick and the little shield, the seven seats); the rest of the sea map (about forty islands of which fourteen exist as a sandbox; a longship of your own, fleets and crew who can be hurt; wind and weather at sea; more districts — designed in [docs/OPEN_WORLD.md](docs/OPEN_WORLD.md)); adult combat and nine weapons, skill trees, companions, sailing, settlement, factions, 50 side missions, UE5 port. See [docs/ROADMAP.md](docs/ROADMAP.md) |
 
 How it was tested: an automated playtest drives the real game loop through every quest step (see
 `debug` in [src/main.js](src/main.js)). It was verified on an Apple M2 at 60 fps. It has **not** been

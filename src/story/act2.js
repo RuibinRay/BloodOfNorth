@@ -35,6 +35,7 @@ import { A6Forge } from './act6_forge.js';
 import { A7Sea } from './act7_sea.js';
 import { A7Shore } from './act7_shore.js';
 import { A7Hall } from './act7_hall.js';
+import { E8Part } from './epilogue.js';
 
 const SUMMER = { snow: 0, fog: 0, overcast: 0.06, wind: 0.9 }, MIST = { snow: 0, fog: 0.05, overcast: 0.3, wind: 0.8 }, DUSK = { snow: 0, fog: 0.03, overcast: 0.4, wind: 1.3 }, GREY = { snow: 0, fog: 0.02, overcast: 0.55, wind: 1.2 }, FROST = { snow: 0.08, fog: 0.03, overcast: 0.5, wind: 1.2 }, SMOKE = { snow: 0, fog: 0.06, overcast: 0.6, wind: 1.3 }, FOG = { snow: 0, fog: 0.12, overcast: 0.7, wind: 0.6 }, WINTER = { snow: 0.45, fog: 0.04, overcast: 0.7, wind: 1.3 }, RAINY = { snow: 0, fog: 0.05, overcast: 0.85, wind: 1.5 }, WARSKY = { snow: 0, fog: 0.065, overcast: 0.92, wind: 1.7 };
 /** The times of day the act moves through: hour, weather, music, and whether the feast is laid. */
@@ -73,10 +74,12 @@ export const PHASES = {
   w7dawn: { time: 7.3, w: RAINY, at: 'sea7', music: 'sorrow' }, w7fire: { time: 7.9, w: WARSKY, at: 'sea7', music: 'raid' }, w7ulf: { time: 8.6, w: WARSKY, at: 'sea7', music: 'raid' }, w7calm: { time: 9.2, w: RAINY, at: 'sea7', music: 'sorrow' },
   w7shore: { time: 10.2, w: WARSKY, at: 'svart', music: 'raid' }, w7bend: { time: 11.6, w: WARSKY, at: 'svart', music: 'raid' }, w7pens: { time: 12.2, w: RAINY, at: 'svart', music: 'raid' }, w7bridge: { time: 13.4, w: WARSKY, at: 'svart', music: 'raid' }, w7gate: { time: 14.6, w: RAINY, at: 'svart', music: 'raid' },
   w7hall: { time: 15.4, w: RAINY, at: 'hall7', music: 'sorrow' }, w7duel: { time: 15.8, w: RAINY, at: 'hall7', music: 'raid' }, w7after: { time: 17.4, w: SMOKE, at: 'hall7', music: 'sorrow' }, w7graves: { time: 9.4, w: GREY, at: 'hall7', music: 'sorrow' }, w7crown: { time: 12.6, w: SUMMER, at: 'hall7' },
+  // The Epilogue: Ravenhold twelve years on, one day from morning to evening
+  e8morn: { time: 8.4, w: SUMMER, at: 'e8' }, e8noon: { time: 12.8, w: SUMMER, at: 'e8' }, e8eve: { time: 17.3, w: SUMMER, at: 'e8', music: 'sorrow' },
   hsail: { time: 10.2, w: MIST, at: 'hedeby' }, hbattle: { time: 11.4, w: SMOKE, at: 'hedeby', music: 'raid' }, hbeach: { time: 21, w: GREY, at: 'hedeby', music: 'sorrow' },
 };
 /** Where the village stands on an ordinary day: [dx, dz, facing (a yaw, or a point to face), loop, held]. */
-const DAY = {
+export const DAY = {
   signe: [-2.5, 122.6, [-2.5, 126], 'cook'], bjorn: [-19.6, 131.8, [-23, 130]], freydis: [12, 150, 2.6], hauk: [58, 127, 1.2, 'hoe', 'hoe'], grjotgard: [-70, 139.6, 0.4], lawman: [-88.6, 95.6, 2.2, 'sit'],
   girl1: [7.3, 141.4, [9, 139]], girl2: [11.2, 140.6, [9, 139]],
   v0: [0.4, 250, 0.2, 'fish', 'rod'], v1: [-9.4, 119.7, [-9.4, 118], 'weave'], v2: [12.6, 213, 1.0, 'kneel'], v3: [-30, 151, 1.6], v4: [-126, 100, 0.6, 'hoe', 'hoe'], v5: [27, 98.6, 2.0, 'cook'],
@@ -93,9 +96,9 @@ export class Act2 {
     this.home4 = new A4Home(game, this); this.voy = new A4Voyage(game, this); this.wx = new A4Wessex(game, this); this.six = new A4Six(game, this); this.snd = new A4Sound(game, this);
     this.home5 = new A5Home(game, this); this.cmp = new A5Camp(game, this); this.wing = new A5Wing(game, this);
     this.home6 = new A6Home(game, this); this.marsh = new A6Marsh(game, this); this.forge = new A6Forge(game, this);
-    this.sea7 = new A7Sea(game, this); this.shore7 = new A7Shore(game, this); this.hall7 = new A7Hall(game, this);
-    this.parts = [this.raid, this.winter, this.sea, this.home3, this.isle, this.battle, this.home4, this.voy, this.wx, this.six, this.snd, this.home5, this.cmp, this.wing, this.home6, this.marsh, this.forge, this.sea7, this.shore7, this.hall7]; // in the order they are built
-    this.talkers = [this.hall7, this.shore7, this.sea7, this.forge, this.marsh, this.home6, this.wing, this.cmp, this.home5, this.snd, this.six, this.wx, this.voy, this.home4, this.home3, this.isle, this.battle, this.raid, this.winter, this.sea]; // the later act answers first
+    this.sea7 = new A7Sea(game, this); this.shore7 = new A7Shore(game, this); this.hall7 = new A7Hall(game, this); this.epi = new E8Part(game, this);
+    this.parts = [this.raid, this.winter, this.sea, this.home3, this.isle, this.battle, this.home4, this.voy, this.wx, this.six, this.snd, this.home5, this.cmp, this.wing, this.home6, this.marsh, this.forge, this.sea7, this.shore7, this.hall7, this.epi]; // in the order they are built
+    this.talkers = [this.epi, this.hall7, this.shore7, this.sea7, this.forge, this.marsh, this.home6, this.wing, this.cmp, this.home5, this.snd, this.six, this.wx, this.voy, this.home4, this.home3, this.isle, this.battle, this.raid, this.winter, this.sea]; // the later act answers first
     this.steps = {};
     for (const [k, f] of Object.entries(this.own)) this.steps[k] = f.bind(this);
     for (const part of this.parts) for (const [k, f] of Object.entries(part.steps)) this.steps[k] = f.bind(part);
@@ -214,6 +217,7 @@ export class Act2 {
     S.tower2.set(fl.tower2); S.slip.set(fl.slip); S.sick.set(fl.sick); S.privy2.set(fl.privy2); S.bedding.set(fl.bedding); S.whale.set(fl.whale); S.whaleCut.set(fl.whaleCut);
     { const H = this.g.world.main.home6; H.roof.set(fl.council6); H.tent.set(fl.council6); H.mead.set(fl.mead); }
     S.cell.set(fl.a5); S.hwall.set(fl.a5); S.butts.set(fl.feast5); S.hnef.set(fl.feast5); S.mboat.set(fl.mboat);
+    if (this.st.quests.q_ravenhold) this.epi.town12(); // twelve years on
     this.g.ravens.taken = fl.taken; this.g.ravens.sot = fl.sot; // the white raven is gone from early spring until the cage in the mews is opened
     S.market.set(fl.a4); S.heal.set(fl.a4); S.ware.set(fl.a4 && !fl.burnt); S.refugees.set(fl.refugees); S.fleet.set(fl.fleet); S.burnt.set(fl.burnt); S.crowns.set(fl.a4);
     if (fl.frying && !this.pan) { const [x, z] = this.B(-2.6, 117.9), m = new THREE.Mesh(tint(at(cyl(0.17, 0.17, 0.03, 12), 0, 0, 0, Math.PI / 2, 0, 0), 0x1c1c20, 0.1, 2), M.vcPlain); m.position.set(x, this.g.world.groundAt(x, z) + 1.5, z); this.g.scene.add(m); this.pan = m; // Skull-Ringer, on its peg by the door
@@ -240,7 +244,7 @@ export class Act2 {
     for (const id of this.folk) this.npc(id).visible = false;
     for (const id of ['bjorn', 'signe', 'freydis']) this.npc(id).visible = false;
     for (const part of this.parts) part.clear(name);
-    const host = { kaupang: this.sea, jarnoy: this.isle, sea: this.voy, wessex: this.wx, six: this.six, hedeby: this.snd, hunt: this.cmp, isle5: this.wing, myr: this.marsh, skal: this.forge, sea7: this.sea7, svart: this.shore7, hall7: this.hall7 }[ph.at];
+    const host = { kaupang: this.sea, jarnoy: this.isle, sea: this.voy, wessex: this.wx, six: this.six, hedeby: this.snd, hunt: this.cmp, isle5: this.wing, myr: this.marsh, skal: this.forge, sea7: this.sea7, svart: this.shore7, hall7: this.hall7, e8: this.epi }[ph.at];
     if (host) return host.dress(name, r);
     this.dress(name, r);
   }
@@ -473,6 +477,12 @@ export class Act2 {
     if (!k || k.id !== 'bjornstead') p.teleport(...this.B(-1, 142), Math.PI);
   }
   onCaught() { this.act.stealthActive = false; this.g.ui.setDetection(-1); this.fail('Caught', "Håkon's guards have him. Stay low, keep out of their sight, and be in a pit when the dogs come."); }
+  playEnding8() {
+    const g = this.g, st = this.st;
+    if (this.ending) return;
+    this.ending = true; g.player.frozen = true; g.ravens.exitEye();
+    g.ui.fade(true, 1.8).then(() => g.ui.card('Blood of the North: The Rise of the Raven King', 'The End', 7)).then(() => { st.stage = 'complete'; g.autosave(); this.act.showChapterEnd(); });
+  }
   playEnding7() {
     const g = this.g, st = this.st;
     if (this.ending) return;

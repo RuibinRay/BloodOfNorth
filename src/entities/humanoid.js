@@ -556,6 +556,12 @@ function itemGeo(name) {
       break;
     }
     case 'firewood': for (let i = 0; i < 4; i++) g.push(tint(at(cyl(0.05, 0.05, 0.55, 5), -0.14 + (i % 2) * 0.1, 0.02 + ((i / 2) | 0) * 0.09, 0.08, 0, 0, Math.PI / 2), 0x7a5c3c, 0.15, i)); break;
+    case 'broom': g.push(tint(at(cyl(0.014, 0.016, 1.3, 5), 0, 0, 0.45, Math.PI / 2, 0, 0), WD, 0.08, 1), tint(at(cone(0.09, 0.34, 6), 0, 0, 1.2, -Math.PI / 2, 0, 0), 0xb8a070, 0.2, 2)); break;
+    case 'cup': g.push(tint(at(cyl(0.045, 0.035, 0.1, 8), 0.03, 0.06, 0.02), 0x6a4a2a, 0.1, 1), tint(at(cyl(0.04, 0.04, 0.01, 8), 0.03, 0.105, 0.02), 0xc9a04a, 0.1, 2)); break;
+    case 'apple': g.push(tint(at(sphere(0.04, 7, 6), 0.02, 0.05, 0.02), 0xb02a1a, 0.15, 1)); break;
+    case 'loaf': g.push(tint(at(sphere(0.09, 8, 6), 0.02, 0.06, 0.04, 0, 0, 0, 1.3, 0.75, 1), 0xb0803a, 0.15, 1)); break;
+    case 'basket': g.push(tint(at(cyl(0.16, 0.12, 0.16, 9), 0, -0.1, 0.04), 0x9a7a4a, 0.15, 1), tint(at(sphere(0.12, 7, 5), 0, -0.02, 0.04, 0, 0, 0, 1, 0.5, 1), 0x5a7a3a, 0.3, 2)); break;
+    case 'toyaxe': g.push(tint(at(cyl(0.013, 0.015, 0.4, 5), 0, 0, 0.14, Math.PI / 2, 0, 0), 0x9a7a54, 0.08, 1), tint(at(box(0.02, 0.12, 0.07), 0, -0.04, 0.32), 0xb0905e, 0.08, 2)); break;
     case 'fish': g.push(tint(at(sphere(0.06, 6, 5), 0, -0.14, 0.02, 0, 0, 0, 0.5, 2.6, 1), 0x9aa6a8, 0.15, 1)); break;
     default: g.push(tint(box(0.05, 0.05, 0.05), 0xffffff));
   }

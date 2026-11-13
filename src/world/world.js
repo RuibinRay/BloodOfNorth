@@ -13,6 +13,7 @@ import { buildAct4Places } from './act4_places.js';
 import { buildAct5Places } from './act5_places.js';
 import { buildAct6Places } from './act6_places.js';
 import { buildAct7Places } from './act7_places.js';
+import { buildEpiloguePlaces } from './epilogue_places.js';
 import { mainAt } from './realm.js';
 
 const CELL = 8;
@@ -288,6 +289,7 @@ export class World {
     Object.assign(this.main, buildAct5Places(ctx, this, scene)); // Håkon's hunting camp, Gannet Rock's hut, Vængr's settlement // Wessex, Hedeby Sound, the ships at sea, the burned islands
     Object.assign(this.main, buildAct6Places(ctx, this, scene)); // what Act VI adds on Myrholm, on Skalløy and at Ravenhold
     Object.assign(this.main, buildAct7Places(ctx, this, scene)); // the war: the chained line at sea, Svartøy's shore, the pens, the hall gate, the Thing at Gulen
+    Object.assign(this.main, buildEpiloguePlaces(ctx, this, scene)); // twelve years on: Ravenhold beyond its walls, Leif's house, the stones, Bjorn's mound under the old birch
 
     const stat = ctx.b.build();
     scene.add(stat);

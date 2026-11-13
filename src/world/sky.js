@@ -16,6 +16,7 @@ export class Sky {
     this.time = 8.7;               // hours, 0..24
     this.weather = { snow: 0, fog: 0, overcast: 0, wind: 1 };
     this.farSight = 0;             // 0..1: clear sea air, so the next island shows
+    this.fogMul = 1;               // a scene may thin the haze (the Epilogue's last view)
     this.fireGlow = 0;             // raid: orange haze over the village
     this.sunDir = new THREE.Vector3(0, 1, 0);
     this.lightDir = new THREE.Vector3(0, 1, 0);
@@ -136,7 +137,7 @@ export class Sky {
     const fog = this.scene.fog;
     fog.color.copy(hor).multiplyScalar(lerp(1, 0.9, dayF));
     if (this.fireGlow > 0) fog.color.lerp(C(0.3, 0.13, 0.06), this.fireGlow * 0.4);
-    fog.density = lerp(0.0062, 0.0019, dayF) * (1 - 0.5 * this.farSight) + clamp(w.fog, 0, 1) * 0.03;
+    fog.density = (lerp(0.0062, 0.0019, dayF) * (1 - 0.5 * this.farSight) + clamp(w.fog, 0, 1) * 0.03) * this.fogMul;
     this.renderer.toneMappingExposure = lerp(1.25, 1.1, dayF);
 
     // snow

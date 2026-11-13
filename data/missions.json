@@ -1,7 +1,7 @@
 {
   "about": "Mission breakdown of the owner's story (docs/story/THE_RISE_OF_THE_RAVEN_KING.md), chapter by chapter. status: built (playable; tested by script) | partial (something of it is playable; read the note) | fight_only (the champion fight is playable in its place, without the chapter round it) | planned. Minutes are design targets, not measured playtime: nothing here has been timed with a person playing.",
   "source": "docs/story/THE_RISE_OF_THE_RAVEN_KING.md",
-  "updated": "2026-11-12 (0.19)",
+  "updated": "2026-11-13 (0.20)",
   "acts": [
     {
       "act": 1,
@@ -1206,7 +1206,8 @@
               "type": "story",
               "target_minutes": 10,
               "summary": "The stones; Torvald and Hauk; the Thing-Ring.",
-              "status": "planned"
+              "status": "built",
+              "note": "A morning walk through Ravenhold twelve years on: the town spilled past the old palisade (houses, workshops, gardens), a market on the strand, ships from four coasts. The row of carved stones is a scene (Torvald sweeps Ari's stone; Hauk brings two cups of ale). Halvar's forge and the Thing-Ring on the anvil are a conversation. Then five visits, each the story's own paragraph read through: Svanhild and the young warriors, Astrid with Kári and his son, Hrefna and Ingrid, Signe and Freydis, Leif, Hallvard and the goat. Nothing is fought."
             }
           ]
         },
@@ -1220,7 +1221,8 @@
               "type": "story",
               "target_minutes": 4,
               "summary": "Liv; the Twins on the wall.",
-              "status": "planned"
+              "status": "built",
+              "note": "Leif's house is the one building in the game that can be walked into. The scene (about a minute and a half) plays in the story's words: Liv on the table with her apple, the dice, 'He lost two', the fall into her father's arms, the Twins over the hearth, Leif at the window. It can be skipped."
             }
           ]
         },
@@ -1234,7 +1236,8 @@
               "type": "story",
               "target_minutes": 6,
               "summary": "Little Brokk; the young raven with one white feather.",
-              "status": "planned"
+              "status": "built",
+              "note": "The evening walk up the hill with Little Brokk; the lesson at the old birch is a scene in the story's words (the farmer and his neighbor at the fence, the children by the stream, the wooden axe). The young raven drops onto the stone at the foot of Bjorn's mound; one key kneels beside it; 'Home.' Then the view rises over the town and out to sea while Eirik speaks the last lines, and the story's title ends it."
             }
           ]
         }
@@ -1656,10 +1659,10 @@
     "missions": 89,
     "target_minutes": 1015,
     "by_status": {
-      "built": 79,
+      "built": 82,
       "partial": 4,
       "fight_only": 0,
-      "planned": 6
+      "planned": 3
     }
   }
 }

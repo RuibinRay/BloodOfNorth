@@ -65,6 +65,8 @@ Sources are listed at the end.
 
 Built in 0.13: Stormguard by the story's rules, five Stormborn skills, ten champions with named skills and phases, Raven-Feeder's reforgings. See [WEAPONS.md](WEAPONS.md).
 
+Built in 0.20: a building that can be walked into (a floor to stand on, walls with a door and a window, a roof open along the ridge); a scene in which the camera rises from a hillside over a town and out to sea while the haze thins; a part of the story with no fighting at all.
+
 Built in 0.19: eased, keyed attack animations with wind-up and follow-through for every weapon and skill; blade trails (red for a blow that cannot be blocked); impact flashes, ground rings, screen pulses and a camera kick; a bow with bending limbs, a string and a nocked arrow, a draw ring, a perfect-release window and hit marks; rain; a glow pass; mouse-follow camera without pointer capture. In Act VII: a deck fight under volleys the player has to shield against; a ranged task against archers on another ship; a landing fought as two pushes with rescues between; a chapter played as another character; five champion fights, each with the turn the story gives it (the black raven and the rail; the knees; the beat and the burning bridge; the swing and the steps; four parts and a last blow that is met, not struck). None of it has been played by a person.
 
 Built in 0.18: two champion fights that turn on one act the story names rather than on damage (Eydis: send the black raven; Bersi: stand on the ledge and drop flat), each with a hint and a marker; and a fight that moves place part-way. Neither has been played by a person, so whether the turn is clear enough is unknown.
@@ -89,7 +91,7 @@ Planned, in order: Act I's last chapters moved to the new Bjornstead; the five s
 
 ## How the work is ordered
 
-The owner's story is 59 chapters and a three-part epilogue. By this plan's own targets they come to roughly 17 hours of main missions; side work, travel and battles are what would carry it toward 40. It is being built one chapter at a time in story order, each one checked against the text before it is called done: Act II was done this way in 0.14, Act III in 0.15, Act IV in 0.16, Act V in 0.17, Act VI in 0.18 and Act VII in 0.19; the epilogue is what is left. Two standards from the game-studio kit the owner pointed to are adopted: gameplay numbers live in data files, and every story fact carries a canon level.
+The owner's story is 59 chapters and a three-part epilogue. By this plan's own targets they come to roughly 17 hours of main missions; side work, travel and battles are what would carry it toward 40. It is being built one chapter at a time in story order, each one checked against the text before it is called done: Act II was done this way in 0.14, Act III in 0.15, Act IV in 0.16, Act V in 0.17, Act VI in 0.18, Act VII in 0.19 and the epilogue in 0.20. The whole story is now built; what is left is Act I's three missing scenes, a human playtest of all of it, and real art. Two standards from the game-studio kit the owner pointed to are adopted: gameplay numbers live in data files, and every story fact carries a canon level.
 
 ## Sources
 
