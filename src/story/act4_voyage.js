@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { cone, at } from '../world/geo.js';
 import { makeShip } from '../world/props.js';
 import { AT_SEA } from '../world/layout.js';
+import { shared } from '../world/geo.js';
 import { dampAngle } from '../core/util.js';
 import { A4, CAST4 } from '../data/act4.js';
 import { FOES } from './champions.js';
@@ -42,6 +43,7 @@ export class A4Voyage extends A4Part {
   clear(phase) {
     const g = this.g, c = this.c, on = SEA.includes(phase);
     this.SS.set(on); this.SS.knarr.set(on);
+    if (!on) { shared.uSeaDrift.value.set(0, 0); if (this.way) this.way.v = 0; } // ashore, the sea stands still again
     c.npc('solcap').visible = false; this.rurik.visible = false; this.rurik.cb = null;
     for (const s of this.ls) { s.m.visible = false; s.to = null; }
     for (const f of this.fires) g.fx.removeFire(f); this.fires = [];
@@ -234,10 +236,25 @@ export class A4Voyage extends A4Part {
     },
   };
 
+  /** Under way. The Sea-Raven keeps her place (the act's people stand on her deck) and the sea runs past her: brisk by
+   *  day, slower by night, feeling her way in the fog, and nearly still once the longships have her hemmed in. */
+  underway(dt) {
+    const g = this.g, c = this.c, q = g.quests, W = this.way || (this.way = { v: 0, fx: 0 }), { x, z } = AT_SEA, ph = c.phase;
+    const held = ph === 'a4fog' && (q.at('q_water', 'offer') || q.at('q_water', 'board') || q.at('q_water', 'rurik'));
+    const want = held ? 0.2 : ({ a4sea: 3, a4seaeve: 2.4, a4fog: 1.1, a4seanight: 1.6, a4home: 3, a4homenight: 1.6, a4smoke: 2.6 }[ph] ?? 0);
+    W.v += (want - W.v) * Math.min(1, dt * 0.5); shared.uSeaDrift.value.y += W.v * dt;
+    if (W.v > 0.6 && (W.fx -= dt) <= 0) { // white water at her bow and Fafnir's Bed's, a wake astern
+      W.fx = 0.14 / Math.min(1.6, W.v / 2);
+      for (const sd of [-1, 1]) g.fx.burst('splash', x + sd * 1.5, 0.15, z + 9.6, Math.round(1 + W.v));
+      g.fx.burst('splash', x + (Math.random() - 0.5) * 1.6, 0.05, z - 11 - Math.random() * 6, 2);
+      const [kx, kz] = this.S(13, 9); g.fx.burst('splash', kx, 0.15, kz, 2);
+    }
+  }
   update(dt) {
     const g = this.g, c = this.c, q = g.quests;
     if (!SEA.includes(c.phase)) return;
     this.crew([this.rurik, c.npc('astrid')], dt);
+    this.underway(dt);
     for (const s of this.ls) if (s.m.visible && s.to) { // the longships close
       const dx = s.to[0] - s.m.position.x, dz = s.to[1] - s.m.position.z, d = Math.hypot(dx, dz);
       if (d < 0.3) { s.m.rotation.y = s.to[2]; s.to = null; continue; }

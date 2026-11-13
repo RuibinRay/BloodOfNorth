@@ -7,7 +7,7 @@ import { rng } from '../core/util.js';
 import { ART } from '../data/art.js';
 
 /** Uniforms shared by every patched material (wind sway + snow cover). */
-export const shared = { uTime: { value: 0 }, uSnow: { value: 0 }, uWind: { value: 1 } };
+export const shared = { uTime: { value: 0 }, uSnow: { value: 0 }, uWind: { value: 1 }, uSeaDrift: { value: new THREE.Vector2() } }; // uSeaDrift: metres the sea has moved past a ship that stands still while the story sails her
 
 // The ground. Its colour is painted once for a whole valley or island (about half a metre to a pixel); close to, that is
 // a smear. So the grain comes from three small repeating pictures laid out in the world itself: grass, sand along
@@ -38,19 +38,20 @@ const GROUND = `
 export function waterPatch(mat) {
   mat.userData.ice = { value: 0 }; // 1: frozen over (the river in winter): no clear shallows, no foam
   mat.onBeforeCompile = (sh) => {
-    sh.uniforms.uTime = shared.uTime; sh.uniforms.uFoam = { value: TEX.foam }; sh.uniforms.uIce = mat.userData.ice;
+    sh.uniforms.uTime = shared.uTime; sh.uniforms.uFoam = { value: TEX.foam }; sh.uniforms.uIce = mat.userData.ice; sh.uniforms.uSeaDrift = shared.uSeaDrift;
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vSeaXZ;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvSeaXZ = (modelMatrix * vec4(transformed, 1.0)).xz;');
-    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform float uTime;\nuniform float uIce;\nuniform sampler2D uFoam;\nvarying vec2 vSeaXZ;')
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform float uTime;\nuniform float uIce;\nuniform sampler2D uFoam;\nuniform vec2 uSeaDrift;\nvarying vec2 vSeaXZ;')
       .replace('vec3 mapN = texture2D( normalMap, vNormalMapUv ).xyz * 2.0 - 1.0;', 'vec3 mapN = texture2D( normalMap, vNormalMapUv ).xyz + texture2D( normalMap, vNormalMapUv * 0.23 + vec2( 0.37, 0.11 ) ).xyz * 1.4 - 1.7;')
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
         float seaF = pow(1.0 - clamp(dot(normalize(vViewPosition), normal), 0.0, 1.0), 2.2);
         diffuseColor.rgb = mix(vec3(0.07, 0.3, 0.32), diffuseColor.rgb, max(0.3 + 0.7 * seaF, uIce));
         diffuseColor.a = mix(mix(0.58, 0.97, seaF), 0.96, uIce);
-        float seaFm = texture2D(uFoam, vSeaXZ * 0.045 + vec2(uTime * 0.006, uTime * 0.004)).r * texture2D(uFoam, vSeaXZ * 0.013 - vec2(uTime * 0.003, 0.0)).r;
+        vec2 seaXZ = vSeaXZ + uSeaDrift;
+        float seaFm = texture2D(uFoam, seaXZ * 0.045 + vec2(uTime * 0.006, uTime * 0.004)).r * texture2D(uFoam, seaXZ * 0.013 - vec2(uTime * 0.003, 0.0)).r;
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.86, 0.92, 0.94), smoothstep(0.32, 0.75, seaFm) * 0.55 * (1.0 - uIce));`);
   };
-  mat.customProgramCacheKey = () => 'sea1';
+  mat.customProgramCacheKey = () => 'sea2';
   return mat;
 }
 

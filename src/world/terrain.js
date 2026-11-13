@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { fbm, noise2, smoothstep, lerp, clamp, distToPolyline } from '../core/util.js';
 import { FLATS, PATHS, FIELDS, VILLAGE, POI, ISLES } from './layout.js';
-import { patch, waterPatch, TEX } from './geo.js';
+import { patch, waterPatch, TEX, shared } from './geo.js';
 import { realmAt, buildRealmHeights, buildRealm } from './realm.js';
 
 export const SIZE = 640, HALF = SIZE / 2, N = 256, CELL = SIZE / N;
@@ -275,7 +275,8 @@ export function buildTerrain(scene) {
       riverMat.roughness = on ? 0.42 : 0.08; riverMat.metalness = on ? 0.05 : 0.55; riverMat.normalScale.setScalar(on ? 0.12 : 0.55);
     },
     update(t) {
-      TEX.waterN.offset.set(t * 0.004, t * 0.0026);
+      const dr = shared.uSeaDrift.value; // the sea flowing past a ship the story sails (a tile of ripples is 10000 / 580 m; the plane's v runs against world z)
+      TEX.waterN.offset.set(t * 0.004 + dr.x * 0.058, t * 0.0026 - dr.y * 0.058);
       if (!this.iced) riverN.offset.set(0, -t * 0.22); // flows south, toward the fjord
     },
   };

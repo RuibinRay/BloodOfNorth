@@ -7,6 +7,7 @@
 import * as THREE from 'three';
 import { makeShip } from '../world/props.js';
 import { AT_SEA } from '../world/layout.js';
+import { shared } from '../world/geo.js';
 import { clamp } from '../core/util.js';
 import { A7, CAST7, TOLD, SAID, LEIF_LINES, ULF_END } from '../data/act7.js';
 import { FOES } from './champions.js';
@@ -110,7 +111,7 @@ export class A7Part extends A4Part {
 }
 
 export class A7Sea extends A7Part {
-  constructor(game, core) { super(game, core); this.arrows7 = new War(game); this.fires = []; this.deck = []; this.vT = 0; }
+  constructor(game, core) { super(game, core); this.arrows7 = new War(game); this.fires = []; this.deck = []; this.vT = 0; this.way = { v: 0, t: 0, wz: null, fx: 0 }; }
   get SS() { return this.g.world.main.sea; }
   /** A point by offset from the Sea-Raven's mast (+x east; +z south, her bow). */
   S(dx, dz) { return [AT_SEA.x + dx, AT_SEA.z + dz]; }
@@ -118,6 +119,12 @@ export class A7Sea extends A7Part {
     const g = this.g, c = this.c, q = g.quests, w = g.world;
     for (const id of ['kari', 'guide']) { const n = g.addNPC(id, CAST7[id]); n.visible = false; n.talk = () => c.talkTo(id); }
     this.boat = makeShip({ L: 9, B: 2.6, sail: false, shields: false, seed: 33 }); this.boat.visible = false; g.scene.add(this.boat); // one of Queen Thora's flat-bottomed marsh boats
+    this.rockGrp = new THREE.Group(); this.rockGrp.visible = false; g.scene.add(this.rockGrp); // the rocks at the end of Håkon's line, for Leif's passage
+    for (let i = 0; i < 7; i++) {
+      const geo = new THREE.IcosahedronGeometry(1, 1), pa = geo.attributes.position;
+      for (let k = 0; k < pa.count; k++) { const s = 0.72 + Math.abs(Math.sin(k * 12.99 + i * 78.23)) * 0.55; pa.setXYZ(k, pa.getX(k) * s, pa.getY(k) * s * 1.25, pa.getZ(k) * s); }
+      geo.computeVertexNormals(); this.rockGrp.add(new THREE.Mesh(geo, this.rockMat || (this.rockMat = new THREE.MeshStandardMaterial({ color: 0x3e3b37, roughness: 0.6, metalness: 0.05, flatShading: true })))); // black rock, wet
+    }
     w.addInteractable({ id: 'a7smother', pos: () => this.nextFire() || { x: 0, z: 0 }, x: 0, z: 0, r: 2.1, priority: 3, label: 'Smother it', enabled: () => q.at('q_firewater', 'fire') && !!this.nextFire() && !this.busy, use: () => this.smother() });
     w.addInteractable({ id: 'a7oar', x: this.S(0.9, -5.2)[0], z: this.S(0.9, -5.2)[1], r: 2.6, priority: 3, label: 'Take the oar with Leif', enabled: () => q.at('q_firewater', 'rocks') && !this.busy && !g.activity, use: () => this.rocks() });
   }
@@ -129,7 +136,8 @@ export class A7Sea extends A7Part {
     if (any) for (const id of NAMED) { const n = c.npc(id); if (n) n.visible = false; } // each scene of the act places its own people
     this.boat.visible = false; this.arrows7.clear();
     for (const f of this.fires) g.fx.removeFire(f); this.fires = []; this.deck = [];
-    this.busy = false; this.duel = null; this.archers = null; this.slide = null; this.fall = null; this.vT = 4; this.told = 0; this.drift = null;
+    this.busy = false; this.duel = null; this.archers = null; this.slide = null; this.fall = null; this.vT = 4; this.told = 0; this.drift = null; this.rammed = false;
+    this.way.wz = null; if (this.rockGrp) this.rockGrp.visible = false; if (!on) { shared.uSeaDrift.value.set(0, 0); this.way.v = 0; } // ashore, the sea stands still again
     if (any || this.rained) { g.fx.setRain(RAIN[phase] || 0); this.rained = any; }
     if (!on) return;
     this.SS.set(true); c.W.stages.searaven.set(false); c.act.glowTarget = phase === 'w7dawn' ? 0 : 0.45;
@@ -240,11 +248,47 @@ export class A7Sea extends A7Part {
   }
   struck() {
     const g = this.g, c = this.c, p = g.player, y = this.SS.sr.y;
-    this.slide = null; this.S7.flag.group.position.set(0, 0, 0);
+    this.slide = null; this.rammed = true; this.S7.flag.group.position.set(0, 0, 0);
     p.cam.shake = 0.95; g.hitStop = 0.1; g.audio.play('split'); g.audio.play('thud'); g.audio.play('drum'); p.h.play('stagger', 0.8); g.ui.pulse('white', 0.25);
     for (const dz of [-4, -1, 2, 5]) { const [x, z] = this.S(-2.2, dz); g.fx.burst('chips', x, y + 0.4, z, 16); g.fx.burst('splash', x, y - 0.3, z, 10); }
     for (const id of [...TEN, 'svanhild', 'astrid', 'leif']) { const n = c.npc(id); if (n.visible) n.h.play('stagger', 0.7); }
     g.after(1.6, () => g.quests.notify('event', 'a7ram'));
+  }
+
+  /** Under way. The Sea-Raven is where the story stands everyone, so she keeps her place and the sea runs past her: the fleet
+   *  keeps station on her beams and astern, lifting and rolling on the swell; white water at the bows and a wake astern;
+   *  Håkon's chained wall comes on out of the mist with Ulf on its prow; the rocks at the end of the line go by close enough
+   *  to touch. Rammed and locked to Ulf's ship she only drifts. */
+  sail(dt, ph) {
+    const g = this.g, W = this.way, S7 = this.S7, { x, z } = AT_SEA, fw = this.at('q_firewater');
+    const want = ph === 'w7dawn' ? 2.6 : ph === 'w7fire' ? (fw >= 4 ? (this.rammed ? 0.3 : 1.4) : fw === 3 ? 3.6 : 2.2) : ph === 'w7ulf' ? 0.3 : 0.15;
+    W.v += (want - W.v) * Math.min(1, dt * 0.5); W.t += dt;
+    shared.uSeaDrift.value.y += W.v * dt;
+    const t = W.t, ships = S7.fleet.on ? S7.fleet.group.children.filter((m) => m.userData.deckY !== undefined) : [];
+    ships.forEach((m, i) => { // station-keeping: never quite where she was, lifting and rolling
+      const b = m.userData.base || (m.userData.base = { y: m.position.y, z: m.position.z, rx: m.rotation.x, rz: m.rotation.z });
+      m.position.y = b.y + 0.16 * Math.sin(t * 0.9 + i * 1.7); m.position.z = b.z + 2.4 * Math.sin(t * 0.07 + i * 2.1) * Math.min(1, W.v);
+      m.rotation.z = b.rz + 0.045 * Math.sin(t * 0.7 + i * 1.3); m.rotation.x = b.rx + 0.022 * Math.sin(t * 0.55 + i * 0.9);
+    });
+    if (S7.wall.on && ph === 'w7fire' && fw <= 3) { if (W.wz === null) W.wz = fw === 2 ? 110 : 22; W.wz = Math.max(0, W.wz - W.v * dt * 0.9); } // it comes on out of the mist
+    else W.wz = S7.wall.on ? 0 : null;
+    if (S7.wall.on) { S7.wall.group.position.z = W.wz || 0; const u = this.c.battle.ulf; if (ph === 'w7fire' && u.visible && u.mode === 'crew') u.pos.z = z + 72.6 + (W.wz || 0); }
+    if (W.v > 0.6 && (W.fx -= dt) <= 0) { // white water
+      W.fx = 0.14 / Math.min(1.6, W.v / 2);
+      for (const sd of [-1, 1]) g.fx.burst('splash', x + sd * 1.5, 0.15, z + 9.6, Math.round(1 + W.v)); // the faster, the whiter
+      g.fx.burst('splash', x + (Math.random() - 0.5) * 1.6, 0.05, z - 11 - Math.random() * 6, 2);
+      const m = ships[(Math.random() * ships.length) | 0];
+      if (m) g.fx.burst('splash', m.position.x + Math.sin(m.rotation.y) * 9.5, 0.15, m.position.z + Math.cos(m.rotation.y) * 9.5, 3);
+    }
+    const R = this.rockGrp; if (R) R.visible = ph === 'w7fire' && fw === 3; // Leif's passage
+    if (R && R.visible) R.children.forEach((r, i) => {
+      if (!r.userData.on || r.position.z < z - 45) {
+        r.userData.on = true; const s = 0.9 + Math.random() * 1.6;
+        r.position.set(x - 3.6 - Math.random() * 6 - (i % 3) * 2.5, -0.6, z + 45 + Math.random() * 55); r.scale.set(s, s * (0.8 + Math.random() * 0.8), s); r.rotation.set(Math.random(), Math.random() * 6, Math.random());
+      }
+      r.position.z -= (W.v + 0.5) * dt;
+      if (Math.random() < dt * 1.2) g.fx.burst('splash', r.position.x + 0.8, 0.2, r.position.z, 3);
+    });
   }
 
   // ---- two blades, one sea ----------------------------------------------------------------------------
@@ -343,6 +387,7 @@ export class A7Sea extends A7Part {
     if (!SEA7.includes(ph)) return;
     const u = c.battle.ulf;
     this.crew([c.npc('torvald'), c.npc('guide'), ...c.battle.jarn.slice(0, 3), u, ...(this.archers || [])], dt);
+    this.sail(dt, ph);
     const dr = this.drift; // the marsh boat slips away from the fleet into the mist
     if (dr && ph === 'w7dawn') {
       dr.t += dt; const k = Math.max(0, dr.t - 6) * 1.5, bx = dr.x - k * 0.95, bz = dr.z - k * 0.32;
