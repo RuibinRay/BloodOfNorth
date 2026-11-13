@@ -179,6 +179,10 @@ export class UI {
       if (!c.out && c.t >= c.dur) { c.out = true; this.e.card.classList.remove('on'); }
       if (c.t >= c.dur + 1.0) { this.cardS = null; c.res(); }
     }
+    // the frame counter (Settings): what the machine is managing, and what it is being asked to draw
+    const fe = this.fpsEl || (this.fpsEl = document.getElementById('fps')), showF = !!g.settings.showFps;
+    if (showF !== this._showF) { this._showF = showF; fe.classList.toggle('on', showF); }
+    if (showF && (this.fpsT = (this.fpsT || 0) + dt) > 0.5) { this.fpsT = 0; fe.textContent = `${Math.round(g.fps)} fps · ${(1000 / Math.max(1, g.fps)).toFixed(1)} ms · ${g.drawn.calls} draws · ${(g.drawn.tris / 1000).toFixed(0)}k triangles · ${Math.round(g.res.scale * 100)}% resolution`; }
     if (g.mode === 'menu' || !p) return;
     this.bars.health.style.width = p.health + '%';
     this.bars.stamina.style.width = p.stamina + '%';
@@ -545,7 +549,7 @@ export class UI {
       ${row('Difficulty', select('difficulty', [['easy', 'Skald (forgiving)'], ['normal', 'Warrior (standard)'], ['hard', 'Jarl (demanding)']]))}
       ${row('Objective markers', check('objectiveMarkers'))}${row('Subtitles', check('subtitles'))}${row('Subtitle size', range('subtitleSize', 0.8, 1.6, 0.1))}${row('Camera shake', check('cameraShake'))}</div>
       <h4>Camera</h4><div class="set">${row('Camera follows the mouse', check('mouseLook'))}${row('Look sensitivity', range('sensitivity', 0.3, 2.5, 0.1))}${row('Invert vertical look', check('invertY'))}<span></span><span class="muted">With this off the mouse does not turn the view: use the arrow keys or a gamepad stick.</span></div>
-      <h4>Graphics</h4><div class="set">${row('Quality', select('quality', [['low', 'Low'], ['medium', 'Medium'], ['high', 'High']]))}${row('Glow on fire and steel', check('bloom'))}<span></span><span class="muted">Grass density applies after reloading the game.</span></div>
+      <h4>Graphics</h4><div class="set">${row('Quality', select('quality', [['low', 'Low'], ['medium', 'Medium'], ['high', 'High']]))}${row('Glow on fire and steel', check('bloom'))}${row('Resolution follows the frame rate', check('autoRes'))}${row('Show frame rate', check('showFps'))}<span></span><span class="muted">Grass density and how far trees keep their full shape apply after reloading the game. With "Resolution follows the frame rate" on, the picture is drawn with fewer pixels whenever frames come slower than fifty a second, and sharpens again when there is room.</span></div>
       <h4>Audio</h4><div class="set">${row('Master volume', range('volMaster', 0, 1, 0.05))}${row('Music', range('volMusic', 0, 1, 0.05))}${row('Effects', range('volSfx', 0, 1, 0.05))}</div>
       <h4>Controls <span class="muted">· click a key to rebind · gamepad is supported with a fixed layout</span></h4><div class="keys">${Object.keys(ACTION_LABELS).map((a) => `<div><span>${ACTION_LABELS[a]}</span><button data-a="${a}">${esc(codeLabel(g.input.bindings[a][0]))}</button></div>`).join('')}</div>
       <p><button class="btn" id="reset">Restore defaults</button></p>`;

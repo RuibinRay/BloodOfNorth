@@ -2,7 +2,7 @@
 
 A third-person Viking action RPG that follows the owner's story, *The Rise of the Raven King*
 ([docs/story](docs/story/THE_RISE_OF_THE_RAVEN_KING.md): seven acts and an epilogue). This repository holds
-**slice 0.21**: Act I (Eirik's childhood), Act II (nineteen: Bjornstead, the raid, the walls, Kaupang and the
+**slice 0.22**: Act I (Eirik's childhood), Act II (nineteen: Bjornstead, the raid, the walls, Kaupang and the
 Sea-Raven), Act III (twenty: Jarnøy and the Battle of Iron Shore), Act IV (twenty-two: the treasure voyage,
 Wessex, six islands burning, Hedeby Sound), Act V (twenty-four: the hunger winter, the tannery yard, the ring,
 Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, the wedding) and Act VII
@@ -10,7 +10,20 @@ Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, th
 (forty-one: Ravenhold twelve years on, Leif's house, the old birch), each as the story tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
-**New in 0.21.** Any chapter of any act can be started from the main menu (Start at an Act lists each act's
+**New in 0.22.** Performance and checks. The game now draws far less for the same picture: trees, rocks, bushes and
+grass are laid out in map cells and only the cells in view are drawn (they were all drawn, everywhere, every frame, and
+again for shadows); far trees use a simpler shape; grass and bushes stop where they can no longer be seen; the props of
+each place are merged area by area instead of across the whole map; an island the haze has taken is not drawn; and
+every person is one skinned figure and a face instead of some thirty separate pieces. Counted in the same scenes before
+and after: the village 4.8 million triangles a frame to under 1 million; the Black Shore battle 4.5 million triangles and
+713 draw calls to about 290 thousand and 320 · **resolution that follows the frame rate** (on by default): when frames
+come slower than fifty a second the picture is drawn with fewer pixels, and sharpens again when there is room · **a frame
+counter** (Settings, Show frame rate): frames a second, draws, triangles, resolution · **`npm run check`**: one command
+that builds the game, opens it in a headless Chrome and starts every one of the 67 chapters, compares each with what was
+recorded as known good, holds five heavy scenes to a drawing budget, and plays one fight beside two companions.
+The frame rate itself has not been measured on this machine (the test browser runs hidden): turn the counter on to see it.
+
+**In 0.21.** Any chapter of any act can be started from the main menu (Start at an Act lists each act's
 chapters, 67 in all), with what came before taken as played; every one was started this way by script and checked,
 and the two that left Eirik in the wrong place were fixed · **companions who fight**: Leif, Astrid, Torvald,
 Svanhild, Brokk and Ingrid each fight their own way (Leif's two blades land twice, Torvald is slow and heavy behind a
@@ -88,6 +101,17 @@ npm run dev
 ```
 
 Then open http://localhost:5184. A production build is `npm run build` (output in `dist/`).
+
+To check that nothing is broken (it needs Google Chrome installed; it uses a temporary profile, not yours):
+
+```bash
+npm run check
+```
+
+It builds the game, starts every chapter of every act the way the Acts menu does and compares each with
+[tools/check/expected.json](tools/check/expected.json), holds five heavy scenes to a drawing budget, and plays one
+fight beside two companions. About five minutes; `npm run check -- --quick` does each act's opening in about one.
+After a change that is meant to move something, `npm run check -- --update` records the new state.
 
 ## Controls
 
@@ -374,7 +398,9 @@ the [story bible](docs/STORY_BIBLE.md).
 | **Planned** | Everything else in the brief: Act I's last missing scenes (Old Hrefna's bones, the stick and the little shield, the seven seats); the rest of the sea map (about forty islands of which fourteen exist as a sandbox; a longship of your own, fleets and crew who can be hurt; wind and weather at sea; more districts — designed in [docs/OPEN_WORLD.md](docs/OPEN_WORLD.md)); adult combat and nine weapons, skill trees, companions' own side missions and loyalty, sailing, settlement, factions, 50 side missions, UE5 port. See [docs/ROADMAP.md](docs/ROADMAP.md) |
 
 How it was tested: an automated playtest drives the real game loop through every quest step (see
-`debug` in [src/main.js](src/main.js)). It was verified on an Apple M2 at 60 fps. It has **not** been
+`debug` in [src/main.js](src/main.js)), and `npm run check` starts every chapter and compares it with a recorded
+known-good state. What each scene asks the machine to draw is counted exactly; the frame rate on an Apple M2 has not
+been measured since the early slices (Settings has a frame counter). It has **not** been
 played end to end by a person with mouse and keyboard, so feel and difficulty tuning are unverified.
 
 ## Layout
@@ -389,6 +415,6 @@ src/story/     director scripts: Act I (one per chapter), Acts II to VI (act2*.j
 src/ui/        HUD, menus, panels
 data/          campaign-wide design data (missions, world, combat) — engine-agnostic JSON
 assets/        asset registry and generated assets
-tools/         Higgsfield API client
+tools/         the checks (`npm run check`: check.mjs and check/), Higgsfield API client
 docs/          design document, story bible, architecture, roadmap
 ```

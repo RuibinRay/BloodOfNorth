@@ -26,9 +26,10 @@ playtests; none are claimed until then.
 | 0.19 | **The Raven King** | Act VII as the story tells it, all eleven chapters: the fleet off Svartøy in the rain (fire arrows, the ship of archers, Leif's passage, the ram); Leif and Ulf, the boarders, Ulf Two-Blades across two burning decks; the Black Shore (two pushes and two rescues); Kettil at the bend; the pens, played as Torvald with Star-Fall, and Kári; Vigdis on the burning bridge; Gorm at the gate; the Hall of Wolves; the Ironwolf in four parts, the last won by waiting; the steps of the burning hall, Hauk's stone; the law-rock at Gulen. Also: every attack and skill animation redone on eased curves; blade trails, impact flashes, ground rings, screen pulses; a new bow (bending limbs, a drawn string, a nocked arrow, a perfect-release window, hit marks, arrows that stay in what they hit); rain; a glow pass; the camera follows the mouse without pointer capture, with a setting to turn that off | Automated playtest: every step of the act played in order to the end-of-act screen; all 31 steps loaded cold; started from the menu; one step from each earlier act re-run | **Done** |
 | 0.20 | **The Old Birch** | The Epilogue as the story tells it, all three parts: Ravenhold twelve years on (the town past the palisade, the market on the strand, ships from four coasts, the row of stones, Torvald and Hauk, Halvar and the Thing-Ring, the people the war left); Leif's house, the first building that can be walked into (Liv, the dice, the Twins); the walk up the hill with Little Brokk, Bjorn's mound under the grown birch, the lesson, the young raven, the view rising out to sea. Eirik at forty-one. The whole story can now be played | Automated playtest: every step played in order to the last screen; all 9 steps loaded cold; started from the menu; Act VII's end screen continues into it | **Done** |
 | 0.21 | **Companions who fight** | Start at any chapter of any act (67), each started by script and checked; the six companions fight with their own kit and one skill each (called with Y and U); two walk with Eirik in the open world (recruited by talking, B to wait or come, down rather than dead, Ingrid gets them up); in the story's battles the companions on the line use their kit, their skills can be called, and Astrid on the field shoots for him | Every chapter starts in the right place; each skill used in a scripted fight; party kept across a save | Built (by script) |
-| 0.22 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: the raid, Kettil, the shore battle, Arne, Ulf, the deck fights, Rurik, the tannery yard, Skarde, Eydis, Bersi and all of Act VII above all, then the champions, the dive, riding, rowing and sailing feel, aim, stealth, camera | Three people finish everything built without help | Next |
-| 0.23 | **Real assets in** | Working Higgsfield credentials; key art; GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
-| 0.24 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or keep growing the web build | A written decision | Planned |
+| 0.22 | **Performance and checks** | Vegetation in map cells drawn only when in view, with simpler far trees; props merged area by area; islands dropped past the haze; each person one skinned figure and a face; resolution that follows the frame rate; a frame counter; `npm run check` (every chapter started and compared with a recorded state, five scenes held to a drawing budget, one companion fight) | Triangles a frame down by 75 to 95 per cent in the measured scenes; all 67 chapters pass the check | Built (by script) |
+| 0.23 | **Human playtest pass** | Tuning from real mouse, keyboard and gamepad play: the raid, Kettil, the shore battle, Arne, Ulf, the deck fights, Rurik, the tannery yard, Skarde, Eydis, Bersi and all of Act VII above all, then the champions, the dive, riding, rowing and sailing feel, aim, stealth, camera | Three people finish everything built without help | Next |
+| 0.24 | **Real assets in** | Working Higgsfield credentials; key art; GLB loader; first imported models | One placeholder replaced in-game by an imported GLB | Blocked on credentials |
+| 0.25 | **Engine decision** | Either commit to UE5 (needs suitable hardware) or keep growing the web build | A written decision | Planned |
 | 1.0 | **Polish** | Side missions, minigames, voiced dialogue, recorded music, performance targets (60 fps at 1440p on suitable hardware as an objective), accessibility pass | Full playthrough signed off | Planned |
 
 ## Immediate next steps
@@ -38,7 +39,13 @@ playtests; none are claimed until then.
 3. Supply the Higgsfield key ID and secret, run `npm run hf -- auth`, then generate the key art and reference sheets.
 4. Decide where the project lives: a PC that can run UE5, or continue in the browser for the epilogue and the polish.
 
-## Known gaps in 0.21
+## Known gaps in 0.22
+
+- **The frame rate has not been measured.** What is counted is what each scene asks the machine to draw (draw calls and triangles, exact). The timings taken while doing this work came from a hidden browser tab and were too noisy to use. The frame counter in Settings shows the real figure on the machine it runs on.
+- **Resolution that follows the frame rate was tested with made-up frame times**, not on a struggling machine: it fell to 70% and then 55% at thirty frames a second and climbed back at sixty. It may need its thresholds changed once it has been seen working.
+- **`npm run check` checks that chapters start, not that they can be finished.** Each chapter is started cold and run for fourteen seconds; nothing plays an act through. The full run-throughs were scripted once per act while each was built and are not saved.
+- **The far tree shapes swap in at a fixed distance** (200 m at Medium), which may be seen as a small change of outline when walking toward a wood.
+- **People are still the heaviest thing in a battle**: one draw each for the body, the face when near, the shadow, and each thing held. A battle of dozens will want the far ranks drawn as one batch.
 
 - **Nobody has fought beside the companions by hand.** Their numbers (health, guard, blows, cooldowns) are first guesses from scripted fights: Leif kills a raider in about seven seconds, Torvald holds two men for eight. Companions do not take on a champion on their own (he is Eirik's fight; their skills can be called on him), and stand out of a hide-duel.
 - **In the story's battles the companions are the scene's.** Only those the story puts on a line fight with their kit and can be called on; nobody else follows Eirik through a story chapter, and none can go down there (the story says who lives).
@@ -54,7 +61,7 @@ playtests; none are claimed until then.
 - **Eirik at forty-one** is the same rig with longer beard, greyer hair and a cloak; a player's own appearance choices still apply.
 - Act VII's known gaps below still stand.
 
-## Real shield walls (branch `real-shield-walls`, built after 0.21 and not yet merged)
+## Real shield walls (branch `real-shield-walls`, on top of 0.22; not yet given a number)
 
 Delivers: the Battle of Iron Shore (Act III) and both pushes on the Black Shore (Act VII) as shield walls. Two lines of rank and file with the named fighters in the front rank: 150 against 150 with 60 more behind them at Iron Shore; about 140 a side on the Black Shore. The line gives and wins ground sector by sector; they rush on a horn, reel where the rush is held, and can then be pushed with the horn (`G`); men who come through a sagging sector are real opponents for Eirik. A strip at the top of the screen shows the line. Numbers in `src/data/shieldwall.js`, `A3.wall` and `A7.wall`.
 
@@ -73,7 +80,7 @@ Known gaps:
 - **The fallen lie for sixteen seconds and sink.** Nobody is wounded, carried back or surrenders.
 - **Only these two battles use it.** Bjornstead's palisade, the gate at Jarnøy, the decks, Vængr and the forge lanes are still skirmishes in pairs.
 - **The horn is keyboard only** (`G`), like the other new keys.
-- **`npm run check` (0.22) will want its drawing budget re-recorded** for the Black Shore and Iron Shore scenes once the two branches are joined, since those scenes now draw some three hundred more figures.
+- **The two battle scenes draw more than they did in 0.22**, by about three hundred figures each: the Black Shore 559 thousand triangles where it was about 290, and the Iron Shore gate about 830 thousand against a budget of 800 (the wall on the beach is always drawn, wherever Eirik is on Jarnøy). Their triangle budgets in `npm run check` were re-recorded to match (750 and 1100 thousand). Draw calls did not rise: 281 on the Black Shore, where 0.22 counted about 320, and 291 at the gate.
 - A save made during a wall starts that step again from its beginning, as it did with the skirmish.
 
 ## Known gaps carried over from 0.19
@@ -90,7 +97,7 @@ Known gaps:
 - **The hall burns as fires and falling rafters**; the roof does not come down, though walking out is timed.
 - **The aftermath and the Thing are watched.** Eighty-three dead are twenty-two mounds. The four days of argument and the vote are told. About thirty-five people stand at the law-rock.
 - **The ravens do not sit on his shoulders.** They fly.
-- Performance in the burning hall and on the Black Shore (rain, glow, about twenty-five fighters) was not measured: the test tab runs hidden. If it stutters, Settings has Quality and the glow switch.
+- Performance in the burning hall and on the Black Shore (rain, glow, about twenty-five fighters) was not timed: the test tab runs hidden. Since 0.22 the Black Shore draws about 290 thousand triangles in 320 draws (it was 4.5 million in 713). If it stutters, Settings has Quality, the glow switch, and resolution that follows the frame rate.
 - Act VII begun from the menu assumes Acts I to VI: the ring, the mail shirt, all three reforgings.
 - The sandbox's fights with Ulf, Kettil, Vigdis, Gorm and Håkon (the Wolf's Table) are separate from the story's.
 

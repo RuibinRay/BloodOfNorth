@@ -5,6 +5,7 @@
 // against, so rigged GLB characters can replace the meshes later without touching gameplay.
 import * as THREE from 'three';
 import { clamp, smoothstep, damp, angleDiff } from '../core/util.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { M, at, box, cyl, cone, sphere, capsule, tint, merge } from '../world/geo.js';
 
 const D = { hip: 0.94, thigh: 0.44, shin: 0.44, chestY: 0.2, shoulderY: 0.3, shoulderX: 0.2, neckY: 0.42, upper: 0.29, fore: 0.27 };
@@ -173,13 +174,30 @@ const BLADE = { woodsword: [0.12, 0.58], woodsword_big: [0.12, 0.85], sword: [0.
   club: [0.55, 1.15], woodaxe: [0.45, 0.8], longaxe: [0.75, 1.25], seax: [0.1, 0.52], maul: [0.75, 1.25], smallaxe: [0.2, 0.45], throwaxe: [0.2, 0.45], spear: [1.05, 1.7], hammer: [0.2, 0.38] };
 
 const grp = (parent, x, y, z) => { const g = new THREE.Group(); g.position.set(x, y, z); parent.add(g); return g; };
-const part = (parent, geos) => { const m = new THREE.Mesh(merge(geos), M.char); m.castShadow = true; parent.add(m); return m; };
+/** One figure, one draw. Every piece of a figure hangs from one joint, so instead of a mesh per piece (thirty-odd draws a
+ *  person, counting their shadow) the pieces are fused into a single skinned mesh in which each vertex follows its one
+ *  joint with full weight. The joints are the bones; nothing about how they are posed changes.
+ *  pieces: [{ bone, geos }] with the geometry in the bone's own space. reach: how big the figure is, for its bounds. */
+function fuse(pieces, bones, skeleton, cast, reach) {
+  const geos = pieces.map(({ bone, geos }) => {
+    const g = merge(geos), n = g.attributes.position.count, bi = bones.indexOf(bone), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4);
+    for (let i = 0; i < n; i++) { si[i * 4] = bi; sw[i * 4] = 1; }
+    g.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4)); g.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4));
+    return g;
+  });
+  const m = new THREE.SkinnedMesh(mergeGeometries(geos, false), M.char);
+  m.bind(skeleton, new THREE.Matrix4()); // bones carry the pieces as they are: no rest pose to undo
+  m.castShadow = cast; m.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0.95 * reach, 0), 1.7 * reach);
+  return m;
+}
 
 export class Humanoid {
   constructor(look = {}) {
     const L = (this.look = Object.assign({}, DEFAULT_LOOK, look));
     this.scale = L.scale;
     this.root = new THREE.Group();
+    const skin = [], faceSkin = (this._face = []); // the pieces of the body and of the face, each with the joint it hangs from
+    const part = (bone, geos) => { skin.push({ bone, geos }); return bone; };
     this.body = grp(this.root, 0, 0, 0);
     this.body.scale.setScalar(L.scale);
     const j = (this.j = {}), b = L.build;
@@ -208,7 +226,7 @@ export class Humanoid {
     if (L.cloak) { j.cloak = grp(j.chest, 0, 0.31, -0.02); part(j.cloak, [tint(at(new THREE.CylinderGeometry(0.23 * b, 0.37, 1.02, 10, 1, true, Math.PI * 0.5, Math.PI), 0, -0.51, 0), L.cloak, 0.1, 11)]); } // hangs from the shoulders
     if (L.fur) for (const [x, y, z, s] of [[0.17, 0.33, -0.02, 0.13], [-0.17, 0.33, -0.02, 0.13], [0, 0.31, -0.1, 0.15], [0, 0.2, -0.13, 0.13]])
       ch.push(tint(at(new THREE.IcosahedronGeometry(1, 1), x * b, y, z, 0, 0, 0, s * 1.25, s * 0.8, s), 0x6c6a66, 0.3, 12 + x * 10));
-    this.chestMesh = part(j.chest, ch);
+    this.chestMesh = part(grp(j.chest, 0, 0, 0), ch); // its own joint, so the chest can swell with breath
 
     // head
     const hd = [
@@ -255,6 +273,11 @@ export class Humanoid {
       part(kn, [tint(at(capsule(0.058, 0.3, 6), 0, -0.21, 0), L.wraps ?? L.legs, 0.1, 44), tint(at(box(0.105, 0.1, 0.25), 0, -0.415, 0.045), L.boots, 0.06, 45)]);
     }
 
+    // one skinned mesh for the body and one for the face (drawn only near the camera), on the same bones
+    const bones = [...new Set([...skin, ...faceSkin].map((x) => x.bone))], sk = new THREE.Skeleton(bones, bones.map(() => new THREE.Matrix4())), reach = Math.max(1, L.scale);
+    this.bodyMesh = fuse(skin, bones, sk, true, reach); this.faceMesh = fuse(faceSkin, bones, sk, false, reach);
+    this.root.add(this.bodyMesh, this.faceMesh);
+
     this.cur = {}; this.tgt = {};
     for (const k of POSE_KEYS) { this.cur[k] = REST[k] || 0; this.tgt[k] = 0; }
     this.t = Math.random() * 10; this.phase = 0; this.speed = 0; this.crouch = false; this.param = 0;
@@ -268,7 +291,8 @@ export class Humanoid {
   // ---- the face -------------------------------------------------------------------------------
   buildFace(L) {
     const j = this.j, f = (this.face = grp(j.head, 0, 0, 0)), ex = 0.04, ey = 0.166, ez = 0.1;
-    const soft = (geos) => { const m = part(f, geos); m.castShadow = false; return m; };
+    const face = (bone, geos) => { this._face.push({ bone, geos }); return bone; };
+    const soft = (geos) => face(grp(f, 0, 0, 0), geos); // a piece of the face on a joint of its own, so it can move
     const dark = (hex, k) => { const c = new THREE.Color(hex).multiplyScalar(k); return c.getHex(); };
     // what does not move: the whites of the eyes, and any scar
     const still = [];
@@ -299,10 +323,10 @@ export class Humanoid {
     const lids = []; for (const s of [1, -1]) lids.push(
       tint(at(sphere(0.0222, 8, 5), s * ex, -0.0165, ez - 0.0035, 0, 0, 0, 1.03, 0.8, 0.8), dark(L.skin, 0.88), 0.02, 76 + s), // closes over the whole eye
       tint(at(box(0.034, 0.0042, 0.004), s * ex, -0.031, ez + 0.0125), dark(L.hair, 0.45), 0, 90 + s));                       // the lash line at its edge
-    const lm = part(this.fLid, lids); lm.castShadow = false;
+    face(this.fLid, lids);
     // brows
     this.fBrow = {}; const bc = dark(L.hair, 0.72);
-    for (const [k, s] of [['L', 1], ['R', -1]]) { const g = (this.fBrow[k] = grp(f, s * ex, ey + 0.0255, ez + 0.007)); const m = part(g, [tint(box(0.038, 0.0085, 0.008), bc, 0.1, 78 + s)]); m.castShadow = false; }
+    for (const [k, s] of [['L', 1], ['R', -1]]) { const g = (this.fBrow[k] = grp(f, s * ex, ey + 0.0255, ez + 0.007)); face(g, [tint(box(0.038, 0.0085, 0.008), bc, 0.1, 78 + s)]); }
     // mouth: a slit that opens, and corners that rise or fall
     this.mouthY = 0.101; const mz = L.beard && L.beard !== 'stubble' ? 0.1235 : 0.1095, lip = L.female ? 0x7a3a36 : 0x3a1e1a;
     this.fMouth = soft([tint(at(sphere(0.021, 10, 6), 0, 0, -0.004, 0, 0, 0, 1, 0.19, 0.42), lip, 0, 80)]); this.fMouth.position.set(0, this.mouthY, mz); // a line when shut, an oval when open
@@ -330,7 +354,7 @@ export class Humanoid {
   updateFace(dt) {
     const f = this.face, cam = Humanoid.cam;
     const near = !cam || cam.distanceToSquared(this.root.position) < 26 * 26; // beyond that a face is a few pixels: do not draw it
-    f.visible = near;
+    f.visible = near; this.faceMesh.visible = near;
     if (!near) return;
     if (this.moodT > 0 && (this.moodT -= dt) <= 0) this.mood = null;
     const m = MOODS[this.moodNow()] || MOODS.neutral, c = this.fc, k = 1 - Math.exp(-9 * dt);

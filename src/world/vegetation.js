@@ -1,7 +1,10 @@
 // Instanced forest, undergrowth, rocks and grass.
+// Everything here is laid out in map cells, each cell its own batch with its own bounds, so that only the cells in
+// front of the camera (or inside the sun's shadow box) are drawn. Trees far off are drawn with a simpler shape, grass
+// and bushes are dropped beyond the distance at which they can be seen, and nothing is drawn past the haze.
 import * as THREE from 'three';
 import { rng, noise2, clamp } from '../core/util.js';
-import { M, at, cyl, cone, tint, merge, patch } from './geo.js';
+import { M, at, cyl, cone, tint, merge, patch, hazeRange } from './geo.js';
 import { heightAt, slopeAt, forestDensity, distToPaths, inField, riverX, HALF } from './terrain.js';
 import { VILLAGE, POI, ISLES, SEA_CLEAR, GREAT, MAIN } from './layout.js';
 import { realmClear } from './realm.js';
@@ -18,6 +21,15 @@ function birchGeo() {
   blobs.forEach(([x, y, z, s], i) => parts.push(tint(at(new THREE.IcosahedronGeometry(1, 1), x, y, z, 0, i, 0, s, s * 0.85, s), i % 2 ? 0xc79a2e : 0xb9832a, 0.35, i + 5)));
   parts.push(tint(at(cyl(0.03, 0.05, 2.2, 4), 0.5, 5.0, 0.2, 0, 0, -0.7), 0xcfcabd, 0.2, 9));
   return merge(parts);
+}
+/** The same trees as seen from far off: the same height, spread and colours in a few flat-sided pieces. */
+function pineFarGeo() {
+  return merge([tint(at(cyl(0.1, 0.3, 4, 4, 1.6, true), 0, 2, 0), 0x4a382a, 0.25, 1),
+    tint(at(cone(2.4, 5.2, 5), 0, 4.4, 0), 0x1f3a27, 0.3, 2), tint(at(cone(1.5, 5.4, 5), 0, 8.2, 0, 0, 0.6, 0), 0x27432c, 0.3, 3)]);
+}
+function birchFarGeo() {
+  return merge([tint(at(cyl(0.07, 0.16, 7, 4, 1.6, true), 0, 3.5, 0), 0xd8d4c8, 0.35, 3),
+    tint(at(new THREE.IcosahedronGeometry(1, 0), 0.1, 6.2, 0, 0, 0, 0, 2.3, 1.9, 2.3), 0xc79a2e, 0.35, 5), tint(at(new THREE.IcosahedronGeometry(1, 0), 0.2, 7.5, -0.3, 0, 1, 0, 1.3, 1.1, 1.3), 0xb9832a, 0.35, 6)]);
 }
 function bushGeo() {
   const parts = [[0, 0.45, 0, 0.7], [0.5, 0.35, 0.2, 0.5], [-0.4, 0.3, -0.3, 0.45]]
@@ -72,26 +84,44 @@ export function scatterVegetation(scene, world, quality) {
   birches.push({ x: POI.oldBirch.x, z: POI.oldBirch.z, y: heightAt(POI.oldBirch.x, POI.oldBirch.z) - 0.2, sc: 2.3, ry: 1 });
   birches.push({ x: 9, z: 50, y: heightAt(9, 50) - 0.2, sc: 2.0, ry: 2 });
 
-  const instanced = (geo, mat, list, { cast = true, collide = 0, hue = 0.12 } = {}) => {
-    const mesh = new THREE.InstancedMesh(geo, mat, list.length);
+  // ---- cells -------------------------------------------------------------------------------------------
+  const cells = []; // { near, far, x, y, z, r, lodAt, range }
+  const lodAt = quality === 'high' ? 300 : quality === 'low' ? 120 : 200, grassRange = quality === 'high' ? 110 : quality === 'low' ? 70 : 90;
+  /** Put a batch of instances (each 16 numbers of matrix and 3 of colour, indexed by `idx`) on the map as one cell. */
+  const cellOf = (geo, mat, mats, cols, idx, { cast, low = null, range = Infinity }) => {
+    const mesh = new THREE.InstancedMesh(geo, mat, idx.length), ic = new Float32Array(idx.length * 3);
+    idx.forEach((i, k) => { mesh.instanceMatrix.array.set(mats.subarray(i * 16, i * 16 + 16), k * 16); ic.set(cols.subarray(i * 3, i * 3 + 3), k * 3); });
+    mesh.instanceColor = new THREE.InstancedBufferAttribute(ic, 3); mesh.instanceMatrix.needsUpdate = true;
+    mesh.castShadow = cast; mesh.receiveShadow = true; mesh.computeBoundingSphere(); // with bounds, the camera and the sun's shadow box each skip the cells they cannot see
+    scene.add(mesh);
+    let far = null;
+    if (low) { // the same instances, drawn with the simpler shape
+      far = new THREE.InstancedMesh(low, mat, 0); far.count = idx.length; far.instanceMatrix = mesh.instanceMatrix; far.instanceColor = mesh.instanceColor;
+      far.boundingSphere = mesh.boundingSphere.clone(); far.castShadow = false; far.receiveShadow = true; far.visible = false; scene.add(far);
+    }
+    const c = mesh.boundingSphere.center;
+    cells.push({ near: mesh, far, x: c.x, y: c.y, z: c.z, r: mesh.boundingSphere.radius, lodAt, range });
+  };
+  const byCell = (n, size, xz) => { const m = new Map(); for (let i = 0; i < n; i++) { const [x, z] = xz(i), k = Math.floor(x / size) + ',' + Math.floor(z / size); let a = m.get(k); if (!a) m.set(k, (a = [])); a.push(i); } return [...m.values()]; };
+  /** A list of things of one shape, in cells `size` metres across. The matrices and colours are made in the list's own
+   *  order, so the random stream, and with it every tree in the valley, is exactly where it was. */
+  const instanced = (geo, mat, list, { cast = true, collide = 0, hue = 0.12, size = 128, low = null, range = Infinity } = {}) => {
+    const mats = new Float32Array(list.length * 16), cols = new Float32Array(list.length * 3);
     list.forEach((t, i) => {
       e.set((R() - 0.5) * 0.06, t.ry, (R() - 0.5) * 0.06); q.setFromEuler(e);
       v.set(t.x, t.y, t.z); s.set(t.sc * (t.sx || 1), t.sc * (t.sy || 1), t.sc * (t.sz || 1));
-      mesh.setMatrixAt(i, m4.compose(v, q, s));
+      m4.compose(v, q, s).toArray(mats, i * 16);
       const k = 0.8 + R() * 0.4;
-      mesh.setColorAt(i, col.setRGB(k * (1 + (R() - 0.5) * hue), k, k * (1 - R() * hue)));
+      col.setRGB(k * (1 + (R() - 0.5) * hue), k, k * (1 - R() * hue)).toArray(cols, i * 3);
       if (collide) world.addCircle(t.x, t.z, collide * t.sc, 8);
     });
-    mesh.instanceMatrix.needsUpdate = true;
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-    mesh.castShadow = cast; mesh.receiveShadow = true; mesh.frustumCulled = false;
-    scene.add(mesh);
-    return mesh;
+    for (const idx of byCell(list.length, size, (i) => [list[i].x, list[i].z])) cellOf(geo, mat, mats, cols, idx, { cast, low, range });
   };
   const treeMat = patch(new THREE.MeshLambertMaterial({ vertexColors: true }), { sway: 0.0032, snow: 0.8 });
   const birchMat = patch(new THREE.MeshLambertMaterial({ vertexColors: true }), { sway: 0.006, snow: 0.7 });
-  instanced(pineGeo(), treeMat, pines, { collide: 0.36 });
-  instanced(birchGeo(), birchMat, birches, { collide: 0.2, hue: 0.2 });
+  const pine = pineGeo(), birch = birchGeo(), pineFar = pineFarGeo(), birchFar = birchFarGeo(), rock = rockGeo();
+  instanced(pine, treeMat, pines, { collide: 0.36, low: pineFar });
+  instanced(birch, birchMat, birches, { collide: 0.2, hue: 0.2, low: birchFar });
 
   // bushes along the forest edge, rocks everywhere
   const bushes = [], rocks = [];
@@ -109,13 +139,14 @@ export function scatterVegetation(scene, world, quality) {
     const sc = big ? 1.1 + R() * 1.7 : 0.25 + R() * 0.5;
     rocks.push({ x, z, y: h - sc * 0.2, sc, sx: 0.8 + R() * 0.6, sy: 0.7 + R() * 0.5, sz: 0.8 + R() * 0.6, ry: R() * 6.28, big: sc > 1.05 });
   }
-  instanced(bushGeo(), patch(new THREE.MeshLambertMaterial({ vertexColors: true }), { sway: 0.02, snow: 0.8 }), bushes, { cast: false });
-  const rockMesh = instanced(rockGeo(), M.vc, rocks, { hue: 0.05 });
+  instanced(bushGeo(), patch(new THREE.MeshLambertMaterial({ vertexColors: true }), { sway: 0.02, snow: 0.8 }), bushes, { cast: false, size: 64, range: 260 });
+  instanced(rock, M.vc, rocks, { hue: 0.05 });
   rocks.forEach((r) => { if (r.big) world.addCircle(r.x, r.z, 0.78 * r.sc, 1.2 * r.sc); });
 
   // grass
   const want = quality === 'high' ? 90000 : quality === 'low' ? 18000 : 52000;
-  const grass = new THREE.InstancedMesh(grassGeo(), patch(new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide }), { sway: 0.5, snow: 1, upNormal: true }), want);
+  const grassMat = patch(new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide }), { sway: 0.5, snow: 1, upNormal: true });
+  const gm = new Float32Array(want * 16), gc = new Float32Array(want * 3), gxz = new Float32Array(want * 2);
   let n = 0;
   for (let i = 0; i < want * 6 && n < want; i++) {
     const x = -200 + R() * 425, z = -200 + R() * 355;
@@ -129,15 +160,13 @@ export function scatterVegetation(scene, world, quality) {
     if (world.pointInBox(x, z, 0.2)) continue;
     const sc = 0.7 + R() * 0.9;
     e.set(0, R() * 6.28, 0); q.setFromEuler(e); v.set(x, h - 0.03, z); s.set(sc, sc, sc);
-    grass.setMatrixAt(n, m4.compose(v, q, s));
+    m4.compose(v, q, s).toArray(gm, n * 16); gxz[n * 2] = x; gxz[n * 2 + 1] = z;
     const k = 0.75 + R() * 0.5;
-    grass.setColorAt(n, col.setRGB(k * (0.95 + R() * 0.3), k, k * 0.85));
+    col.setRGB(k * (0.95 + R() * 0.3), k, k * 0.85).toArray(gc, n * 3);
     n++;
   }
-  grass.count = n;
-  grass.instanceMatrix.needsUpdate = true; grass.instanceColor.needsUpdate = true;
-  grass.receiveShadow = true; grass.castShadow = false; grass.frustumCulled = false;
-  scene.add(grass);
+  const grassG = grassGeo(); // a blade is a few centimetres wide: past ninety metres or so it is less than a pixel, so the cells out there are not drawn
+  for (const idx of byCell(n, 40, (i) => [gxz[i * 2], gxz[i * 2 + 1]])) cellOf(grassG, grassMat, gm, gc, idx, { cast: false, range: grassRange });
   // the sea chart: wind-bent pines and birch in groves, boulders on every shore (own random stream, so
   // the valley's trees stay exactly where the story expects them)
   const R2 = rng(9117), ip = [], ib = [], ir = [];
@@ -190,9 +219,20 @@ export function scatterVegetation(scene, world, quality) {
       ir.push({ x, z, y: h - sc * 0.2, sc, sx: 0.8 + R4() * 0.6, sy: 0.7 + R4() * 0.5, sz: 0.8 + R4() * 0.6, ry: R4() * 6.28, big: sc > 1.05 });
     }
   }
-  instanced(pineGeo(), treeMat, ip, { collide: 0.36 });
-  instanced(birchGeo(), birchMat, ib, { collide: 0.2, hue: 0.2 });
-  instanced(rockGeo(), M.vc, ir, { hue: 0.05 });
+  instanced(pine, treeMat, ip, { collide: 0.36, low: pineFar });
+  instanced(birch, birchMat, ib, { collide: 0.2, hue: 0.2, low: birchFar });
+  instanced(rock, M.vc, ir, { hue: 0.05 });
   ir.forEach((r) => { if (r.big) world.addCircle(r.x, r.z, 0.78 * r.sc, 1.2 * r.sc); });
-  return { grass, rockMesh, counts: { pines: pines.length, birches: birches.length, bushes: bushes.length, rocks: rocks.length, grass: n, isles: ip.length + ib.length + ir.length } };
+  /** Each frame, before drawing: which cells are worth drawing from where the camera is (and nothing past the haze). */
+  const update = (cam, density) => {
+    const haze = hazeRange(cam, density), cx = cam.position.x, cy = cam.position.y, cz = cam.position.z;
+    let shown = 0;
+    for (const c of cells) {
+      const d = Math.hypot(c.x - cx, c.y - cy, c.z - cz) - c.r, seen = d < Math.min(haze, c.range), near = seen && (!c.far || d < c.lodAt);
+      c.near.visible = near; if (c.far) c.far.visible = seen && !near;
+      if (seen) shown++;
+    }
+    return shown;
+  };
+  return { update, cells, counts: { pines: pines.length, birches: birches.length, bushes: bushes.length, rocks: rocks.length, grass: n, isles: ip.length + ib.length + ir.length, cells: cells.length } };
 }

@@ -287,15 +287,42 @@ export class Builder {
     this.parts.get(mat).push(geo);
     return geo;
   }
-  build({ cast = true, receive = true } = {}) {
+  /** One mesh per material. still: the pieces stay where they are built (a place, not a ship or a cart), so they are
+   *  merged area by area (cells `still` metres across) instead of across the whole map: each area then has its own bounds,
+   *  and is skipped when it is out of view, outside the sun's shadow box, or lost in the haze. */
+  build({ cast = true, receive = true, still = 0 } = {}) {
     const group = new THREE.Group();
     for (const [mat, geos] of this.parts) {
       if (!geos.length) continue;
-      const mesh = new THREE.Mesh(merge(geos), mat);
-      mesh.castShadow = cast; mesh.receiveShadow = receive;
-      group.add(mesh);
+      let sets = [geos];
+      if (still) {
+        const m = new Map();
+        for (const g of geos) { if (!g.boundingSphere) g.computeBoundingSphere(); const c = g.boundingSphere.center, k = Math.floor(c.x / still) + ',' + Math.floor(c.z / still); let a = m.get(k); if (!a) m.set(k, (a = [])); a.push(g); }
+        sets = [...m.values()];
+      }
+      for (const set of sets) {
+        const mesh = new THREE.Mesh(merge(set), mat);
+        mesh.castShadow = cast; mesh.receiveShadow = receive;
+        if (still) hazeCull(mesh);
+        group.add(mesh);
+      }
     }
     this.parts.clear();
     return group;
+  }
+}
+
+// ---- things the haze hides --------------------------------------------------------------------------------
+// Big still things (the props of one area, an island's ground) are not drawn once the haze has taken them:
+// FogExp2 leaves exp(-(density * d)^2) of a thing, and past where a sixtieth is left it cannot be told from the air.
+const hazed = [];
+/** Register a mesh that never moves. Its place is read the first time it is tested, when the world is built. */
+export function hazeCull(mesh) { hazed.push({ o: mesh, c: null, r: 0 }); return mesh; }
+export const hazeRange = (cam, density) => Math.min(cam.far, 2.02 / Math.max(density, 1e-5));
+export function cullHazed(cam, density) {
+  const range = hazeRange(cam, density);
+  for (const f of hazed) {
+    if (!f.c) { const g = f.o.geometry; if (!g.boundingSphere) g.computeBoundingSphere(); f.o.updateWorldMatrix(true, false); f.c = g.boundingSphere.center.clone().applyMatrix4(f.o.matrixWorld); f.r = g.boundingSphere.radius; }
+    f.o.visible = f.c.distanceTo(cam.position) - f.r < range;
   }
 }

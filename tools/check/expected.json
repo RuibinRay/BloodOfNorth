@@ -1,0 +1,496 @@
+{
+ "note": "Recorded by `npm run check -- --update`: where each chapter stands a few seconds after it is started from the Acts menu, and the drawing budget of five heavy scenes (a third above what they drew when recorded).",
+ "chapters": {
+  "q_morning": {
+   "at": "q_morning.ylva",
+   "stage": "day",
+   "mode": "play",
+   "pos": [-26, 70],
+   "marker": "yes"
+  },
+  "q_wood": {
+   "at": "q_wood.chop",
+   "stage": "day",
+   "mode": "play",
+   "pos": [-26, 70],
+   "marker": "yes"
+  },
+  "q_hunt": {
+   "at": "q_hunt.follow",
+   "stage": "day",
+   "mode": "play",
+   "pos": [-26, 70],
+   "marker": "yes"
+  },
+  "q_fire": {
+   "at": "q_fire.camp",
+   "stage": "day",
+   "mode": "play",
+   "pos": [-26, 70],
+   "marker": "yes"
+  },
+  "q_sword": {
+   "at": "q_sword.talk",
+   "stage": "day",
+   "mode": "play",
+   "pos": [-12, 60],
+   "marker": "yes"
+  },
+  "q_supper": {
+   "at": "q_supper.ylva",
+   "stage": "day",
+   "mode": "play",
+   "pos": [-26, 70],
+   "marker": "yes"
+  },
+  "q_ashes": {
+   "at": "q_ashes.wake",
+   "stage": "night",
+   "mode": "cutscene",
+   "pos": [-27, 72],
+   "marker": "none"
+  },
+  "q_alone": {
+   "at": "q_alone.birch",
+   "stage": "wilderness",
+   "mode": "play",
+   "pos": [-63, -31],
+   "marker": "yes"
+  },
+  "q_white": {
+   "at": "q_white.boughs",
+   "stage": "ch2",
+   "mode": "play",
+   "pos": [-118, -91],
+   "marker": "reached"
+  },
+  "q_ice": {
+   "at": "q_ice.wake",
+   "stage": "ch2",
+   "mode": "cutscene",
+   "pos": [-115, -93],
+   "marker": "none"
+  },
+  "q_hearth": {
+   "at": "q_hearth.signe",
+   "stage": "ch3",
+   "mode": "play",
+   "pos": [147, -136],
+   "marker": "yes"
+  },
+  "q_wings": {
+   "at": "q_wings.storm",
+   "stage": "ch3",
+   "mode": "play",
+   "pos": [150, -139],
+   "marker": "yes"
+  },
+  "q_ten": {
+   "at": "q_ten.split",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1278, 693],
+   "marker": "yes"
+  },
+  "q_farm": {
+   "at": "q_farm.bjorn",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "yes"
+  },
+  "q_smoke": {
+   "at": "q_smoke.eye",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1297, 682],
+   "marker": "none"
+  },
+  "q_axe": {
+   "at": "q_axe.home",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "yes"
+  },
+  "q_wolf": {
+   "at": "q_wolf.hall",
+   "stage": "act2",
+   "mode": "cutscene",
+   "pos": [1299, 702],
+   "marker": "none"
+  },
+  "q_peddlers": {
+   "at": "q_peddlers.meet",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "yes"
+  },
+  "q_walls": {
+   "at": "q_walls.call",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "yes"
+  },
+  "q_captain": {
+   "at": "q_captain.freydis",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "yes"
+  },
+  "q_oath": {
+   "at": "q_oath.feast",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "yes"
+  },
+  "q_isle": {
+   "at": "q_isle.sail",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "yes"
+  },
+  "q_fifty": {
+   "at": "q_fifty.thing",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "yes"
+  },
+  "q_healer": {
+   "at": "q_healer.sail",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "yes"
+  },
+  "q_shore": {
+   "at": "q_shore.trench",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [-1180, 1536],
+   "marker": "yes"
+  },
+  "q_long": {
+   "at": "q_long.eye",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [-1200, 1464],
+   "marker": "none"
+  },
+  "q_ulf": {
+   "at": "q_ulf.harbor",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [-1232, 1396],
+   "marker": "yes"
+  },
+  "q_iron": {
+   "at": "q_iron.gold",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [-1264, 1455],
+   "marker": "yes"
+  },
+  "q_price": {
+   "at": "q_price.hall",
+   "stage": "act2",
+   "mode": "cutscene",
+   "pos": [1299, 702],
+   "marker": "none"
+  },
+  "q_gold": {
+   "at": "q_gold.torvald",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "yes"
+  },
+  "q_water": {
+   "at": "q_water.eye",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [-950, 2203],
+   "marker": "none"
+  },
+  "q_court": {
+   "at": "q_court.port",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [-1566, 2212],
+   "marker": "yes"
+  },
+  "q_circle": {
+   "at": "q_circle.chest",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [-950, 2203],
+   "marker": "yes"
+  },
+  "q_six": {
+   "at": "q_six.smoke",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [-950, 2203],
+   "marker": "yes"
+  },
+  "q_council": {
+   "at": "q_council.hall",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "yes"
+  },
+  "q_sound": {
+   "at": "q_sound.letter",
+   "stage": "act2",
+   "mode": "cutscene",
+   "pos": [1230, 710],
+   "marker": "none"
+  },
+  "q_drift": {
+   "at": "q_drift.freydis",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "yes"
+  },
+  "q_carry": {
+   "at": "q_carry.assembly",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1230, 672],
+   "marker": "yes"
+  },
+  "q_hunger": {
+   "at": "q_hunger.grain",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "yes"
+  },
+  "q_taken": {
+   "at": "q_taken.reach",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "none"
+  },
+  "q_ring": {
+   "at": "q_ring.brokk",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "yes"
+  },
+  "q_wing": {
+   "at": "q_wing.sail",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "yes"
+  },
+  "q_ribbon": {
+   "at": "q_ribbon.astrid",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "yes"
+  },
+  "q_feast": {
+   "at": "q_feast.brokk",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "yes"
+  },
+  "q_marsh": {
+   "at": "q_marsh.thora",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [-1116, 2788],
+   "marker": "yes"
+  },
+  "q_lastforge": {
+   "at": "q_lastforge.harbor",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [946, 2966],
+   "marker": "yes"
+  },
+  "q_anvil": {
+   "at": "q_anvil.lanes",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1023, 2973],
+   "marker": "yes"
+  },
+  "q_smith": {
+   "at": "q_smith.brokk",
+   "stage": "act2",
+   "mode": "dialogue",
+   "pos": [1149, 2978],
+   "marker": "yes"
+  },
+  "q_judge": {
+   "at": "q_judge.thing",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "yes"
+  },
+  "q_sigurd": {
+   "at": "q_sigurd.offer",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "yes"
+  },
+  "q_nine": {
+   "at": "q_nine.field",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "yes"
+  },
+  "q_wedding": {
+   "at": "q_wedding.price",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "yes"
+  },
+  "q_four": {
+   "at": "q_four.svartoy",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1299, 702],
+   "marker": "yes"
+  },
+  "q_firewater": {
+   "at": "q_firewater.torvald",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [-950, 2205],
+   "marker": "none"
+  },
+  "q_blades": {
+   "at": "q_blades.leif",
+   "stage": "act2",
+   "mode": "cutscene",
+   "pos": [-949, 2204],
+   "marker": "none"
+  },
+  "q_blackshore": {
+   "at": "q_blackshore.wade",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [0, 2179],
+   "marker": "yes"
+  },
+  "q_redhand": {
+   "at": "q_redhand.kettil",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [9, 2254],
+   "marker": "none"
+  },
+  "q_pens": {
+   "at": "q_pens.gate",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [91, 2667],
+   "marker": "yes"
+  },
+  "q_vigdis": {
+   "at": "q_vigdis.bridge",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [2, 2297],
+   "marker": "yes"
+  },
+  "q_gorm": {
+   "at": "q_gorm.gate",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [0, 2487],
+   "marker": "yes"
+  },
+  "q_wolfhall": {
+   "at": "q_wolfhall.enter",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [0, 2510],
+   "marker": "yes"
+  },
+  "q_ironwolf": {
+   "at": "q_ironwolf.hakon",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1, 2541],
+   "marker": "none"
+  },
+  "q_dead": {
+   "at": "q_dead.leif",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1, 2514],
+   "marker": "yes"
+  },
+  "q_crown": {
+   "at": "q_crown.rock",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [-48, 271],
+   "marker": "yes"
+  },
+  "q_ravenhold": {
+   "at": "q_ravenhold.market",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1300, 786],
+   "marker": "yes"
+  },
+  "q_leifhouse": {
+   "at": "q_leifhouse.door",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1282, 771],
+   "marker": "yes"
+  },
+  "q_lesson": {
+   "at": "q_lesson.hill",
+   "stage": "act2",
+   "mode": "play",
+   "pos": [1292, 626],
+   "marker": "yes"
+  }
+ },
+ "scenes": {
+  "hrafnvik": {
+   "calls": 330,
+   "ktris": 1250
+  },
+  "open world farm": {
+   "calls": 350,
+   "ktris": 1450
+  },
+  "iron shore gate": {
+   "calls": 370,
+   "ktris": 1100
+  },
+  "black shore battle": {
+   "calls": 420,
+   "ktris": 750
+  },
+  "fleet at sea": {
+   "calls": 200,
+   "ktris": 350
+  }
+ }
+}
