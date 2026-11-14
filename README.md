@@ -218,6 +218,9 @@ It builds the game, starts every chapter of every act the way the Acts menu does
 fight beside two companions. About five minutes; `npm run check -- --quick` does each act's opening in about one.
 After a change that is meant to move something, `npm run check -- --update` records the new state.
 
+**Play it online:** https://ruibinray.github.io/BloodOfNorth/ (nothing to install). Every push to `main` rebuilds it
+there ([.github/workflows/pages.yml](.github/workflows/pages.yml)); the new version is up a minute or two later.
+
 The code is on GitHub at https://github.com/RuibinRay/BloodOfNorth. To have every commit go there on its own,
 turn on the project's git hooks once:
 
