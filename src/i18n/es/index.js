@@ -8,5 +8,6 @@ import _act2 from './act2.js';
 import _act3 from './act3.js';
 import _act4 from './act4.js';
 import _act5 from './act5.js';
+import _act6 from './act6.js';
 
-export default Object.assign({}, _ui, _chapters, _items, _companions, _act1, _act2, _act3, _act4, _act5);
+export default Object.assign({}, _ui, _chapters, _items, _companions, _act1, _act2, _act3, _act4, _act5, _act6);
