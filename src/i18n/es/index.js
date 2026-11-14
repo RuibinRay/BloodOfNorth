@@ -4,5 +4,6 @@ import _chapters from './chapters.js';
 import _items from './items.js';
 import _companions from './companions.js';
 import _act1 from './act1.js';
+import _act2 from './act2.js';
 
-export default Object.assign({}, _ui, _chapters, _items, _companions, _act1);
+export default Object.assign({}, _ui, _chapters, _items, _companions, _act1, _act2);

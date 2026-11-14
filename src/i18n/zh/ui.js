@@ -97,6 +97,7 @@ export default {
   "Wait for the bite…": "等鱼咬钩……",
   "Watch the float": "盯着浮漂",
   "Too soon — you scared it off": "太早了——把它吓跑了",
+  "A bite!": "咬钩了！",
   "Reel it in": "收线",
   "Hold [{0}] to pull  ·  ease off before the line snaps": "按住 [{0}] 拉线  ·  线要断之前放松",
   "It got away": "它跑了",

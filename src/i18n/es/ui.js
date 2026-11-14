@@ -97,6 +97,7 @@ export default {
   "Wait for the bite…": "Espera a que pique…",
   "Watch the float": "Vigila el flotador",
   "Too soon — you scared it off": "Demasiado pronto: la has espantado",
+  "A bite!": "¡Pica!",
   "Reel it in": "Recoge el sedal",
   "Hold [{0}] to pull  ·  ease off before the line snaps": "Mantén [{0}] para tirar  ·  afloja antes de que se rompa el sedal",
   "It got away": "Se ha escapado",

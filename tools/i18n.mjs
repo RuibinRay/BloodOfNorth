@@ -118,7 +118,7 @@ export function isProse(s) {
   const words = s.replace(/\{\d\}/g, ' ').trim();
   if (!/[A-Za-zÀ-ÿ]{2}/.test(words)) return false; // only holes and punctuation: a joiner
   if (/\{\d\}/.test(s) && /^[{}\d\s\w,.:;!?'’()·—–-]+$/.test(s) && /[a-z]{3,}/.test(words)) return true; // '{0} grows': words round a name
-  return /[A-Za-z]{2}.*\s.*[A-Za-z]|^[A-ZÅÆØÁÉÍÓÚÖÄ][a-zåæøöäáéíóúðþ'’-]+[.!?…]*$|^[A-ZÅÆØ][\wåæøöäáéíóúðþ'’-]+$/u.test(words);
+  return /[A-Za-z]{2}.*\s.*[A-Za-z]|^[A-Z] [a-z]{2,}|^[A-ZÅÆØÁÉÍÓÚÖÄ][a-zåæøöäáéíóúðþ'’-]+[.!?…]*$|^[A-ZÅÆØ][\wåæøöäáéíóúðþ'’-]+$/u.test(words);
 }
 export const idOf = (s) => createHash('sha1').update(s).digest('hex').slice(0, 8);
 
