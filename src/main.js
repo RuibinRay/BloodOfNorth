@@ -26,6 +26,7 @@ import { POI } from './world/layout.js';
 import { Act1 } from './story/act1.js';
 import { Companions } from './systems/companions.js'; // after the story: the companions' looks come from the acts' casts, which need Act I's chapters loaded first
 import { UI } from './ui/ui.js';
+import * as I18N from './i18n/i18n.js';
 
 const RUNNING = new Set(['play', 'dialogue', 'cutscene', 'activity']);
 const freshState = () => ({
@@ -48,6 +49,9 @@ class Game {
   }
 
   async boot() {
+    // the language first, so the first words drawn are in it (English loads nothing). A first visit takes the browser's.
+    if (!this.settings.lang && !/HeadlessChrome/.test(navigator.userAgent)) { const nl = (navigator.language || '').toLowerCase(); this.settings.lang = nl.startsWith('zh') ? 'zh' : nl.startsWith('es') ? 'es' : 'en'; }
+    await I18N.setLang(this.settings.lang || 'en');
     const canvas = document.getElementById('c');
     const renderer = (this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' }));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -105,7 +109,7 @@ class Game {
     this.last = performance.now();
     requestAnimationFrame((t) => this.tick(t));
     if (boot) {
-      document.getElementById('loading-text').textContent = 'Click or press any key to continue';
+      document.getElementById('loading-text').textContent = I18N.tr('Click or press any key to continue');
       document.getElementById('loading').classList.add('ready');
       const go = () => {
         removeEventListener('pointerdown', go); removeEventListener('keydown', go);
@@ -136,8 +140,14 @@ class Game {
   }
   /** Fill story tokens: {w} white raven, {b} black raven, {n} the name the family uses. */
   fmt(text) {
-    const [w, b] = this.ravens.names();
-    return String(text).replace(/\{w\}/g, w).replace(/\{b\}/g, b).replace(/\{n\}/g, this.state.alias || 'Eirik');
+    if (text == null) return '';
+    const [w, b] = this.ravens ? this.ravens.names() : ['Mjöll', 'Sót'], t = I18N.tr;
+    return I18N.translated(t(String(text)).replace(/\{w\}/g, t(w)).replace(/\{b\}/g, t(b)).replace(/\{n\}/g, t(this.state.alias || 'Eirik')));
+  }
+  /** Switch the language (Settings, main menu). Only the setting changes: a saved game is the same in any language. */
+  async setLanguage(id) {
+    this.settings.lang = id; saveSettings(this.settings);
+    await I18N.setLang(id);
   }
   applySettings() {
     const q = this.settings.quality, dpr = window.devicePixelRatio || 1;
@@ -439,5 +449,5 @@ class Game {
 new Game().boot().catch((e) => {
   console.error(e);
   const t = document.getElementById('loading-text');
-  if (t) t.textContent = 'Failed to start: ' + e.message;
+  if (t) t.textContent = I18N.tr('Failed to start: {0}', e.message);
 });

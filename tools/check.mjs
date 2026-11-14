@@ -10,7 +10,9 @@
 //   3. plays one fight with two companions and calls both their skills;
 //   4. plays the shield walls through (Iron Shore, and both pushes on the Black Shore) with a scripted player who
 //      stands in the line, braces when their horn sounds and sounds his own when they reel, and once with one who
-//      does nothing; each must end as it was recorded (held, broken, lost) and the story must go on from it.
+//      does nothing; each must end as it was recorded (held, broken, lost) and the story must go on from it;
+//   5. the languages: every string has its 中文 and Español (tools/i18n.mjs), and Act I played in both shows nothing
+//      in English that should not be (strings with no entry, and, in Chinese, Latin words left on the screen).
 //
 //   npm run check                 everything (a few minutes)
 //   npm run check -- --quick      each act's opening chapter, the scenes and the fight (under a minute)
@@ -18,6 +20,7 @@
 //   npm run check -- --only=q_shore,q_iron
 //   npm run check -- --update     record what is found as the new known-good (tools/check/expected.json)
 //   npm run check -- --jobs=3     pages at once (default 2)
+//   npm run check -- --langs      only the languages (5 below); --langs=all plays every chapter in both, not only Act I
 //   CHROME_PATH=/path/to/chrome npm run check
 //
 // It is a scripted check: it shows that things start, stand and end as recorded. It cannot say whether they are fun.
@@ -28,10 +31,13 @@ import { fileURLToPath } from 'node:url';
 import { createServer } from 'vite';
 import { Browser } from './check/browser.mjs';
 import { ACTS, ORDER } from '../src/data/chapters.js';
+import { sweep, chaptersOf } from './check/langs.mjs';
+import { collect as i18nStrings, COMPLETE } from './i18n.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..'), expectedPath = join(root, 'tools/check/expected.json');
 const args = process.argv.slice(2), flag = (n) => args.includes('--' + n), opt = (n, d) => { const a = args.find((x) => x.startsWith('--' + n + '=')); return a ? a.slice(n.length + 3) : d; };
-const update = flag('update'), quick = flag('quick'), wallsOnly = flag('walls'), only = opt('only', ''), jobs = Math.max(1, +opt('jobs', 2));
+const langsOnly = args.some((a) => a === '--langs' || a.startsWith('--langs=')), langSpec = opt('langs', '');
+const update = flag('update'), quick = flag('quick'), wallsOnly = flag('walls') || langsOnly, only = opt('only', ''), jobs = Math.max(1, +opt('jobs', 2));
 const WALLS = [['q_shore', 'wall', 'brace', 'Iron Shore, braced'], ['q_blackshore', 'town', 'brace', 'the Black Shore, the harbor town, braced'], ['q_blackshore', 'road', 'brace', 'the Black Shore, the road, braced'], ['q_blackshore', 'town', 'idle', 'the Black Shore, the harbor town, doing nothing']];
 const SCENES = ['hrafnvik', 'open world farm', 'iron shore gate', 'black shore battle', 'fleet at sea'];
 const title = (id) => { for (const a of ACTS) { const i = a.quests.indexOf(id); if (i >= 0) return `${a.title.split(' · ')[0]} · ${i + 1}`; } return id; };
@@ -70,6 +76,11 @@ catch (e) { fail('the game does not build:\n' + String(e.stderr || e.stdout || e
   gone.length ? fail(`${gone.length} of ${all.length} paintings listed in src/data/art.js are missing from public/: ${gone.slice(0, 4).join(', ')}`) : ok(`all ${all.length} paintings the game lists are in public/art`);
 }
 
+{ // the translations: every string in all three languages, holes and names kept (tools/i18n.mjs)
+  try { const out = execFileSync(process.execPath, [join(root, 'tools/i18n.mjs')], { cwd: root, encoding: 'utf8' }); ok('the translations: ' + out.trim().split('\n').filter((l) => /must be complete/.test(l)).length + ' areas complete in 中文 and Español (npm run i18n for the table)'); }
+  catch (e) { fail('the translations (npm run i18n):\n' + String(e.stdout || e.message).trim().split('\n').filter((l) => !/^\w+\s+\d+\s+\d/.test(l)).slice(0, 14).join('\n')); }
+}
+
 const server = await createServer({ root, logLevel: 'silent', server: { host: '127.0.0.1', port: 5190, strictPort: false, hmr: false, watch: null } });
 await server.listen();
 const base = server.resolvedUrls.local[0];
@@ -78,7 +89,7 @@ const pool = async (items, fn) => { const q = [...items]; await Promise.all(Arra
 
 try {
   // 1. every chapter, started cold
-  const ids = wallsOnly ? [] : only ? only.split(',').filter((x) => ORDER.includes(x)) : quick ? ACTS.map((a) => a.quests[0]) : ORDER;
+  const ids = wallsOnly || langsOnly ? [] : only ? only.split(',').filter((x) => ORDER.includes(x)) : quick ? ACTS.map((a) => a.quests[0]) : ORDER;
   if (ids.length) console.log(`\nChapters started from the Acts menu (${ids.length} of ${ORDER.length}):`);
   const found = {};
   await pool(ids, async (id) => {
@@ -119,7 +130,7 @@ try {
 
   // 4. the shield walls, played through
   const wallFound = {};
-  if (wallsOnly || (!quick && !only)) {
+  if (flag('walls') || (!quick && !only && !langsOnly)) {
     console.log('\nThe shield walls, played through by a script (seeded dice; he does not fight, and is kept alive):');
     await pool(WALLS, async ([q, st, how, name]) => {
       const key = `${q}.${st}.${how}`;
@@ -133,6 +144,27 @@ try {
         bad.length ? fail(`${name}: ${bad.join(' · ')}`) : ok(line);
       } catch (e) { fail(`${name}: ${e.message}`); }
     });
+  }
+
+  // 5. the languages, played (last: it leaves the test browser's language set)
+  if (langsOnly || (!only && !flag('walls'))) {
+    const { seen } = await i18nStrings(), mine = (s) => { const e = seen.get(s); return !e || COMPLETE.includes(e.area); }; // strings of acts not yet translated are not counted
+    const doneActs = ACTS.filter((a, i) => COMPLETE.includes(i === ACTS.length - 1 ? 'epilogue' : 'act' + (i + 1)));
+    const pick = langSpec === 'all' ? chaptersOf('all') : langSpec ? chaptersOf(langSpec) : quick ? ['q_morning', 'q_wings'] : doneActs.flatMap((a) => a.quests);
+    for (const lang of ['zh', 'es']) {
+      const ids = lang === 'es' && !langSpec && !quick ? pick.filter((_, i) => i % 3 === 0) : pick; // Spanish: every third (its words cannot be told from English on screen)
+      console.log(`\nPlayed in ${lang === 'zh' ? '中文' : 'Español'} (${ids.length} chapters, every conversation clicked through):`);
+      const r = await sweep(lang, ids, { server, browser, jobs, secs: 12 });
+      const inDone = (id) => doneActs.some((a) => a.quests.includes(id));
+      for (const row of r.rows.sort((a, b) => ORDER.indexOf(a.id) - ORDER.indexOf(b.id))) {
+        const miss = (row.missing || []).filter(mine), latin = inDone(row.id) ? row.latin || [] : [];
+        row.crash ? fail(`${row.id}: ${row.crash}`) : miss.length || latin.length ? fail(`${row.id}: ${[...miss.map((m) => JSON.stringify(m)), ...latin.map((w) => '«' + w + '» on screen')].slice(0, 6).join(' · ')}`) : ok(`${row.id}: nothing left in English`);
+      }
+      if (r.panels) {
+        const miss = r.panels.missing.filter(mine), latin = Object.entries(r.panels.latin).filter(([t]) => t !== 'acts' || doneActs.length === ACTS.length);
+        miss.length || latin.length ? fail(`the panels: ${[...miss.map((m) => JSON.stringify(m)), ...latin.map(([t, w]) => `${t}: «${w.slice(0, 5).join(' ')}»`)].slice(0, 6).join(' · ')}`) : ok('the panels (journal, inventory, map, saga, skills, companions, appearance, settings, saves, status)');
+      }
+    }
   }
 
   if (update) {

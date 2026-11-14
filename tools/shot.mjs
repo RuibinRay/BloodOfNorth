@@ -6,6 +6,7 @@
 // run(seconds), and shot(name, [camera x, y, z], [look-at x, y, z]) which writes .playtest/<name>.jpg.
 // What the last line evaluates to is printed. Example:
 //   node tools/shot.mjs "d.jump('q_morning'); await run(2); await shot('yard', [-30, 6, 62], [-20, 5, 78]); g.drawn"
+// snap(name) takes the whole page as the player sees it (menus, dialogue, panels), not only the 3D view.
 // SHOT_SIZE=1600,900 sets the picture size (default 1280,720).
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -21,6 +22,7 @@ try {
   const lines = code.trim().split(/;\s*(?![^()]*\))/).filter(Boolean), last = lines.pop();
   const expr = `(async () => { await import('/tools/check/page.js'); const g = window.__game, d = g.debug, p = g.player, run = d.run, wait = (ms) => new Promise((r) => setTimeout(r, ms));
     const shot = async (name, cam, at) => { await wait(60); return d.view(name, cam, at); };
+    const snap = (name) => new Promise((r) => { window.__snapDone = r; window.__snap(name); }); // the whole page, menus and all
     ${lines.join(';\n')}; const out = await (${last}); return JSON.stringify(out === undefined ? null : out); })()`;
   const { value, thrown } = await browser.run(server.resolvedUrls.local[0], expr, 240000);
   console.log(value); if (thrown.length) console.log('thrown:', thrown.slice(0, 3).join(' ; '));

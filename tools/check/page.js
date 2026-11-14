@@ -120,4 +120,38 @@ async function lineup(names, gap = 0.95) {
   return [pl.x, g.world.groundAt(pl.x, z), z];
 }
 
-window.__check = { chapter, scene, party, lineup, wall, scenes: Object.keys(SCENES) };
+/** The languages: play a chapter in Chinese (or Spanish) and say what reached the screen in English.
+ *  missing: strings that went through tr() with no entry; latin: English words left in the page itself (in Chinese
+ *  only: keycaps and the frame counter aside, nothing on a Chinese screen should be in Latin letters). */
+const LATIN_OK = /^(fps|ms|Space|Esc|Tab|Shift|Ctrl|Mouse\d|Pad\w*|Key\w|[A-Z]|[A-Z]\d|R-Shift|Enter|English|Español|Higgsfield|Unreal|Engine|AI|IA|Alt|Gr|data|missions|json)$/; // keycaps, names of tools, a file name
+function latinOnScreen() {
+  const out = new Set(), ui = document.getElementById('ui');
+  const walk = (el) => {
+    if (el.nodeType === 3) { for (const w of el.textContent.match(/[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'-]{2,}/g) || []) if (!LATIN_OK.test(w)) out.add(w); return; }
+    if (el.nodeType !== 1 || el.tagName === 'KBD' || el.id === 'fps' || el.classList.contains('runes') || el.lang === 'en' || el.lang === 'es') return;
+    const cs = getComputedStyle(el); if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return;
+    for (const c of el.childNodes) walk(c);
+  };
+  walk(ui); return [...out];
+}
+async function i18n(lang, ids, secs = 10, withPanels = true) {
+  await g.setLanguage(lang); const I = window.__i18n, rows = [];
+  const panels = ['journal', 'inventory', 'map', 'saga', 'skills', 'companions', 'looks', 'settings', 'saves', 'status', 'acts'];
+  for (const id of ids) {
+    I.missing.clear();
+    try { g.startAt(id); } catch (e) { rows.push({ id, crash: e.message }); continue; }
+    d.manual(true); const latin = new Set();
+    for (let t = 0; t < secs; t += 0.5) {
+      await d.run(0.5);
+      if (g.mode === 'dialogue') { for (const w of latinOnScreen()) latin.add(w); await d.tap('KeyE'); }
+      if (t % 3 === 0) for (const w of latinOnScreen()) latin.add(w);
+    }
+    for (const w of latinOnScreen()) latin.add(w);
+    rows.push({ id, missing: [...I.missing], latin: lang === 'zh' ? [...latin] : [] });
+  }
+  I.missing.clear(); const panelLatin = {};
+  if (withPanels) for (const t of panels) { g.ui.openPanel(t, panels); await wait(30); const l = latinOnScreen(); if (l.length) panelLatin[t] = l; }
+  g.ui.closePanel();
+  return { rows, panelMissing: [...I.missing], panelLatin: lang === 'zh' ? panelLatin : {} };
+}
+window.__check = { chapter, scene, party, lineup, wall, i18n, scenes: Object.keys(SCENES) };

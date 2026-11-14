@@ -345,3 +345,33 @@ details.chapters li img.thumb { width: 64px; height: 36px; object-fit: cover; ve
 #law .wm i.on { background: #c8452a; }
 #law small { display: block; margin-top: 5px; font-size: 12px; letter-spacing: 0.08em; color: var(--parch-dim); }
 #law em { display: block; margin-top: 4px; font-style: normal; font-size: 11.5px; letter-spacing: 0.16em; text-transform: uppercase; color: #ff9a8a; }
+
+/* ---- languages ------------------------------------------------------------------------------------------------- */
+/* The language buttons on the main menu and in Settings. */
+.langs { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0 0; }
+.langs .lang { font: inherit; font-size: 15px; padding: 5px 13px; color: var(--parch); background: rgba(20, 16, 12, 0.6); border: 1px solid rgba(201, 162, 74, 0.45); cursor: pointer; letter-spacing: 0.04em; }
+.langs .lang:hover { border-color: var(--gold); }
+.langs .lang.on { background: var(--wood-2); border-color: var(--gold); color: var(--gold-hi); }
+#panel .langs { margin: 0; }
+#panel .langs .lang { color: var(--ink); background: rgba(74, 54, 38, 0.08); border-color: rgba(74, 54, 38, 0.35); }
+#panel .langs .lang.on { color: var(--parch); background: var(--wood-2); border-color: var(--gold); }
+/* Chinese: a serif with the characters (Noto Serif SC from the web, or the system's Song/Ming face), no faked italics,
+   no letter-spacing meant for Latin capitals, and lines that break between characters but never before closing
+   punctuation (line-break: strict keeps 。，、」 off the start of a line). */
+:root[data-lang="zh"] { --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", "PingFang SC", "Microsoft YaHei", serif; }
+:root[data-lang="zh"] body { line-break: strict; word-break: normal; overflow-wrap: anywhere; }
+:root[data-lang="zh"] :is(em, i, #subtitle.narr, #menu h2, #card p) { font-style: normal; }
+:root[data-lang="zh"] :is(#tracker .q b, .bar.lab span, #target em, #detect span, #meter .row, #banner small, #dialogue .speaker, #card h1, #menu h1, #pause h3, nav button, #compass span) { letter-spacing: 0.04em; }
+:root[data-lang="zh"] #menu h1 { letter-spacing: 0.12em; }
+:root[data-lang="zh"] #card h1 { letter-spacing: 0.2em; }
+:root[data-lang="zh"] #dialogue .text { line-height: 1.6; }
+:root[data-lang="zh"] #subtitle { line-height: 1.55; }
+/* Spanish runs about a fifth longer than English: buttons and labels that were sized to English may wrap, not spill. */
+:root[data-lang="es"] nav button { letter-spacing: 0.04em; }
+:root[data-lang="es"] #prompt, :root[data-lang="zh"] #prompt { white-space: normal; max-width: min(640px, 80vw); text-align: center; }
+:root[data-lang="es"] #tabs button, :root[data-lang="zh"] #tabs button { padding: 13px 14px; letter-spacing: 0.06em; }
+/* On the main menu the languages sit in the top right corner, out of the way of the title and the buttons. */
+#menu-langs { position: absolute; top: 18px; right: 22px; }
+#menu-langs .langs { margin: 0; }
+#menu { align-items: safe center; overflow-y: auto; }
+:root[data-lang="es"] #tabs button { padding: 13px 10px; font-size: 14px; }

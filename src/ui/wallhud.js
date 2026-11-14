@@ -1,6 +1,8 @@
 // The shield wall on screen: the line as a strip of sectors, left to right as Eirik sees it facing them. In each,
 // our ground rises from the bottom and theirs presses down from the top; gold when they reel, red where it gives.
 // Kept in its own file (and its own style block) so the wall can be added without touching the rest of the interface.
+import { tr } from '../i18n/i18n.js';
+
 const CSS = `
 #wallhud { position: absolute; left: 50%; top: 50px; width: min(380px, 44vw); transform: translateX(-50%); display: none; text-align: center; text-shadow: 0 1px 3px #000; }
 #wallhud.on { display: block; }
@@ -45,8 +47,8 @@ export class WallHUD {
     if (key === this.last) return;
     this.last = key;
     s.off.forEach((v, i) => { const c = this.list[i]; if (!c) return; c.firstChild.style.height = Math.round(Math.min(0.94, Math.max(0.06, (v - s.lo) / (s.hi - s.lo))) * 100) + '%'; c.className = 'cell ' + (s.state[i] || '') + (i === s.me ? ' me' : ''); });
-    this.ours.textContent = s.ours; this.theirs.textContent = s.theirs;
+    this.ours.textContent = tr(s.ours); this.theirs.textContent = tr(s.theirs);
     this.goal.style.width = Math.round(Math.min(1, Math.max(0, s.progress)) * 100) + '%';
-    this.cap.innerHTML = this.g.ui.keys(s.text || ''); this.cap.className = 'cap ' + (s.tone || '');
+    this.cap.innerHTML = this.g.ui.keys(this.g.fmt(s.text || '')); this.cap.className = 'cap ' + (s.tone || '');
   }
 }
