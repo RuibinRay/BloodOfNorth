@@ -2268,6 +2268,20 @@
    "usd": 0.015,
    "request_id": "01a1d66a-74ab-7fd6-a420-8d58339a3838",
    "at": "2026-11-13T19:38:03.199Z"
+  },
+  {
+   "id": "portrait_kol",
+   "model": "z-image/turbo",
+   "usd": 0.015,
+   "request_id": "01a1d751-3729-71e2-88d3-b675e905171a",
+   "at": "2026-11-13T23:49:59.290Z"
+  },
+  {
+   "id": "portrait_ketil",
+   "model": "z-image/turbo",
+   "usd": 0.015,
+   "request_id": "01a1d751-371e-7787-a4f1-25c6be00beb4",
+   "at": "2026-11-13T23:50:00.080Z"
   }
  ]
 }

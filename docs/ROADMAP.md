@@ -81,6 +81,8 @@ Known gaps:
 - **A hound and a wolf wag alike**, and every horse swishes its tail the same way.
 - **The rank and file step in place when the line creeps**: their legs follow how far the line moves, not their own feet on the ground.
 
+- **Every person who speaks in a conversation now has a face** (Ketil and Kol were the last two). About thirty more cast members (Hallgerd, Ottar the falconer, the priest in Wessex, the frog-cure merchant and others) have no portrait, because they never speak in the conversation box, only in a caption or not at all, so a portrait would show nowhere. Kol's portrait has a short beard where his figure has stubble.
+
 ## Known gaps carried from 0.28
 
 - **The animals were looked at in three moments of a stride set by hand, not running in the game.** The wolf's and the horse's legs now have a knee: the game still swings the whole leg from the hip, and the lower piece folds by itself as the leg comes forward. A raven whose wings are turned right down (how the game says "perched") now holds them short against its sides. I looked at a stride forward, standing and a stride back, at wings up, down and folded, and at the wolf running in its own chapter (it covered 3.4 m with its knees folding to 0.8 of a radian); nobody has ridden the horse or watched the ravens circle since, and a person has watched none of it.

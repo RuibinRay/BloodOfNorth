@@ -95,6 +95,8 @@ const PEOPLE = {
   asa: 'a Norse weaver woman of about forty with dark brown hair in a bun and quick clever eyes, in a purple-grey wool dress',
   ironmonger: 'a burly bald Norse iron-seller of about fifty with a short brown beard, in a brown tunic',
   salter: 'a shrewd grey-haired Norse woman of about fifty-five who sells salt, her hair in a bun, in a blue-grey wool dress',
+  ketil: 'a sturdy Norse farmer of about forty from a small fjord village, with a broad weathered face, short brown hair, a short brown beard and patient eyes, in a plain brown-olive wool tunic',
+  kol: 'a heavy-set, sullen Norse farmer of about forty-five with dark unkempt hair, dark stubble and narrow suspicious eyes, in a worn brown wool tunic',
   factor: 'a neat Norse grain merchant of about forty-five with combed dark-gold hair and a short beard, in a wheat-yellow tunic and a brown cloak',
   jtrader: 'a strong Norse blacksmith of about forty with dark brown hair, a short dark beard and soot on his brow, in a brown tunic',
 };
