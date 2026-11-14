@@ -11,7 +11,8 @@ import { TREES, POINT_EVERY } from '../systems/skills.js';
 import { POI, ISLES, DISTRICT_LINE, GREAT, MAIN, PLACES } from '../world/layout.js';
 import { mainAt } from '../world/realm.js';
 import { icon, itemIcon, questIcon, ARTS } from './icons.js';
-import { heightAt, riverX, riverSurfaceY, SIZE, HALF } from '../world/terrain.js';
+import { SIZE, HALF } from '../world/terrain.js';
+import { paintChart, labeller } from './chart.js';
 import { tr, getLang, LANGS, setLang, onLang, canvasFont } from '../i18n/i18n.js';
 /** The part of the world the sea chart shows: from the landing beach south to the edge of the chart. */
 const SEA_VIEW = { x0: -640, z0: 160, w: 1280, h: 1440 };
@@ -457,34 +458,9 @@ export class UI {
     body.querySelectorAll('.list button').forEach((b) => (b.onclick = () => { this.sel.item = b.dataset.id; this.openPanel('inventory', this.tabs); }));
     const eq = body.querySelector('#eq'); if (eq) eq.onclick = () => { g.player.equip(g.player.equipped === cur ? 'none' : cur); if (cur !== 'bow' && g.player.equipped === cur) g.state.flags.melee = cur; this.openPanel('inventory', this.tabs); };
   }
-  buildMap() {
-    const T = 512, c = document.createElement('canvas'); c.width = c.height = T;
-    const x2 = c.getContext('2d'); x2.drawImage(this.g.world.terrain.albedoCanvas, 0, 0, T, T);
-    const img = x2.getImageData(0, 0, T, T), d = img.data;
-    for (let j = 0; j < T; j++) for (let i = 0; i < T; i++) {
-      const x = -HALF + ((i + 0.5) / T) * SIZE, z = -HALF + ((j + 0.5) / T) * SIZE, h = heightAt(x, z), o = (j * T + i) * 4;
-      const river = Math.abs(x - riverX(z)) < 8 && z < 205 && h < riverSurfaceY(z);
-      if (h < 0.03 || river) { const k = Math.max(0, Math.min(1, -h / 8)); d[o] = 62 - k * 30; d[o + 1] = 98 - k * 40; d[o + 2] = 118 - k * 36; }
-      else { const s = 0.82 + Math.min(0.3, h / 160); d[o] = d[o] * s + 30; d[o + 1] = d[o + 1] * s + 24; d[o + 2] = d[o + 2] * s + 12; }
-    }
-    x2.putImageData(img, 0, 0);
-    return c;
-  }
-  /** The sea chart's base: coasts, shallows and depth. Names are drawn on top as islands are found. */
-  buildSeaMap(V = SEA_VIEW) {
-    const W = V === SEA_VIEW ? 512 : 640, H = Math.round((W * V.h) / V.w), c = document.createElement('canvas'); c.width = W; c.height = H;
-    const x2 = c.getContext('2d'), img = x2.createImageData(W, H), d = img.data;
-    for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
-      const x = V.x0 + ((i + 0.5) / W) * V.w, z = V.z0 + ((j + 0.5) / H) * V.h, h = heightAt(x, z), o = (j * W + i) * 4;
-      let r, g, b;
-      if (h < 0.05) { const k = Math.min(1, -h / 12); r = 164 - k * 58; g = 186 - k * 52; b = 186 - k * 44; if (h > -2.6) { r += 20; g += 16; b += 6; } }
-      else if (h < 0.7) { r = 92; g = 74; b = 50; } // the coast, inked
-      else { const lit = Math.max(-0.2, Math.min(0.22, (heightAt(x + 6, z + 6) - h) * 0.035)), k = Math.min(1, h / 45); r = (204 - k * 26) * (1 + lit); g = (188 - k * 22) * (1 + lit); b = (146 + k * 8) * (1 + lit); }
-      d[o] = r; d[o + 1] = g; d[o + 2] = b; d[o + 3] = 255;
-    }
-    x2.putImageData(img, 0, 0);
-    return c;
-  }
+  /** The valley's map, and (buildSeaMap) a chart of a stretch of sea: see chart.js. */
+  buildMap(W = 840) { return paintChart({ x0: -HALF, z0: -HALF, w: SIZE, h: SIZE }, W, W, { valley: true }); }
+  buildSeaMap(V = SEA_VIEW) { const H = 840, W = Math.round((H * V.w) / V.h); return paintChart(V, W, H); }
   render_map(body) {
     const g = this.g, open = g.state.stage === 'open' && g.story.open.built ? g.story.open : null;
     const pp = g.player.pos, town = mainAt(pp.x, pp.z), away = pp.z > 1600 || Math.abs(pp.x) > 640, tname = tr(town && town.id === 'bjornstead' && g.state.quests.q_fifty ? 'Ravenhold' : town ? town.name : '');
@@ -500,25 +476,28 @@ export class UI {
     body.querySelectorAll('.maptabs button').forEach((b) => { b.onclick = () => { this.mapPick = b.dataset.v; g.audio.play('ui'); this.render_map(body); }; });
     const up = (t) => (getLang() === 'zh' ? t : t.toLocaleUpperCase(getLang())), spaced = (t) => t.split('').join(' ');
     const cv = body.querySelector('canvas'), x = cv.getContext('2d'), X = (v) => ((v - V.x0) / V.w) * W, Z = (v) => ((v - V.z0) / V.h) * H;
-    const label = (t, px, pz, dy = -8) => { if (getLang() === 'zh' && /Georgia$/.test(x.font)) x.font = canvasFont(x.font); x.strokeStyle = 'rgba(236,224,196,0.85)'; x.lineWidth = 3; x.strokeText(t, X(px), Z(pz) + dy); x.fillText(t, X(px), Z(pz) + dy); };
+    let lab = null; // names are placed so that none lands on another (chart.js); the big ones first, and always
+    const label = (t, px, pz, dy = -8, force = false) => { if (getLang() === 'zh' && /Georgia$/.test(x.font)) x.font = canvasFont(x.font); return lab(t, X(px), Z(pz), dy, force); };
     const draw = () => {
+      lab = labeller(x, W, H);
       x.drawImage(local ? this.townBase[town.id] : realm ? this.realmBase : sea ? this.seaBase : this.mapBase, 0, 0, W, H);
       x.fillStyle = 'rgba(46,34,20,0.16)'; x.fillRect(0, 0, W, H);
       if (this.parch && this.parch.complete && this.parch.naturalWidth) { x.save(); x.globalCompositeOperation = 'multiply'; x.globalAlpha = 0.7; x.drawImage(this.parch, 0, 0, W, H); x.restore(); } // the chart is drawn on vellum
       if (this.rose && this.rose.complete && this.rose.naturalWidth) { const r = Math.round(W * 0.2); x.save(); x.globalCompositeOperation = 'multiply'; x.globalAlpha = 0.85; x.drawImage(this.rose, W - r - 10, 10, r, r); x.restore(); } // and a rose in its corner
-      x.textAlign = 'center'; x.font = 'italic 15px Georgia'; x.lineWidth = 3;
+      x.textAlign = 'center'; x.font = 'italic 18px Georgia'; x.lineWidth = 3;
       if (local) {
         x.strokeStyle = 'rgba(96,70,44,0.55)'; x.lineWidth = 2.2; for (const r of town.roads || []) { x.beginPath(); r.forEach(([dx, dz], i) => x[i ? 'lineTo' : 'moveTo'](X(town.x + dx), Z(town.z + dz))); x.stroke(); }
+        x.font = '600 22px Georgia'; x.fillStyle = '#3a1c14'; { const mid = PLACES[town.id].yard || PLACES[town.id].market || PLACES[town.id].h2 || PLACES[town.id].camp; label(up(tname), town.x + mid[0], town.z + mid[1] + 34, 0, true); }
         x.font = 'italic 14px Georgia';
         for (const [k, n] of Object.entries(TOWN_LABELS[town.id])) { const pt = PLACES[town.id][k]; x.fillStyle = '#2a1c12'; x.beginPath(); x.arc(X(town.x + pt[0]), Z(town.z + pt[1]), 3, 0, 6.3); x.fill(); label(tr(n), town.x + pt[0], town.z + pt[1]); }
-        x.font = '600 22px Georgia'; x.fillStyle = '#3a1c14'; { const mid = PLACES[town.id].yard || PLACES[town.id].market || PLACES[town.id].h2 || PLACES[town.id].camp; label(up(tname), town.x + mid[0], town.z + mid[1] + 34, 0); }
       } else if (!sea) {
+        x.font = '600 30px Georgia'; x.fillStyle = '#3a1c14'; label(up(tr('Hrafnvik')), 8, 36, 0, true);
+        x.font = 'italic 22px Georgia'; x.fillStyle = '#1e3a4c'; label(tr('Hrafnfjord'), 0, 240, 0, true);
+        x.font = 'italic 18px Georgia';
         for (const k in POI) {
           const p = POI[k]; if (!p.name) continue;
           x.fillStyle = '#2a1c12'; x.beginPath(); x.arc(X(p.x), Z(p.z), 3.2, 0, 6.3); x.fill(); label(tr(p.name), p.x, p.z);
         }
-        x.font = '600 24px Georgia'; x.fillStyle = '#3a1c14'; label(up(tr('Hrafnvik')), 8, 36, 0);
-        x.font = 'italic 17px Georgia'; x.fillStyle = '#1e3a4c'; label(tr('Hrafnfjord'), 0, 240, 0);
       } else if (realm) {
         x.save(); x.setLineDash([6, 6]); x.strokeStyle = 'rgba(42,28,18,0.5)'; x.lineWidth = 1.4; x.strokeRect(X(-640), Z(160), X(640) - X(-640), Z(1600) - Z(160)); x.restore(); // the home waters
         x.font = 'italic 13px Georgia'; x.fillStyle = '#2a1c12';
@@ -526,7 +505,7 @@ export class UI {
         x.font = '600 15px Georgia'; x.fillStyle = '#3a1c14'; for (const m of MAIN) label(up(tr(m.name)), m.x, m.z + (m.id === 'kaupang' ? 0 : 200), m.id === 'kaupang' ? -150 : 46);
         for (const s of GREAT) {
           const k = seen[s.id];
-          x.font = k ? '600 17px Georgia' : '600 20px Georgia'; x.fillStyle = k ? '#3a1c14' : 'rgba(42,28,18,0.45)'; label(k ? up(tr(s.name)) : '?', s.x, s.z + s.half * 0.82, 0);
+          x.font = k ? '600 17px Georgia' : '600 20px Georgia'; x.fillStyle = k ? '#3a1c14' : 'rgba(42,28,18,0.45)'; label(k ? up(tr(s.name)) : '?', s.x, s.z + s.half * 0.82, 0, true);
           if (k) { x.font = 'italic 13px Georgia'; x.fillStyle = '#2a1c12'; label(`${tr(s.title)} · ${tr(s.ruler)}`, s.x, s.z + s.half * 0.82, 17); }
         }
         const cx = W - 44, cy = 52; x.fillStyle = '#3a1c14'; x.beginPath(); x.moveTo(cx, cy - 26); x.lineTo(cx + 7, cy); x.lineTo(cx, cy + 26); x.lineTo(cx - 7, cy); x.closePath(); x.globalAlpha = 0.55; x.fill(); x.globalAlpha = 1;

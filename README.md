@@ -10,6 +10,15 @@ Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, th
 (forty-one: Ravenhold twelve years on, Leif's house, the old birch), each as the story tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
+**The graphics pass: water, ground and the map.**
+- **The sea moves.** It is a grid that goes where the camera goes (3 m cells near it, wider farther out), lifted by five long swells summed as Gerstner waves, so crests come sharp and troughs broad. The swell is full out among the great islands, about a quarter of that in the home fjord, and nothing in the shallows.
+- **The sea knows how deep it is.** A picture of the sea floor (1024 a side over the home waters and all ten islands, made at start-up in 0.12 s) makes it clear and green over sand, darker over the deeps, with lines of surf running up every beach and whitecaps on the crests of the swell.
+- **Ripples that do not repeat.** Two normal maps are computed from a wind-wave spectrum (`tools/art/water.py`, free) and laid in the world at four sizes running different ways; the finest fade with distance. The river uses them too.
+- **Five new pictures from Higgsfield** ($0.075): finer sea foam (the old one was big round holes, the polka dots on the river), snow, cliff, trodden earth and forest floor. The ground now picks trodden earth for paths, yards and fields and forest floor under the trees, both from its own painted colour, as well as snow on the white heights and cliff on the steepest faces, laid on the upright planes so its layers do not smear. Within ~60 m the grain gives the ground a little relief that the sun picks out.
+- **The map is drawn as a chart** (`src/ui/chart.js`): land tinted by height and hill-shaded from the north-west, woodland as soft green with little tree marks, paths dashed, fields hatched, the coast inked, the sea pale over the shallows with a line at every 3 m of depth, all at the size the map is shown (it was the 1024-pixel ground picture shrunk to 512 and stretched to 840). Names are placed so that none lands on another; the big ones first.
+- **What it costs:** about 40k more triangles for the sea (every scene stays inside its budget) and a few more texture reads on the ground. The heavy scenes still hold 60 frames a second on the M2; measured against `main` at the same moment, the drawing time was the same within noise.
+- **Not done:** ships do not ride the swell (it is kept to about half a metre at its highest so that hulls and crews, which the story places at fixed heights, still look right); the mountains are still mostly plain snow.
+
 **Faster to start.** The title now comes up in about 1.9 s instead of 6.2 s on an M2 (production build, fast
 connection). Measured, three quarters of the old wait was painting the ten islands' ground picture by picture, and
 measuring every pixel's distance to every road and path, near or not. Now a road too far away to matter is skipped,

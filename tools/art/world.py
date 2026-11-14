@@ -91,11 +91,12 @@ def save(im, name, q=88):
 
 
 def ground():
-    for name, out in (('w_grass', 'ground_grass.jpg'), ('w_sand', 'ground_sand.jpg'), ('w_rock', 'ground_rock.jpg')):
+    for name, out, gain in (('w_grass', 'ground_grass.jpg', 1.0), ('w_sand', 'ground_sand.jpg', 2.2), ('w_rock', 'ground_rock.jpg', 1.0),  # the sand came out as soft dunes: more grain
+                            ('w_dirt', 'ground_dirt.jpg', 1.3), ('w_forest', 'ground_forest.jpg', 1.0), ('w_snow', 'ground_snow.jpg', 1.6), ('w_cliff', 'ground_cliff.jpg', 1.1)):
         im = src(name)
         if im:
-            save(grain(tile(im, 512), gain=2.2 if name == 'w_sand' else 1.0), out)  # the sand came out as soft dunes: more grain
-    im = src('w_foam')
+            save(grain(tile(im, 512), gain=gain), out)
+    im = src('w_lace') or src('w_foam')  # the finer foam of the graphics pass, else the first one
     if im:
         a = np.asarray(tile(im, 512).convert('L'), dtype=np.float32)
         a = np.clip((a - 40) / 170, 0, 1) * 255   # black stays black, foam goes to white
