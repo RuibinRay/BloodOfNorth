@@ -123,7 +123,7 @@ async function lineup(names, gap = 0.95) {
 /** The languages: play a chapter in Chinese (or Spanish) and say what reached the screen in English.
  *  missing: strings that went through tr() with no entry; latin: English words left in the page itself (in Chinese
  *  only: keycaps and the frame counter aside, nothing on a Chinese screen should be in Latin letters). */
-const LATIN_OK = /^(fps|ms|Space|Esc|Tab|Shift|Ctrl|Mouse\d|Pad\w*|Key\w|[A-Z]|[A-Z]\d|R-Shift|Enter|English|Español|Higgsfield|Unreal|Engine|AI|IA|Alt|Gr|data|missions|json)$/; // keycaps, names of tools, a file name
+const LATIN_OK = /^(fps|ms|Space|Esc|Tab|Shift|Ctrl|Mouse\d|Pad\w*|Key\w|[A-Z]|[A-Z]\d|R-Shift|Enter|English|Español|Higgsfield|Unreal|Engine|AI|IA|Alt|Gr|data|missions|json|Hwæt|wilt|þu|Twa|penegas|God|þe|mid|sie|Norþmenn)$/; // keycaps, names of tools, a file name, the Old English heard in Wessex (kept foreign on purpose)
 function latinOnScreen() {
   const out = new Set(), ui = document.getElementById('ui');
   const walk = (el) => {
