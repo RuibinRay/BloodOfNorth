@@ -374,4 +374,4 @@ details.chapters li img.thumb { width: 64px; height: 36px; object-fit: cover; ve
 #menu-langs { position: absolute; top: 18px; right: 22px; }
 #menu-langs .langs { margin: 0; }
 #menu { align-items: safe center; overflow-y: auto; }
-:root[data-lang="es"] #tabs button { padding: 13px 10px; font-size: 14px; }
+:root[data-lang="es"] #tabs button { padding: 12px 9px; font-size: 13px; letter-spacing: 0.03em; }
