@@ -26,8 +26,8 @@ export const A7 = {
   // Vigdis: guard a parry wears (the Wolf's Table's 50 broke her guard in two, and the finisher on a broken guard took 40%
   // of her life at once); seconds between the bridge's beats; how long the Stormguard waits to turn her blow at 62%;
   // seconds her words take once it has (the next beat waits for them).
-  vigdis: { hp: 400, dmg: 13, parryBreak: 30, beat: 7, wardFor: 15, talk: 17 }, gorm: { hp: 560, dmg: 28 },
-  hakon: { hp: 760, dmg: 20, lastAt: 0.1 },                                              // from here he cannot be cut down: only the answer will do it
+  vigdis: { hp: 400, dmg: 13, parryBreak: 30, beat: 7, wardFor: 15, talk: 17 }, gorm: { hp: 500, dmg: 28 },
+  hakon: { hp: 640, dmg: 20, lastAt: 0.1 },                                              // from here he cannot be cut down: only the answer will do it
 };
 
 const folk = (o) => ({ build: 1, hair: 0x7a5a3a, tunic: 0x6a6a5a, ...o });
