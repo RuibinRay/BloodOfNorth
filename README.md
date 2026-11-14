@@ -218,6 +218,20 @@ It builds the game, starts every chapter of every act the way the Acts menu does
 fight beside two companions. About five minutes; `npm run check -- --quick` does each act's opening in about one.
 After a change that is meant to move something, `npm run check -- --update` records the new state.
 
+The code is on GitHub at https://github.com/RuibinRay/BloodOfNorth. To have every commit go there on its own,
+turn on the project's git hooks once:
+
+```bash
+git config core.hooksPath tools/hooks
+```
+
+After that, every commit (and every merge, rebase or amend) pushes its branch to GitHub. If `main` can fast-forward
+to that branch, `main` moves there too and is pushed, but only when the folder that has `main` checked out has no
+uncommitted changes. Branches named `wip/…` or `wip-…` are pushed but never merged. If `main` has moved on since a
+branch began, rebase the branch onto `main` and its next commit merges. `BOTN_NO_SYNC=1 git commit …` skips all of it
+for one commit. What it did is written to `.git/autosync.log`
+([tools/hooks/autosync.sh](tools/hooks/autosync.sh)).
+
 ## Controls
 
 | Action | Keyboard / mouse | Gamepad |
