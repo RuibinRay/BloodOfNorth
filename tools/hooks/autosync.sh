@@ -42,7 +42,7 @@ head=$(git rev-parse HEAD)
       echo "main folder has uncommitted changes: main not moved"
       exit 0
     fi
-    git -C "$dir" merge -q --ff-only "$head" || { echo "fast-forward of main failed"; exit 0; }
+    BOTN_NO_SYNC=1 git -C "$dir" merge -q --ff-only "$head" ||{ echo "fast-forward of main failed"; exit 0; }
   else
     git update-ref refs/heads/main "$head" "$main" || exit 0
   fi
