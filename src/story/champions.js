@@ -5,6 +5,7 @@
 // WHAT THIS IS NOT YET: the chapters round these fights (the Battle of Iron Shore, the treasure voyage, the marsh
 // hunt, the burning forge, the landing on the Black Shore...) are not built. Here the ten wait in their places and
 // are fought in the story's order: the fights without the missions. The skill engine is in systems/combat.js.
+import * as THREE from 'three';
 import { place, GREAT } from '../world/layout.js';
 import { QUESTS } from '../data/act1.js';
 import { REFORGE } from '../data/weapons.js';
@@ -94,7 +95,7 @@ export const FOES = [
     hold: ['seax', 'seax'], trophy: ['twin', "Vigdis's seaxes"],
     look: { female: true, build: 0.9, scale: 0.94, hairStyle: 'cropped', hair: 0x2a2622, tunic: 0x26262a, trim: 0x4a4a50, legs: 0x1e1e20, sleeve: 0x26262a, eyes: 0x8e979c, face: 'lean', brows: 0.7, browArch: 0.001, lips: 'thin' },
     skills: [['Left-Left, Right-Right', 'She steps twice and strikes, always from the side: two blows from the left, then two from the right. Listen for her feet; raise the guard on the beat.'], ['Quickblood', 'Now and then she is behind him instead.'], ['Too fast to chase', 'She is gone the moment her blow is thrown. Two blows turned on the beat break her guard.']],
-    cb: { hp: 300, dmg: 13, skill: 0.9, dodge: 0.75, flit: true, keepDry: true, slow: 0.82, parryBreak: 50,
+    cb: { hp: 400, dmg: 13, skill: 0.9, dodge: 0.75, flit: true, keepDry: true, slow: 0.82, parryBreak: 30, // at 300 and 50, two parries broke her guard and the finisher took 40% of her: the easiest of the ten
       moves: [mv('cut', 'll', { name: 'Left-Left, Right-Right', dash: 'flank', beat: true, dur: 0.78, hitAt: 0.5 }), mv('cut', 'll2', { name: 'Left-Left, Right-Right', dash: 'flank', beat: true, dur: 0.78, hitAt: 0.5 }), mv('cut', 'll3', { name: 'Left-Left, Right-Right', dash: 'flank', beat: true, dur: 0.78, hitAt: 0.5 }), mv('back', 'qb', { name: 'Quickblood', dash: 'behind', dur: 0.62, dmg: 15 })],
       phases: [{ at: 0.55, line: 'So the stories are true.', fire: true, set: {} }, { at: 0.25, line: 'Then let us see what remains when you bleed.', set: { slow: 0.72 } }] } },
   { id: 'gorm', n: 9, name: 'Gorm Stone-Lung', title: 'the Right Hand', act: 'VII', where: "the gate of Håkon's hall, Svartøy", spot: at('svartoy', 'hall', 0, -27), near: 20,
@@ -211,12 +212,22 @@ export class Champions {
     g.audio.setMusic('raid'); g.audio.play('horn', { freq: def.n > 7 ? 82 : 110, vol: 0.5 });
     g.ui.questBanner(`${def.title} · ${def.where}`, def.name);
     if (def.says) g.after(0.7, () => e.say(def.says, 5));
-    if (def.id === 'eydis') for (let i = 0; i < 5; i++) { const a = 0.4 + i * 1.257; g.combat.trap(x + Math.cos(a) * 7.5, z + Math.sin(a) * 7.5, { kind: 'stakes', r: 2.1, sec: 9999, dmg: 5, arm: 0 }); } // her stake pits, under the water
+    if (def.id === 'eydis') for (let i = 0; i < 5; i++) { const a = 0.4 + i * 1.257; g.combat.trap(x + Math.cos(a) * 7.5, z + Math.sin(a) * 7.5, { kind: 'stakes', r: 2.1, sec: 9999, dmg: 2.5, arm: 0 }); } // her stake pits, under the water (at 5 a second, unseen, they killed more often than she did)
+    if (def.id === 'eydis') { // the tips of the stakes break the water: a careful man can see where they are
+      const mat = new THREE.MeshStandardMaterial({ color: 0x3e3226, roughness: 0.9 }), cone = new THREE.ConeGeometry(0.045, 0.6, 4);
+      this.marks = new THREE.Group(); g.scene.add(this.marks);
+      for (let i = 0; i < 5; i++) { const a = 0.4 + i * 1.257, px = x + Math.cos(a) * 7.5, pz = z + Math.sin(a) * 7.5;
+        for (let k = 0; k < 7; k++) { const r = 0.3 + Math.random() * 1.6, b = Math.random() * 6.28, sx = px + Math.cos(b) * r, sz = pz + Math.sin(b) * r, m = new THREE.Mesh(cone, mat);
+          m.position.set(sx, Math.max(0, g.world.groundAt(sx, sz)) - 0.12, sz); m.rotation.set((Math.random() - 0.5) * 0.5, 0, (Math.random() - 0.5) * 0.5); this.marks.add(m); } }
+    }
     if (def.id === 'gorm' || def.id === 'rurik') g.after(2.4, () => g.ui.toast(def.id === 'gorm' ? 'Wall of Iron: nothing gets through from the front. Make him swing.' : 'A shield wall of one: break his guard, or catch him in his own swing.'));
     if (def.id === 'vigdis') g.after(1.5, () => g.ui.hint('She steps twice before she strikes, always from the side: left, left, right, right. Watch the arrow at the edge of the screen, listen for her feet, and raise your guard ({block}) on the beat.'));
     if (def.id === 'skarde') g.after(6, () => g.ui.hint('He tires. Give ground, keep your guard up when he talks, and let him swing at air.'));
     if (!this.st.flags.artHint) { this.st.flags.artHint = true; g.after(9, () => g.ui.tip('{art1} is Thunder Smash: a leap and a stroke of lightning that stops a swing and breaks a guard. It spends the storm bar, which the Stormguard also needs.')); }
     p.mortal = true;
+    // he has come here to fight: the weapon comes out, as it does in the story's fights (a man who had it put away met them with his fists)
+    if (p.equipped === 'none') { const w = ['father_axe', 'sword', 'longaxe', 'spear'].find((k) => g.inventory.has(k)); if (w) p.equip(w); }
+    if ((def.id === 'arne' || def.id === 'eydis') && !p.hasShield()) g.after(2, () => g.ui.tip(`Only a raised shield stops ${def.id === 'arne' ? 'arrows and knives' : 'javelins'}. The traders sell one.`));
   }
   /** A fight changes: the bridge burns, Gorm throws his shield away, Håkon changes weapons. */
   turn(def, e, ph) {
@@ -250,6 +261,7 @@ export class Champions {
     for (const x of [...g.combat.alive()]) g.combat.kill(x);
     g.combat.clear(); g.audio.setMusic('day'); p.stormDead = false;
     for (const f of this.fires) g.fx.removeFire(f); this.fires = [];
+    if (this.marks) { g.scene.remove(this.marks); this.marks = null; }
     g.ui.questBanner(`The Wolf's Table · ${fl.table} of ${FOES.length}`, `${def.name} has fallen`); g.ui.subtitle('', def.won, 7);
     inv.add('silver', 30);
     if (def.n <= 7) { inv.add('wolf_brooch', 1); }
