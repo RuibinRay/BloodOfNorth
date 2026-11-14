@@ -299,6 +299,12 @@ details.chapters li img.thumb { width: 64px; height: 36px; object-fit: cover; ve
 #loading.gone { opacity: 0; pointer-events: none; }
 #loading h1 { font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; font-size: clamp(26px, 4vw, 46px); margin: 0; }
 #loading p { font-style: italic; opacity: 0.7; }
+/* a bar that keeps moving while the world is built (a transform runs off the main thread); gone once it is ready */
+#loading .bar { width: 180px; height: 2px; margin: 18px auto 0; background: rgba(255, 255, 255, 0.12); overflow: hidden; border-radius: 1px; }
+#loading .bar i { display: block; width: 40%; height: 100%; background: #c9b48a; animation: loadbar 1.3s ease-in-out infinite; }
+#loading.ready .bar { visibility: hidden; }
+@keyframes loadbar { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+@media (prefers-reduced-motion: reduce) { #loading .bar i { animation: none; width: 100%; opacity: 0.5; } }
 @media (max-width: 760px) { .cols { grid-template-columns: 1fr; } .trees, .status-grid { grid-template-columns: 1fr 1fr; } .set { grid-template-columns: 1fr; } .keys { grid-template-columns: 1fr; } #tracker { width: 46vw; } #hint { max-width: 46vw; } }
 @media (prefers-reduced-motion: reduce) { .lb, nav button, #hud, #hint, #card { transition: none; } }
 

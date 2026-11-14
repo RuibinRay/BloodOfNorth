@@ -18,6 +18,8 @@ function set(key, val) {
 }
 export function loadSettings() { return Object.assign({}, DEFAULT_SETTINGS, get('settings') || {}); }
 export function saveSettings(s) { set('settings', s); }
+/** Whether this browser has settings of its own yet (false on a first visit). */
+export const hasSettings = () => get('settings') !== null;
 
 export function writeSave(slot, state, meta) {
   return set('save.' + slot, { v: SAVE_VERSION, at: Date.now(), meta, state });

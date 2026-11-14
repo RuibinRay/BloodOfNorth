@@ -10,6 +10,17 @@ Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, th
 (forty-one: Ravenhold twelve years on, Leif's house, the old birch), each as the story tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
+**Faster to start.** The title now comes up in about 1.9 s instead of 6.2 s on an M2 (production build, fast
+connection). Measured, three quarters of the old wait was painting the ten islands' ground picture by picture, and
+measuring every pixel's distance to every road and path, near or not. Now a road too far away to matter is skipped,
+and the islands, all out of sight behind the sea haze when the title comes up, are painted in the gaps between
+frames over the next four seconds. One that comes into view before its turn is painted there and then, in 160 ms.
+Every picture is the same to the pixel as before (checked by hashing all ten islands, the valley and all 1,142 sets
+of trees, rocks and grass). The loading screen has a moving bar, which keeps moving while the world is built.
+A first visit on a machine with no graphics card (software drawing) starts at Low quality. The frame rate was not
+the problem: the five heavy scenes hold 60 frames a second at Medium and High on the M2, each frame taking 1.4–3.7 ms
+to draw.
+
 **New on the branch `faces-and-hair` (built on 0.29).** Faces and hair. Every head is now shaped, not a ball: a skull
 with a jaw, a chin, cheekbones, the ridge of the brow and sockets for the eyes, in one of nine shapes; a nose (straight,
 hooked, snub, broad, broken, button, long) and ears; eyes with an iris and pupil that turn to look and glance aside,

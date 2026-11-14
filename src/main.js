@@ -7,7 +7,7 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
-import { loadSettings, writeSave, readSave } from './core/save.js';
+import { loadSettings, saveSettings, hasSettings, writeSave, readSave } from './core/save.js';
 import { initMaterials, shared, cullHazed } from './world/geo.js';
 import { World } from './world/world.js';
 import { Sky } from './world/sky.js';
@@ -53,6 +53,12 @@ class Game {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.info.autoReset = false; // counted per frame in draw(), across every pass
+    // A first visit on a machine that draws without a graphics card (software rendering) starts at Low quality.
+    // A test browser keeps the defaults, so the checks measure the same game everywhere.
+    if (!hasSettings() && !/HeadlessChrome/.test(navigator.userAgent)) {
+      const gl = renderer.getContext(), ext = gl.getExtension('WEBGL_debug_renderer_info'), name = String(gl.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER));
+      if (/swiftshader|llvmpipe|softpipe|software|basic render/i.test(name)) { this.settings.quality = 'low'; saveSettings(this.settings); }
+    }
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(this.baseFov, innerWidth / innerHeight, 0.15, 2600);
     // Glow: what is brighter than daylight (fire, sparks, lightning, the stroke of a blade) bleeds a little light round itself.
@@ -100,6 +106,7 @@ class Game {
     requestAnimationFrame((t) => this.tick(t));
     if (boot) {
       document.getElementById('loading-text').textContent = 'Click or press any key to continue';
+      document.getElementById('loading').classList.add('ready');
       const go = () => {
         removeEventListener('pointerdown', go); removeEventListener('keydown', go);
         this.audio.init(); this.ui.hideLoading();

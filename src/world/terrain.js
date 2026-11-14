@@ -1,7 +1,7 @@
 // Heightfield terrain for the Hrafnvik valley: a fjord to the south, mountains on three sides,
 // a river on the east flank and a flattened shelf for the village.
 import * as THREE from 'three';
-import { fbm, noise2, smoothstep, lerp, clamp, distToPolyline } from '../core/util.js';
+import { fbm, noise2, smoothstep, lerp, clamp, nearPolyline } from '../core/util.js';
 import { FLATS, PATHS, FIELDS, VILLAGE, POI, ISLES } from './layout.js';
 import { patch, waterPatch, TEX, shared } from './geo.js';
 import { realmAt, buildRealmHeights, buildRealm } from './realm.js';
@@ -81,9 +81,10 @@ export function slopeAt(x, z) {
   const e = 1.5;
   return Math.hypot(heightAt(x + e, z) - heightAt(x - e, z), heightAt(x, z + e) - heightAt(x, z - e)) / (2 * e);
 }
-export function distToPaths(x, z) {
+/** How far (x, z) is from the edge of the nearest path. Only distances under `within` are exact; past that it may answer Infinity. */
+export function distToPaths(x, z, within = Infinity) {
   let best = Infinity;
-  for (const p of PATHS) { const d = distToPolyline(x, z, p.pts) - p.w * 0.5; if (d < best) best = d; }
+  for (const p of PATHS) { const d = nearPolyline(x, z, p.pts, within + p.w * 0.5) - p.w * 0.5; if (d < best) best = d; }
   return best;
 }
 export function inField(x, z) {
@@ -100,7 +101,7 @@ export function forestDensity(x, z) {
   if (dv < VILLAGE.r + 6) return 0;
   if (z > 132) return 0;
   if (Math.abs(x - riverX(z)) < 12) return 0;
-  if (distToPaths(x, z) < 1.6) return 0;
+  if (distToPaths(x, z, 1.6) < 1.6) return 0;
   if (inField(x, z) !== null) return 0;
   for (let i = 1; i < FLATS.length; i++) {
     const f = FLATS[i];
@@ -149,7 +150,7 @@ function paintAlbedo() {
       // worn ground in the village and on trails
       const dv = Math.hypot(x - VILLAGE.x, z - VILLAGE.z);
       col = mix3(col, dirt, (1 - smoothstep(18, 60, dv)) * 0.35 * (0.5 + n2 * 0.5));
-      const dp = distToPaths(x, z);
+      const dp = distToPaths(x, z, 1.4);
       if (dp < 1.4) col = mix3(col, dirt, (1 - smoothstep(-0.2, 1.4, dp)) * (0.75 + n2 * 0.25));
       const fl = inField(x, z);
       if (fl !== null) { const furrow = Math.sin(fl * 5.2) * 0.5 + 0.5; col = mix3(soil, [70, 54, 38], furrow * 0.6); }

@@ -78,9 +78,24 @@ export function distToPolyline(x, z, pts) {
   for (let i = 0; i < pts.length - 1; i++) {
     const ax = pts[i][0], az = pts[i][1], bx = pts[i + 1][0], bz = pts[i + 1][1];
     const dx = bx - ax, dz = bz - az;
-    const t = clamp(((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1), 0, 1);
+    let t = ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1);
+    t = t < 0 ? 0 : t > 1 ? 1 : t;
     const d = Math.hypot(x - (ax + dx * t), z - (az + dz * t));
     if (d < best) best = d;
   }
   return best;
+}
+const BOX = new WeakMap();
+/** distToPolyline when the point is within `r` of the line, else Infinity, cheaply: a point farther than `r` from
+ *  the line's bounding box cannot be within `r` of the line. For callers that only care about distances under `r`
+ *  (painting the ground, levelling a road), the answer is the same as distToPolyline's. */
+export function nearPolyline(x, z, pts, r) {
+  let b = BOX.get(pts);
+  if (!b) {
+    b = [Infinity, Infinity, -Infinity, -Infinity];
+    for (const p of pts) { b[0] = Math.min(b[0], p[0]); b[1] = Math.min(b[1], p[1]); b[2] = Math.max(b[2], p[0]); b[3] = Math.max(b[3], p[1]); }
+    BOX.set(pts, b);
+  }
+  if (x < b[0] - r || x > b[2] + r || z < b[1] - r || z > b[3] + r) return Infinity;
+  return distToPolyline(x, z, pts);
 }

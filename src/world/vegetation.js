@@ -181,12 +181,12 @@ export function scatterVegetation(scene, world, quality) {
   const bushes = [], rocks = [];
   for (let i = 0; i < 2600 && bushes.length < 800; i++) {
     const x = (R() - 0.5) * 560, z = (R() - 0.5) * 560, d = forestDensity(x, z), h = heightAt(x, z);
-    if (d < 0.04 || d > 0.7 || h < 1 || h > 60 || distToPaths(x, z) < 1.2) continue;
+    if (d < 0.04 || d > 0.7 || h < 1 || h > 60 || distToPaths(x, z, 1.2) < 1.2) continue;
     bushes.push({ x, z, y: h - 0.05, sc: 0.7 + R() * 0.9, ry: R() * 6.28 });
   }
   for (let i = 0; i < 2400 && rocks.length < 520; i++) {
     const x = (R() - 0.5) * 600, z = (R() - 0.5) * 600, h = heightAt(x, z);
-    if (h < -0.6 || distToPaths(x, z) < 1.5 || inField(x, z) !== null) continue;
+    if (h < -0.6 || distToPaths(x, z, 1.5) < 1.5 || inField(x, z) !== null) continue;
     const dv = Math.hypot(x - VILLAGE.x, z - VILLAGE.z);
     if (dv < VILLAGE.r - 4 || Math.hypot(x - POI.farm.x, z - POI.farm.z) < 27) continue;
     const big = R() < 0.14 || slopeAt(x, z) > 0.5;
@@ -206,7 +206,7 @@ export function scatterVegetation(scene, world, quality) {
     const x = -200 + R() * 425, z = -200 + R() * 355;
     const h = heightAt(x, z);
     if (h < 0.75 || h > 40) continue;
-    if (distToPaths(x, z) < 0.25 || inField(x, z) !== null) continue;
+    if (distToPaths(x, z, 0.25) < 0.25 || inField(x, z) !== null) continue;
     if (Math.abs(x - riverX(z)) < 8.5) continue;
     const dv = Math.hypot(x - VILLAGE.x, z - VILLAGE.z);
     const w = clamp(1.15 - forestDensity(x, z) * 1.3, 0.12, 1) * (dv < 40 ? 0.45 : 1) * (0.5 + 0.5 * (noise2(x * 0.08, z * 0.08) * 0.5 + 0.5));

@@ -2,7 +2,7 @@
 // heightfield patch of its own out in the open sea beyond the home waters, so an island can be as large as the
 // chapters set on it need. heightAt() in terrain.js asks realmAt() for anything outside the valley and the chart.
 import * as THREE from 'three';
-import { fbm, noise2, smoothstep, lerp, distToPolyline } from '../core/util.js';
+import { fbm, noise2, smoothstep, lerp, nearPolyline } from '../core/util.js';
 import { GREAT, MAIN } from './layout.js';
 import { patch, TEX, hazeCull } from './geo.js';
 
@@ -43,9 +43,9 @@ function shelf(s, x, z, dx, dz, d, sh) {
     if (n < -0.16) top = Math.min(top, -0.22 - (-0.16 - n) * 2.2);
     top = Math.max(top, -0.68); // every pool can be waded; only the channels need a boat or a bridge
   }
-  const cut = (c) => { const cd = distToPolyline(dx, dz, c.pts); if (cd < c.w) top = Math.min(top, lerp(c.y, top, smoothstep(c.w * 0.4, c.w, cd))); };
+  const cut = (c) => { const cd = nearPolyline(dx, dz, c.pts, c.w); if (cd < c.w) top = Math.min(top, lerp(c.y, top, smoothstep(c.w * 0.4, c.w, cd))); };
   for (const c of s.cuts || []) if (!c.late) cut(c);
-  if (s.marsh) for (const r of s.roads || []) { const rd = distToPolyline(dx, dz, r); if (rd < 6) top = Math.max(top, lerp(0.5, top, smoothstep(2.5, 6, rd))); } // causeways
+  if (s.marsh) for (const r of s.roads || []) { const rd = nearPolyline(dx, dz, r, 6); if (rd < 6) top = Math.max(top, lerp(0.5, top, smoothstep(2.5, 6, rd))); } // causeways
   for (const f of s.flats || []) { const fd = Math.hypot(dx - f[0], dz - f[1]); if (fd < f[2]) top = lerp(f[3], top, smoothstep(f[2] * 0.62, f[2], fd)); }
   for (const c of s.cuts || []) if (c.late) cut(c); // a river keeps its bed through level ground
   const land = lerp(top, -2.2, smoothstep(s.r * sh[0], s.r * sh[1], d));
@@ -82,7 +82,7 @@ export function mainAt(x, z, pad = 0) {
 export function realmClear(s, x, z) {
   const dx = x - s.x, dz = z - s.z;
   for (const f of s.flats || []) if (Math.hypot(dx - f[0], dz - f[1]) < f[2] * 0.95) return false;
-  for (const r of s.roads || []) if (distToPolyline(dx, dz, r) < 5) return false;
+  for (const r of s.roads || []) if (nearPolyline(dx, dz, r, 5) < 5) return false;
   for (const f of s.fields || []) if (inField(f, dx, dz, 3)) return false;
   return true;
 }
@@ -113,10 +113,26 @@ function buildIsle(s) {
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
   geo.setIndex(new THREE.BufferAttribute(idx, 1)); geo.computeVertexNormals();
 
+  // The ground's picture is painted after the game has started, a slice at a time (see paintLater): every island
+  // is far out to sea, behind the haze, when the title comes up. Until then the canvas is one plain colour, and if an
+  // island is about to be drawn before its turn has come it is painted there and then.
   const T = 640, cv = document.createElement('canvas'); cv.width = cv.height = T;
-  const g = cv.getContext('2d'), img = g.createImageData(T, T), d = img.data, px = (2 * s.half) / T, P = GROUND[s.ground] || GROUND.stone;
+  const g = cv.getContext('2d'), P = GROUND[s.ground] || GROUND.stone;
+  g.fillStyle = `rgb(${P.slice(0, 2).reduce((a, c) => a.map((v, i) => v + c[i] / 2), [0, 0, 0]).map(Math.round)})`; g.fillRect(0, 0, T, T);
+  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+  const m = new THREE.Mesh(geo, patch(new THREE.MeshStandardMaterial({ map: tex, roughness: 0.96, metalness: 0 }), { detail: TEX.detail, snow: 1 }));
+  m.receiveShadow = true; m.name = 'isle_' + s.id;
+  const job = { s, g, img: g.createImageData(T, T), T, P, tex, row: 0 };
+  m.onBeforeRender = () => { if (job.row < T) paintIsle(job, Infinity); };
+  waiting.push(job);
+  return hazeCull(m); // an island's ground is not drawn once the haze has taken it
+}
+const waiting = [];
+/** Paint rows of an island's ground for up to `ms` milliseconds; the picture goes to the screen once it is whole. */
+function paintIsle(job, ms) {
+  const { s, img, T, P } = job, d = img.data, px = (2 * s.half) / T, from = job.row, t0 = performance.now();
   const mix = (o, c, t) => { d[o] += (c[0] - d[o]) * t; d[o + 1] += (c[1] - d[o + 1]) * t; d[o + 2] += (c[2] - d[o + 2]) * t; };
-  for (let j = 0; j < T; j++) for (let i = 0; i < T; i++) {
+  for (; job.row < T && performance.now() - t0 < ms; job.row++) for (let j = job.row, i = 0; i < T; i++) {
     const x = s.x0 + (i + 0.5) * px, z = s.z0 + (j + 0.5) * px, h = realmAt(x, z), o = (j * T + i) * 4, dx = x - s.x, dz = z - s.z;
     const sl = Math.hypot(realmAt(x + 2.5, z) - h, realmAt(x, z + 2.5) - h) / 2.5, nn = noise2(x * 0.09, z * 0.09) * 0.5 + 0.5, n2 = noise2(x * 0.021 + 7, z * 0.021) * 0.5 + 0.5;
     d[o] = lerp(P[0][0], P[1][0], nn); d[o + 1] = lerp(P[0][1], P[1][1], nn); d[o + 2] = lerp(P[0][2], P[1][2], nn); d[o + 3] = 255;
@@ -124,20 +140,30 @@ function buildIsle(s) {
     if (s.ground === 'iron') mix(o, [150, 66, 44], smoothstep(0.72, 0.9, noise2(x * 0.016 - 3, z * 0.05 + 11) * 0.5 + 0.5) * 0.75); // ore stains the streams red
     for (const f of s.flats || []) { if (f[4]) continue; const fd = Math.hypot(dx - f[0], dz - f[1]); if (fd < f[2]) mix(o, P[5], (1 - smoothstep(f[2] * 0.35, f[2], fd)) * 0.55 * (0.6 + nn * 0.4)); }
     for (const f of s.fields || []) if (inField(f, dx, dz)) mix(o, (Math.floor((dx * Math.cos(f[4] || 0) - dz * Math.sin(f[4] || 0)) / 1.6) & 1) ? [182, 156, 74] : [168, 140, 62], 0.9); // barley, in rows
-    for (const r of s.roads || []) { const rd = distToPolyline(dx, dz, r); if (rd < 4) mix(o, P[5], (1 - smoothstep(1.2, 4, rd)) * 0.85); }
+    for (const r of s.roads || []) { const rd = nearPolyline(dx, dz, r, 4); if (rd < 4) mix(o, P[5], (1 - smoothstep(1.2, 4, rd)) * 0.85); }
     mix(o, P[3], 1 - smoothstep(0.3, s.marsh ? 0.5 : 1.6, h));                       // the shore
     mix(o, P[4], smoothstep(0.42, 0.85, sl));                                       // rock where it is steep
     mix(o, DEEP, smoothstep(-2.5, -8, h));                                          // every sea floor ends the same colour, so no island shows a seam
     const k = 1.04 + nn * 0.14; d[o] *= k; d[o + 1] *= k; d[o + 2] *= k;
   }
-  g.putImageData(img, 0, 0);
-  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
-  const m = new THREE.Mesh(geo, patch(new THREE.MeshStandardMaterial({ map: tex, roughness: 0.96, metalness: 0 }), { detail: TEX.detail, snow: 1 }));
-  m.receiveShadow = true; m.name = 'isle_' + s.id;
-  return hazeCull(m); // an island's ground is not drawn once the haze has taken it
+  if (job.row > from) job.g.putImageData(img, 0, 0, 0, from, T, job.row - from);
+  if (job.row >= T) job.tex.needsUpdate = true;
 }
+/** Paint the islands' ground in the gaps between frames, a few milliseconds at a time, until all are done. */
+function paintLater() {
+  const job = waiting.find((j) => j.row < j.T);
+  if (!job) return;
+  const idle = window.requestIdleCallback && window.requestIdleCallback.bind(window);
+  if (idle) idle((dl) => { paintIsle(job, Math.max(2, Math.min(8, dl.timeRemaining() - 1))); paintLater(); }, { timeout: 200 });
+  else setTimeout(() => { paintIsle(job, 6); paintLater(); }, 16);
+}
+/** Paint every island's ground now (a test that wants the finished pictures at once). */
+export function paintRealmNow() { for (const j of waiting) if (j.row < j.T) paintIsle(j, Infinity); }
+/** How many rows of island ground are still to be painted. */
+export const realmLeft = () => waiting.reduce((n, j) => n + j.T - j.row, 0);
 export function buildRealm(scene) {
   for (const s of ALL) scene.add(buildIsle(s));
+  setTimeout(paintLater, 0); // once the boot that is building the world has finished
   // one floor under the whole open sea, the colour every island's shallows fade to
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(10000, 10000), new THREE.MeshStandardMaterial({ color: new THREE.Color(DEEP[0] / 255, DEEP[1] / 255, DEEP[2] / 255).convertSRGBToLinear().multiplyScalar(1.1), roughness: 1, metalness: 0 }));
   floor.rotation.x = -Math.PI / 2; floor.position.set(0, SEA - 3, 1600); scene.add(floor);
