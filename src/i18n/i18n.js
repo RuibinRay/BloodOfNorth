@@ -63,6 +63,7 @@ export function tr(s, ...args) {
     if (out === undefined) {
       const lead = s.match(/^\s*/)[0], tail = s.match(/\s*$/)[0], core = s.trim(); // text built with a space at an end
       if (core !== s && core) out = lead + tr(core) + tail;
+      else if (/\s·\s/.test(s)) out = s.split(/(\s+·\s+)/).map((x, i) => (i % 2 ? x : tr(x))).join(''); // 'a title · a place': each part
       else {
         for (const p of patterns) {
           const m = p.re.exec(s);
