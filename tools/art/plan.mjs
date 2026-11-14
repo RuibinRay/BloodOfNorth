@@ -289,6 +289,13 @@ const RAW = {
   w_sand: texture('pale grey-tan beach sand with scattered small pebbles and bits of broken shell, seen from straight above'),
   w_rock: texture('weathered grey granite with fine cracks and patches of pale lichen'),
   w_foam: `Seamless tileable texture of sea foam seen from straight above: a lacy net of bright white foam bubbles and streaks on a pure black background, evenly lit, filling the whole frame edge to edge. ${CLEAN}.`,
+  // the graphics pass (0.30): finer foam for the sea, the river and the beaches (w_foam came back as big round holes),
+  // and the ground the valley and the islands had no grain for: snow, cliff, trodden earth, forest floor
+  w_lace: `Seamless tileable texture of sea foam seen from straight above: thin lacy white veins, ribbons and marbled streaks of fine foam drifting on black water, a delicate net of tiny bubbles, evenly lit, filling the whole frame edge to edge. ${CLEAN}.`,
+  w_snow: texture('wind-packed snow seen from straight above: soft drifts and ripples, small ice crystals and faint blue shadows in the hollows'),
+  w_cliff: texture('a steep face of dark grey gneiss rock seen straight on: layered bands running at a slant, deep cracks, small ledges and patches of pale lichen'),
+  w_dirt: texture('trodden bare earth of a farm path seen from straight above: packed brown soil with footprints, small stones and a few dry grass stems'),
+  w_forest: texture('the floor of a spruce forest seen from straight above: brown fallen needles, patches of green moss, small twigs and a few cones'),
   w_bark_pine: texture('the bark of an old pine trunk: reddish grey-brown furrowed plates running vertically'),
   w_bark_birch: texture('the bark of a birch trunk: chalk-white papery bark with scattered thin black horizontal marks'),
   w_needles: texture('a dense mass of dark green spruce boughs and needles overlapping and hanging downward'),

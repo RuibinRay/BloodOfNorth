@@ -215,12 +215,18 @@ export const ART = {
     "figure": "art/world/figure.jpg",
     "foam": "art/world/foam.jpg",
     "gear": "art/world/gear.jpg",
+    "ground_cliff": "art/world/ground_cliff.jpg",
+    "ground_dirt": "art/world/ground_dirt.jpg",
+    "ground_forest": "art/world/ground_forest.jpg",
     "ground_grass": "art/world/ground_grass.jpg",
     "ground_rock": "art/world/ground_rock.jpg",
     "ground_sand": "art/world/ground_sand.jpg",
+    "ground_snow": "art/world/ground_snow.jpg",
     "hull": "art/world/hull.jpg",
     "pine": "art/world/pine.webp",
     "sail": "art/world/sail.jpg",
-    "shields": "art/world/shields.jpg"
+    "shields": "art/world/shields.jpg",
+    "water_a": "art/world/water_a.jpg",
+    "water_b": "art/world/water_b.jpg"
   }
 };
