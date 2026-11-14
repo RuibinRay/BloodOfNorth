@@ -11,5 +11,6 @@ import _act5 from './act5.js';
 import _act6 from './act6.js';
 import _act7 from './act7.js';
 import _epilogue from './epilogue.js';
+import _open from './open.js';
 
-export default Object.assign({}, _ui, _chapters, _items, _companions, _act1, _act2, _act3, _act4, _act5, _act6, _act7, _epilogue);
+export default Object.assign({}, _ui, _chapters, _items, _companions, _act1, _act2, _act3, _act4, _act5, _act6, _act7, _epilogue, _open);

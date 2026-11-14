@@ -139,7 +139,7 @@ async function i18n(lang, ids, secs = 10, withPanels = true) {
   const panels = ['journal', 'inventory', 'map', 'saga', 'skills', 'companions', 'looks', 'settings', 'saves', 'status', 'acts'];
   for (const id of ids) {
     I.missing.clear();
-    try { g.startAt(id); } catch (e) { rows.push({ id, crash: e.message }); continue; }
+    try { if (id === 'q_open') d.jump('q_open'); else g.startAt(id); } catch (e) { rows.push({ id, crash: e.message }); continue; } // the open world is not an act's chapter
     d.manual(true); const latin = new Set();
     for (let t = 0; t < secs; t += 0.5) {
       await d.run(0.5);

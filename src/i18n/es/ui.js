@@ -31,7 +31,7 @@ export default {
   "Put weapon away": "Guardar el arma",
   "First companion's skill": "Habilidad del primer compañero",
   "Second companion's skill": "Habilidad del segundo compañero",
-  "Companions: wait here / with me": "Compañeros: esperad aquí / conmigo",
+  "Companions: wait here / with me": "Compañeros: esperen aquí / conmigo",
   "Inventory": "Inventario",
   "Journal": "Diario",
   "Map": "Mapa",

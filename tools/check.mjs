@@ -11,8 +11,9 @@
 //   4. plays the shield walls through (Iron Shore, and both pushes on the Black Shore) with a scripted player who
 //      stands in the line, braces when their horn sounds and sounds his own when they reel, and once with one who
 //      does nothing; each must end as it was recorded (held, broken, lost) and the story must go on from it;
-//   5. the languages: every string has its 中文 and Español (tools/i18n.mjs), and Act I played in both shows nothing
-//      in English that should not be (strings with no entry, and, in Chinese, Latin words left on the screen).
+//   5. the languages: every string has its 中文 and Español (tools/i18n.mjs), and Act I, the opening of every other
+//      act and the open world, played in both, show nothing in English that should not be (strings with no entry,
+//      and, in Chinese, Latin words left on the screen).
 //
 //   npm run check                 everything (a few minutes)
 //   npm run check -- --quick      each act's opening chapter, the scenes and the fight (under a minute)
@@ -150,12 +151,13 @@ try {
   if (langsOnly || (!only && !flag('walls'))) {
     const { seen } = await i18nStrings(), mine = (s) => { const e = seen.get(s); return !e || COMPLETE.includes(e.area); }; // strings of acts not yet translated are not counted
     const doneActs = ACTS.filter((a, i) => COMPLETE.includes(i === ACTS.length - 1 ? 'epilogue' : 'act' + (i + 1)));
-    const pick = langSpec === 'all' ? chaptersOf('all') : langSpec ? chaptersOf(langSpec) : quick ? ['q_morning', 'q_wings'] : doneActs.flatMap((a) => a.quests);
+    // Act I in full and the opening of every other act (and the open world); --langs=all plays every chapter
+    const pick = langSpec === 'all' ? [...chaptersOf('all'), 'q_open'] : langSpec ? chaptersOf(langSpec) : quick ? ['q_morning', 'q_wings'] : [...ACTS[0].quests, ...doneActs.slice(1).map((a) => a.quests[0]), 'q_open'];
     for (const lang of ['zh', 'es']) {
-      const ids = lang === 'es' && !langSpec && !quick ? pick.filter((_, i) => i % 3 === 0) : pick; // Spanish: every third (its words cannot be told from English on screen)
+      const ids = lang === 'es' && langSpec !== 'all' && !quick ? pick.filter((_, i) => i % 2 === 0) : pick; // Spanish: every other one (its words cannot be told from English on screen, so only strings with no entry are caught)
       console.log(`\nPlayed in ${lang === 'zh' ? '中文' : 'Español'} (${ids.length} chapters, every conversation clicked through):`);
       const r = await sweep(lang, ids, { server, browser, jobs, secs: 12 });
-      const inDone = (id) => doneActs.some((a) => a.quests.includes(id));
+      const inDone = (id) => id === 'q_open' ? COMPLETE.includes('open') : doneActs.some((a) => a.quests.includes(id));
       for (const row of r.rows.sort((a, b) => ORDER.indexOf(a.id) - ORDER.indexOf(b.id))) {
         const miss = (row.missing || []).filter(mine), latin = inDone(row.id) ? row.latin || [] : [];
         row.crash ? fail(`${row.id}: ${row.crash}`) : miss.length || latin.length ? fail(`${row.id}: ${[...miss.map((m) => JSON.stringify(m)), ...latin.map((w) => '«' + w + '» on screen')].slice(0, 6).join(' · ')}`) : ok(`${row.id}: nothing left in English`);

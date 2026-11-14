@@ -14,7 +14,7 @@ export default {
   "Slow, heavy, and between you and whoever is pressing you.": "Lento, pesado, y entre tú y quien te esté acosando.",
   "Hold the Line": "Mantener la Línea",
   "He calls the men pressing Eirik onto his own shield, and takes half their blows for a while.": "Llama a los hombres que acosan a Eirik contra su propio escudo, y recibe la mitad de sus golpes durante un rato.",
-  "Hold. HOLD!": "¡Aguantad! ¡AGUANTAD!",
+  "Hold. HOLD!": "¡Aguanten! ¡AGUANTEN!",
   "Captain of Jarl Jorund's household guard, and the finest sword in the North. Still seasick.": "Capitana de la guardia del jarl Jorund, y la mejor espada del Norte. Todavía se marea en el mar.",
   "Every cut perfect, every step placed. Very little gets past her guard.": "Cada corte perfecto, cada paso medido. Muy poco pasa su guardia.",
   "The Finest Sword": "La Mejor Espada",
@@ -69,7 +69,7 @@ export default {
   "{0} is too far from any of them.": "{0} está demasiado lejos de todos ellos.",
   "The shield splits.": "El escudo se parte.",
   "Ingrid binds the wound.": "Ingrid venda la herida.",
-  "Wait here.": "Esperad aquí.",
+  "Wait here.": "Esperen aquí.",
   "With me.": "Conmigo.",
   "{0} fights at your side. {1} and {2} call on the skills of those beside you.": "{0} lucha a tu lado. {1} y {2} llaman a las habilidades de los que están a tu lado.",
 };

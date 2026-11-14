@@ -41,7 +41,7 @@ export const AREAS = [
   ['open', ['src/story/open_proto.js', 'src/story/sea_chart.js', 'src/story/fleet.js', 'src/story/seawar.js', 'src/story/champions.js', 'src/systems/openworld.js']],
 ];
 /** Areas that must be translated in full: the check fails if one of their strings has no zh or es entry. */
-export const COMPLETE = ['ui', 'chapters', 'items', 'companions', 'act1'];
+export const COMPLETE = ['ui', 'chapters', 'items', 'companions', 'act1', 'act2', 'act3', 'act4', 'act5', 'act6', 'act7', 'epilogue', 'open'];
 /** UI files: here a string with words in it must go through tr() (or be data that is translated where it is shown). */
 const UI_FILES = ['src/ui/ui.js', 'src/ui/wallhud.js'];
 
