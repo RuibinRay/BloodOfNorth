@@ -20,7 +20,7 @@ export const A7 = {
   ulf: { hp: 700, dmg: 15, endAt: 0.2, parryBreak: 12 },                               // endAt: when he goes for the kill, and the black raven comes down
   shore: { hp: 58, dmg: 11, skill: 0.42, allyDmg: 10, n: 15, atOnce: 3, name: "One of Håkon's warriors" }, // five hundred hold the slopes: fifteen to a push
   rescue: { hp: 58, dmg: 11, skill: 0.42, allyDmg: 10, n: 4, atOnce: 3, name: "One of Håkon's warriors" },
-  wall: [{ goal: 7, approach: 7.5, reserve: [10, 50] }, { goal: 6, approach: 8, reserve: [10, 40] }], // the two pushes up from the sand, as shield walls: paces of ground to win before they break (the rest is data/shieldwall.js)
+  wall: [{ goal: 7, approach: 7.5, reserve: [10, 50], lose: -4.5, thrust: { every: [2, 3.2], warn: 0.55, reach: 2.25, dmg: 7 } }, { goal: 6, approach: 8, reserve: [10, 40] }], // the two pushes up from the sand, as shield walls: paces of ground to win before they break (the rest is data/shieldwall.js). The harbor town is the longer push, so its line breaks sooner if it is never pushed (lose) and their spears come less often and bite less (thrust): played over 32 seeds, an average player who fights wins every time (on 7 to 95 health), and one who does nothing loses every time
   kettil: { hp: 420, dmg: 15, kneelAt: 0.14, parryBreak: 14 },
   pens: { hp: 60, dmg: 11, skill: 0.4, allyDmg: 10, n: 8, atOnce: 3, name: 'A guard of the pens' }, // "many more than twenty"
   // Vigdis: guard a parry wears (the Wolf's Table's 50 broke her guard in two, and the finisher on a broken guard took 40%

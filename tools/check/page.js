@@ -14,6 +14,9 @@ const p = () => g.player;
 const at = () => { const q = g.state.quests, k = Object.keys(q).find((x) => q[x].status === 'active'); return k ? k + '.' + g.quests.defs[k].steps[q[k].step].id : 'none'; };
 const cine = async (max = 90) => { let t = 0; while (g.mode === 'cutscene' && t < max) { await d.run(1); t++; } return t; };
 const talk = async (id) => { await d.near(id, 1.4); await d.use(); await d.run(0.4); await d.talkThrough(); await d.run(0.6); };
+/** A seeded generator (mulberry32). */
+const seeded = (seed) => { let sd = seed >>> 0; return () => { sd = (sd + 0x6d2b79f5) >>> 0; let t = Math.imul(sd ^ (sd >>> 15), 1 | sd); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
+const { ShieldWall: Wall } = await import('/src/systems/shieldwall.js'); // the same module the game runs
 const drawn = () => { for (let i = 0; i < 3; i++) g.draw(); return { calls: g.drawn.calls, ktris: Math.round(g.drawn.tris / 1000) }; };
 
 /** Start one chapter the way the Acts menu does, let it run a little, and say how it stands. */
@@ -72,8 +75,7 @@ async function party() {
  *  the two ways of playing do to the line; it does not show that the fight is fair. The dice are seeded, so a run
  *  gives the same answer every time. */
 async function wall(quest, step, how = 'brace', maxSec = 300, seed = 7, linger = 6) { // linger: seconds a man who has broken through is left to fight him
-  const real = Math.random; let sd = seed >>> 0;
-  Math.random = () => { sd = (sd + 0x6d2b79f5) >>> 0; let t = Math.imul(sd ^ (sd >>> 15), 1 | sd); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  const real = Math.random; Math.random = seeded(seed); Wall.seed = seed; Wall.built = 0; // the game's dice, and the wall's own (see systems/shieldwall.js)
   try {
     try { d.jump(quest, step); } catch (e) { return { quest, step, how, crash: e.message }; }
     d.manual(true); await d.run(1); await cine();
@@ -83,7 +85,7 @@ async function wall(quest, step, how = 'brace', maxSec = 300, seed = 7, linger =
     for (; t < maxSec; t += 0.25) {
       w = W();
       if (w && !w.gone && !w.o.rest && w.mode !== 'auto' && w.phase !== 'wait') {
-        if (began < 0) { began = t; first = w.info(); }
+        if (began < 0) { if (!(w instanceof Wall)) throw new Error('the wall is not from /src/systems/shieldwall.js: its dice are not seeded'); began = t; first = w.info(); }
         last = w.info();
         if (w.over) break;
         if (!w.inLine || Math.abs(w.pt - w.L / 2) > 5) { // back to the middle of the line, a pace and a half behind the front rank
@@ -101,7 +103,7 @@ async function wall(quest, step, how = 'brace', maxSec = 300, seed = 7, linger =
     press('Mouse2', false);
     for (let i = 0; i < 16; i++) { pl.health = 100; await d.run(0.5); if (g.mode === 'cutscene') await cine(); } // what the story does next
     return { quest, step, how, began, seconds: +(t - began).toFixed(1), over: last ? last.over || (w && w.mode === 'auto' ? 'held' : false) : 'no wall', from: start, to: at(), first, last, through: seen.size, hurt: Math.round(hurt), low: Math.round(low), breath: Math.round(breath), reloads, mode: g.mode, errs: errs.slice(0, 3) };
-  } finally { Math.random = real; }
+  } finally { Math.random = real; Wall.seed = null; }
 }
 
 /** Play one shield-wall step as a person would, fighting: his health is real and nothing is done for him.
@@ -118,12 +120,11 @@ const FIGHTER = {
   good: { rt: 0.22, rtSd: 0.05, miss: 0.04, cut: 0.7, stam: 20, horn: 0.4 },
 };
 async function wallFight(quest, step, prof = 'average', maxSec = 360, seed = 11) {
-  const real = Math.random; let sd = seed >>> 0;
-  Math.random = () => { sd = (sd + 0x6d2b79f5) >>> 0; let t = Math.imul(sd ^ (sd >>> 15), 1 | sd); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
-  const P = FIGHTER[prof], inp = g.input, held = new Set();
+  const real = Math.random; Math.random = seeded(seed); Wall.seed = seed; Wall.built = 0; // the game's dice, and the wall's own (see systems/shieldwall.js)
+  const P = FIGHTER[prof], me = seeded(seed ^ 0x5bd1e995), inp = g.input, held = new Set();
   const set = (code, on) => { if (on && !held.has(code)) { inp.simulate(code, true); held.add(code); } else if (!on && held.has(code)) { inp.simulate(code, false); held.delete(code); } };
   const tap = (code) => { inp.simulate(code, true); g.frame(1 / 60, false); inp.simulate(code, false); };
-  const gauss = () => { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+  const gauss = () => { let u = 0, v = 0; while (!u) u = me(); while (!v) v = me(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
   const late = () => Math.max(0.1, P.rt + gauss() * P.rtSd);
   const pl = p(), rec = pl.receive.bind(pl); let died = 0; const onDie = () => { died++; };
   try {
@@ -133,6 +134,7 @@ async function wallFight(quest, step, prof = 'average', maxSec = 360, seed = 11)
     g.events.on('playerDied', onDie);
     for (let i = 0; i < 240 && !(W() && !W().gone && W().phase !== 'wait'); i++) { await d.run(0.25); if (g.mode === 'cutscene') await cine(); }
     const w = W(); if (!w) return { quest, step, prof, over: 'no wall' };
+    if (!(w instanceof Wall)) throw new Error('the wall is not from /src/systems/shieldwall.js: its dice are not seeded');
     const S = { quest, step, prof, from: start, cuts: 0, felled: 0, breakers: 0, blocked: 0, hit: 0, low: 100, braced: 0, unbraced: 0, horns: 0 };
     const kill = w.kill.bind(w); w.kill = (m, by) => { if (by) S.felled++; return kill(m, by); };
     const seen = new Set(); let volleyAt = 0, lastHp = pl.health, t = 0, seeWarn = -1, seeReel = -1, seeStk = -1, stkOf = null, guardFor = null, guardSeen = 0, nextCut = 0;
@@ -156,26 +158,26 @@ async function wallFight(quest, step, prof = 'average', maxSec = 360, seed = 11)
       const foe = live.map((e) => [e, Math.hypot(e.pos.x - pl.pos.x, e.pos.z - pl.pos.z)]).filter(([, dd]) => dd < 10).sort((a, b) => a[1] - b[1])[0];
       const B = g.story.a2.battle, rains = g.story.a2.parts.flatMap((q) => (q && q.war && q.war.arrows) || []); // a volley in the air: a person sees it coming
       const flying = (B.arrows || []).some((a) => a.m.visible && a.t > -0.05 && a.t < 0.6) || rains.some((a) => a.on && a.hurt && a.t >= 0 && a.T - a.t < 0.75 && Math.hypot(a.b[0] - pl.pos.x, a.b[2] - pl.pos.z) < 2.2);
-      if (flying && !volleyAt) volleyAt = Math.random() < P.miss ? 1e9 : t + late(); if (!flying) volleyAt = 0;
+      if (flying && !volleyAt) volleyAt = me() < P.miss ? 1e9 : t + late(); if (!flying) volleyAt = 0;
       const horn = w.phase === 'warn' && w.inLine; // their horn has gone: whatever else is happening, the shield goes up and he faces their line
-      if (horn) { if (seeWarn < 0) seeWarn = Math.random() < P.miss ? 1e9 : t + late(); } else seeWarn = -1;
+      if (horn) { if (seeWarn < 0) seeWarn = me() < P.miss ? 1e9 : t + late(); } else seeWarn = -1;
       if (horn && t >= seeWarn && pl.stamina >= w.cfg.braceNeed + 2 && !(foe && foe[1] < 2.6 && foe[0].cb.state === 'strike')) { pl.cam.yaw = Math.atan2(w.nx, w.nz); block = true; }
       else if (volleyAt && t >= volleyAt && pl.stamina > 4) block = true; // shield up over his head until it has passed
       else if (foe) { // one of them is through: turn on him
         const [e, dist] = foe, c = e.cb; pl.cam.yaw = Math.atan2(e.pos.x - pl.pos.x, e.pos.z - pl.pos.z);
-        if ((c.state === 'windup' || c.state === 'strike') && guardFor !== e.h.action) { guardFor = e.h.action; guardSeen = Math.random() < P.miss ? 1e9 : t + late(); }
+        if ((c.state === 'windup' || c.state === 'strike') && guardFor !== e.h.action) { guardFor = e.h.action; guardSeen = me() < P.miss ? 1e9 : t + late(); }
         if ((c.state === 'windup' || c.state === 'strike') && t >= guardSeen) block = true;
         const open = ['recover', 'stagger', 'harried'].includes(c.state) || c.openT > 0;
-        if (!block) { if (dist > 2.1) keys.KeyW = true; else if ((open || Math.random() < P.cut * dt * 4) && pl.stamina > P.stam * 0.6 && t >= nextCut) { cut = true; nextCut = t + 0.45; } }
+        if (!block) { if (dist > 2.1) keys.KeyW = true; else if ((open || me() < P.cut * dt * 4) && pl.stamina > P.stam * 0.6 && t >= nextCut) { cut = true; nextCut = t + 0.45; } }
       } else { // in the line
         const o = w.offAt(w.N / 2) - 1.4, tx = w.ax + w.ux * (w.L / 2) + w.nx * o, tz = w.az + w.uz * (w.L / 2) + w.nz * o, dd = Math.hypot(tx - pl.pos.x, tz - pl.pos.z);
         if (!w.inLine || dd > 3) { pl.cam.yaw = Math.atan2(tx - pl.pos.x, tz - pl.pos.z); keys.KeyW = dd > 0.8; }
         else {
           pl.cam.yaw = Math.atan2(w.nx, w.nz);
-          if (w.phase === 'reel') { if (seeReel < 0) seeReel = Math.random() < P.miss ? 1e9 : t + late() + P.horn; if (t >= seeReel && w.pushCd <= 0) { tap('KeyG'); S.horns++; seeReel = 1e9; } } else seeReel = -1;
-          if (w.stk && stkOf !== w.stk) { stkOf = w.stk; seeStk = Math.random() < P.miss ? 1e9 : t + late(); } if (!w.stk) stkOf = null;
+          if (w.phase === 'reel') { if (seeReel < 0) seeReel = me() < P.miss ? 1e9 : t + late() + P.horn; if (t >= seeReel && w.pushCd <= 0) { tap('KeyG'); S.horns++; seeReel = 1e9; } } else seeReel = -1;
+          if (w.stk && stkOf !== w.stk) { stkOf = w.stk; seeStk = me() < P.miss ? 1e9 : t + late(); } if (!w.stk) stkOf = null;
           if (w.stk && t >= seeStk && pl.stamina > 6) block = true;
-          if (!block && w.phase === 'grind' && pl.stamina > P.stam && t >= nextCut && Math.random() < P.cut * dt * 3) { cut = true; nextCut = t + 0.5; }
+          if (!block && w.phase === 'grind' && pl.stamina > P.stam && t >= nextCut && me() < P.cut * dt * 3) { cut = true; nextCut = t + 0.5; }
         }
       }
       for (const k in keys) set(k, keys[k]);
@@ -194,7 +196,7 @@ async function wallFight(quest, step, prof = 'average', maxSec = 360, seed = 11)
     for (let i = 0; i < 12 && S.over !== 'died'; i++) { await d.run(0.5); if (g.mode === 'cutscene') await cine(); }
     S.to = at(); S.reloads = reloads; S.errs = errs.slice(0, 3);
     return S;
-  } finally { Math.random = real; pl.receive = rec; delete pl.receiveArrow; g.events.off('playerDied', onDie); for (const c of [...held]) g.input.simulate(c, false); }
+  } finally { Math.random = real; Wall.seed = null; pl.receive = rec; delete pl.receiveArrow; g.events.off('playerDied', onDie); for (const c of [...held]) g.input.simulate(c, false); }
 }
 
 /** Stand people in a row three metres in front of Eirik, facing back at him, to look at what they wear

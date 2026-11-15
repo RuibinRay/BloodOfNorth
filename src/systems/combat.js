@@ -303,7 +303,7 @@ export class Combat {
   }
   enemyStrike(e) {
     const g = this.g, p = g.player, c = e.cb;
-    if (e.dead || c.state !== 'strike') return;
+    if (e.dead || !c || c.state !== 'strike') return; // !c: he was taken out of the fight while his blow was in the air (a shield wall broke and he runs with the rest)
     g.audio.play('whoosh', { vol: 0.6 });
     const mv = c.move, dmg = (mv ? mv.dmg : c.dmg) + (c.rage ? 4 : 0);
     if (mv && mv.taunt) { // words, not a blow: they land on a man whose guard is down

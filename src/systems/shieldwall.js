@@ -14,10 +14,19 @@ import { STORM } from '../entities/player.js';
 import { WALL, PAINT } from '../data/shieldwall.js';
 import { WallHUD } from '../ui/wallhud.js';
 
-const rnd = (a, b) => a + Math.random() * (b - a), pick = (a) => a[(Math.random() * a.length) | 0];
+// The wall rolls its own dice: who falls, which sector holds a rush, when their horn sounds, who comes through. They are
+// apart from Math.random, which every blink, spark and sound in the game also draws from, so a change to how a face
+// blinks does not change how a battle goes. Only how the men move (their strokes, the noise) is left on Math.random.
+const look = (a, b) => a + Math.random() * (b - a);
+/** A small seeded generator (mulberry32): the same seed gives the same battle. */
+const dice = (seed) => { let s = seed >>> 0; return () => { s = (s + 0x6d2b79f5) >>> 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
 const toward = (v, to, step) => (Math.abs(to - v) <= step ? to : v + Math.sign(to - v) * step);
 
 export class ShieldWall {
+  /** For tests (tools/check/page.js): when set, the walls roll their dice from this seed (the first wall built from it,
+   *  the next from it plus one, and so on), and a battle plays the same way whatever else in the game draws random numbers. */
+  static seed = null;
+  static built = 0;
   /**
    * o.a, o.b     the ends of our front rank ([x, z]) before any ground is won or lost
    * o.face       the way our men face (yaw); their line stands on that side of ours
@@ -34,6 +43,7 @@ export class ShieldWall {
    */
   constructor(game, o) {
     const g = (this.g = game), C = (this.cfg = { ...WALL, ...(o.cfg || {}) });
+    this.dice = dice(ShieldWall.seed != null ? ShieldWall.seed + ShieldWall.built++ : Math.random() * 4294967296);
     this.o = o; this.mode = o.mode || 'hold';
     if (this.mode === 'push') C.cap = Math.min(C.cap, C.goal + 0.6); // a push ends where their line breaks
     const [ax, az] = o.a, [bx, bz] = o.b;
@@ -45,24 +55,27 @@ export class ShieldWall {
     const S = this.S, arr = (v) => new Array(S).fill(v);
     this.off = arr(0); this.open = arr(false); this.reeling = arr(false); this.anchor = arr(false); this.cnt = [arr(0), arr(0)];
     this.phase = o.wait ? 'wait' : this.mode === 'auto' ? 'grind' : 'advance'; this.approach = this.phase === 'grind' ? 0 : C.approach; this.draw = 0; this.drawTo = 0; this.heave = [0, 0];
-    this.T = 0; this.t = rnd(2, 4); this.attT = 1; this.trT = rnd(...C.trickle); this.thrT = 1.2; this.pushCd = 0; this.cryAt = -9; this.cryT = -9; this.sfxT = -9; this.cheerT = 0;
+    this.T = 0; this.t = this.rnd(2, 4); this.attT = 1; this.trT = this.rnd(...C.trickle); this.thrT = 1.2; this.pushCd = 0; this.cryAt = -9; this.cryT = -9; this.sfxT = -9; this.cheerT = 0;
     this.surges = 0; this.pushes = 0; this.dead = [0, 0]; this.brk = []; this.stk = null; this.over = null; this.final = false; this.autoFlip = false;
     this.drift = 0; this.driftTo = 0; this.pt = 0; this.pd = -99; this.ps = 0; this.inLine = false;
     // the men
     this.R = Ranks.get(g.scene); this.figs = []; this.paint = (o.paint || ['ravenhold', 'wolves']).map((k) => PAINT[k]);
     this.rows = [0, 1].map((s) => Array.from({ length: C.ranks[s] }, () => new Array(this.N).fill(null)));
     this.hero = new Array(this.N).fill(null);
-    (o.heroes || []).forEach((n, k, all) => { this.hero[all.length > 1 ? Math.round((k / (all.length - 1)) * (this.N - 1)) : this.N >> 1] = n; n.wallT = rnd(1, 4); });
+    (o.heroes || []).forEach((n, k, all) => { this.hero[all.length > 1 ? Math.round((k / (all.length - 1)) * (this.N - 1)) : this.N >> 1] = n; n.wallT = this.rnd(1, 4); });
     if (this.mode !== 'auto') for (const n of o.heroes || []) if (n.talk) { n.wallTalk = n.talk; n.talk = null; } // nobody in the front rank stops to talk
     for (let s = 0; s < 2; s++) for (let r = 0; r < C.ranks[s]; r++) for (let f = 0; f < this.N; f++) {
-      if ((s === 0 && r === 0 && this.hero[f]) || (r > 0 && o.thin && Math.random() < o.thin[s])) continue;
+      if ((s === 0 && r === 0 && this.hero[f]) || (r > 0 && o.thin && this.dice() < o.thin[s])) continue;
       const m = this.add(s, r, f, true);
-      if (m && s === 0 && o.arrive) { m.st = 'walk'; [m.x, m.z] = o.arrive.from(f, this.N); m.v = o.arrive.speed * rnd(0.88, 1.12); }
+      if (m && s === 0 && o.arrive) { m.st = 'walk'; [m.x, m.z] = o.arrive.from(f, this.N); m.v = o.arrive.speed * this.rnd(0.88, 1.12); }
     }
     this.reserve = [...C.reserve]; this.count(); this.start = [this.total(0), this.total(1)];
     this.hud = new WallHUD(g); if (this.mode !== 'auto' && !o.wait) this.hud.show(S);
     this.subs = [g.events.on('playerSwing', (n, heavy, mod) => this.onSwing(heavy, mod)), g.events.on('thunder', () => this.onThunder()), g.events.on('stormCry', () => this.onCry())];
   }
+
+  rnd(a, b) { return a + this.dice() * (b - a); }
+  pick(a) { return a[(this.dice() * a.length) | 0]; }
 
   // ---- the shape of the line -------------------------------------------------------------------------
   /** How far the front has moved at a file: sectors are joined smoothly, so the line bows and does not step. */
@@ -77,15 +90,15 @@ export class ShieldWall {
   }
   /** Where a side's reserves come up from. */
   rear(side, f) {
-    if (side && this.o.from && this.o.from.length) { const p = pick(this.o.from); return [p[0] + rnd(-2, 2), p[1] + rnd(-2, 2)]; }
+    if (side && this.o.from && this.o.from.length) { const p = this.pick(this.o.from); return [p[0] + this.rnd(-2, 2), p[1] + this.rnd(-2, 2)]; }
     const m = this.slot(side, this.rows[side].length - 1, f, {}), k = side ? 18 : -12;
-    return [m.tx + this.nx * k + this.ux * rnd(-2, 2), m.tz + this.nz * k + this.uz * rnd(-2, 2)];
+    return [m.tx + this.nx * k + this.ux * this.rnd(-2, 2), m.tz + this.nz * k + this.uz * this.rnd(-2, 2)];
   }
   add(side, rank, file, placed) {
-    const P = this.paint[side], i = this.R.take(pick(P.tunic), pick(P.cap), pick(P.design));
+    const P = this.paint[side], i = this.R.take(this.pick(P.tunic), this.pick(P.cap), this.pick(P.design));
     if (i < 0) return null;
-    const m = { i, side, rank, file, st: 'in', t: 0, hp: this.cfg.cut.hp, kind: Math.random() < (side ? 0.4 : 0.2) ? 1 : 0, ph: Math.random() * 6.28, jx: rnd(-0.12, 0.12), jz: rnd(-0.1, 0.1),
-      armT: -1, armD: 0.6, next: rnd(0.5, 5.5), hit: 0, aim: 0, aimT: 0, yaw: this.yaw[side], sc: rnd(0.95, 1.06), x: 0, y: 0, z: 0, gy: null };
+    const m = { i, side, rank, file, st: 'in', t: 0, hp: this.cfg.cut.hp, kind: this.dice() < (side ? 0.4 : 0.2) ? 1 : 0, ph: this.dice() * 6.28, jx: this.rnd(-0.12, 0.12), jz: this.rnd(-0.1, 0.1),
+      armT: -1, armD: 0.6, next: this.rnd(0.5, 5.5), hit: 0, aim: 0, aimT: 0, yaw: this.yaw[side], sc: this.rnd(0.95, 1.06), x: 0, y: 0, z: 0, gy: null };
     this.rows[side][rank][file] = m; this.figs.push(m); this.slot(side, rank, file, m);
     if (placed) { m.x = m.tx; m.z = m.tz; }
     return m;
@@ -119,7 +132,7 @@ export class ShieldWall {
   // ---- men falling, and the ranks closing up ---------------------------------------------------------------
   /** A man of that side falls in that sector: the front rank first. */
   fell(side, s, by = false) {
-    const f0 = Math.floor((s * this.N) / this.S), n = Math.max(1, Math.floor(((s + 1) * this.N) / this.S) - f0), k0 = (Math.random() * n) | 0;
+    const f0 = Math.floor((s * this.N) / this.S), n = Math.max(1, Math.floor(((s + 1) * this.N) / this.S) - f0), k0 = (this.dice() * n) | 0;
     for (const row of this.rows[side]) for (let k = 0; k < n; k++) { const m = row[f0 + ((k + k0) % n)]; if (m && m.st === 'in') { this.kill(m, by); return m; } }
     return null;
   }
@@ -127,7 +140,7 @@ export class ShieldWall {
     const g = this.g, p = g.player;
     if (m.st !== 'in' && m.st !== 'walk') return;
     if (this.rows[m.side][m.rank][m.file] === m) this.rows[m.side][m.rank][m.file] = null;
-    m.st = 'fall'; m.t = 0; m.dir = Math.random() < 0.8 ? -1 : 1; m.armT = -1; this.dead[m.side]++;
+    m.st = 'fall'; m.t = 0; m.dir = this.dice() < 0.8 ? -1 : 1; m.armT = -1; this.dead[m.side]++;
     const d = Math.hypot(m.x - p.pos.x, m.z - p.pos.z);
     if (d < 26) g.fx.burst('blood', m.x, m.y + 1.2, m.z, by ? 9 : 4);
     if (d < 16 && this.T - this.cryT > 0.4) { this.cryT = this.T; g.audio.play('hurt', { vol: clamp(0.5 - d / 40, 0.08, 0.45) }); }
@@ -147,7 +160,7 @@ export class ShieldWall {
   blast(x, z, r, dmg) { let n = 0; for (const m of [...this.figs]) if (m.side === 1 && (m.st === 'in' || m.st === 'walk') && Math.hypot(m.x - x, m.z - z) < r) { m.st = 'in'; this.wound(m, dmg, true); n++; } return n; }
   rout(side) {
     const back = this.yaw[side] + Math.PI;
-    for (const m of this.figs) if (m.side === side && (m.st === 'in' || m.st === 'walk')) { m.st = 'rout'; m.t = 0; m.yaw = back + rnd(-0.5, 0.5); m.v = rnd(4.2, 5.6); m.life = rnd(5, 8); }
+    for (const m of this.figs) if (m.side === side && (m.st === 'in' || m.st === 'walk')) { m.st = 'rout'; m.t = 0; m.yaw = back + this.rnd(-0.5, 0.5); m.v = this.rnd(4.2, 5.6); m.life = this.rnd(5, 8); }
     this.rows[side].forEach((r) => r.fill(null)); this.reserve[side] = 0;
   }
 
@@ -175,7 +188,7 @@ export class ShieldWall {
   /** The two lines meet for the first time. */
   crash() {
     const g = this.g, C = this.cfg;
-    this.phase = 'grind'; this.t = rnd(...C.grind); this.approach = 0; this.heave[0] = this.heave[1] = 1; this.din(1);
+    this.phase = 'grind'; this.t = this.rnd(...C.grind); this.approach = 0; this.heave[0] = this.heave[1] = 1; this.din(1);
     for (let s = 0; s < this.S; s += 2) { this.fell(0, s); this.fell(1, s + 1 < this.S ? s + 1 : s); }
     for (const n of this.hero) if (n && n.visible && !n.dead && !n.h.busy) n.h.play('blockhit', 0.4);
     if (this.inLine && !(g.player.blocking || g.input.held('block'))) g.player.h.play('stagger', 0.4);
@@ -196,8 +209,8 @@ export class ShieldWall {
     for (let s = 0; s < this.S; s++) {
       const o = this.cnt[0][s], e = Math.max(1, this.cnt[1][s]), near = braced && Math.abs(this.pt - (s + 0.5) * W) <= C.braceR + W / 2;
       const chance = this.open[s] ? 0 : near ? 1 : this.anchor[s] ? 0.92 : clamp(C.stand + 0.5 * ((o * C.edge) / e - 1) + (braced ? 0.12 : 0), 0.1, 0.85);
-      if (Math.random() < chance) { held++; this.reeling[s] = true; this.fell(1, s); }
-      else { this.reeling[s] = false; this.off[s] -= C.give * rnd(0.8, 1.2); this.fell(0, s); if (Math.random() < 0.5) this.fell(0, s); gave.push(s); }
+      if (this.dice() < chance) { held++; this.reeling[s] = true; this.fell(1, s); }
+      else { this.reeling[s] = false; this.off[s] -= C.give * this.rnd(0.8, 1.2); this.fell(0, s); if (this.dice() < 0.5) this.fell(0, s); gave.push(s); }
     }
     for (const n of this.hero) if (n && n.visible && !n.dead && !n.h.busy) n.h.play('blockhit', 0.4);
     if (this.inLine) {
@@ -207,7 +220,7 @@ export class ShieldWall {
     }
     this.din(1);
     if (held * 2 >= this.S) { this.phase = 'reel'; this.t = C.reel; g.ui.toast(gave.length ? `The line gives ${this.where(gave[0])}, but they reel` : 'The line holds. They reel'); }
-    else { this.phase = 'grind'; this.t = rnd(...C.grind); this.reeling.fill(false); g.ui.toast(`The line gives ground ${this.where(gave[(Math.random() * gave.length) | 0])}`); }
+    else { this.phase = 'grind'; this.t = this.rnd(...C.grind); this.reeling.fill(false); g.ui.toast(`The line gives ground ${this.where(gave[(this.dice() * gave.length) | 0])}`); }
     if (this.mode === 'hold' && this.surges >= C.surges) { this.final = true; if (this.phase === 'grind') this.rest(); }
   }
   /** Mode 'hold': the last rush has been stood through. */
@@ -215,7 +228,7 @@ export class ShieldWall {
   rhythm(dt) {
     const C = this.cfg;
     if (this.mode === 'auto') { // it goes on by itself: a heave now and then, and ground won or lost if it was told to
-      if ((this.t -= dt) <= 0) { this.t = rnd(3, 6); this.heave[Math.random() < 0.5 ? 0 : 1] = 0.8; if (Math.abs(this.pd) < 40) this.din(0.35); }
+      if ((this.t -= dt) <= 0) { this.t = this.rnd(3, 6); this.heave[this.dice() < 0.5 ? 0 : 1] = 0.8; if (Math.abs(this.pd) < 40) this.din(0.35); }
       if (this.drift) for (let s = 0; s < this.S; s++) this.off[s] = toward(this.off[s], this.driftTo, this.drift * dt);
       return;
     }
@@ -223,15 +236,15 @@ export class ShieldWall {
     if (this.t > 0) return;
     if (this.phase === 'grind') this.sound();
     else if (this.phase === 'warn') this.rush();
-    else if (this.phase === 'reel') { this.phase = 'grind'; this.t = rnd(...C.grind); this.reeling.fill(false); this.rest(); }
+    else if (this.phase === 'reel') { this.phase = 'grind'; this.t = this.rnd(...C.grind); this.reeling.fill(false); this.rest(); }
   }
   /** Men fall along the line all the time; the stronger side creeps forward; a sector is pulled level with its neighbours. */
   wear(dt) {
     const C = this.cfg, auto = this.mode === 'auto';
     if ((this.attT -= dt) <= 0) {
-      this.attT = C.attrition * rnd(0.7, 1.3) * (auto ? 2.6 : 1) * (this.phase === 'warn' ? 2 : 1);
-      const s = (Math.random() * this.S) | 0, o = this.cnt[0][s], e = this.cnt[1][s];
-      const ours = auto ? (this.autoFlip = !this.autoFlip) : Math.random() < e / (e + o * this.edge(s) + 1e-3);
+      this.attT = C.attrition * this.rnd(0.7, 1.3) * (auto ? 2.6 : 1) * (this.phase === 'warn' ? 2 : 1);
+      const s = (this.dice() * this.S) | 0, o = this.cnt[0][s], e = this.cnt[1][s];
+      const ours = auto ? (this.autoFlip = !this.autoFlip) : this.dice() < e / (e + o * this.edge(s) + 1e-3);
       if (!auto || this.total(ours ? 0 : 1) > this.start[ours ? 0 : 1] * C.autoFloor[ours ? 0 : 1]) this.fell(ours ? 0 : 1, s);
     }
     for (let s = 0; s < this.S; s++) {
@@ -250,13 +263,13 @@ export class ShieldWall {
       if (this.open[s]) continue;
       if (Math.max(this.off[Math.max(0, s - 1)], this.off[Math.min(this.S - 1, s + 1)]) - this.off[s] > C.breach.at) this.through(s, C.breach.men, true);
     }
-    if ((this.trT -= dt) <= 0) { this.trT = rnd(...C.trickle); if (this.brk.length < Math.min(2, C.atOnce)) this.through(clamp(this.ps + ((Math.random() * 3) | 0) - 1, 0, this.S - 1), 1, false); }
+    if ((this.trT -= dt) <= 0) { this.trT = this.rnd(...C.trickle); if (this.brk.length < Math.min(2, C.atOnce)) this.through(clamp(this.ps + ((this.dice() * 3) | 0) - 1, 0, this.S - 1), 1, false); }
   }
   /** Men of theirs step out of their front rank and through ours. */
   through(s, n, breach) {
     const g = this.g; let got = 0;
     for (let k = 0; k < n && this.brk.length < this.cfg.atOnce; k++) {
-      const f = clamp(Math.round(((s + 0.5) * this.N) / this.S + rnd(-2, 2)), 0, this.N - 1), m = this.slot(1, 0, f, {}), e = this.o.spawn(m.tx - this.nx * 0.3, m.tz - this.nz * 0.3);
+      const f = clamp(Math.round(((s + 0.5) * this.N) / this.S + this.rnd(-2, 2)), 0, this.N - 1), m = this.slot(1, 0, f, {}), e = this.o.spawn(m.tx - this.nx * 0.3, m.tz - this.nz * 0.3);
       if (!e) break;
       e.yaw = this.yaw[1]; e.root.rotation.y = e.yaw; this.o.mine(e); this.brk.push({ e, s }); got++;
       const was = this.rows[1][0][f]; if (was && was.st === 'in') { this.rows[1][0][f] = null; was.st = 'gone'; this.fill(1, f); } // he was a man of their rank: one fewer in it
@@ -271,7 +284,7 @@ export class ShieldWall {
       const m = this.stk.m;
       if (m.st !== 'in') { this.stk = null; return; }
       if ((this.stk.t -= dt) > 0) return;
-      this.stk = null; this.thrT = rnd(...C.every); g.audio.play('whoosh', { vol: 0.5 });
+      this.stk = null; this.thrT = this.rnd(...C.every); g.audio.play('whoosh', { vol: 0.5 });
       if (Math.hypot(p.pos.x - m.x, p.pos.z - m.z) > C.reach + 0.5 || p.frozen) return;
       const res = p.receive({ pos: new THREE.Vector3(m.x, m.y, m.z) }, C.dmg);
       if (res === 'parried') this.wound(m, 1, true); else if (res === 'warded') this.wound(m, 9, true);
@@ -310,7 +323,7 @@ export class ShieldWall {
     near.sort((a, b) => a.d - b.d);
     let hits = 0; const max = W.sweep[heavy ? 1 : 0] + (mod.sweep || 0);
     for (const { m } of near) {
-      if (mod.pierce || Math.random() < (heavy ? C.heavy : C.light)) { this.wound(m, heavy ? 2 : 1, true); g.hitStop = Math.max(g.hitStop || 0, heavy ? 0.07 : 0.04); g.audio.play('arrowHit'); p.cam.shake = Math.max(p.cam.shake, heavy ? 0.2 : 0.1); }
+      if (mod.pierce || this.dice() < (heavy ? C.heavy : C.light)) { this.wound(m, heavy ? 2 : 1, true); g.hitStop = Math.max(g.hitStop || 0, heavy ? 0.07 : 0.04); g.audio.play('arrowHit'); p.cam.shake = Math.max(p.cam.shake, heavy ? 0.2 : 0.1); }
       else { m.hit = 0.16; g.audio.play(W.real ? 'steel' : 'clack', { vol: 0.7 }); g.fx.burst(W.real ? 'spark' : 'chips', m.x + Math.sin(m.yaw) * 0.5, m.y + 1.15, m.z + Math.cos(m.yaw) * 0.5, 6); }
       if (++hits >= max) break;
     }
@@ -323,9 +336,9 @@ export class ShieldWall {
     const g = this.g, C = this.cfg, p = g.player;
     if (this.pushCd > 0 || this.phase === 'advance' || this.phase === 'wait' || this.pd < -C.hearR) return;
     this.pushCd = C.pushCd; g.audio.play('horn', { freq: 147, vol: 0.6 });
-    if (this.phase !== 'reel') { for (let k = 0; k < C.early; k++) this.fell(0, (Math.random() * this.S) | 0); this.heave[0] = 0.6; g.ui.toast('Too soon. Their shields were set'); return; }
+    if (this.phase !== 'reel') { for (let k = 0; k < C.early; k++) this.fell(0, (this.dice() * this.S) | 0); this.heave[0] = 0.6; g.ui.toast('Too soon. Their shields were set'); return; }
     for (let s = 0; s < this.S; s++) { this.off[s] = Math.max(this.off[s], Math.min(C.cap, this.off[s] + C.gain * (this.open[s] ? 0.3 : this.reeling[s] ? 1 : 0.8))); this.fell(1, s); }
-    this.fell(1, this.ps); this.heave[0] = 1; this.pushes++; this.phase = 'grind'; this.t = rnd(...C.grind); this.reeling.fill(false);
+    this.fell(1, this.ps); this.heave[0] = 1; this.pushes++; this.phase = 'grind'; this.t = this.rnd(...C.grind); this.reeling.fill(false);
     g.audio.play('shout'); g.after(0.15, () => g.audio.play('shout', { vol: 0.7 })); this.din(0.8); g.ui.toast('The line goes forward');
     for (const n of this.hero) if (n && n.visible && !n.dead && !n.h.busy) n.h.play('shove', 0.5);
     this.rest();
@@ -400,7 +413,7 @@ export class ShieldWall {
       n.yaw = dampAngle(n.yaw, this.yaw[0], 6, dt); n.loop = 'guard';
       if (!live || n.h.busy) continue;
       if (this.cheerT > 0) n.h.play('cheer', 1.0);
-      else if (this.phase !== 'advance' && this.phase !== 'wait' && !this.over && !this.o.rest && (n.wallT = (n.wallT ?? 2) - dt) <= 0) { n.wallT = rnd(2.2, 5.5); n.h.play(n.h.held('R') === 'spear' ? 'thrust' : 'atk' + (1 + ((Math.random() * 3) | 0)), 0.62); }
+      else if (this.phase !== 'advance' && this.phase !== 'wait' && !this.over && !this.o.rest && (n.wallT = (n.wallT ?? 2) - dt) <= 0) { n.wallT = look(2.2, 5.5); n.h.play(n.h.held('R') === 'spear' ? 'thrust' : 'atk' + (1 + ((Math.random() * 3) | 0)), 0.62); }
     }
   }
   /** Rank and file: each man to his place, shoving, striking, recoiling, falling, lying, running. */
@@ -426,7 +439,7 @@ export class ShieldWall {
           arm = k < 0.45 ? -0.55 * (k / 0.45) : k < 0.6 ? -0.55 + 1.55 * ((k - 0.45) / 0.15) : Math.max(0, 1 - (k - 0.6) / 0.4);
           if (k > 0.45 && k < 0.8) pitch += 0.12; if (k >= 1) m.armT = -1;
         } else if (front && this.phase !== 'advance' && this.phase !== 'wait' && !this.over && !this.o.rest && (m.next -= dt) <= 0) {
-          m.next = rnd(1.6, 5.5); m.armT = 0; m.armD = rnd(0.5, 0.75);
+          m.next = look(1.6, 5.5); m.armT = 0; m.armD = look(0.5, 0.75);
           const d = Math.hypot(m.x - p.x, m.z - p.z); if (d < 18 && T - this.sfxT > 0.3) { this.sfxT = T; g.audio.play(Math.random() < 0.6 ? 'clack' : 'steel', { vol: clamp(0.4 - d / 50, 0.05, 0.35) }); }
         }
         if (m.hit > 0) { m.hit -= dt; const k = Math.min(1, m.hit / 0.3); pitch -= 0.3 * k; fwd = -0.18 * k; }
