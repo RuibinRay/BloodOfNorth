@@ -9,7 +9,7 @@ import { heightAt } from './terrain.js';
 import * as P from './props.js';
 import { MAIN, place } from './layout.js';
 import { house, palisade, deck, ruin, stakes, pole, gate } from './realm_props.js';
-import { rng } from '../core/util.js';
+import { rng, noise2 } from '../core/util.js';
 
 /** A switchable part of a place. build(ctx, w, objs) adds geometry to ctx.b, colliders through ctx and w, and whole
  *  objects (a ship) to objs; whatever it returns is kept on the stage. */
@@ -52,7 +52,26 @@ export function table(ctx, x, z, ry, len = 6) {
 /** Far mountains: the land goes on beyond what can be walked. */
 export function range(b, pts, seed) {
   const r = rng(seed);
-  for (const [x, z, h, w] of pts) b.add(tint(at(cone(w, h, 7), x, h / 2 - 14, z, 0, r() * 3, 0, 1, 1, 0.8 + r() * 0.5), [0x5c6a58, 0x66705e, 0x545f56][(r() * 3) | 0], 0.2, (x + z) | 0), M.vcPlain);
+  for (const [x, z, h, w] of pts) b.add(at(peakGeo(w, h, r), x, -14, z, 0, r() * 3, 0, 1, 1, 0.8 + r() * 0.5), M.vcPlain);
+}
+/** One far mountain: a cone broken up by ridged noise into shoulders, ridges and gullies, its foot on y = 0, coloured
+ *  by height: green-grey slopes, bare rock, snow over the top quarter (the line wavers), darker in the gullies. */
+function peakGeo(w, h, r) {
+  const g = new THREE.ConeGeometry(w, h, 16, 9, true), p = g.attributes.position, col = new Float32Array(p.count * 3), o = r() * 100;
+  g.translate(0, h / 2, 0);
+  const lo = [0.36, 0.42, 0.34], rock = [0.42, 0.42, 0.44], snow = [0.9, 0.92, 0.96];
+  for (let i = 0; i < p.count; i++) {
+    const vx = p.getX(i), vy = p.getY(i), vz = p.getZ(i), t = vy / h, a = Math.atan2(vz, vx);
+    if (t > 0.999) continue; // the summit stays where it is
+    const ridge = 1 - Math.abs(noise2(Math.cos(a) * 2.2 + o, Math.sin(a) * 2.2 + t * 2.5)), cut = ridge * ridge;      // ridges run up the slopes
+    const k = 1 + (cut - 0.45) * 0.42 * Math.sin(Math.PI * Math.min(1, t * 1.15)) + noise2(a * 3 + o, t * 6) * 0.08; // in and out, most at the shoulders
+    p.setXYZ(i, vx * k, vy * (1 + (noise2(a * 1.7 + o, 4.2) * 0.08) * t), vz * k);
+    const sn = Math.min(1, Math.max(0, (t - 0.72 + noise2(a * 4 + o, 1.3) * 0.08 - (1 - cut) * 0.06) / 0.07));
+    const rk = Math.min(1, Math.max(0, (t - 0.32) / 0.25)), shade = 0.82 + cut * 0.26;
+    for (let c = 0; c < 3; c++) col[i * 3 + c] = (lo[c] + (rock[c] - lo[c]) * rk + (snow[c] - (lo[c] + (rock[c] - lo[c]) * rk)) * sn) * shade;
+  }
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3)); g.computeVertexNormals();
+  return g;
 }
 
 /** Where Act I's last chapters happen in Bjornstead (offsets from the village's centre, as B() takes them). Used by

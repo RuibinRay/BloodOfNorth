@@ -10,6 +10,18 @@ Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, th
 (forty-one: Ravenhold twelve years on, Leif's house, the old birch), each as the story tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
+**The islands and coasts filled in.** The great islands and the mainland coasts were bare grass slopes. Now:
+- **Ground cover everywhere**: the valley's painted tufts (grass, grass in seed, flowers, fern, heather, reeds) on every
+  island of the chart, every great island and every stretch of mainland, a little thinner than the valley's and chosen
+  by place the same way (reeds by the water, more on the marsh island, heather up the hills, ferns where the island's
+  woods are, flowers in patches of open grass). They keep off roads, yards and buildings. There is far more land out
+  there than in the valley (about 210,000 tufts at Medium), so each piece is built only the first time the camera
+  comes within a few hundred metres of it, a few milliseconds at a time between frames: the start of the game is no
+  slower, and nothing stutters as an island comes near.
+- **The far mountains** behind the mainland towns were grey seven-sided cones. Each is now broken up by ridged noise
+  into shoulders, ridges and gullies, coloured by height: green-grey slopes, bare rock, and snow over the top quarter
+  with a line that wavers.
+
 **The map, and a minimap.**
 - **The map screen (M)** can be zoomed (the wheel, or + and −) and moved (drag), with "Find me" and "The whole map";
   a click that is not a drag still sets or clears a waypoint. Zoomed in, the part shown is painted again at the size it

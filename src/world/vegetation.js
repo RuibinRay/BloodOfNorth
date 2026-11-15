@@ -354,9 +354,64 @@ export function scatterVegetation(scene, world, quality) {
   instanced(birch, birchNearMat, ib, birchOpt);
   instanced(rock, M.vc, ir, { hue: 0.05 });
   ir.forEach((r) => { if (r.big) world.addCircle(r.x, r.z, 0.78 * r.sc, 1.2 * r.sc); });
+
+  // The islands' and the coasts' ground cover (0.30): the painted tufts the valley has, a third as thick, on every
+  // island of the chart, every great island and every stretch of mainland. There is far more land out there than in
+  // the valley, so each piece is built only the first time the camera comes within a few hundred metres of it, and
+  // a few milliseconds at a time in the gaps between frames, each with its own dice (nothing above moves).
+  const patches = [];
+  if (plantsPic) {
+    ISLES.forEach((il, i) => patches.push({ x: il.x, z: il.z, half: il.r, seed: 7000 + i, clear: (x, z) => clearOf(x, z), wood: il.bare ? 9 : 0.1 }));
+    GREAT.forEach((il, i) => patches.push({ x: il.x, z: il.z, half: il.half, seed: 7100 + i, clear: (x, z) => realmClear(il, x, z), wood: il.forest > 0.4 ? -0.25 : 0.1, marsh: !!il.marsh }));
+    MAIN.forEach((il, i) => patches.push({ x: il.x, z: il.z, half: il.half, seed: 7200 + i, clear: (x, z) => realmClear(il, x, z), wood: 0.1 }));
+  }
+  const PER_M2 = quality === 'high' ? 0.18 : quality === 'low' ? 0.06 : 0.13;
+  let growing = null;
+  /** Which plant grows at (x, z), h up, on an island: reeds by the water, heather up the hills, ferns where the
+   *  island's woods are, flowers in patches of open grass, and grass (some in seed). */
+  const isleKind = (x, z, h, P) => {
+    const r = hash(x, z);
+    if (h < (P.marsh ? 1.2 : 1.5) && r < (P.marsh ? 0.6 : 0.45)) return 5;
+    if (noise2(x * 0.02 + 3, z * 0.02) > P.wood + 0.1 && r < 0.3) return 3;
+    if (h > 11 && r < 0.28 * Math.min(1, (h - 11) / 10)) return 4;
+    if (r < (noise2(x * 0.045 + 11, z * 0.045 - 4) > 0.22 ? 0.45 : 0.06)) return 2;
+    return hash(z, x) < 0.35 ? 1 : 0;
+  };
+  /** Scatter one piece's tufts for up to `ms` milliseconds; when all are placed, put them in cells and in the scene. */
+  const grow = (P, ms) => {
+    const t0 = performance.now();
+    if (!P.g) { const n = Math.round(4 * P.half * P.half * PER_M2); P.g = { R: rng(P.seed), n, i: 0, k: 0, m: new Float32Array(n * 16), c: new Float32Array(n * 3), cell: new Float32Array(n * 2), xz: new Float32Array(n * 2) }; }
+    const G = P.g;
+    for (; G.i < G.n && performance.now() - t0 < ms; G.i++) {
+      const x = P.x + (G.R() - 0.5) * 2 * P.half, z = P.z + (G.R() - 0.5) * 2 * P.half, ry = G.R() * 6.28, sc = 0.95 + G.R() * 0.85, k = 0.8 + G.R() * 0.4, kg = G.R();
+      const h = heightAt(x, z);
+      if (h < 0.35 || h > 40 || slopeAt(x, z) > 0.75 || !P.clear(x, z) || world.pointInBox(x, z, 0.3)) continue;
+      const kind = isleKind(x, z, h, P), [pw, ph] = PLANTS[kind].size;
+      e.set(0, ry, 0); q.setFromEuler(e); v.set(x, h - 0.03, z); s.set(pw * sc, ph * sc, pw * sc);
+      m4.compose(v, q, s).toArray(G.m, G.k * 16); G.xz[G.k * 2] = x; G.xz[G.k * 2 + 1] = z;
+      G.cell[G.k * 2] = (kind % 3) / 3; G.cell[G.k * 2 + 1] = 1 - (((kind / 3) | 0) + 1) / 2;
+      if (kind < 2) { const kk = 1.1 + (k - 1) * 0.5; col.setRGB(kk * (1.12 + kg * 0.18), kk * 1.08, kk * 0.82); } else if (kind === 4) col.setRGB(1.25, 1.18, 1.22); else col.setRGB(0.85 + k * 0.2, 0.85 + k * 0.2, 0.82 + k * 0.2); // heather is a dark picture: lifted, so it does not read as a hole in the grass
+      col.toArray(G.c, G.k * 3); G.k++;
+    }
+    if (G.i < G.n) return false;
+    const geo = plantGeo();
+    for (const idx of byCell(G.k, 40, (i) => [G.xz[i * 2], G.xz[i * 2 + 1]])) cellOf(geo, grassMat, G.m, G.c, idx, { cast: false, range: grassRange, extra: { name: 'aCell', data: G.cell, size: 2 } });
+    P.g = null; P.done = true; P.count = G.k;
+    return true;
+  };
+  /** Start the next piece the camera is near, and grow it in the gaps between frames. */
+  const tend = (cx, cz) => {
+    if (growing) return;
+    const P = patches.find((P) => !P.done && Math.hypot(P.x - cx, P.z - cz) < P.half + 320);
+    if (!P) return;
+    growing = P;
+    const step = (dl) => { if (grow(P, dl ? Math.max(2, Math.min(8, dl.timeRemaining() - 1)) : 6)) { growing = null; return; } window.requestIdleCallback ? requestIdleCallback(step, { timeout: 200 }) : setTimeout(step, 16); };
+    step(null);
+  };
   /** Each frame, before drawing: which cells are worth drawing from where the camera is (and nothing past the haze). */
   const update = (cam, density) => {
     const haze = hazeRange(cam, density), cx = cam.position.x, cy = cam.position.y, cz = cam.position.z;
+    if (patches.length) tend(cx, cz);
     let shown = 0;
     for (const c of cells) {
       const d = Math.hypot(c.x - cx, c.y - cy, c.z - cz) - c.r, seen = d < Math.min(haze, c.range), near = seen && (!c.far || (d < c.lodAt && (!c.ready || c.ready.ok)));
@@ -365,5 +420,7 @@ export function scatterVegetation(scene, world, quality) {
     }
     return shown;
   };
-  return { update, cells, counts: { pines: pines.length, birches: birches.length, bushes: bushes.length, rocks: rocks.length, grass: n, isles: ip.length + ib.length + ir.length, cells: cells.length } };
+  /** Grow every piece now (a test that wants them all). */
+  const growAll = () => { for (const P of patches) if (!P.done) grow(P, Infinity); };
+  return { update, cells, growAll, patches, counts: { pines: pines.length, birches: birches.length, bushes: bushes.length, rocks: rocks.length, grass: n, isles: ip.length + ib.length + ir.length, cells: cells.length } };
 }
