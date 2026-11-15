@@ -20,7 +20,7 @@ export class Browser {
     const proc = spawn(findChrome(), ['--headless=new', '--remote-debugging-port=0', `--user-data-dir=${dir}`, '--no-first-run', '--no-default-browser-check', '--disable-extensions',
       '--mute-audio', `--window-size=${process.env.SHOT_SIZE || '1280,720'}`, '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows', 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
     const url = await new Promise((res, rej) => {
-      let buf = ''; const t = setTimeout(() => rej(new Error('Chrome did not start: ' + buf.slice(-300))), 20000);
+      let buf = ''; const t = setTimeout(() => { proc.kill(); rej(new Error('Chrome did not start: ' + buf.slice(-300))); }, 20000); // and is not left running
       proc.stderr.on('data', (d) => { buf += d; const m = buf.match(/DevTools listening on (ws:\/\/\S+)/); if (m) { clearTimeout(t); res(m[1]); } });
       proc.on('exit', (c) => rej(new Error('Chrome exited (' + c + '): ' + buf.slice(-300))));
     });
