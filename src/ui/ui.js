@@ -12,13 +12,10 @@ import { POI, ISLES, DISTRICT_LINE, GREAT, MAIN, PLACES } from '../world/layout.
 import { mainAt } from '../world/realm.js';
 import { icon, itemIcon, questIcon, ARTS } from './icons.js';
 import { SIZE, HALF } from '../world/terrain.js';
-import { paintChart, labeller } from './chart.js';
+import { paintChart, labeller, SEA_VIEW, REALM_VIEW } from './chart.js';
+import { Minimap } from './minimap.js';
 import { tr, getLang, LANGS, setLang, onLang, canvasFont } from '../i18n/i18n.js';
 import { SLOW, FALLS } from './playtest.js';
-/** The part of the world the sea chart shows: from the landing beach south to the edge of the chart. */
-const SEA_VIEW = { x0: -640, z0: 160, w: 1280, h: 1440 };
-/** The whole open sea: the home waters in the north, the five great islands round and beyond them. */
-const REALM_VIEW = { x0: -1960, z0: 140, w: 3920, h: 3480 };
 const TOWN_LABELS = { hunt: { camp: 'The camp', tannery: 'Tannery yard', harbor: 'Harbor', mews: 'Mews' }, wessex: { quay: 'Quay', market: 'Market', church: 'Church', hall: "The reeve's hall", farm: 'Farm', wall: 'Harbor wall' }, hedeby: { h1: 'First headland', h2: 'Second headland', h3: 'Third headland', beach: 'Beach' }, bjornstead: { hall: "Bjorn's hall", thing: 'Thing stones', birch: 'The old birch', pier: 'Harbour', smithy: 'Smithy', field: 'Barley', pasture: 'Pasture', bridge: 'Bridge', timber: 'Timber' }, kaupang: { quay: 'Quay', market: 'Market', pen: 'Thrall pen', tavern: 'Tavern', thing: 'Thing', skerry: 'The Skerries' } };
 
 const $ = (s) => document.querySelector(s);
@@ -274,6 +271,7 @@ export class UI {
   // ---- per-frame ------------------------------------------------------------------------
   update(dt) {
     const g = this.g, p = g.player;
+    (this.minimap ||= new Minimap(this)).update(dt);
     if (this.subT > 0) { this.subT -= dt; if (this.subT <= 0) this.e.subtitle.classList.remove('on'); }
     if (this.tipT > 0 && (this.tipT -= dt) <= 0) this.drawHint(); // the lesson has been on long enough: the story's hint stays
     if (this.fadeS) {
@@ -484,8 +482,8 @@ export class UI {
     const eq = body.querySelector('#eq'); if (eq) eq.onclick = () => { g.player.equip(g.player.equipped === cur ? 'none' : cur); if (cur !== 'bow' && g.player.equipped === cur) g.state.flags.melee = cur; this.openPanel('inventory', this.tabs); };
   }
   /** The valley's map, and (buildSeaMap) a chart of a stretch of sea: see chart.js. */
-  buildMap(W = 840) { return paintChart({ x0: -HALF, z0: -HALF, w: SIZE, h: SIZE }, W, W, { valley: true }); }
-  buildSeaMap(V = SEA_VIEW) { const H = 840, W = Math.round((H * V.w) / V.h); return paintChart(V, W, H); }
+  buildMap(W = 840) { return paintChart({ x0: -HALF, z0: -HALF, w: SIZE, h: SIZE }, W, W, { valley: true, boxes: this.g.world.boxes }); }
+  buildSeaMap(V = SEA_VIEW) { const H = 840, W = Math.round((H * V.w) / V.h); return paintChart(V, W, H, { boxes: this.g.world.boxes }); }
   render_map(body) {
     const g = this.g, open = g.state.stage === 'open' && g.story.open.built ? g.story.open : null;
     const pp = g.player.pos, town = mainAt(pp.x, pp.z), away = pp.z > 1600 || Math.abs(pp.x) > 640, tname = tr(town && town.id === 'bjornstead' && g.state.quests.q_fifty ? 'Ravenhold' : town ? town.name : '');
@@ -496,19 +494,37 @@ export class UI {
     const greatSeen = GREAT.filter((s) => open && g.state.open.seen[s.id]).length;
     const named = ISLES.filter((s) => s.name), seen = open ? g.state.open.seen : {}, found = named.filter((s) => seen[s.id]).length;
     body.innerHTML = `${open || town ? `<div class="maptabs">${town ? `<button data-v="town" class="${local ? 'on' : ''}">${tname}</button>` : ''}<button data-v="valley" class="${sea ? '' : 'on'}">${esc(tr('Hrafnvik valley'))}</button>${open ? `<button data-v="sea" class="${sea && !realm && !local ? 'on' : ''}">${esc(tr('Home waters'))}</button>` : ''}<button data-v="realm" class="${realm ? 'on' : ''}">${esc(tr('The ten islands'))}</button></div>` : ''}
-      <div id="map-wrap" style="aspect-ratio:${W}/${H};width:min(${Math.round((560 * W) / H)}px,100%)"><canvas width="${W}" height="${H}"></canvas></div>
+      <div id="map-wrap" style="aspect-ratio:${W}/${H};width:min(${Math.round((860 * W) / H)}px,100%,calc((100vh - 250px) * ${(W / H).toFixed(3)}))"><canvas width="${W}" height="${H}"></canvas>
+        <div class="mapctl"><button data-z="in" title="${esc(tr('Zoom in'))}">+</button><button data-z="out" title="${esc(tr('Zoom out'))}">−</button><button data-z="me" title="${esc(tr('Find me'))}">◎</button><button data-z="all" title="${esc(tr('The whole map'))}">⤢</button></div></div>
+      <div class="mapkey"><span><i class="k-you"></i>${esc(tr('You'))}</span><span><i class="k-quest"></i>${esc(tr('Where the quest leads'))}</span><span><i class="k-wp"></i>${esc(tr('Your waypoint'))}</span>${open ? `<span><i class="k-horse"></i>${esc(tr('Your horse'))}</span><span><i class="k-boat"></i>${esc(tr('Your boat'))}</span>${sea ? `<span><i class="k-foe"></i>${esc(tr('A hostile sail'))}</span>` : ''}` : ''}<em>${esc(tr('Scroll to zoom, drag to move'))}</em></div>
       <p class="muted" style="text-align:center">${esc(local ? tr('{0}, {1}', tname, tr(town.title)) : realm ? tr('The ten islands · {0} of {1} great islands found · the home waters are the box in the north', greatSeen, GREAT.length) : sea ? tr('The Whale Road · {0} of {1} islands found', found, named.length) : tr('The Hrafnvik valley'))} · ${esc(tr('click to set or clear a waypoint · north is up'))}</p>`;
     body.querySelectorAll('.maptabs button').forEach((b) => { b.onclick = () => { this.mapPick = b.dataset.v; g.audio.play('ui'); this.render_map(body); }; });
     const up = (t) => (getLang() === 'zh' ? t : t.toLocaleUpperCase(getLang())), spaced = (t) => t.split('').join(' ');
-    const cv = body.querySelector('canvas'), x = cv.getContext('2d'), X = (v) => ((v - V.x0) / V.w) * W, Z = (v) => ((v - V.z0) / V.h) * H;
+    // what part of the chart is shown: all of it, or a part zoomed into and moved about (kept for each map while the game runs)
+    const vkey = local ? 'town:' + town.id : realm ? 'realm' : sea ? 'sea' : 'valley';
+    this.mapView ||= {}; let vw = this.mapView[vkey] || { ...V };
+    const clampView = (v) => { const w = Math.min(V.w, Math.max(V.w / 6, v.w)), h = (w * V.h) / V.w; return { x0: Math.min(V.x0 + V.w - w, Math.max(V.x0, v.x0)), z0: Math.min(V.z0 + V.h - h, Math.max(V.z0, v.z0)), w, h }; };
+    const setView = (v) => { vw = clampView(v); this.mapView[vkey] = vw; draw(); };
+    const cv = body.querySelector('canvas'), x = cv.getContext('2d'), X = (v) => ((v - vw.x0) / vw.w) * W, Z = (v) => ((v - vw.z0) / vw.h) * H;
     let lab = null; // names are placed so that none lands on another (chart.js); the big ones first, and always
     const label = (t, px, pz, dy = -8, force = false) => { if (getLang() === 'zh' && /Georgia$/.test(x.font)) x.font = canvasFont(x.font); return lab(t, X(px), Z(pz), dy, force); };
     const draw = () => {
       lab = labeller(x, W, H);
-      x.drawImage(local ? this.townBase[town.id] : realm ? this.realmBase : sea ? this.seaBase : this.mapBase, 0, 0, W, H);
-      x.fillStyle = 'rgba(46,34,20,0.16)'; x.fillRect(0, 0, W, H);
-      if (this.parch && this.parch.complete && this.parch.naturalWidth) { x.save(); x.globalCompositeOperation = 'multiply'; x.globalAlpha = 0.7; x.drawImage(this.parch, 0, 0, W, H); x.restore(); } // the chart is drawn on vellum
-      if (this.rose && this.rose.complete && this.rose.naturalWidth) { const r = Math.round(W * 0.2); x.save(); x.globalCompositeOperation = 'multiply'; x.globalAlpha = 0.85; x.drawImage(this.rose, W - r - 10, 10, r, r); x.restore(); } // and a rose in its corner
+      const whole = local ? this.townBase[town.id] : realm ? this.realmBase : sea ? this.seaBase : this.mapBase, res = W / vw.w, hi = this.mapHi;
+      const sharp = hi && hi.key === vkey && hi.res >= res * 0.92 && hi.box.x0 <= vw.x0 + 0.01 && hi.box.z0 <= vw.z0 + 0.01 && hi.box.x0 + hi.box.w >= vw.x0 + vw.w - 0.01 && hi.box.z0 + hi.box.h >= vw.z0 + vw.h - 0.01;
+      const src = sharp ? hi : { canvas: whole, box: V }, b = src.box, c = src.canvas;
+      x.drawImage(c, ((vw.x0 - b.x0) / b.w) * c.width, ((vw.z0 - b.z0) / b.h) * c.height, (vw.w / b.w) * c.width, (vw.h / b.h) * c.height, 0, 0, W, H);
+      if (!sharp && vw.w < V.w * 0.8) { // zoomed in: paint this part of the chart again at the size it is shown, a moment after the view settles
+        clearTimeout(this.mapHiT);
+        this.mapHiT = setTimeout(() => {
+          if (!cv.isConnected) return;
+          const m = 0.3, box = clampView({ x0: vw.x0 - vw.w * m, z0: vw.z0 - vw.h * m, w: vw.w * (1 + 2 * m), h: 0 }), r = W / vw.w;
+          box.h = (box.w * V.h) / V.w; Object.assign(box, clampView(box));
+          this.mapHi = { key: vkey, box, res: r, canvas: paintChart(box, Math.round(box.w * r), Math.round(box.h * r), { valley: vkey === 'valley', boxes: g.world.boxes }) };
+          draw();
+        }, 220);
+      }
+      if (this.parch && this.parch.complete && this.parch.naturalWidth) { x.save(); x.globalCompositeOperation = 'multiply'; x.globalAlpha = 0.32; x.drawImage(this.parch, 0, 0, W, H); x.restore(); } // the chart is drawn on vellum
       x.textAlign = 'center'; x.font = 'italic 18px Georgia'; x.lineWidth = 3;
       if (local) {
         x.strokeStyle = 'rgba(96,70,44,0.55)'; x.lineWidth = 2.2; for (const r of town.roads || []) { x.beginPath(); r.forEach(([dx, dz], i) => x[i ? 'lineTo' : 'moveTo'](X(town.x + dx), Z(town.z + dz))); x.stroke(); }
@@ -533,8 +549,6 @@ export class UI {
           x.font = k ? '600 17px Georgia' : '600 20px Georgia'; x.fillStyle = k ? '#3a1c14' : 'rgba(42,28,18,0.45)'; label(k ? up(tr(s.name)) : '?', s.x, s.z + s.half * 0.82, 0, true);
           if (k) { x.font = 'italic 13px Georgia'; x.fillStyle = '#2a1c12'; label(`${tr(s.title)} · ${tr(s.ruler)}`, s.x, s.z + s.half * 0.82, 17); }
         }
-        const cx = W - 44, cy = 52; x.fillStyle = '#3a1c14'; x.beginPath(); x.moveTo(cx, cy - 26); x.lineTo(cx + 7, cy); x.lineTo(cx, cy + 26); x.lineTo(cx - 7, cy); x.closePath(); x.globalAlpha = 0.55; x.fill(); x.globalAlpha = 1;
-        x.font = canvasFont('600 14px Georgia'); x.fillText(tr('N'), cx, cy - 31);
       } else {
         // where one law ends and the next begins
         x.save(); x.setLineDash([9, 7]); x.strokeStyle = 'rgba(96,34,26,0.55)'; x.lineWidth = 1.6; x.beginPath(); x.moveTo(0, Z(DISTRICT_LINE)); x.lineTo(W, Z(DISTRICT_LINE)); x.stroke(); x.restore();
@@ -549,9 +563,6 @@ export class UI {
         }
         x.strokeStyle = '#2a1c12'; x.lineWidth = 1.6;
         for (const k in open.sea.ports) { const pt = open.sea.ports[k]; if (k !== 'gulen' && !seen[k]) continue; x.beginPath(); x.arc(X(pt.moor[0]), Z(pt.moor[1]), 4.5, 0, 6.3); x.stroke(); x.beginPath(); x.moveTo(X(pt.moor[0]), Z(pt.moor[1]) - 4.5); x.lineTo(X(pt.moor[0]), Z(pt.moor[1]) + 8); x.stroke(); }
-        const cx = W - 44, cy = 52; // compass
-        x.fillStyle = '#3a1c14'; x.beginPath(); x.moveTo(cx, cy - 26); x.lineTo(cx + 7, cy); x.lineTo(cx, cy + 26); x.lineTo(cx - 7, cy); x.closePath(); x.globalAlpha = 0.55; x.fill(); x.globalAlpha = 1;
-        x.font = canvasFont('600 14px Georgia'); x.fillText(tr('N'), cx, cy - 31);
       }
       if (open && sea) for (const f of open.war.foes) { // a hostile sail, once it is after him or close enough to make out
         if (f.state === 'gone' || f.state === 'sinking' || (f.state === 'patrol' && Math.hypot(f.pos.x - g.player.pos.x, f.pos.z - g.player.pos.z) > 320)) continue;
@@ -567,15 +578,41 @@ export class UI {
       for (const k in g.state.marks) { const mk = g.state.marks[k]; x.fillStyle = '#f4efe2'; x.strokeStyle = '#2a1c12'; x.lineWidth = 2; x.beginPath(); x.arc(X(mk.x), Z(mk.z), 5, 0, 6.3); x.fill(); x.stroke(); x.font = 'italic 13px Georgia'; x.fillStyle = '#2a1c12'; label(tr(mk.label), mk.x, mk.z, 18); }
       const wp = g.state.waypoint;
       if (wp) { x.fillStyle = '#b9d2e2'; x.strokeStyle = '#16242e'; x.lineWidth = 2; x.beginPath(); x.moveTo(X(wp.x), Z(wp.z)); x.lineTo(X(wp.x) - 8, Z(wp.z) - 18); x.lineTo(X(wp.x) + 8, Z(wp.z) - 18); x.closePath(); x.fill(); x.stroke(); }
-      const p = g.player; x.save(); x.translate(X(p.pos.x), Z(p.pos.z)); x.rotate(-p.yaw + Math.PI);
+      const p = g.player; x.save(); x.translate(X(p.pos.x), Z(p.pos.z)); x.rotate(-p.yaw + Math.PI); x.scale(1.45, 1.45);
       x.fillStyle = '#8f2f24'; x.strokeStyle = '#fff'; x.lineWidth = 2; x.beginPath(); x.moveTo(0, -12); x.lineTo(8, 9); x.lineTo(0, 4); x.lineTo(-8, 9); x.closePath(); x.fill(); x.stroke(); x.restore();
+      { // the compass: north is up the page
+        const cx = W - 40, cy = 56; x.save(); x.globalAlpha = 0.8; x.strokeStyle = '#3a1c14'; x.lineWidth = 1.5; x.beginPath(); x.arc(cx, cy, 20, 0, 6.3); x.stroke();
+        x.fillStyle = '#8f2f24'; x.beginPath(); x.moveTo(cx, cy - 28); x.lineTo(cx + 6, cy); x.lineTo(cx - 6, cy); x.closePath(); x.fill();
+        x.fillStyle = '#3a1c14'; x.beginPath(); x.moveTo(cx, cy + 28); x.lineTo(cx + 6, cy); x.lineTo(cx - 6, cy); x.closePath(); x.fill();
+        x.font = canvasFont('600 15px Georgia'); x.textAlign = 'center'; x.fillText(tr('N'), cx, cy - 33); x.restore();
+      }
     };
     draw();
-    cv.onclick = (ev) => {
-      const r = cv.getBoundingClientRect(), mx = V.x0 + ((ev.clientX - r.left) / r.width) * V.w, mz = V.z0 + ((ev.clientY - r.top) / r.height) * V.h;
+    let drag = null;
+    cv.onpointerdown = (ev) => { drag = { x: ev.clientX, y: ev.clientY, v: { ...vw }, moved: false }; try { cv.setPointerCapture(ev.pointerId); } catch { /* fine */ } };
+    cv.onpointermove = (ev) => {
+      if (!drag) return;
+      const r = cv.getBoundingClientRect(), dx = ev.clientX - drag.x, dy = ev.clientY - drag.y;
+      if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 5) return;
+      drag.moved = true; cv.classList.add('dragging');
+      setView({ ...drag.v, x0: drag.v.x0 - (dx / r.width) * drag.v.w, z0: drag.v.z0 - (dy / r.height) * drag.v.h });
+    };
+    cv.onpointerup = (ev) => {
+      const d = drag; drag = null; cv.classList.remove('dragging');
+      if (!d || d.moved) return;
+      const r = cv.getBoundingClientRect(), mx = vw.x0 + ((ev.clientX - r.left) / r.width) * vw.w, mz = vw.z0 + ((ev.clientY - r.top) / r.height) * vw.h;
       const wp = g.state.waypoint;
-      g.state.waypoint = wp && Math.hypot(wp.x - mx, wp.z - mz) < V.w / 36 ? null : { x: mx, z: mz };
+      g.state.waypoint = wp && Math.hypot(wp.x - mx, wp.z - mz) < vw.w / 36 ? null : { x: mx, z: mz };
       g.audio.play('ui'); draw();
+    };
+    const zoomAt = (fx, fz, k) => { const mx = vw.x0 + fx * vw.w, mz = vw.z0 + fz * vw.h, w = Math.min(V.w, Math.max(V.w / 6, vw.w * k)), h = (w * V.h) / V.w; setView({ x0: mx - fx * w, z0: mz - fz * h, w, h }); };
+    cv.onwheel = (ev) => { ev.preventDefault(); const r = cv.getBoundingClientRect(); zoomAt((ev.clientX - r.left) / r.width, (ev.clientY - r.top) / r.height, Math.exp(ev.deltaY * 0.0016)); };
+    const ctl = body.querySelector('.mapctl');
+    if (ctl) ctl.onclick = (ev) => {
+      const a = ev.target.closest('button'); if (!a) return; g.audio.play('ui');
+      if (a.dataset.z === 'in') zoomAt(0.5, 0.5, 1 / 1.5); else if (a.dataset.z === 'out') zoomAt(0.5, 0.5, 1.5);
+      else if (a.dataset.z === 'all') setView({ ...V });
+      else { const p = g.player.pos, w = V.w / 3.5, h = (w * V.h) / V.w; setView({ x0: p.x - w / 2, z0: p.z - h / 2, w, h }); }
     };
   }
   /** Appearance: how the grown Eirik looks. Choices live in state.look and lie over the look the story gives him. */
@@ -668,7 +705,7 @@ export class UI {
     body.innerHTML = `<h3>${E('Settings')}</h3><h4>${E('Language')}</h4><div class="set"><label>${E('Language')}</label><div>${this.langPicker()}</div><span></span><span class="muted">${E('The words on screen and in conversation. Saved games are not touched by a change.')}</span></div>
       <h4>${E('Game')}</h4><div class="set">
       ${row('Difficulty', select('difficulty', [['easy', 'Skald (forgiving)'], ['normal', 'Warrior (standard)'], ['hard', 'Jarl (demanding)']]))}
-      ${row('Objective markers', check('objectiveMarkers'))}${row('Subtitles', check('subtitles'))}${row('Subtitle size', range('subtitleSize', 0.8, 1.6, 0.1))}${row('Camera shake', check('cameraShake'))}</div>
+      ${row('Objective markers', check('objectiveMarkers'))}${row('Minimap', check('minimap'))}${row('Subtitles', check('subtitles'))}${row('Subtitle size', range('subtitleSize', 0.8, 1.6, 0.1))}${row('Camera shake', check('cameraShake'))}</div>
       <h4>${E('Camera')}</h4><div class="set">${row('Camera follows the mouse', check('mouseLook'))}${row('Close-ups in conversation', check('closeTalk'))}${row('Look sensitivity', range('sensitivity', 0.3, 2.5, 0.1))}${row('Invert vertical look', check('invertY'))}<span></span><span class="muted">${E('With this off the mouse does not turn the view: use the arrow keys or a gamepad stick.')}</span></div>
       <h4>${E('Graphics')}</h4><div class="set">${row('Quality', select('quality', [['low', 'Low'], ['medium', 'Medium'], ['high', 'High']]))}${row('Glow on fire and steel', check('bloom'))}${row('Resolution follows the frame rate', check('autoRes'))}${row('Show frame rate', check('showFps'))}${row('Full screen', `<input type="checkbox" id="fs" ${isFullscreen() ? 'checked' : ''}>`)}<span></span><span class="muted">${E('Grass density and how far trees keep their full shape apply after reloading the game. With "Resolution follows the frame rate" on, the picture is drawn with fewer pixels whenever frames come slower than fifty a second, and sharpens again when there is room.')}</span></div>
       <h4>${E('Audio')}</h4><div class="set">${row('Master volume', range('volMaster', 0, 1, 0.05))}${row('Music', range('volMusic', 0, 1, 0.05))}${row('Effects', range('volSfx', 0, 1, 0.05))}</div>

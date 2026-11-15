@@ -7,7 +7,7 @@ export const DEFAULT_SETTINGS = {
   sensitivity: 1, invertY: false, subtitles: true, subtitleSize: 1, difficulty: 'normal',
   quality: 'medium', volMaster: 0.8, volMusic: 0.6, volSfx: 0.9, objectiveMarkers: true,
   cameraShake: true, holdToSprint: true, bindings: null, mouseLook: true, closeTalk: true, bloom: true,
-  autoRes: true, showFps: false, lang: '', // '' until chosen: the first visit takes the browser's language
+  autoRes: true, showFps: false, minimap: true, lang: '', // '' until chosen: the first visit takes the browser's language
 };
 
 function get(key) {

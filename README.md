@@ -10,6 +10,20 @@ Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, th
 (forty-one: Ravenhold twelve years on, Leif's house, the old birch), each as the story tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
+**The map, and a minimap.**
+- **The map screen (M)** can be zoomed (the wheel, or + and −) and moved (drag), with "Find me" and "The whole map";
+  a click that is not a drag still sets or clears a waypoint. Zoomed in, the part shown is painted again at the size it
+  is shown a moment after the view settles, so it stays sharp. Its hills are shaded over 2.5 m or more (the heights are
+  on a 2.5 m grid; shaded closer, its flat triangles showed as squares). The brown wash is gone and the vellum is
+  lighter; a drawn compass replaces the picture that sat in a dark square; your arrow is larger; and a key under the map
+  says what each mark is.
+- **Buildings and walls are on every chart**: the world's solid footprints, houses as dark shapes, palisades and fences
+  as lines.
+- **The minimap** (bottom right; Settings → Minimap) is a round piece of the same charts, turned so that the way the
+  camera looks is up: about 60 m round you in the valley and the towns, 160 m in the home waters, 320 m on the open sea.
+  It shows you, where the quest leads (on the rim, pointing, when it is farther), your waypoint, companions (green),
+  anyone fighting you (red), your horse and your boat. The district and the companions' strip move up above it.
+
 **A look over everything together** (after the bodies, faces, wind, oars, plants, clouds and the rank and file all
 landed on one day): conversation close-ups, people walking and running, a fight, the horse, ships under oars and the
 shield walls were photographed in play. One fault: a conversation's first close-up of Eirik could be framed from the

@@ -401,3 +401,29 @@ details.chapters li img.thumb { width: 64px; height: 36px; object-fit: cover; ve
 #phone-note .row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
 #phone-note .btn { flex: 1 1 140px; min-height: 44px; }
 #phone-note .btn.ghost { background: transparent; }
+
+/* the map screen: controls over the chart, and a key under it */
+#map-wrap { cursor: grab; touch-action: none; }
+#map-wrap canvas.dragging { cursor: grabbing; }
+#map-wrap .mapctl { position: absolute; left: 10px; top: 10px; display: flex; flex-direction: column; gap: 4px; }
+#map-wrap .mapctl button { width: 32px; height: 32px; font: inherit; font-size: 18px; line-height: 1; color: #f4efe2; background: rgba(42, 28, 18, 0.78); border: 1px solid rgba(201, 162, 74, 0.6); cursor: pointer; }
+#map-wrap .mapctl button:hover { background: rgba(74, 52, 34, 0.9); }
+.mapkey { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; margin: 10px auto 0; font-size: 13.5px; color: var(--ink); max-width: 860px; }
+.mapkey span { display: inline-flex; align-items: center; gap: 6px; }
+.mapkey em { opacity: 0.7; }
+.mapkey i { display: inline-block; width: 14px; height: 14px; }
+.mapkey .k-you { background: #8f2f24; clip-path: polygon(50% 0, 100% 100%, 50% 72%, 0 100%); }
+.mapkey .k-quest { width: 11px; height: 11px; background: #e9c668; border: 2px solid #2a1c12; transform: rotate(45deg); }
+.mapkey .k-wp { background: #b9d2e2; clip-path: polygon(50% 100%, 0 0, 100% 0); }
+.mapkey .k-horse { width: 10px; height: 10px; border-radius: 50%; background: #6a4426; border: 1.5px solid #2a1c12; }
+.mapkey .k-boat { width: 16px; height: 9px; border-radius: 50%; background: #f4efe2; border: 1.5px solid #2a1c12; }
+.mapkey .k-foe { width: 18px; height: 9px; border-radius: 50%; background: #8f2f24; border: 1.5px solid #2a1c12; }
+
+/* the minimap (minimap.js): bottom right; the district and the companions move up above it */
+#minimap { position: absolute; right: 22px; bottom: 22px; width: 172px; height: 172px; border-radius: 50%; display: none; box-shadow: 0 0 0 3px rgba(42, 28, 18, 0.85), 0 0 0 4px rgba(201, 162, 74, 0.7), 0 6px 18px rgba(0, 0, 0, 0.55); }
+#minimap.on { display: block; }
+#minimap canvas { width: 100%; height: 100%; border-radius: 50%; display: block; }
+#hud.mm #law { bottom: 210px; }
+#hud.mm #party { bottom: 210px; }
+#hud.mm #law.on ~ #party { bottom: 274px; }
+@media (max-width: 700px) { #minimap { width: 128px; height: 128px; } #hud.mm #law, #hud.mm #party { bottom: 166px; } #hud.mm #law.on ~ #party { bottom: 230px; } }
