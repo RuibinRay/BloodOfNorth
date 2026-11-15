@@ -210,7 +210,7 @@ export class A2Winter {
       h.pos.y = g.world.groundAt(h.pos.x, h.pos.z); h.m.rotation.y = h.yaw;
       const s = Math.sin(h.hop) * (go ? 0.6 : 0), lg = h.m.userData.legs; lg[0].rotation.x = s; lg[1].rotation.x = -s; lg[2].rotation.x = -s; lg[3].rotation.x = s;
     }
-    if (q.at('q_peddlers', 'boat') && !this.rowing && g.mode === 'play' && Math.hypot(p.pos.x - c.B(0, 240)[0], p.pos.z - c.B(0, 240)[1]) < 9) this.row();
+    if (q.at('q_peddlers', 'boat') && !this.rowing && g.mode === 'play' && Math.hypot(p.pos.x - c.B(0, 240)[0], p.pos.z - c.B(0, 240)[1]) < 12) this.row(); // the marker is on the pier, 1 m from here
     if (this.rowing) { // away they go, baling
       const r = this.rowing; r.t += dt; this.boat.position.z = r.z + r.t * r.t * 0.12 + r.t * 0.6; this.boat.rotation.z = Math.sin(r.t * 2) * 0.06;
       for (const [i, id] of ['grim', 'grimolf'].entries()) { const n = c.npc(id); n.pos.set(this.boat.position.x, 0.05, this.boat.position.z - 0.8 + i * 1.5); n.root.rotation.y = Math.PI; n.h.setLoop('hoe'); n.h.update(dt); }

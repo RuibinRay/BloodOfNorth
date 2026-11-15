@@ -247,7 +247,8 @@ export class Sparring {
   constructor(game, npc, { centre, onResult }) {
     this.game = game; this.npc = npc; this.centre = centre; this.onResult = onResult;
     this.attacking = false; this.cool = 2.0; this.phase = 'strike'; this.active = true;
-    this.off = game.events.on('playerSwing', () => this.playerSwing());
+    const off1 = game.events.on('playerSwing', () => this.playerSwing()), off2 = game.events.on('dodge', () => { this.sinceDodge = 0; });
+    this.off = () => { off1(); off2(); }; this.sinceDodge = 9;
     npc.mode = 'spar'; npc.h.setLoop('guard'); game.player.target = npc;
   }
   setPhase(p) { this.phase = p; this.cool = 1.6; }
@@ -263,6 +264,7 @@ export class Sparring {
   update(dt) {
     if (!this.active) return;
     const g = this.game, p = g.player, n = this.npc;
+    this.sinceDodge += dt;
     // keep a fighting distance, face the pupil
     const d = n.dist(p), ang = Math.atan2(p.pos.x - n.pos.x, p.pos.z - n.pos.z);
     n.yaw = n.yaw + angleDiff(n.yaw, ang) * Math.min(1, dt * 7);
@@ -291,7 +293,7 @@ export class Sparring {
         hitAt: 0.4,
         onHit: () => {
           g.audio.play('whoosh');
-          if (n.dist(p) > 2.5) return this.onResult('missed');
+          if (n.dist(p) > 2.5) return this.onResult(this.sinceDodge < 0.8 ? 'dodged' : 'missed'); // he rolled clear of it: that is a dodge
           this.onResult(p.receive(n, 6));
         },
         onEnd: () => { this.attacking = false; this.cool = 1.5 + Math.random() * 1.2; },

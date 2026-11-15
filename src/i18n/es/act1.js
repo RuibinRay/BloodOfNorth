@@ -542,6 +542,7 @@ export default {
   "That spring": "Esa primavera",
   "A storm knocked a raven's nest out of the pines above the harbour.": "Una tormenta derribó un nido de cuervos de los pinos que dominan el puerto.",
   "Snow boy! The storm brought down the raven pine. There is a nest, and they are ALIVE!": "¡Chico de nieve! La tormenta tumbó el pino de los cuervos. ¡Hay un nido, y están VIVOS!",
+  "Where is she? Bring her here!": "¿Dónde está? ¡Tráela aquí!",
   "Come ON, snow boy!": "¡VAMOS, chico de la nieve!",
   "This way! Hurry, they are cold!": "¡Por aquí! ¡Deprisa, tienen frío!",
   "Follow Freydis. She will wait if you fall behind.": "Sigue a Freydis. Te esperará si te quedas atrás.",

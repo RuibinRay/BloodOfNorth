@@ -38,14 +38,16 @@ No script errors were logged at any point.
 
 ## Bugs
 
-3. **The wooden-sword dodge lesson can't be finished by rolling clear (Act I, "Wooden Swords").** If Eirik rolls
+3. **Fixed.** **The wooden-sword dodge lesson can't be finished by rolling clear (Act I, "Wooden Swords").** If Eirik rolls
    out of reach, Ragnar's blow is counted as `missed` (more than 2.5 m away), and the step only counts `dodged`.
    A roll only counts if Eirik is still within reach while invulnerable. About 100 s of sideways and plain rolls at
    four timings counted none. *Fix:* in `ensureSpar` / `Sparring`, count `missed` as `dodged` when Eirik rolled
    within the last ~0.8 s.
-4. **The pier marker is 22 m from the spot that sends the boat off (Act II, "The Peddlers", "See them off at the
+   *Fixed:* a blow he rolled clear of within the last 0.8 s counts as a dodge (`Sparring`). Tested: two backward rolls, two dodges; on the old code seven rolls gave one.
+4. **Fixed.** **The pier marker is 22 m from the spot that sends the boat off (Act II, "The Peddlers", "See them off at the
    pier").** The boat leaves only when Eirik is within 9 m of `B(0, 240)`, but the marker sits about 22 m short of
    that. Stand on the marker and nothing happens (`act2_winter.js`, `row()` trigger).
+   *Fixed:* the marker is on the pier beside the boat, and the boat leaves within 12 m of it. Tested: standing on the marker sends them off.
 5. **Fixed.** **Hints from earlier steps stay on screen.** *Correction:* the hint box hides itself by dropping a CSS
    class but keeps its old text, and my playtest script read that text, so not every case below was really on
    screen. Confirmed on screen: the barn countdown at the peddlers (a countdown that is redrawn every frame, stops
@@ -63,8 +65,9 @@ No script errors were logged at any point.
    - "Go back for them" shows at Kettil's bend.
 
    Clearing the hint box whenever a step begins would fix all of these at once.
-6. **Freydis takes the lamb that isn't with you (Act I ch. 3).** "Bring the lamb back to Freydis" counted while the
+6. **Fixed.** **Freydis takes the lamb that isn't with you (Act I ch. 3).** "Bring the lamb back to Freydis" counted while the
    lamb was 148 m behind Eirik. The talk should check that the lamb is close.
+   *Fixed:* with the lamb more than 8 m from her, Freydis says "Where is she? Bring her here!" (zh and es added). Tested both ways.
 7. **The Iron Shore shield wall has no marker (Act III).** After the beach volleys, Eirik stood alone in an empty
    field 38 m from the line. "Hold the shield wall" shows no marker, and the wall waits for him to stand in it.
 8. **The closing panel uses developer wording.** THE END reads "That is the whole of the owner's story…" on the

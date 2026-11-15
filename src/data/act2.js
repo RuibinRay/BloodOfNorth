@@ -114,7 +114,7 @@ Object.assign(QUESTS, {
     ev('wait', 'Wait in the house for midnight', 'a2midnight', { marker: { pos: B('hall', 2, 5) } }),
     reach('chase', 'After the other one', 'a2tangled', B('yard', 0, 20)),
     talk('thing', 'The Thing, next morning: hear the judgment', 'lawman'),
-    ev('boat', 'See them off at the pier', 'a2rowed', { marker: { pos: B('pier', 0, -14) } }),
+    ev('boat', 'See them off at the pier', 'a2rowed', { marker: { pos: B('pier', 0, 7) } }), // on the pier, beside their boat: the boat leaves when Eirik comes near (act2_winter.js)
     talk('bjorn', 'Sit up with Bjorn', 'bjorn'),
   ]),
   q_walls: Q('Walls Before Winter', 'Eirik calls the whole village to the Thing stones.', 'q_captain', 260, [

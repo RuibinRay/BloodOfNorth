@@ -158,7 +158,11 @@ export class Chapter3 {
     if (id === 'freydis') {
       if (q.at('q_hearth', 'freydis')) return d('freydis_meet', done);
       if (q.at('q_wings', 'freydis')) return d('freydis_lamb', done);
-      if (q.at('q_wings', 'home')) return d('freydis_thanks', () => { this.penLamb(); done(); });
+      if (q.at('q_wings', 'home')) { // only with the lamb at his heels
+        const f = this.npc('freydis'), l = this.lamb;
+        if (l && dist(l.pos, f.pos.x, f.pos.z) > 8) return f.say('Where is she? Bring her here!', 3); // (game)
+        return d('freydis_thanks', () => { this.penLamb(); done(); });
+      }
       return d('freydis_idle');
     }
     if (q.at('q_hearth', 'bjorn')) return d('bjorn_wood', done);

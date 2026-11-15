@@ -542,6 +542,7 @@ export default {
   "That spring": "那年春天",
   "A storm knocked a raven's nest out of the pines above the harbour.": "一场风暴把一个渡鸦窝从港口上方的松树上打了下来。",
   "Snow boy! The storm brought down the raven pine. There is a nest, and they are ALIVE!": "雪娃娃！风暴把渡鸦松吹倒了。有个窝，它们还活着！",
+  "Where is she? Bring her here!": "她在哪儿？把她带过来！",
   "Come ON, snow boy!": "快点来嘛，雪地男孩！",
   "This way! Hurry, they are cold!": "这边！快点，它们冷！",
   "Follow Freydis. She will wait if you fall behind.": "跟着弗蕾迪丝。你落在后面她会等你。",
