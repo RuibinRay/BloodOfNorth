@@ -66,6 +66,17 @@ A first visit on a machine with no graphics card (software drawing) starts at Lo
 the problem: the five heavy scenes hold 60 frames a second at Medium and High on the M2, each frame taking 1.4–3.7 ms
 to draw.
 
+**Bodies** (built on the branch `bodies`). The body below the head is built the way the head is: each part is one skin
+drawn through rings, not a ball, a tube and a box pushed together. A torso with a waist, a chest (a bust on a woman) and
+shoulders that slope up to the neck, which bends at the waist; arms that taper from the shoulder to the wrist and bend at
+the elbow, with short or long sleeves; legs with a thigh, a knee and a calf that bend at the knee, trousers, leg wraps
+and boots with a heel and a toe; **hands** with a palm, four fingers and a thumb, which close round whatever is held and
+into a fist to fight. The tunic's skirt and a woman's dress go a little way with each thigh, so they move when people
+walk, sit and kneel; cloaks hang from the shoulders and round the back; a mail shirt reaches the thigh over the tunic;
+an apron dress has its two brooches. **Builds** differ: the breadth of shoulders and chest, how heavy a person is all
+over, a belly and an old back that stoops, set for the people whose portraits say how they are built (Bjorn's barrel
+chest, Orm's belly, Gorm's bulk, Gisli, Kari and Vigdis slight and wiry, Hrefna, Thrand and Gest bent with age).
+
 **Faces and hair** (built on the branch `faces-and-hair`, merged). Every head is now shaped, not a ball: a skull
 with a jaw, a chin, cheekbones, the ridge of the brow and sockets for the eyes, in one of nine shapes; a nose (straight,
 hooked, snub, broad, broken, button, long) and ears; eyes with an iris and pupil that turn to look and glance aside,

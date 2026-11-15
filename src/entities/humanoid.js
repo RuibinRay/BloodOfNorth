@@ -6,10 +6,11 @@
 import * as THREE from 'three';
 import { clamp, smoothstep, damp, angleDiff } from '../core/util.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { M, STUFF, at, box, cyl, cone, sphere, capsule, tint, merge, shieldGeo } from '../world/geo.js';
+import { M, STUFF, at, box, cyl, cone, sphere, tint, merge, shieldGeo } from '../world/geo.js';
 import { buildHead } from './heads.js';
+import { buildBody, gripPoint, curl } from './bodies.js';
 
-const D = { hip: 0.94, thigh: 0.44, shin: 0.44, chestY: 0.2, shoulderY: 0.3, shoulderX: 0.2, neckY: 0.42, upper: 0.29, fore: 0.27 };
+const D = { hip: 0.94, thigh: 0.44, shin: 0.44, chestY: 0.2, shoulderY: 0.3, neckY: 0.42, upper: 0.29, fore: 0.27 }; // how far apart the shoulders are depends on the build: see bodies.js
 const DEFAULT_LOOK = {
   scale: 1, child: false, female: false, build: 1, skin: 0xd8a888, hair: 0x6b4a2b, hairStyle: 'short', beard: null,
   tunic: 0x6f6048, trim: 0x8a2f25, legs: 0x4b4034, boots: 0x33261a, cloak: null, fur: false, helmet: false, apron: null, mail: false, // mail: a ring shirt over the tunic
@@ -223,12 +224,6 @@ const BLADE = { woodsword: [0.12, 0.58], woodsword_big: [0.12, 0.85], sword: [0.
   club: [0.55, 1.15], woodaxe: [0.45, 0.8], longaxe: [0.75, 1.25], seax: [0.1, 0.52], maul: [0.75, 1.25], smallaxe: [0.2, 0.45], throwaxe: [0.2, 0.45], spear: [1.05, 1.7], hammer: [0.2, 0.38] };
 
 const grp = (parent, x, y, z) => { const g = new THREE.Group(); g.position.set(x, y, z); parent.add(g); return g; };
-/** Darken a piece's colours toward a height (y0: as it is, y1: times k): the shadow under a jaw. */
-function shade(g, y0, y1, k) {
-  const P = g.attributes.position, C = g.attributes.color;
-  for (let i = 0; i < P.count; i++) { const f = 1 + (k - 1) * smoothstep(y0, y1, P.getY(i)); C.setXYZ(i, C.getX(i) * f, C.getY(i) * f, C.getZ(i) * f); }
-  return g;
-}
 // ---- what a figure's pieces are made of -----------------------------------------------------------------
 const MAIL = 0x8f949b, FUR = 0x6c6a66, BELT = 0x3b2a1a, BRONZE = 0xb0905a;
 /** The stuff a piece is made of, told from the colour it was given: skin and metal are plain; the rest has a grain. */
@@ -304,36 +299,15 @@ export class Humanoid {
     const part = (bone, geos) => { skin.push({ bone, geos }); return bone; };
     this.body = grp(this.root, 0, 0, 0);
     this.body.scale.setScalar(L.scale);
-    const j = (this.j = {}), b = L.build;
+    const j = (this.j = {});
     j.hips = grp(this.body, 0, D.hip, 0);
     j.chest = grp(j.hips, 0, D.chestY, 0);
     j.head = grp(j.chest, 0, D.neckY, 0);
     if (L.child) j.head.scale.setScalar(1.24);
 
-    // pelvis + hem
+    // the body below the head: torso, arms and hands, legs and boots, skirt or dress (bodies.js)
     const wear = L.mail ? MAIL : L.tunic; // a mail shirt covers the body and the upper arms; the tunic shows below it
-    const hip = [tint(at(capsule(0.15, 0.1, 8), 0, 0.02, 0, 0, 0, Math.PI / 2, 1, 1, 0.75), wear, 0.06, 1)];
-    if (L.female) hip.push(tint(at(cyl(0.17, 0.34, 0.9, 12, 1.6, true), 0, -0.43, 0, 0, 0, 0, 1, 1, 0.86), L.tunic, 0.08, 2), tint(at(cyl(0.335, 0.346, 0.055, 12, 1.6, true), 0, -0.855, 0, 0, 0, 0, 1, 1, 0.86), L.trim, 0.05, 46));
-    else hip.push(tint(at(cyl(0.176, 0.24, 0.36, 10, 1.6, true), 0, -0.16, 0, 0, 0, 0, 1, 1, 0.8), L.tunic, 0.08, 2), tint(at(cyl(0.2375, 0.245, 0.04, 10, 1.6, true), 0, -0.323, 0, 0, 0, 0, 1, 1, 0.8), L.trim, 0.05, 46)); // the hem, in the colour of the trim
-    hip.push(tint(at(cyl(0.182, 0.182, 0.055, 10), 0, 0.06, 0, 0, 0, 0, 1, 1, 0.8), BELT, 0.05, 3));
-    if (L.apron) hip.push(L.female ? tint(at(box(0.26, 0.62, 0.02), 0, -0.25, 0.204, -0.165), L.apron, 0.05, 4) : tint(at(box(0.26, 0.62, 0.02), 0, -0.25, 0.192, -0.14), L.apron, 0.05, 4)); // lying on the slope of the skirt
-    else hip.push(tint(at(box(0.05, 0.046, 0.012), 0, 0.06, 0.149), BRONZE, 0.04, 47)); // the buckle
-    part(j.hips, hip);
-
-    // torso
-    const ch = [
-      tint(at(cyl(0.2 * b, 0.165, 0.5, 10), 0, 0.06, 0, 0, 0, 0, 1, 1, 0.68), wear, 0.06, 5),
-      tint(at(sphere(0.086, 8, 6), D.shoulderX * b, D.shoulderY, 0), wear, 0.05, 6),
-      tint(at(sphere(0.086, 8, 6), -D.shoulderX * b, D.shoulderY, 0), wear, 0.05, 7),
-      shade(tint(at(cyl(0.046 * Math.sqrt(b) * (L.female ? 0.88 : 1), 0.062 * Math.sqrt(b) * (L.female ? 0.88 : 1), 0.17, 8, 1.6, false), 0, 0.39, 0), L.skin, 0.03, 8), 0.33, 0.46, 0.72), // the neck, reaching up into the head so its end never shows, in the jaw's shadow
-      tint(at(cyl(0.083, 0.1, 0.052, 10), 0, 0.328, 0, 0, 0, 0, 1, 1, 0.8), L.trim, 0.05, 9),
-    ];
-    if (L.apron) ch.push(tint(at(box(0.24, 0.3, 0.02), 0, 0.05, 0.126 + (0.136 * b - 0.112) * 0.48, Math.atan((0.136 * b - 0.112) / 0.5)), L.apron, 0.05, 10)); // and on the slope of the chest
-    if (L.cloak) ch.push(tint(at(sphere(0.03, 7, 5), 0.105 * b, 0.275, 0.118 * b, 0, 0, 0, 1, 1, 0.4), BRONZE, 0.04, 48)); // the brooch that holds it
-    if (L.cloak) { j.cloak = grp(j.chest, 0, 0.31, -0.02); part(j.cloak, [tint(at(new THREE.CylinderGeometry(0.23 * b, 0.37, 1.02, 10, 1, true, Math.PI * 0.5, Math.PI), 0, -0.51, 0), L.cloak, 0.1, 11)]); } // hangs from the shoulders
-    if (L.fur) for (const [x, y, z, s] of [[0.17, 0.33, -0.02, 0.13], [-0.17, 0.33, -0.02, 0.13], [0, 0.31, -0.1, 0.15], [0, 0.2, -0.13, 0.13]])
-      ch.push(tint(at(new THREE.IcosahedronGeometry(1, 1), x * b, y, z, 0, 0, 0, s * 1.25, s * 0.8, s), FUR, 0.3, 12 + x * 10));
-    this.chestMesh = part(grp(j.chest, 0, 0, 0), ch); // its own joint, so the chest can swell with breath
+    buildBody(this, L, D, part, (bone, geos) => { faceSkin.push({ bone, geos }); return bone; }, grp, { wear, MAIL, FUR, BELT, BRONZE });
 
     // head: the skull, face, hair and beard are built in heads.js; a helmet or a bear's skull is put on here
     const face = (bone, geos) => { faceSkin.push({ bone, geos }); return bone; };
@@ -350,20 +324,6 @@ export class Humanoid {
     }
     if (hd.length) part(j.head, hd);
 
-    // limbs
-    for (const [side, sx] of [['L', 1], ['R', -1]]) {
-      const sh = (j['sh' + side] = grp(j.chest, sx * D.shoulderX * b, D.shoulderY, 0)); sh.rotation.order = 'YXZ';
-      const el = (j['el' + side] = grp(sh, 0, -D.upper, 0));
-      j['ha' + side] = grp(el, 0, -D.fore, 0);
-      const ru = 0.054 * Math.sqrt(b), rf = 0.045 * Math.sqrt(b), cuff = (r, y) => tint(at(cyl(r + 0.0035, r + 0.0035, 0.03, 6, 1.6, true), 0, y, 0), L.trim, 0.05, 49);
-      part(sh, [tint(at(capsule(ru, 0.2, 6), 0, -0.145, 0), wear, 0.06, 40), ...(L.sleeve == null && !L.mail ? [cuff(ru, -0.228)] : [])]); // a short sleeve ends in a band above the elbow
-      part(el, [tint(at(capsule(rf, 0.19, 6), 0, -0.13, 0), L.sleeve ?? L.skin, 0.04, 41), tint(at(sphere(0.048, 6, 5), 0, -0.285, 0, 0, 0, 0, 0.9, 1.15, 0.7), L.skin, 0.03, 42), ...(L.sleeve != null ? [cuff(rf, -0.205)] : [])]); // a long one at the wrist
-      const lg = (j['lg' + side] = grp(j.hips, sx * 0.095, 0, 0));
-      const kn = (j['kn' + side] = grp(lg, 0, -D.thigh, 0));
-      part(lg, [tint(at(capsule(0.076, 0.3, 6), 0, -0.22, 0), L.legs, 0.06, 43)]);
-      part(kn, [tint(at(capsule(0.058, 0.3, 6), 0, -0.21, 0), L.wraps ?? L.legs, 0.1, 44), tint(at(box(0.105, 0.1, 0.25), 0, -0.415, 0.045), L.boots, 0.06, 45)]);
-    }
-
     // one skinned mesh for the body and one for the face (drawn only near the camera), on the same bones
     const all = [...skin, ...faceSkin], bones = [...new Set([...all.map((x) => x.bone), ...all.flatMap((x) => x.geos.map((g) => g.userData.bone2).filter(Boolean))])];
     const sk = new THREE.Skeleton(bones, bones.map(() => new THREE.Matrix4())), reach = Math.max(1, L.scale);
@@ -377,7 +337,7 @@ export class Humanoid {
     this.loop = null; this.action = null; this.items = { L: null, R: null }; this.onStep = null; this._ls = 0;
     this.fc = { ...MOODS.neutral }; this.mood = null; this.moodT = 0; this.baseMood = L.mood || 'neutral'; this.blinkT = 1 + Math.random() * 4; this.blink = 0;
     this.gaze = { yaw: 0, pitch: 0 }; this.lookTarget = null; this.speech = null; this.jaw = 0; this.jawT = 0; this.breath = 1;
-    this.ik = { l: 0, r: 0 }; this.sway = 0; this.bank = 0; this.lean = 0; this.seed = Math.random() * 6.283;
+    this.ik = { l: 0, r: 0 }; this.grip = { L: 0.15, R: 0.15 }; this.sway = 0; this.bank = 0; this.lean = 0; this.seed = Math.random() * 6.283;
     this.applyPose();
   }
 
@@ -474,7 +434,7 @@ export class Humanoid {
     if ((l && l !== 'guard' && l !== 'block' && l !== 'talk') || (a && !/^(atk|chop|thrust|parry|cleave|slam)/.test(a))) return;
     j.chest.updateWorldMatrix(true, true);
     _t.set(0, 0, this.grip2).applyMatrix4(j.haR.matrixWorld); j.chest.worldToLocal(_t); // a point up the haft, seen from the chest
-    _t.x -= D.shoulderX * this.look.build; _t.y -= D.shoulderY;
+    _t.x -= this.built.shX; _t.y -= D.shoulderY;
     const u = D.upper, fo = D.fore, len = clamp(_t.length(), 0.14, u + fo - 0.012);
     const E = Math.acos(clamp((u * u + fo * fo - len * len) / (2 * u * fo), -1, 1)), al = Math.acos(clamp((u * u + len * len - fo * fo) / (2 * u * len), -1, 1));
     _q.setFromUnitVectors(DOWN, _t.normalize()); _q2.setFromAxisAngle(XAX, al);
@@ -494,7 +454,7 @@ export class Humanoid {
   hold(side, name) {
     const h = this.j['ha' + side];
     if (this.items[side]) { h.remove(this.items[side]); this.items[side] = null; }
-    if (name) { const it = makeItem(name, this.look.shield); it.position.set(0, -0.03, 0.02); h.add(it); this.items[side] = it; it.userData.name = name; }
+    if (name) { const it = makeItem(name, this.look.shield); it.position.set(...gripPoint(side === 'L' ? 1 : -1, this.built.hm)); h.add(it); this.items[side] = it; it.userData.name = name; }
     if (side === 'R') this.grip2 = { longaxe: 0.4, maul: 0.36, spear: 0.46 }[name] || 0; // where the second hand goes on a long haft
   }
   held(side) { return this.items[side] ? this.items[side].userData.name : null; }
@@ -547,6 +507,8 @@ export class Humanoid {
       p.knL = Math.max(0, w) * 0.16; p.knR = Math.max(0, -w) * 0.16; p.llz = 0.035 + Math.max(0, w) * 0.03; p.lrz = -0.035 - Math.max(0, -w) * 0.03;
       p.slx = Math.sin(this.t * 0.9 + this.seed) * 0.03; p.srx = -Math.sin(this.t * 0.9 + this.seed) * 0.03; p.elL = REST.elL - 0.04 - Math.max(0, e) * 0.06; p.elR = REST.elR - 0.04 - Math.max(0, -e) * 0.06;
     }
+    const st = this.built.stoop; // an old back: the shoulders come forward and the head lifts to see ahead
+    if (st && !this.crouch) { p.crx += st * 0.26; p.nrx -= st * 0.2; p.hy -= st * 0.018; p.knL += st * 0.08; p.knR += st * 0.08; }
     if (this.loop && LOOPS[this.loop]) LOOPS[this.loop](p, this.t, this);
     this.plantFeet(p, dt);
     let lambda = 11;
@@ -564,6 +526,10 @@ export class Humanoid {
     const k = 1 - Math.exp(-lambda * dt), cu = this.cur;
     for (const key of POSE_KEYS) cu[key] += (p[key] - cu[key]) * k;
     this.updateSecondary(dt);
+    if (this.faceMesh.visible) for (const side of ['L', 'R']) { // the fingers close round what is held, and into a fist to fight
+      const a = this.action && this.action.name, want = this.items[side] ? 1 : this.loop === 'guard' || this.loop === 'block' || (a && /^(atk|punch|jab|hook)/.test(a)) ? 0.9 : this.loop === 'dead' ? 0.05 : 0.15;
+      this.grip[side] += (want - this.grip[side]) * Math.min(1, dt * 12); curl(this, side, this.grip[side]);
+    }
     this.applyPose();
     this.updateFace(dt);
     const bow = this.items.L; // the bow bends and the string comes back with the draw
@@ -574,7 +540,7 @@ export class Humanoid {
     const j = this.j;
     j.chest.updateWorldMatrix(true, true); bow.updateWorldMatrix(true, false);
     _t.set(0, bow.userData.nockY(), 0).applyMatrix4(bow.matrixWorld); j.chest.worldToLocal(_t);
-    _t.x += D.shoulderX * this.look.build; _t.y -= D.shoulderY;
+    _t.x += this.built.shX; _t.y -= D.shoulderY;
     const u = D.upper, fo = D.fore, len = clamp(_t.length(), 0.16, u + fo - 0.012);
     const E = Math.acos(clamp((u * u + fo * fo - len * len) / (2 * u * fo), -1, 1)), al = Math.acos(clamp((u * u + len * len - fo * fo) / (2 * u * len), -1, 1));
     _q.setFromUnitVectors(DOWN, _t.normalize()); _q2.setFromAxisAngle(XAX, al);

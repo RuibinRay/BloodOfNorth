@@ -10,7 +10,7 @@ Object.assign(ITEMS, {
   bough: { name: 'Spruce Boughs', desc: 'Green and springy. Layered thick, they keep out wind and snow.', cat: 'Resource' },
 });
 Object.assign(CAST, {
-  bjorn: { name: 'Bjorn', role: 'Farmer', look: { scale: 1.06, build: 1.22, hair: 0x5a4028, hairStyle: 'long', beard: 'long', tunic: 0x6a5238, trim: 0x3a3a2a, legs: 0x3e342a, cloak: 0x4a4034, fur: true, sleeve: 0x6a5238 } },
+  bjorn: { name: 'Bjorn', role: 'Farmer', look: { scale: 1.06, build: 1.22, hair: 0x5a4028, hairStyle: 'long', beard: 'long', tunic: 0x6a5238, trim: 0x3a3a2a, legs: 0x3e342a, cloak: 0x4a4034, fur: true, sleeve: 0x6a5238, belly: 0.45, heft: 1.1 } },
 });
 Object.assign(QUESTS, {
   q_white: {

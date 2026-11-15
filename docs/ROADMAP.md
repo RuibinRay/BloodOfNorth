@@ -46,6 +46,25 @@ playtests; none are claimed until then.
 3. Look at the world and the people in play and say what to change (the trees, the shore, the clothes, any figure that does not look like its portrait, the ships, the halls and gates, the animals); $4.99 of the approved $10 is unspent. Consider making a new Higgsfield key, since the pair was pasted into a chat.
 4. Decide where the project lives: a PC that can run UE5, or continue in the browser for the epilogue and the polish.
 
+## Bodies (built on the branch `bodies` from main after the faces)
+
+Asked for: better bodies, like the faces. Built: `src/entities/bodies.js` builds everything below the head from the
+look (the torso, arms, hands, legs, boots, skirt or dress, cloak, apron, mail); each part is a skin lofted through the
+rings of a profile and bends on two joints (the waist, the elbow, the knee, the fingers' middle joints), the way the jaw
+and hanging hair do in heads.js. The fingers and thumbs are in the mesh drawn only near (like the face), so a distant
+crowd costs no more than before; the body itself costs about 150 more triangles a figure (the Black Shore battle
+draws 731k of its 750k budget, up from 724k). New look fields: `heft` (how heavy all over), `belly`, `bust`, `stoop`
+(from age if not given), set for about thirty-five people from their portraits. A held thing sits in the fist, about
+three centimetres further down and in than it used to. Seen in still pictures from the front, side, back and three
+quarters, standing, walking and in ten poses; `npm run check` passes.
+
+Known gaps:
+- **Judged from still pictures**: no one has watched the fingers close, a skirt swing or a cloak sway in play.
+- **The shoulder does not blend into the chest**: the deltoid is part of the arm, so with an arm raised high the top
+  of the torso shows a corner under it.
+- **Long hair, cloaks and arms can still pass through each other**, and a cloak hangs straight down when he sits.
+- **The rank and file of the battle lines keep their own simpler figures.**
+
 ## Faces and hair (built on the branch `faces-and-hair` from 0.29; merged into main)
 
 Asked for: better eyes, noses, ears, mouths and above all hair, and every important character looking like themselves.

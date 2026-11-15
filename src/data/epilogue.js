@@ -27,7 +27,7 @@ export const CAST8 = {
   lbrokk: { name: 'Little Brokk', role: "Freydis's son, nine", look: { scale: 0.72, child: true, hair: 0xb5562a, hairStyle: 'tousled', tunic: 0x5a5448, trim: 0xe0c070, build: 1.08, face: 'broad', freckles: 1 } },
   apprentice: { name: 'An apprentice', role: "Halvar's", look: folk({ female: true, scale: 0.9, build: 0.9, hair: 0x4a3a2a, hairStyle: 'tail', tunic: 0x5a4a3a, apron: 0x3a2e24, sleeve: null }) },
   karison: { name: "Kári's son", role: '', look: { scale: 0.62, child: true, hair: 0x1c1c20, hairStyle: 'short', tunic: 0x4a5a3a } },
-  fishseller: { name: 'A Svartøy fish-seller', role: '', look: folk({ hair: 0x3a3a3e, beard: 'long', tunic: 0x26262a, apron: 0x8a8070, build: 1.12 }) },
+  fishseller: { name: 'A Svartøy fish-seller', role: '', look: folk({ hair: 0x3a3a3e, beard: 'long', tunic: 0x26262a, apron: 0x8a8070, build: 1.12, belly: 0.35 }) },
   ironman: { name: 'A Jarnøy iron-merchant', role: '', look: folk({ hair: 0x8a8880, hairStyle: 'short', beard: 'short', tunic: 0x5a2a24, trim: 0xc9a24a, sleeve: 0x5a2a24, build: 1.05 }) },
   farmer1: { name: 'A farmer', role: '', look: folk({ hair: 0x8a6a3a, beard: 'short', tunic: 0x6a5a3a }) },
   farmer2: { name: 'His neighbor', role: '', look: folk({ hair: 0x4a3a2a, beard: 'stubble', tunic: 0x4a5a4a, build: 1.1 }) },
