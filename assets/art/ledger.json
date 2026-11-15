@@ -2380,6 +2380,76 @@
    "usd": 0.015,
    "request_id": "01a1dd91-b880-7798-8943-da8e0711a7d4",
    "at": "2026-11-15T04:58:06.161Z"
+  },
+  {
+   "id": "ad_a1_night",
+   "model": "kling-video/v2.5-turbo/pro/image-to-video",
+   "usd": 0.2625,
+   "request_id": "01a1e0ec-30a0-7219-99b4-27a469f5032e",
+   "at": "2026-11-15T20:35:38.019Z"
+  },
+  {
+   "id": "ad_a2_riders",
+   "model": "kling-video/v2.5-turbo/pro/image-to-video",
+   "usd": 0.2625,
+   "request_id": "01a1e0ec-3242-7720-8255-db9481b8babc",
+   "at": "2026-11-15T20:35:38.534Z"
+  },
+  {
+   "id": "ad_a3_wall",
+   "model": "kling-video/v2.5-turbo/pro/image-to-video",
+   "usd": 0.2625,
+   "request_id": "01a1e0ec-3441-7355-a430-a383e6553be1",
+   "at": "2026-11-15T20:35:38.930Z"
+  },
+  {
+   "id": "ad_a4_fog",
+   "model": "kling-video/v2.5-turbo/pro/image-to-video",
+   "usd": 0.2625,
+   "request_id": "01a1e0ec-35c0-75f9-8dcd-35a5e6bc48bf",
+   "at": "2026-11-15T20:35:39.290Z"
+  },
+  {
+   "id": "ad_a6_oath",
+   "model": "kling-video/v2.5-turbo/pro/image-to-video",
+   "usd": 0.2625,
+   "request_id": "01a1e0ec-373a-7d79-981e-0d08f6203cec",
+   "at": "2026-11-15T20:35:39.751Z"
+  },
+  {
+   "id": "ad_a7_assault",
+   "model": "kling-video/v2.5-turbo/pro/image-to-video",
+   "usd": 0.2625,
+   "request_id": "01a1e0ec-38f0-74de-9598-58489357db98",
+   "at": "2026-11-15T20:35:40.114Z"
+  },
+  {
+   "id": "ad_c_lightning",
+   "model": "kling-video/v2.5-turbo/pro/image-to-video",
+   "usd": 0.2625,
+   "request_id": "01a1e0ec-3a79-7965-b7cd-395babb80ee2",
+   "at": "2026-11-15T20:35:40.552Z"
+  },
+  {
+   "id": "ad_c_ironwolf",
+   "model": "kling-video/v2.5-turbo/pro/image-to-video",
+   "usd": 0.2625,
+   "request_id": "01a1e0ec-3c33-7434-ab31-063b2fd206f1",
+   "at": "2026-11-15T20:35:41.002Z"
+  },
+  {
+   "id": "ad_c_crown",
+   "model": "kling-video/v2.5-turbo/pro/image-to-video",
+   "usd": 0.2625,
+   "request_id": "01a1e0ec-3dd3-7007-815d-79caba4f60da",
+   "at": "2026-11-15T20:35:41.378Z"
+  },
+  {
+   "id": "ad_t_ravens",
+   "model": "kling-video/v2.5-turbo/pro/image-to-video",
+   "usd": 0.2625,
+   "request_id": "01a1e0ec-3f6c-789c-b288-b16bd3d83e30",
+   "at": "2026-11-15T20:35:41.826Z"
   }
  ]
 }
