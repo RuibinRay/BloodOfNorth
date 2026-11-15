@@ -63,11 +63,13 @@ export class Chapter2 {
     w.addInteractable({ id: 'shelter', x: LEANTO[0], z: LEANTO[1], r: 2.8, priority: 1, label: 'Mend the lean-to', enabled: () => g.quests.at('q_white', 'shelter'), use: () => this.mendShelter() });
     w.addInteractable({ id: 'bedroll', x: LEANTO[0], z: LEANTO[1], r: 2.8, priority: 1, label: 'Sleep', enabled: () => g.quests.at('q_white', 'sleep'), use: () => this.sleep() });
     w.addInteractable({ id: 'cook', x: CAMP.x, z: CAMP.z, r: 2.6, label: 'Cook venison and eat', enabled: () => g.quests.at('q_white', 'cook'), use: () => this.cook() });
-    w.addInteractable({ id: 'feedwolf', pos: () => this.wolf.pos, r: 8, label: 'Throw the wolf a share of the meat',
-      enabled: () => g.quests.at('q_white', 'wolf') && this.wolf && !this.wolf.dead && !this.wolfResolved && g.inventory.has('venison', 2), use: () => this.feedWolf() });
+    w.addInteractable({ id: 'cutwire', pos: () => this.wolf.pos, r: 2.4, priority: 2, label: 'Cut the wire from her leg',
+      enabled: () => g.quests.at('q_white', 'wolf') && this.wolf && this.wolf.w.state === 'eat' && !this.wolfResolved, use: () => this.cutWire() });
+    w.addInteractable({ id: 'feedwolf', pos: () => this.wolf.pos, r: 8, label: 'Throw her a share of the meat',
+      enabled: () => g.quests.at('q_white', 'wolf') && this.wolf && !this.wolf.dead && !this.wolfResolved && g.inventory.has('venison', 2) && this.wolf.w.state !== 'eat', use: () => this.feedWolf() });
     this.tracks = w.makeTracks(TRACKS2, 1.2);
     this.tracks.visible = false;
-    g.events.on('wound', (kind, a) => { if (kind === 'wolf') a.w.state = 'flee'; });
+    g.events.on('wound', (kind, a) => { if (kind === 'wolf' && a.w) { a.w.state = 'retreat'; a.w.t = 2.5; g.ui.subtitle('', 'He thought of his mother running back for the axe, and lowered the bow.', 4.5); } }); // she cannot be killed: the story has him spare her
   }
   enter(thatch = true) { this.build(); if (thatch) this.addThatch(); }
 
@@ -134,62 +136,63 @@ export class Chapter2 {
     const g = this.g, p = g.player.pos;
     if (this.wolf && !this.wolf.dead) return;
     const a = g.wildlife.spawn('wolf', p.x + 14, p.z - 9, {});
+    a.hp = 1e6; a.model.scale.set(0.92, 0.9, 0.95); // thin
+    const leg = a.model.userData.legs && a.model.userData.legs[3];
+    if (leg) { this.snare = new THREE.Mesh(new THREE.TorusGeometry(0.05, 0.009, 4, 10), M.dark); this.snare.position.set(0, -0.5, 0); this.snare.rotation.x = Math.PI / 2; leg.add(this.snare); }
     a.w = { state: 'approach', t: 0, ang: Math.random() * 6.28, dir: Math.random() < 0.5 ? 1 : -1 };
     a.ai = (an, dt) => this.wolfAI(an, dt);
     this.wolf = a; this.wolfResolved = false;
-    g.audio.play('shout', { vol: 0.8 });
-    g.ui.subtitle('', 'Something grey moves between the trees.', 3.5);
+    g.ui.subtitle('', 'She was thin and grey and limping. She circled just outside the firelight, her eyes catching the flames.', 5);
     this.hint('wolf');
   }
   wolfAI(a, dt) {
     const g = this.g, p = g.player, w = a.w, dx = p.pos.x - a.pos.x, dz = p.pos.z - a.pos.z, d = Math.hypot(dx, dz) || 1;
     let tx = p.pos.x, tz = p.pos.z, want = 0;
     w.t -= dt;
-    if (w.state === 'approach') { want = 3.4; if (d < 7.5) { w.state = 'circle'; w.t = 2.5 + Math.random() * 2; } }
-    else if (w.state === 'circle') {
-      w.ang += dt * 0.55 * w.dir; tx = p.pos.x + Math.cos(w.ang) * 6.5; tz = p.pos.z + Math.sin(w.ang) * 6.5; want = 2.7;
-      if (w.t <= 0 && g.mode === 'play') { w.state = 'lunge'; w.t = 1.7; g.ui.alert(); g.audio.play('shout', { vol: 0.9 }); }
-    } else if (w.state === 'lunge') {
-      want = 8.6;
-      if (d < 1.25) {
-        w.state = 'retreat'; w.t = 1.6;
-        if (p.iframes > 0) g.ui.toast('You roll clear of its jaws');
-        else {
-          p.health -= 24; p.h.play('stagger', 0.5); p.cam.shake = 0.3; g.audio.play('hurt'); g.fx.burst('blood', p.pos.x, p.pos.y + 0.7, p.pos.z, 5);
-          if (p.health <= 4) this.fail('The wolf', 'It wanted the meat. It did not stop at the meat.');
-        }
-      } else if (w.t <= 0) { w.state = 'circle'; w.t = 3 + Math.random() * 2; w.dir = -w.dir; }
-    } else if (w.state === 'retreat') { tx = a.pos.x - dx; tz = a.pos.z - dz; want = 5; if (w.t <= 0) { w.state = 'circle'; w.t = 3 + Math.random() * 3; w.ang = Math.atan2(-dz, -dx); } }
-    else if (w.state === 'eat') { want = 0; if (w.t <= 0) { w.state = 'leave'; w.t = 30; } }
-    else if (w.state === 'flee' || w.state === 'leave') {
-      tx = a.pos.x - dx; tz = a.pos.z - dz; want = w.state === 'flee' ? 9 : 3.6;
-      if (w.state === 'flee' && !this.wolfResolved) this.wolfDone('drove');
+    if (w.state === 'approach') { want = 2.2; if (d < 8) { w.state = 'circle'; w.t = 0; } }
+    else if (w.state === 'circle') { w.ang += dt * 0.32 * w.dir; tx = p.pos.x + Math.cos(w.ang) * 7; tz = p.pos.z + Math.sin(w.ang) * 7; want = 1.6; }
+    else if (w.state === 'retreat') { tx = a.pos.x - dx; tz = a.pos.z - dz; want = 2.6; if (w.t <= 0) { w.state = 'circle'; w.ang = Math.atan2(-dz, -dx); } }
+    else if (w.state === 'eat') want = 0;
+    else if (w.state === 'leave') {
+      tx = a.pos.x - dx; tz = a.pos.z - dz; want = 2.4;
       if (d > 55 || w.t <= 0) { g.wildlife.remove(a); if (this.wolf === a) this.wolf = null; return; }
     }
     a.speed = damp(a.speed, want, 6, dt);
+    a.limp = (a.limp || 0) + dt * a.speed * 3.2; a.model.rotation.z = Math.sin(a.limp) * 0.06 * Math.min(1, a.speed); // the snared leg
     if (want > 0) {
       a.yaw = dampAngle(a.yaw, Math.atan2(tx - a.pos.x, tz - a.pos.z), 7, dt);
       a.pos.x += Math.sin(a.yaw) * a.speed * dt; a.pos.z += Math.cos(a.yaw) * a.speed * dt;
       g.world.resolve(a.pos, 0.3);
     } else a.yaw = dampAngle(a.yaw, Math.atan2(dx, dz), 4, dt);
   }
+  /** He throws her meat to the far side of the fire; while she eats he sees the snare. */
   feedWolf() {
     const g = this.g, p = g.player, a = this.wolf;
     if (!a || a.dead || this.wolfResolved) return;
     p.faceTarget = a.pos; p.h.play('cast', 0.7, { onEnd: () => { p.faceTarget = null; } });
     g.inventory.remove('venison', 1); g.audio.play('thud', { vol: 0.4 });
-    a.w.state = 'eat'; a.w.t = 4;
-    this.wolfDone('fed');
+    a.w.state = 'eat';
+    g.ui.subtitle('', "Then he saw why she limped. Her back leg was caught in a trapper's wire snare, and the wire had cut into the bone. She was starving for the same reason he was.", 7);
+    g.after(2, () => g.ui.hint('While she eats, creep round behind her and press {interact} to cut the wire.'));
   }
-  onWolfKilled() { this.wolfDone('killed'); }
-  wolfDone(how) {
+  /** He cuts the wire with the axe; she snaps at him, misses, and limps off into the dark. */
+  cutWire() {
+    const g = this.g, p = g.player, a = this.wolf;
+    if (!a || this.wolfResolved) return;
+    p.faceTarget = a.pos; p.h.play('chop', 0.6, { onEnd: () => { p.faceTarget = null; } }); g.audio.play('split', { vol: 0.6 });
+    if (this.snare) { this.snare.removeFromParent(); this.snare = null; }
+    g.after(0.4, () => { g.audio.play('bite'); p.h.play('stagger', 0.5); a.yaw = Math.atan2(p.pos.x - a.pos.x, p.pos.z - a.pos.z); });
+    g.after(0.9, () => { a.w.state = 'leave'; a.w.t = 30; });
+    this.wolfDone('freed');
+  }
+  onWolfKilled() { this.wolfDone('freed'); }
+  wolfDone() {
     const g = this.g;
     if (this.wolfResolved) return;
     this.wolfResolved = true; this.hint(null);
-    if (how === 'fed') { g.applyFx({ trait: { compassion: 1, wisdom: 1 }, flag: 'wolfFed' }); g.ui.subtitle('', 'It takes the haunch and looks at him for a long moment. Then it is gone.', 5); }
-    else if (how === 'killed') { g.applyFx({ trait: { ferocity: 1 }, flag: 'wolfKilled' }); g.ui.subtitle('Eirik', 'I am sorry. It was you or me.', 4); }
-    else { g.applyFx({ trait: { pride: 1 }, flag: 'wolfDriven' }); g.ui.subtitle('', 'It runs, bleeding. It will remember him.', 4); }
-    g.after(2.2, () => g.quests.notify('event', 'wolfDone'));
+    g.applyFx({ trait: { compassion: 1 }, flag: 'wolfFreed' });
+    g.after(1.4, () => g.ui.subtitle('', 'She did not come back. But for the rest of that winter, no other wolf came near him either.', 5.5));
+    g.after(2.6, () => g.quests.notify('event', 'wolfDone'));
   }
 
   fail(title, sub) {
@@ -206,9 +209,11 @@ export class Chapter2 {
     if (this.trackers.length) return;
     const g = this.g;
     PATROLS.forEach((d, i) => {
-      const n = g.addNPC('tracker' + i, { name: 'Tracker', look: RAIDER_LOOKS[(i + 1) % RAIDER_LOOKS.length], runSpeed: 3.9, walkSpeed: 1.4 });
-      n.teleport(d.at[0], d.at[1], 0); n.h.hold('R', i === 1 ? 'spear' : 'axe'); n.h.hold('L', 'torch'); n.loop = 'torch';
-      n.torch = g.fx.addFire(d.at[0], 1.5, d.at[1], 0.3, { smoke: false });
+      const k = i === 0; // Kettil leads them, his right hand bound up, the axe in his left
+      const n = g.addNPC('tracker' + i, k ? { name: 'Kettil', look: CAST.kettil.look, runSpeed: 3.9, walkSpeed: 1.4 } : { name: 'Tracker', look: RAIDER_LOOKS[(i + 1) % RAIDER_LOOKS.length], runSpeed: 3.9, walkSpeed: 1.4 });
+      n.teleport(d.at[0], d.at[1], 0);
+      if (k) { n.h.hold('R', null); n.h.hold('L', 'smallaxe'); n.kettil = true; }
+      else { n.h.hold('R', i === 1 ? 'spear' : 'axe'); n.h.hold('L', 'torch'); n.loop = 'torch'; n.torch = g.fx.addFire(d.at[0], 1.5, d.at[1], 0.3, { smoke: false }); }
       n.makeRaider(d.route, { pause: d.pause });
       this.trackers.push(n); this.act.raiders.push(n);
     });
@@ -224,6 +229,51 @@ export class Chapter2 {
     }).then(() => { p.frozen = false; this.breaking = false; this.hint('ice'); });
   }
 
+  /** Whoever reaches the ice first: Kettil goes out after the boy standing up, and the river takes him to the waist. */
+  kettilThrough(first) {
+    const g = this.g;
+    if (this.iceBark) return;
+    this.iceBark = true;
+    const k = this.trackers.find((n) => n.kettil) || first;
+    for (const n of this.trackers) if (n !== k) { n.raider.state = 'busy'; n.speed = 0; }
+    k.raider.state = 'busy'; k.speed = 0;
+    const z = k.pos.z, x = riverX(z) - 7.5;
+    k.teleport(x, z, Math.PI / 2); k.say('Come back here, you little-', 2);
+    g.after(1.6, () => { g.audio.play('split'); g.audio.play('splash'); g.fx.burst('splash', k.pos.x, k.pos.y + 0.1, k.pos.z, 30); k.h.play('fall', 0.9, { how: 'F' }); k.say('AAH! The ice! Pull me OUT!', 3.5); });
+    g.after(5.5, () => { k.teleport(x - 6.5, z, -Math.PI / 2); k.setLoop('kneel'); k.say('Cursed river. Cursed BOY.', 3); });
+  }
+  /** That night at Håkon's camp in the ashes of Hrafnvik: the lie that lets Eirik live, and the man who paid for it all. */
+  playLie() {
+    const g = this.g, p = g.player, A = this.act, c = [3, 34], gy = (x, z, h) => g.world.groundAt(x, z) + h;
+    const mk = (id, look, name) => { const n = g.npcs.get(id) || g.addNPC(id, { name, look }); n.visible = true; n.stop(); return n; };
+    const hk = mk('hk_camp', { ...CAST.hakon.look, helmet: false }, 'Jarl Håkon'), sg = mk('sigurd1', CAST.sigurd.look, 'The man in the fur cap'), k = mk('kettil_camp', CAST.kettil.look, 'Kettil'), r = mk('raider_camp', RAIDER_LOOKS[1], 'Raider');
+    hk.teleport(c[0] + 1.8, c[1] - 0.6, -1.6); hk.setLoop(null);
+    k.teleport(c[0] - 1.6, c[1] + 0.4, 1.6); k.setLoop(null); k.h.hold('R', null); k.h.hold('L', null);
+    sg.teleport(c[0] + 4.6, c[1] + 2.4, -2.4); sg.setLoop(null); r.teleport(c[0] + 3.6, c[1] + 3.4, 0.7); r.setLoop(null);
+    const fire = g.fx.addFire(c[0], gy(c[0], c[1], 0.1), c[1], 0.9);
+    p.root.visible = false; g.sky.time = 22.5; A.wTarget = { snow: 0.3, fog: 0.08, overcast: 0.8, wind: 1 }; Object.assign(g.sky.weather, A.wTarget);
+    g.ui.dim(0);
+    const head = (n, h = 1.65) => () => [n.pos.x, n.pos.y + h, n.pos.z];
+    return new Promise((done) => {
+      g.ui.fade(false, 1.6);
+      g.cine.play([
+        { dur: 6.4, from: [c[0] - 7, gy(c[0] - 7, c[1] + 6, 2.6), c[1] + 6], to: [c[0] - 6, gy(c[0] - 6, c[1] + 5, 2.2), c[1] + 5], look: [c[0], gy(c[0], c[1], 1.2), c[1]], fov: 42,
+          sub: ['', 'When Kettil reached the camp in the ashes of Hrafnvik, shaking and blue, Håkon asked him one question.', 5.8] },
+        { dur: 2.8, from: [c[0] - 0.4, gy(c[0] - 0.4, c[1] - 0.2, 1.6), c[1] - 0.2], look: head(hk, 1.72), fov: 30, sub: ['Jarl Håkon', 'The boy?', 2.2] },
+        { dur: 6.2, from: [c[0] + 0.2, gy(c[0] + 0.2, c[1] + 0.2, 1.5), c[1] + 0.2], look: head(k, 1.6), fov: 30,
+          sub: ['', 'Kettil had lost a child, and nearly his own life, to a farmer\'s wife with a cooking knife. He was not going to admit any more failure.', 5.8] },
+        { dur: 3.8, from: [c[0] + 0.1, gy(c[0] + 0.1, c[1] + 0.3, 1.5), c[1] + 0.3], look: head(k, 1.6), fov: 28, sub: ['Kettil', 'Through the ice, my lord. He is under the river.', 3.4] },
+        { dur: 6.4, from: [c[0] - 2.6, gy(c[0] - 2.6, c[1] - 2.2, 1.8), c[1] - 2.2], to: [c[0] - 1.6, gy(c[0] - 1.6, c[1] - 1.6, 1.7), c[1] - 1.6], look: head(sg, 1.3), fov: 36,
+          sub: ['', 'Håkon nodded and turned away. Behind him, a quiet, well-dressed man in a fur cap counted silver into a raider\'s palm.', 5.8],
+          onStart: () => { hk.face(c[0] + 12, c[1] - 6); sg.face(r.pos.x, r.pos.z); r.face(sg.pos.x, sg.pos.z); sg.h.play('pickup', 1.2); } },
+        { dur: 6.6, from: [c[0] + 6.2, gy(c[0] + 6.2, c[1] + 1.2, 1.7), c[1] + 1.2], look: head(sg, 1.62), fov: 28,
+          sub: ['', 'His name was Sigurd Stonehand, and he had paid for that night. He looked at the burned farm the way a merchant looks at a sale that has closed.', 6.2] },
+      ], { skippable: true, onEnd: () => {
+        g.ui.fade(true, 1.6).then(() => { for (const n of [hk, sg, k, r]) n.visible = false; g.fx.removeFire(fire); p.root.visible = true; done(); });
+      } });
+    });
+  }
+
   playEnding() {
     const g = this.g, p = g.player, A = this.act;
     if (this.ending) return;
@@ -236,22 +286,26 @@ export class Chapter2 {
     const bx = p.pos.x - fx * 0.65, bz = p.pos.z - fz * 0.65, by = () => p.pos.y;
     const P = (a, side, h) => { const x = bx + fx * a + sx * side, z = bz + fz * a + sz * side; return [x, g.world.groundAt(x, z) + h, z]; };
     const kneel = P(0.1, 1.25, 0), far = P(5, 22, 0);
-    const b = g.addNPC('bjorn', CAST.bjorn);
-    b.teleport(far[0], far[2], 0); b.walkSpeed = 1.9; b.h.hold('R', 'woodaxe');
+    const b = g.npcs.get('bjorn') || g.addNPC('bjorn', CAST.bjorn);
+    b.teleport(far[0], far[2], 0); b.walkSpeed = 1.9; b.h.hold('R', 'spear');
     const settle = (o) => { o.teleport(kneel[0], kneel[2], Math.atan2(bx - kneel[0], bz - kneel[2])); o.setLoop('kneel'); };
-    g.ui.fade(true, 2.2).then(() => g.ui.card('', 'He did not remember falling.', 3.2)).then(() => {
-      g.ui.dim(0); g.sky.time = 7.9; A.wTarget = { snow: 0.3, fog: 0.05, overcast: 0.4, wind: 0.8 };
-      g.ui.fade(false, 2);
-      g.cine.play([
-        { dur: 8, from: P(-1.5, -8, 3.2), to: P(-1, -6.5, 2.6), look: () => [bx, by() + 0.3, bz], fov: 42, onStart: () => b.goTo(kneel[0], kneel[2], { onArrive: settle }) },
-        { dur: 6, from: P(-0.9, -2.7, 0.95), to: P(-0.6, -2.4, 1.0), look: () => [b.pos.x, b.pos.y + 1.0, b.pos.z], fov: 38,
-          sub: ['Bjorn', 'Signe! Signe, over here. A boy. He is breathing.', 5], onStart: () => settle(b) },
-        { dur: 5.5, from: P(0.3, 3.2, 2.0), to: P(0.2, 2.9, 1.9), look: () => [bx, by() + 0.3, bz], fov: 34,
-          sub: ['Signe', 'Then carry him, you great ox, before the cold finishes its work.', 4.8] },
-        { dur: 6.5, from: P(1.6, -3.4, 1.7), to: P(2.6, -5, 2.7), look: () => [bx, by() + 0.5, bz], fov: 40,
-          sub: ['Bjorn', '...And look what he is holding on to.', 4.5] },
-      ], { skippable: false, onEnd: () => { g.ui.fade(true, 2.4).then(() => { this.st.stage = 'ch2done'; g.autosave(); A.showChapterEnd(); }); } });
-    });
+    const back = { x: p.pos.x, z: p.pos.z, yaw: p.yaw };
+    g.ui.fade(true, 2.2).then(() => this.playLie()).then(() => {
+      p.teleport(back.x, back.z, back.yaw); p.loopOverride = 'dead';
+      return g.ui.card('', 'He lived through that winter, though there were many days he did not expect to.', 4.2);
+    }).then(() => g.ui.card('', 'He chewed his leather belt when there was nothing else. He learned that birch bark burns even when wet, and that you must never sleep with wet feet.', 5.2))
+      .then(() => {
+        g.ui.dim(0); g.sky.time = 9.2; A.wTarget = { snow: 0, fog: 0.04, overcast: 0.35, wind: 0.6 }; Object.assign(g.sky.weather, A.wTarget); shared.uSnow.value = 0.45; A.snowTarget = 0.45;
+        g.ui.fade(false, 2);
+        g.cine.play([
+          { dur: 8, from: P(-1.5, -8, 3.2), to: P(-1, -6.5, 2.6), look: () => [bx, by() + 0.3, bz], fov: 42, sub: ['', 'Bjorn found him at the first thaw, hunting elk on the ridge with an enormous spear.', 6], onStart: () => b.goTo(kneel[0], kneel[2], { onArrive: settle }) },
+          { dur: 4.4, from: P(-0.9, -2.7, 0.95), to: P(-0.6, -2.4, 1.0), look: () => [b.pos.x, b.pos.y + 1.0, b.pos.z], fov: 38, sub: ['Bjorn', 'Are you a troll?', 3], onStart: () => settle(b) },
+          { dur: 3.0, from: P(0.3, 3.2, 2.0), to: P(0.2, 2.9, 1.9), look: () => [bx, by() + 0.3, bz], fov: 34, sub: ['', 'Eirik said nothing.', 2.4] },
+          { dur: 6.4, from: P(-0.6, -2.4, 1.0), to: P(-0.5, -2.2, 1.0), look: () => [b.pos.x, b.pos.y + 1.0, b.pos.z], fov: 36, sub: ['Bjorn', 'Trolls are usually bigger. And they smell better. You smell like a dead fox wrapped in another dead fox.', 6] },
+          { dur: 7, from: P(1.6, -3.4, 1.7), to: P(2.6, -5, 2.7), look: () => [bx, by() + 0.5, bz], fov: 40,
+            sub: ['', 'Bjorn took off his own cloak, wrapped the boy in it, axe and all, picked him up with one arm and carried him home.', 6.4] },
+        ], { skippable: false, onEnd: () => { g.ui.fade(true, 2.4).then(() => { this.st.stage = 'ch2done'; g.autosave(); A.showChapterEnd(); }); } });
+      });
   }
 
   // =====================================================================================
@@ -295,7 +349,7 @@ export class Chapter2 {
         { dur: 5.5, from: [ex - 3.4, gy(ex - 3.4, ez + 2.8, 1.0), ez + 2.8], to: [ex - 2.4, gy(ex - 2.4, ez + 2.0, 0.9), ez + 2.0], look: [ex, p.pos.y + 0.55, ez], fov: 36,
           sub: ['', 'On the third morning the forest was not empty.', 4.2], onStart: () => g.after(1.6, () => g.audio.play('horn', { freq: 98, vol: 0.5 })) },
         { dur: 6.5, from: [-97, gy(-97, -62, 1.5), -62], to: [-100, gy(-100, -66, 1.5), -66], look: () => [T.pos.x, T.pos.y + 1.5, T.pos.z], fov: 40,
-          sub: ['Tracker', 'Smoke. There, by the big birch. Spread out.', 4.6], onStart: () => T.goPath([[-98, -70], [-107, -81]]) },
+          sub: ['Kettil', 'Smoke. There, by the big birch. The whelp is alive. Spread out.', 4.6], onStart: () => T.goPath([[-98, -70], [-107, -81]]) },
         { dur: 3.6, from: [ex - 1.8, gy(ex - 1.8, ez + 1.5, 0.8), ez + 1.5], look: [ex, p.pos.y + 0.7, ez], fov: 30, sub: ['Eirik', 'They followed the smoke.', 3], onStart: () => { p.loopOverride = null; } },
       ], { onEnd: () => g.quests.notify('event', 'woke2') }));
     },
@@ -371,11 +425,8 @@ export class Chapter2 {
         this.strain = clamp(this.strain + dt * (p.sprinting ? 0.6 : !p.moving ? 0.1 : p.crouch ? -0.06 : 0.24), 0, 1.2);
         if (this.strain > 0.4 && Math.random() < dt * 5 * this.strain) { g.audio.play('crackle', { vol: 1.5 }); g.audio.play('miss', { vol: 0.4 * this.strain }); p.cam.shake = Math.max(p.cam.shake, 0.08 * this.strain); }
         if (this.strain >= 1) this.breakIce();
-        // grown men will not follow onto ice that barely holds a child
-        for (const n of this.trackers) if (n.raider.state === 'chase' && Math.abs(n.pos.x - riverX(n.pos.z)) < 13) {
-          n.raider.state = 'busy'; n.speed = 0; A.stealthActive = false;
-          if (!this.iceBark) { this.iceBark = true; n.say('He is on the ice! Leave him. It will not hold us, and the cold will do the rest.', 5.5); }
-        }
+        // Eirik crosses on his belly; Kettil steps on it standing up and goes through to his waist
+        for (const n of this.trackers) if (n.raider.state === 'chase' && Math.abs(n.pos.x - riverX(n.pos.z)) < 13) { n.raider.state = 'busy'; n.speed = 0; A.stealthActive = false; this.kettilThrough(n); }
       } else if (!on) this.strain = Math.max(0, this.strain - dt * 0.3);
       this.iceShown = on || this.strain > 0.03;
       if (p.pos.x > riverX(p.pos.z) + 10.5) q.notify('reach', 'eastbank');

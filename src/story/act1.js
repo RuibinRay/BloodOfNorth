@@ -4,8 +4,9 @@ import * as THREE from 'three';
 import { POI } from '../world/layout.js';
 import { heightAt, riverX } from '../world/terrain.js';
 import { shared, M, at, cyl, tint } from '../world/geo.js';
-import { makeShip, toWorld } from '../world/props.js';
+import { toWorld } from '../world/props.js';
 import { CAST, RAIDER_LOOKS, HINTS } from '../data/act1.js';
+import { makeItem } from '../entities/humanoid.js';
 import { Woodcutting, FireMaking, Fishing, Sparring } from '../systems/activities.js';
 import { clamp, damp, lerp } from '../core/util.js';
 import { Chapter2 } from './act1_ch2.js';
@@ -17,6 +18,8 @@ const PATH_TO_MEADOW = [[-38, 71.6], [-27, 70.5], [-17, 64.5], [-3, 57], [0, 46]
 const TRACKS = [[-80, -48], [-98, -54], [-118, -62], [-136, -78], [-146, -100], [-150, -116]];
 const PATH_TO_CAMP = [[-142, -118], [-131, -106], [-121.5, -93.5]];
 const FLEE_PATH = [[-23, 66], [-21, 56], [-21, 50], [-10, 43], [-7, 30], [-8, 12], [-19, -9], [-21.5, -13.5]];
+/** Where Raven-Feeder lands in the snow when Ragnar falls, by the woodpile. */
+const AXE_DROP = [-16.4, 67.6];
 const CAMP_SEAT = [POI.camp.x - 1.75, POI.camp.z + 1.0];
 const DUEL = { ragnar: [-15, 70], hakon: [-10.5, 70.4], g1: [-6, 73.2], g2: [-6.5, 67.4] };
 const GATE_PATROL = [[[-13, -9], [-19.5, -13.5]], [[-9, 2], [-14, -7]]];
@@ -32,7 +35,7 @@ export class Act1 {
   constructor(game) {
     this.g = game; this.stealthActive = false; this.pickups = []; this.raiders = []; this.spar = null;
     this.deerBody = null; this.nightBuilt = false; this.wTarget = { ...WEATHER.day }; this.snowTarget = 0; this.glowTarget = 0;
-    this.failing = false; this.t = 0; this.arrowT = 0; this.ships = []; this.shipK = 1; this.cold = false; this.ending = false;
+    this.failing = false; this.t = 0; this.arrowT = 0; this.torchK = 0; this.cold = false; this.ending = false;
     this.houseFires = {}; this.schedT = 0;
     this.ch2 = new Chapter2(game, this);
     this.ch3 = new Chapter3(game, this);
@@ -276,7 +279,7 @@ export class Act1 {
       if (r) n.teleport(POI.chop.x - 2.6, POI.chop.z - 0.4, 1.3); else n.goTo(POI.chop.x - 2.6, POI.chop.z - 0.4, { onArrive: (o) => o.face(POI.chop.x, POI.chop.z) });
       this.hint('chop');
     },
-    'q_wood.talk'(r) { this.hint(null); const n = this.npc('ragnar'); if (r) n.teleport(POI.chop.x - 2.6, POI.chop.z - 0.4, 1.3); n.setLoop(null); n.faceEntity(this.g.player); },
+    'q_wood.talk'(r) { this.hint(null); const n = this.npc('ragnar'); if (r) n.teleport(POI.chop.x - 2.6, POI.chop.z - 0.4, 1.3); n.setLoop(null); n.h.hold('R', 'father_axe'); n.faceEntity(this.g.player); }, // the axe he will put in Eirik's hands
     'q_hunt.follow'(r) {
       const n = this.npc('ragnar'), g = this.g;
       g.sky.time = Math.max(g.sky.time, 9.4);
@@ -371,6 +374,7 @@ export class Act1 {
       if (r) { n.teleport(POI.yard.x, POI.yard.z - 1.6, 0); n.h.hold('R', 'woodsword_big'); }
       n.setLoop(null); n.faceEntity(this.g.player); this.hint(null);
     },
+    'q_supper.stranger'() { this.playStranger(); },
     'q_supper.ylva'(r) {
       const g = this.g, n = this.npc('ragnar');
       g.sky.time = Math.max(g.sky.time, 16.3); this.wTarget = { ...WEATHER.dusk };
@@ -416,6 +420,33 @@ export class Act1 {
     this.spar.setPhase(phase);
   }
 
+  /** That evening a stranger comes up the path (the owner's story, Act I, Chapter 1): Torvald, though Eirik does not know it. */
+  playStranger() {
+    const g = this.g, p = g.player, n = this.npc('ragnar'), meet = [-21.4, 63.6];
+    if (this.spar) { this.spar.stop(); this.spar = null; }
+    g.sky.time = Math.max(g.sky.time, 16.1); this.wTarget = { ...WEATHER.dusk };
+    n.stop(); n.setLoop(null); n.h.hold('R', null); n.h.hold('L', null); n.teleport(-21.2, 66.6, Math.PI);
+    p.frozen = true; p.equip('none'); p.teleport(-25.6, 70.4, 2.4); this.hint(null);
+    const t = this.npc('stranger') || g.addNPC('stranger', CAST.stranger);
+    t.visible = true; t.teleport(-10, 43, -0.6); t.h.hold('R', 'hammer'); t.walkSpeed = 1.35;
+    const gy = (x, z, h) => g.world.groundAt(x, z) + h, mid = () => [(n.pos.x + t.pos.x) / 2, n.pos.y + 1.45, (n.pos.z + t.pos.z) / 2];
+    g.cine.play([
+      { dur: 7, from: [-24.6, gy(-24.6, 69.6, 2.1), 69.6], to: [-24.0, gy(-24, 68.8, 1.9), 68.8], look: () => [t.pos.x, t.pos.y + 1.4, t.pos.z], fov: 40,
+        sub: ['', 'That evening a stranger came up the path: a grey cloak, a war hammer slung across his back, a beard going white at the edges.', 6.4],
+        onStart: () => t.goPath([[-21, 50], [-21, 56], meet], { onArrive: (o) => o.face(n.pos.x, n.pos.z) }) },
+      { dur: 3.0, from: [-22.6, gy(-22.6, 68.6, 1.55), 68.6], look: () => [n.pos.x, n.pos.y + 1.6, n.pos.z], fov: 34, sub: ['Ragnar', 'Eirik. Inside.', 2.4], onStart: () => n.face(p.pos.x, p.pos.z) },
+      { dur: 4.6, from: [-26.6, gy(-26.6, 70.6, 1.15), 70.6], to: [-26.5, gy(-26.5, 70.5, 1.15), 70.5], look: mid, fov: 30, sub: ['', 'Through a gap in the wall planks, Eirik heard pieces of an argument.', 4],
+        onStart: () => { p.root.visible = false; if (t.dist(n) > 3) t.teleport(...meet, 0); t.stop(); t.face(n.pos.x, n.pos.z); n.face(t.pos.x, t.pos.z); } },
+      { dur: 4.4, from: [-26.5, gy(-26.5, 70.5, 1.15), 70.5], to: [-26.4, gy(-26.4, 70.4, 1.15), 70.4], look: mid, fov: 28, sub: ['The stranger', '...he knows you are on this coast, Ragnar. Go north. Tonight.', 4] },
+      { dur: 5.2, from: [-26.4, gy(-26.4, 70.4, 1.15), 70.4], to: [-26.3, gy(-26.3, 70.3, 1.15), 70.3], look: mid, fov: 28, sub: ['Ragnar', 'With a woman, a boy, and winter one week away? You know what the mountains do in winter.', 4.8] },
+      { dur: 3.4, from: [-26.3, gy(-26.3, 70.3, 1.15), 70.3], look: mid, fov: 26, sub: ['The stranger', 'I know what he does.', 3] },
+      { dur: 6, from: [-24, gy(-24, 69, 2.2), 69], to: [-23, gy(-23, 67.6, 2.6), 67.6], look: () => [t.pos.x, t.pos.y + 1.3, t.pos.z], fov: 42, sub: ['', 'The stranger left before supper. Ylva barred the door, which she never did.', 5.4],
+        onStart: () => t.goPath([[-21, 56], [-21, 50], [-10, 43], [-7, 30]]) },
+      { dur: 7, from: [-15.6, gy(-15.6, 70.6, 1.0), 70.6], to: [-15.9, gy(-15.9, 70.3, 0.95), 70.3], look: () => [n.pos.x, n.pos.y + 0.7, n.pos.z], fov: 32,
+        sub: ['', 'Ragnar sat by the fire for a long time, turning the axe over in his hands and pressing his thumb against the iron collar, as if checking something hidden there was still safe.', 6.6],
+        onStart: () => { n.teleport(-17.6, 69.0, -2.0); n.setLoop('warm'); n.h.hold('R', 'father_axe'); } },
+    ], { onEnd: () => { t.visible = false; t.stop(); p.root.visible = true; p.frozen = false; n.h.hold('R', null); g.ui.subtitle('', 'Eirik wondered who "he" was.', 3.5); g.quests.notify('event', 'strangerGone'); } });
+  }
   goToBed() {
     const g = this.g;
     g.player.frozen = true; this.hint(null);
@@ -442,12 +473,6 @@ export class Act1 {
     this.cookFire.on = false; this.greenFire.on = false; this.forgeFire.on = false; this.campFire.on = false;
     this.chimneys.forEach((c) => (c.on = false));
 
-    // longships on the beach
-    [[-16, 169, 0.12], [5, 171, -0.05], [25, 169.5, -0.16]].forEach(([x, z, ry], i) => {
-      const s = makeShip({ seed: 11 + i }); s.position.set(x, -0.3, z); s.rotation.set(0, Math.PI + ry, 0.05 * (i - 1));
-      g.scene.add(s); this.ships.push({ m: s, x, z, fire: g.fx.addFire(x, 4.6, z - 10.2, 0.45, { smoke: false }) });
-    });
-
     // raiders
     const mk = (i, x, z, yaw, weapon, torch = true) => {
       const n = g.addNPC('raider' + i, { name: 'Raider', look: RAIDER_LOOKS[i % RAIDER_LOOKS.length], runSpeed: 3.9, walkSpeed: 1.45 });
@@ -462,9 +487,14 @@ export class Act1 {
       g1: mk(2, ...DUEL.g1, -1.6, 'sword'), g2: mk(3, ...DUEL.g2, -1.6, 'axe'),
       brokk: mk(4, 0.5, 39, 0, 'axe', false), gunnar: mk(5, 19, 27.5, 1.5, 'sword', false), farmer: mk(6, -9.5, 23.5, 3, 'spear', false),
       loot1: mk(7, 9, 61, 1, 'axe'), loot2: mk(8, 22, 51, -2, 'sword'),
-      gate1: mk(9, -23, -31, 0, 'axe'), gate2: mk(10, -20.5, -33, 0, 'spear', false),
+      gate1: null, gate2: mk(10, -20.5, -33, 0, 'spear', false),
       s1: mk(11, -35, 3.5, -1.5, 'axe'), s2: mk(12, -55, 4, 0, 'sword'), s3: mk(13, -58, -15, 1.5, 'spear'), s4: mk(14, -30, -24, -1.5, 'axe'),
     };
+    { // the young raider whose hand Ylva opens: Kettil, called Red-Hand from that night
+      const k = g.addNPC('kettil1', { name: 'Kettil', look: CAST.kettil.look, runSpeed: 3.9, walkSpeed: 1.45 });
+      k.teleport(-23, -31, 0); k.h.hold('R', 'smallaxe'); k.h.hold('L', null);
+      this.raiders.push(k); this.rd.gate1 = k;
+    }
     this.rd.s1.makeRaider([[-35, 3.5], [-43.5, 1.2], [-41, -6]], { pause: 2.8 });
     this.rd.s2.makeRaider([[-55, 4], [-57.5, 10.5]], { pause: 3 });
     this.rd.s3.makeRaider([[-58, -15], [-49, -18]], { pause: 3.6 });
@@ -502,66 +532,79 @@ export class Act1 {
     g.player.frozen = true;
     g.player.teleport(-27.2, 72.0, 1.4);
     const y = this.npc('ylva'), r = this.npc('ragnar');
-    y.teleport(-25.9, 72.5, -1.9); y.h.hold('R', 'father_axe'); y.h.hold('L', 'spear');
-    r.teleport(...DUEL.ragnar, 1.5); r.h.hold('R', 'sword'); r.h.hold('L', 'shield'); r.setLoop('guard');
+    y.teleport(-25.9, 72.5, -1.9); y.h.hold('R', 'seax'); y.h.hold('L', null);
+    r.teleport(...DUEL.ragnar, 1.5); r.h.hold('R', 'father_axe'); r.h.hold('L', 'shield'); r.setLoop('guard');
     this.rd.g1.visible = this.rd.g2.visible = false; this.hakon.visible = false;
     this.rd.a.visible = this.rd.b.visible = false;
-    // ships start out in the fog
-    this.shipK = 0;
-    Object.assign(g.sky.weather, { fog: 0.3 });
+    // torches coming over the ridge to the north
     const gy = (x, z, h) => heightAt(x, z) + h;
-    const ship = () => { const s = this.ships[1].m.position; return [s.x, 3.2, s.z]; };
-
-    g.ui.card('The Night of Ashes', 'That night, the first snow fell.', 4).then(() => g.ui.fade(false, 1.5));
+    this.ridgeTorches = [];
+    const glow = new THREE.MeshBasicMaterial({ color: 0xffb060, fog: false }), ball = new THREE.SphereGeometry(0.28, 8, 6); // a torch flame reads as a point of light from the village
+    for (let i = 0; i < 16; i++) { const x = -34 + i * 4.4 + (i % 3) * 1.1, z0 = -66 - (i % 4) * 2.5, m = new THREE.Mesh(ball, glow); g.scene.add(m); this.ridgeTorches.push({ x0: x, z0, m, f: g.fx.addFire(x, gy(x, z0, 1.6), z0, 0.6, { smoke: false }) }); }
+    this.placeTorches(0);
+    this.torchK = 0;
+    g.ui.card('The Night of Ashes', 'Three nights later, the first snow came, soft and heavy.', 4).then(() => g.ui.fade(false, 1.5));
     g.after(3.6, () => g.cine.play([
-      { dur: 7.5, from: [38, 2.0, 232], to: [30, 1.7, 218], look: ship, fov: 40, onStart: () => { this.shipMove = true; g.after(3.2, () => g.audio.play('horn', { freq: 82 })); } },
-      { dur: 5.2, from: [-44, gy(-44, 112, 20), 112], to: [-36, gy(-36, 104, 17), 104], look: [-8, 7, 58], fov: 44, sub: ['Lookout', 'Sails... SAILS ON THE FJORD!', 3.4], onStart: () => g.after(1.2, () => g.audio.play('horn', { freq: 131 })) },
-      { dur: 5.0, from: [16, 1.5, 158], to: [13, 1.8, 154], look: () => [this.ships[1].m.position.x, 3.5, this.ships[1].m.position.z - 6], fov: 46, onStart: () => g.audio.setAmbience({ battle: 0.7 }) },
+      { dur: 6.5, from: [-30, gy(-30, 77, 2.2), 77], to: [-29, gy(-29, 75, 2.4), 75], look: [-4, gy(-4, -50, 6), -50], fov: 34, sub: ['', 'Eirik woke to the dogs barking. Then to the dogs stopping.', 5],
+        onStart: () => { g.audio.play('bite', { vol: 0.8 }); g.after(0.5, () => g.audio.play('bite', { vol: 0.7 })); g.after(1.5, () => g.audio.play('bite', { vol: 0.5 })); this.torchMove = true; } },
+      { dur: 6.4, from: [-12, gy(-12, 2, 3.4), 2], to: [-10, gy(-10, -4, 3.6), -4], look: [0, gy(0, -55, 2), -55], fov: 42, sub: ['', 'Torches. Many torches. Men coming over the ridge with wolf pelts on their shoulders.', 5.6], onStart: () => g.after(2.2, () => g.audio.play('horn', { freq: 82 })) },
+      { dur: 4.4, from: [16, gy(16, 42, 1.6), 42], to: [13, gy(13, 38, 1.8), 38], look: [-6, gy(-6, 12, 3), 12], fov: 46, sub: ['Gunnar the Elder', 'The ridge! Up, all of you! UP!', 3.2], onStart: () => g.audio.setAmbience({ battle: 0.7 }) },
     ], { onEnd: () => this.playDuel() }));
+  }
+  /** The torches on the ridge: down toward the village while the night opens, gone once the raiders are among the houses. */
+  placeTorches(k) {
+    for (const t of this.ridgeTorches || []) { t.f.x = t.x0 * (1 - 0.2 * k); t.f.z = t.z0 + (t.z0 * -0.55) * k; t.f.y = heightAt(t.f.x, t.f.z) + 1.6; t.m.position.set(t.f.x, t.f.y + 0.15 + Math.sin(this.t * 7 + t.x0) * 0.05, t.f.z); }
+  }
+  clearTorches() { for (const t of this.ridgeTorches || []) { this.g.fx.removeFire(t.f); this.g.scene.remove(t.m); } this.ridgeTorches = []; this.torchMove = false; }
+  /** Raven-Feeder in the snow by the woodpile, where it fell from Ragnar's hand. */
+  dropAxe(show = true) {
+    const g = this.g;
+    if (!this.axeDrop) { this.axeDrop = makeItem('father_axe'); this.axeDrop.rotation.set(Math.PI / 2, 0, 0.6); g.scene.add(this.axeDrop); }
+    this.axeDrop.position.set(AXE_DROP[0], g.world.groundAt(...AXE_DROP) + 0.06, AXE_DROP[1]); this.axeDrop.visible = show;
   }
 
   playDuel() {
     const g = this.g, r = this.npc('ragnar'), y = this.npc('ylva'), hk = this.hakon, { a, b, g1, g2 } = this.rd;
-    this.shipK = 1; this.shipMove = false; this.placeShips();
+    this.clearTorches();
     this.wTarget = { ...WEATHER.raid }; this.ignite();
     const gy = (x, z, h) => g.world.groundAt(x, z) + h;
     const mid = () => [(r.pos.x + hk.pos.x) / 2, r.pos.y + 1.35, (r.pos.z + hk.pos.z) / 2];
     g.cine.play([
-      { dur: 3.4, from: [-30.6, gy(-30.6, 70.2, 1.25), 70.2], to: [-30.0, gy(-30, 70.6, 1.2), 70.6], look: [-26.5, gy(-26.5, 72.3, 1.05), 72.3], fov: 42, sub: ['Ylva', 'Eirik! Up. Now. Not a sound.', 2.8] },
-      { dur: 3.6, from: [-29.4, gy(-29.4, 73.3, 1.65), 73.3], look: [-15, gy(-15, 70, 1.4), 70], fov: 40, sub: ['Ragnar', 'Ylva. The north path. Take the boy and go!', 3.2],
-        onStart: () => { a.visible = b.visible = true; a.goTo(-12.6, 69.4, { run: true }); b.goTo(-12.4, 71.4, { run: true }); } },
-      { dur: 5.2, from: [-16, gy(-16, 62.5, 1.1), 62.5], to: [-12, gy(-12, 63, 1.2), 63], look: () => [r.pos.x + 1, r.pos.y + 1.2, r.pos.z], fov: 46,
+      { dur: 3.4, from: [-30.6, gy(-30.6, 70.2, 1.25), 70.2], to: [-30.0, gy(-30, 70.6, 1.2), 70.6], look: [-26.5, gy(-26.5, 72.3, 1.05), 72.3], fov: 42, sub: ['Ylva', 'Eirik! Up. Now. Not a sound.', 2.8],
+        onStart: () => { r.teleport(-26.1, 71.0, -0.6); r.setLoop('kneel'); } },
+      { dur: 5.0, from: [-24.6, gy(-24.6, 73.6, 1.1), 73.6], to: [-24.8, gy(-24.8, 73.4, 1.1), 73.4], look: () => [(r.pos.x - 27.2) / 2, r.pos.y + 0.9, (r.pos.z + 72) / 2], fov: 36,
+        sub: ['Ragnar', 'Listen. Your mother will take you out the back. Up to the old birch, then over, then down to the river.', 4.8], onStart: () => r.face(-27.2, 72) },
+      { dur: 4.6, from: [-24.9, gy(-24.9, 73.2, 1.05), 73.2], to: [-25.1, gy(-25.1, 73.0, 1.05), 73.0], look: () => [r.pos.x, r.pos.y + 1.1, r.pos.z], fov: 30,
+        sub: ['Ragnar', 'You do not stop. You do not come back. Not for me, not for her, not for anything. Say it.', 4.4] },
+      { dur: 2.8, from: [-25.2, gy(-25.2, 71.6, 0.95), 71.6], look: [-27.2, gy(-27.2, 72, 0.9), 72], fov: 30, sub: ['Eirik', 'I do not come back.', 2.5] },
+      { dur: 4.2, from: [-29.4, gy(-29.4, 73.3, 1.65), 73.3], look: [-15, gy(-15, 70, 1.4), 70], fov: 40, sub: ['', 'Ragnar kissed his forehead and went out the front door to meet thirty men alone.', 4],
+        onStart: () => { r.setLoop(null); r.teleport(...DUEL.ragnar, 1.5); r.setLoop('guard'); a.visible = b.visible = true; a.goTo(-12.6, 69.4, { run: true }); b.goTo(-12.4, 71.4, { run: true }); } },
+      { dur: 5.2, from: [-16, gy(-16, 62.5, 1.1), 62.5], to: [-12, gy(-12, 63, 1.2), 63], look: () => [r.pos.x + 1, r.pos.y + 1.2, r.pos.z], fov: 46, sub: ['', 'The shield rising, the axe flashing from the left, always from the left.', 4.6],
         onStart: () => { r.fightT = 0.2; r.fight(a, { lethal: 1, onWin: (o) => { o.fight(b, { lethal: 1 }); o.fightT = 0.3; } }); a.fight(r, { lethal: 0 }); b.fight(r, { lethal: 0 }); r.fightT = 0.25; } },
-      { dur: 4.6, from: [-11.5, gy(-11.5, 69, 0.7), 69], look: () => [hk.pos.x, hk.pos.y + 1.7, hk.pos.z], fov: 38, sub: ['Jarl Håkon', 'Ragnar. Ten winters I have looked for you.', 3.8],
+      { dur: 4.6, from: [-11.5, gy(-11.5, 69, 0.7), 69], look: () => [hk.pos.x, hk.pos.y + 1.7, hk.pos.z], fov: 38, sub: ['', 'The raiders gave way, and a man stepped through them: tall and broad, a grey wolf skin over his mail, a helmet with iron eye-guards.', 4.4],
         onStart: () => { a.die(true); b.die(true); r.stop(); r.setLoop('guard'); r.face(...DUEL.hakon); hk.visible = g1.visible = g2.visible = true; hk.teleport(3, 74.6, -1.5); hk.goTo(...DUEL.hakon, { onArrive: (o) => o.face(...DUEL.ragnar) }); } },
-      { dur: 4.0, from: [-13.6, gy(-13.6, 66.6, 1.5), 66.6], to: [-13.0, gy(-13, 66.9, 1.5), 66.9], look: mid, fov: 40, sub: ['Ragnar', 'Håkon. So it is you they call Ironwolf.', 3.4] },
-      { dur: 4.4, from: [-13.4, gy(-13.4, 70.9, 1.7), 70.9], look: () => [hk.pos.x, hk.pos.y + 1.78, hk.pos.z], fov: 30, sub: ['Jarl Håkon', 'The old king gave you something to keep. Where is it?', 3.8] },
-      { dur: 3.2, from: [-12.0, gy(-12, 70.0, 1.6), 70.0], look: () => [r.pos.x, r.pos.y + 1.62, r.pos.z], fov: 30, sub: ['Ragnar', 'Somewhere you will never reach.', 2.6] },
-      { dur: 7.4, from: [-16.5, gy(-16.5, 65, 1.3), 65], to: [-8.5, gy(-8.5, 65.5, 1.0), 65.5], look: mid, fov: 44, linear: true,
+      { dur: 3.6, from: [-13.6, gy(-13.6, 66.6, 1.5), 66.6], to: [-13.0, gy(-13, 66.9, 1.5), 66.9], look: mid, fov: 40, sub: ['Ragnar', 'Håkon. Brother.', 3], onStart: () => { r.setLoop(null); } },
+      { dur: 3.6, from: [-13.4, gy(-13.4, 70.9, 1.7), 70.9], look: () => [hk.pos.x, hk.pos.y + 1.78, hk.pos.z], fov: 30, sub: ['Jarl Håkon', 'You should have gone north.', 3] },
+      { dur: 7.4, from: [-16.5, gy(-16.5, 65, 1.3), 65], to: [-8.5, gy(-8.5, 65.5, 1.0), 65.5], look: mid, fov: 44, linear: true, sub: ['', 'It did not last long. Ragnar was a farmer now, and Håkon had never stopped being a warrior.', 5],
         onStart: () => { r.fight(hk, { lethal: 0 }); hk.fight(r, { lethal: 0 }); r.fightT = 0.3; hk.fightT = 0.9; this.fell = false; },
-        onUpdate: (k) => { if (k > 0.7 && !this.staggered) { this.staggered = true; r.h.play('stagger', 0.7); g.audio.play('hurt'); } if (k > 0.86 && !this.fell) { this.fell = true; r.die(); hk.stop(); hk.setLoop('guard'); } } },
+        onUpdate: (k) => { if (k > 0.7 && !this.staggered) { this.staggered = true; r.h.play('stagger', 0.7); g.audio.play('hurt'); } if (k > 0.86 && !this.fell) { this.fell = true; r.die(); r.h.hold('R', null); this.dropAxe(); hk.stop(); hk.setLoop('guard'); } } },
       { dur: 2.8, from: [-24.6, gy(-24.6, 70.5, 0.95), 70.5], look: [-27.2, gy(-27.2, 72, 0.82), 72.0], fov: 32, sub: ['Eirik', 'FATHER!', 2.2], onStart: () => { g.player.h.play('stagger', 0.8); y.face(-27.2, 72); } },
-      { dur: 6.4, from: [-12.4, gy(-12.4, 71.2, 0.55), 71.2], to: [-12.9, gy(-12.9, 71.6, 0.6), 71.6], look: () => [hk.pos.x, hk.pos.y + 1.8, hk.pos.z], fov: 36,
-        sub: ['Jarl Håkon', 'You should have sworn to me when I asked. Find the woman and the boy. Halfdan\'s line ends tonight.', 5.8], onStart: () => this.burn('home') },
+      { dur: 6.2, from: [-21.5, gy(-21.5, 63.5, 1.6), 63.5], to: [-21, gy(-21, 64, 1.5), 64], look: () => [y.pos.x, y.pos.y + 1.0, y.pos.z], fov: 42, sub: ['', 'Ylva did not run with him. She ran back. She pulled the axe out of the snow by the woodpile.', 5.6],
+        onStart: () => y.goTo(AXE_DROP[0] - 0.7, AXE_DROP[1] + 0.4, { run: true, onArrive: (o) => { o.h.play('pickup', 0.6); g.after(0.35, () => { this.dropAxe(false); o.h.hold('L', 'father_axe'); o.goTo(-25.9, 72.5, { run: true }); }); } }) },
+      { dur: 5.6, from: [-12.4, gy(-12.4, 71.2, 0.55), 71.2], to: [-12.9, gy(-12.9, 71.6, 0.6), 71.6], look: () => [hk.pos.x, hk.pos.y + 1.8, hk.pos.z], fov: 36,
+        sub: ['Jarl Håkon', 'Find the woman and the boy. Halfdan\'s line ends tonight.', 4.8], onStart: () => this.burn('home') },
     ], { onEnd: () => this.g.quests.notify('event', 'duelDone') });
-  }
-  placeShips() {
-    const e = this.shipK * this.shipK * (3 - 2 * this.shipK);
-    this.ships.forEach((s, i) => {
-      s.m.position.z = lerp(s.z + 150 + i * 14, s.z, e); s.m.position.y = -0.3 + Math.sin(this.t * 0.9 + i) * 0.06 * (1 - e);
-      s.fire.z = s.m.position.z - 10.2; s.fire.x = s.m.position.x;
-    });
   }
   /** State of the yard after the duel. */
   finalizeDuel() {
     const g = this.g, r = this.npc('ragnar'), y = this.npc('ylva'), hk = this.hakon, { a, b, g1, g2 } = this.rd;
-    this.shipK = 1; this.shipMove = false; this.placeShips();
+    this.clearTorches(); this.dropAxe(false);
     for (const n of [a, b]) { n.visible = true; n.teleport(n === a ? -12.6 : -12.4, n === a ? 68.6 : 72.2, 1); n.dead = true; n.mode = 'dead'; n.loop = 'dead'; n.h.action = null; n.h.setLoop('dead'); n.h.snap(); }
-    r.visible = true; r.teleport(-13.6, 70.2, 1.5); r.h.hold('R', 'sword'); r.h.hold('L', 'shield'); r.dead = true; r.mode = 'dead'; r.loop = 'dead'; r.h.action = null; r.h.setLoop('dead'); r.h.snap();
+    r.visible = true; r.teleport(-13.6, 70.2, 1.5); r.h.hold('R', null); r.h.hold('L', 'shield'); r.dead = true; r.mode = 'dead'; r.loop = 'dead'; r.h.action = null; r.h.setLoop('dead'); r.h.snap();
     hk.visible = true; hk.teleport(...DUEL.hakon, -1.5); hk.stop(); hk.setLoop('guard');
     for (const n of [g1, g2]) { n.visible = true; n.teleport(...(n === g1 ? DUEL.g1 : DUEL.g2), -1.6); n.makeRaider([], { busy: true }); }
     this.ignite(); this.burn('home');
-    y.visible = true; if (!y.dead && !this.gatePlayed) { y.h.hold('R', 'father_axe'); y.h.hold('L', 'spear'); }
+    y.visible = true; if (!y.dead && !this.gatePlayed) { y.h.hold('R', 'seax'); y.h.hold('L', 'father_axe'); }
     g.audio.setAmbience({ battle: 0.7 }); g.audio.setMusic('raid');
     g.player.frozen = false;
   }
@@ -583,13 +626,17 @@ export class Act1 {
     y.stop(); y.teleport(-21.5, -13.5, 0); p.teleport(-21.0, -11.6, Math.PI); p.crouch = false;
     const gy = (x, z, h) => g.world.groundAt(x, z) + h;
     g.cine.play([
-      { dur: 4.6, from: [-23.4, gy(-23.4, -12.3, 1.0), -12.3], to: [-23.1, gy(-23.1, -12.1, 1.0), -12.1], look: [-21.2, gy(-21.2, -12.6, 0.95), -12.6], fov: 34,
-        sub: ['Ylva', "Take it. Your father's axe. Keep it hidden. Keep it sharp.", 4.0],
-        onStart: () => { y.setLoop('kneel'); y.face(p.pos.x, p.pos.z); g.after(1.6, () => { y.h.hold('R', null); p.showBackAxe(true); if (!g.inventory.has('father_axe')) g.inventory.add('father_axe', 1); }); } },
-      { dur: 4.4, from: [-19.3, gy(-19.3, -11.9, 1.05), -11.9], look: () => [y.pos.x, y.pos.y + 1.05, y.pos.z], fov: 30, sub: ['Ylva', 'Run to the old birch, where your father showed you. Do not look back.', 3.9] },
-      { dur: 3.6, from: [-20, gy(-20, -9, 1.5), -9], look: [-22, gy(-22, -19, 1.4), -19], fov: 44, sub: ['Raider', 'There! The woman!', 2.0],
-        onStart: () => { gate1.visible = gate2.visible = true; gate1.teleport(-23, -27, 0); gate2.teleport(-20.8, -28.5, 0); gate1.goTo(-22.6, -19.5, { run: true }); gate2.goTo(-21, -20.5, { run: true }); y.setLoop(null); y.h.hold('L', null); y.h.hold('R', 'spear'); y.face(-22, -19); g.audio.play('shout'); } },
-      { dur: 2.6, from: [-22.6, gy(-22.6, -11.2, 0.9), -11.2], look: () => [y.pos.x, y.pos.y + 1.5, y.pos.z], fov: 34, sub: ['Ylva', 'I love you. GO!', 2.2] },
+      { dur: 4.2, from: [-23.4, gy(-23.4, -12.3, 1.0), -12.3], to: [-23.1, gy(-23.1, -12.1, 1.0), -12.1], look: [-21.2, gy(-21.2, -12.6, 0.95), -12.6], fov: 34,
+        sub: ['Ylva', "Your father's. Don't let them have it.", 3.4],
+        onStart: () => { y.setLoop('kneel'); y.face(p.pos.x, p.pos.z); g.after(1.6, () => { y.h.hold('L', null); p.showBackAxe(true); if (!g.inventory.has('father_axe')) g.inventory.add('father_axe', 1); }); } },
+      { dur: 2.4, from: [-19.3, gy(-19.3, -11.9, 1.05), -11.9], look: () => [y.pos.x, y.pos.y + 1.05, y.pos.z], fov: 30, sub: ['Ylva', 'Go!', 1.8] },
+      { dur: 3.8, from: [-20, gy(-20, -9, 1.5), -9], look: [-22, gy(-22, -19, 1.4), -19], fov: 44, sub: ['', 'A raider came at them: a young, thin-faced man with a hand axe. Ylva had her herb knife.', 3.6],
+        onStart: () => { gate1.visible = gate2.visible = true; gate1.teleport(-23, -27, 0); gate2.teleport(-20.8, -30.5, 0); gate1.goTo(-21.9, -15.0, { run: true, onArrive: (o) => o.face(y.pos.x, y.pos.z) }); gate2.goTo(-21, -22.5, { run: true }); y.setLoop(null); y.face(-22, -19); g.audio.play('shout'); } },
+      { dur: 3.4, from: [-24.4, gy(-24.4, -14.8, 1.3), -14.8], look: () => [(y.pos.x + gate1.pos.x) / 2, y.pos.y + 1.2, (y.pos.z + gate1.pos.z) / 2], fov: 36, sub: ['', 'She slashed, and opened his right hand from knuckles to wrist.', 3.2],
+        onStart: () => { gate1.teleport(-21.9, -15.0, Math.atan2(y.pos.x + 21.9, y.pos.z + 15)); y.face(gate1.pos.x, gate1.pos.z); y.h.play('atk1', 0.5); g.after(0.3, () => { g.fx.burst('blood', gate1.pos.x, gate1.pos.y + 1.1, gate1.pos.z, 16); gate1.h.play('stagger', 0.7); g.audio.play('hurt'); gate1.h.hold('R', null); }); } },
+      { dur: 3.4, from: [-24.0, gy(-24.0, -14.0, 1.2), -14.0], look: () => [y.pos.x, y.pos.y + 1.0, y.pos.z], fov: 36, sub: ['', 'He screamed, swapped hands and struck her down.', 3],
+        onStart: () => { gate1.h.hold('L', 'smallaxe'); g.after(1.0, () => gate1.h.play('atk1', 0.6)); g.after(1.35, () => { y.die(); g.audio.play('hurt', { vol: 0.7 }); }); } },
+      { dur: 2.4, from: [-22.6, gy(-22.6, -11.2, 0.9), -11.2], look: [-24, gy(-24, -9, 1), -9], fov: 34, sub: ['', 'Eirik ran.', 2] },
     ], { onEnd: () => this.g.quests.notify('reach', 'gate') });
   }
   /** State at the gate once Ylva has made her stand. */
@@ -597,6 +644,7 @@ export class Act1 {
     const y = this.npc('ylva'), { gate1, gate2 } = this.rd;
     this.gatePlayed = true;
     y.visible = true; y.teleport(-22, -16.6, 0.4); y.h.hold('L', null); y.h.hold('R', 'spear'); y.dead = true; y.mode = 'dead'; y.loop = 'dead'; y.h.action = null; y.h.setLoop('dead'); y.h.snap();
+    gate1.h.hold('R', null); gate1.h.hold('L', 'smallaxe');
     for (const n of [gate1, gate2]) { n.visible = true; n.teleport(n === gate1 ? -13 : -9, n === gate1 ? -9 : 2, 2); }
     gate1.makeRaider(GATE_PATROL[0], { pause: 2.5 }); gate2.makeRaider(GATE_PATROL[1], { pause: 3 });
     this.g.player.showBackAxe(true);
@@ -608,10 +656,9 @@ export class Act1 {
     this.st.stage = 'night';
     if (restoring) { this.finalizeGate(); g.player.teleport(-26.5, -12.4, -1.5); }
     else {
-      // her last stand buys the time to get away
-      y.fight(gate1, { lethal: 0 }); gate1.fight(y, { lethal: 0 }); gate2.fight(y, { lethal: 0 });
-      g.after(9, () => { if (!y.dead) { y.die(); g.audio.play('hurt', { vol: 0.7 }); } });
-      g.after(11.5, () => { gate1.makeRaider(GATE_PATROL[0], { pause: 2.5 }); gate2.makeRaider(GATE_PATROL[1], { pause: 3 }); });
+      // Kettil stands over her, nursing his hand; then they both come looking for the boy
+      gate1.say('The boy! Find the boy!', 3);
+      g.after(4.5, () => { gate1.makeRaider(GATE_PATROL[0], { pause: 2.5 }); gate2.makeRaider(GATE_PATROL[1], { pause: 3 }); });
     }
     g.player.crouch = true;
     this.stealthActive = true;
@@ -755,7 +802,7 @@ export class Act1 {
     else if (st.stage === 'ch3') this.ch3.update(dt);
     else if (st.stage === 'act2') this.a2.update(dt);
     else if (st.stage === 'open') this.open.update(dt);
-    if (this.shipMove) { this.shipK = Math.min(1, this.shipK + dt / 15); this.placeShips(); }
+    if (this.torchMove) { this.torchK = Math.min(1, this.torchK + dt / 16); this.placeTorches(this.torchK); }
     if (this.spar) this.spar.update(dt);
 
     // Hunter's Sense visuals

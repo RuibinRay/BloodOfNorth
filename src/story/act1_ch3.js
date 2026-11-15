@@ -6,10 +6,11 @@ import * as THREE from 'three';
 import { EIRIK_SCARRED } from '../entities/player.js';
 import { ACT1_SPOTS } from '../world/mainland.js';
 import { PLACES } from '../world/layout.js';
-import { shared, M, at, cone, sphere, tint, merge } from '../world/geo.js';
+import { shared, M, at, box, cyl, cone, sphere, tint, merge } from '../world/geo.js';
 import { CAST, RAIDER_LOOKS, HINTS } from '../data/act1.js';
 import { SECRETS } from '../data/act1_ch3.js';
-import { VILLAGERS } from '../data/act2.js'; // after Act I's chapter casts: Act II's are built from them
+import { VILLAGERS, CAST2 } from '../data/act2.js'; // after Act I's chapter casts: Act II's are built from them
+import { FOES } from './champions.js';
 import { Woodcutting } from '../systems/activities.js';
 import { damp, dampAngle } from '../core/util.js';
 
@@ -61,7 +62,7 @@ export class Chapter3 {
     this.forge = g.fx.addFire(V.forge.x, V.forge.y, V.forge.z, 0.35, { smoke: true });
     g.player.equip('none');
 
-    for (const id of ['signe', 'bjorn', 'freydis']) {
+    for (const id of ['signe', 'bjorn', 'freydis', 'hrefna']) {
       const n = g.addNPC(id, CAST[id]);
       n.talk = () => this.talkTo(id);
     }
@@ -97,7 +98,7 @@ export class Chapter3 {
     for (const [id, poi, label, what] of [['barrow', 'barrow', 'a mound ringed with stones', 'Stone-ringed mound'], ['twinaxe', 'axeStone', 'a standing stone', 'Standing stone'], ['yew', 'birch', 'a split tree, still green', 'Split yew']])
       R.addMarkable({ id: 'm_' + id, pos: at2(poi), r: 34, label, enabled: () => !st.secrets[id] && !st.marks[id] && (id !== 'yew' || !!st.flags.lightning), onMark: () => { st.marks[id] = { x: S[poi][0], z: S[poi][1], label: what }; g.ui.toast(`Marked on your map: ${what}`); } });
     R.addMarkable({ id: 'hunters', pos: at2('hunters'), r: 75, label: 'smoke on the west bank', enabled: () => !!st.flags.spring && !st.flags.sawHunters,
-      onMark: () => { st.flags.sawHunters = true; g.ui.subtitle('Eirik', 'Men with the wolf on their shields. Still looking. But on the wrong side of the river.', 6); } });
+      onMark: () => { st.flags.sawHunters = true; g.ui.subtitle('Eirik', 'Men with the wolf on their shields, on the far bank. They are not looking for anyone. They think I am under the river.', 6); } });
     R.addMarkable({ id: 'lamb', pos: () => (this.lamb ? this.lamb.pos : pt(S.lamb)), r: 42, label: 'the lost lamb', enabled: () => g.quests.at('q_wings', 'spot'),
       onMark: () => { st.marks.lamb = { x: S.lamb[0], z: S.lamb[1], label: 'Lost lamb' }; g.ui.subtitle('Eirik', 'There. Past the barley, in the long grass.', 4); g.quests.notify('event', 'lambSpotted'); } });
     g.events.on('ravenEye', (on) => { if (on) g.quests.notify('event', 'ravenEye'); });
@@ -135,6 +136,7 @@ export class Chapter3 {
     this.npc('signe').teleport(...S.signe, Math.atan2(F[0] - S.signe[0], F[1] - S.signe[1])).setLoop('cook');
     const b = this.npc('bjorn'); b.teleport(...S.bjorn, Math.atan2(S.chop[0] - S.bjorn[0], S.chop[1] - S.bjorn[1])).setLoop('hammer'); b.h.hold('R', 'hammer');
     this.npc('freydis').teleport(...S.freydis, -2.6);
+    const h = this.npc('hrefna'); if (h) h.teleport(...S.hrefna, 0.4).setLoop(null);
   }
   /** Freydis waits by the pasture while the lamb is missing. */
   lambPost() { this.npc('freydis').teleport(...this.S.lambPost, -1.2); }
@@ -147,6 +149,12 @@ export class Chapter3 {
   talkTo(id) {
     const g = this.g, q = g.quests, d = (tree, onEnd) => g.dialogue.start(tree, { npc: this.npc(id), onEnd }), done = () => q.notify('talk', id);
     if (id === 'signe') return q.at('q_hearth', 'signe') ? d('signe_wake', done) : d('signe_idle');
+    if (id === 'hrefna') {
+      if (q.at('q_hearth', 'hrefna')) return d('hrefna_ravens', done);
+      if (q.at('q_wings', 'bones')) return d('hrefna_bones', done);
+      if (q.at('q_wings', 'named')) return d('hrefna_storm', done);
+      return d('hrefna_idle');
+    }
     if (id === 'freydis') {
       if (q.at('q_hearth', 'freydis')) return d('freydis_meet', done);
       if (q.at('q_wings', 'freydis')) return d('freydis_lamb', done);
@@ -156,6 +164,7 @@ export class Chapter3 {
     if (q.at('q_hearth', 'bjorn')) return d('bjorn_wood', done);
     if (q.at('q_hearth', 'bjorn2')) return d('bjorn_axe', done);
     if (q.at('q_wings', 'dusk')) return d('bjorn_dusk', done);
+    if (q.at('q_wings', 'spar')) return d('bjorn_stick', done);
     return d('bjorn_idle');
   }
   /** The lightning (the owner's story, Act I, Chapter 6): he climbs the old birch in the storm to save his ravens. */
@@ -174,7 +183,7 @@ export class Chapter3 {
           return g.ui.card('Three days of fever', 'Across his left eye, from brow to cheekbone, ran a deep forked burn. Signe prayed to Thor, then to Frigg, then to every god she could name, then shouted at all of them.', 7);
         })
         .then(() => g.ui.fade(false, 1.8))
-        .then(() => { p.loopOverride = null; g.dialogue.start('lightning_wake', { npc: this.npc('signe'), onEnd: () => { p.frozen = false; g.quests.notify('event', 'lightning'); g.ui.hint('The lightning left him three things besides the scar: he hears his ravens, he can see through the white one\'s eyes ({raven}), and, grown, the Stormguard.'); } }); }));
+        .then(() => { p.loopOverride = null; g.dialogue.start('lightning_wake', { npc: this.npc('signe'), onEnd: () => { p.frozen = false; g.quests.notify('event', 'lightning'); g.ui.hint('The lightning left him more than the scar: he hears his ravens, and he can see through the white one\'s eyes ({raven}). One more gift had not shown itself yet.'); } }); }));
     });
   }
   feedChicks() {
@@ -192,8 +201,9 @@ export class Chapter3 {
     p.frozen = true; this.hint(null);
     g.ui.fade(true, 1.2).then(() => {
       this.st.flags.axeHidden = true; p.showBackAxe(false);
-      return g.ui.card('The Axe Under the Floor', 'Scratched on the underside of the hearthstone: a raven. Beside it, an older mark, worn almost flat. Someone had hidden something here before.', 6);
-    }).then(() => g.quests.notify('event', 'hidAxe'));
+      return g.ui.card('The Axe Under the Floor', 'He pried up a flat stone beside the hearth, dug a hollow, wrapped Raven-Feeder in an oiled sheepskin and buried it. He did not want to see it. He did not want to give it away. He wanted it there, under the fire, where it would stay warm.', 8);
+    }).then(() => g.ui.card('', 'Bjorn heard every bit of it from his bed and said nothing, then or ever.', 4.5))
+      .then(() => { g.quests.notify('event', 'hidAxe'); return g.ui.fade(false, 1.4); }).then(() => { p.frozen = false; });
   }
   foundSecret(id) {
     const g = this.g, st = this.st;
@@ -223,13 +233,82 @@ export class Chapter3 {
   }
   penLamb() { const [px, pz] = this.S.pen; if (this.lamb) { this.lamb.ai = null; this.lamb.home = { x: px, z: pz, r: 9 }; this.lamb.pos.set(px + 1, this.g.world.groundAt(px, pz), pz + 1); this.lamb = null; } }
 
+  /** Early summer: Bjorn's feint from behind, and the Stormguard answers for the first time (the owner's story, Act I, Chapter 6). */
+  playStick() {
+    const g = this.g, p = g.player, b = this.npc('bjorn'), [cx, cz] = this.S.wake;
+    p.frozen = true; p.equip('none'); p.teleport(cx, cz, 0); p.h.hold('R', 'woodsword'); p.h.hold('L', 'shield');
+    b.stop(); b.setLoop(null); b.h.hold('R', 'woodsword_big'); b.h.hold('L', null); b.teleport(cx, cz + 2.3, Math.PI);
+    const gy = (x, z, h) => g.world.groundAt(x, z) + h;
+    this.guard = null;
+    g.cine.play([
+      { dur: 2.6, from: [cx + 3.2, gy(cx + 3.2, cz + 1.2, 1.4), cz + 1.2], look: [cx, gy(cx, cz + 1.2, 1.0), cz + 1.2], fov: 40, sub: ['', 'Bjorn feinted high.', 2.2], onStart: () => b.h.play('atk1', 0.7) },
+      { dur: 1.6, from: [cx + 2.6, gy(cx + 2.6, cz + 0.4, 1.3), cz + 0.4], look: [cx, gy(cx, cz, 1.0), cz], fov: 40, sub: ['', 'Then he swung low and hard, from behind.', 1.6],
+        onStart: () => { b.teleport(cx - 0.6, cz - 1.6, 0.35); b.face(cx, cz); } },
+    ], { skippable: false, onEnd: () => {
+      // the scar burns like a coal; everything slows; the stick comes the way a leaf falls
+      this.guard = { t: 0, win: 2.8 }; g.ui.dim(0.25); p.cam.shake = 0.15; g.audio.play('heart'); b.h.play('atk2', 2.8);
+      this.hint('stick');
+    } });
+  }
+  guardDone(ok) {
+    const g = this.g, p = g.player, b = this.npc('bjorn');
+    this.guard = null; this.hint(null); g.ui.dim(0);
+    if (!ok) { // he took it on the back of the head, as grown men did at the harvest games
+      g.audio.play('thud'); p.h.play('stagger', 0.6);
+      g.ui.subtitle('Bjorn', 'Ha! That one has dropped grown men at the harvest games. Again. Watch the stick, not my face.', 4.5);
+      return g.after(4.6, () => this.playStick());
+    }
+    p.faceTarget = b.pos; p.h.play('blockhit', 0.5); g.audio.play('parry'); g.audio.play('thunder', { vol: 0.25 }); p.cam.shake = 0.4;
+    g.ui.subtitle('', 'His scar burned like a coal. He turned, raised the little shield, and the blow cracked against it.', 4.5);
+    g.after(1.6, () => { p.faceTarget = null; p.loopOverride = 'sit'; g.ui.subtitle('', 'Then his knees gave out and he sat down in the grass, gasping and white.', 4); });
+    g.after(5.8, () => { p.loopOverride = null; p.frozen = false; p.h.hold('R', null); p.h.hold('L', null); b.h.hold('R', null); g.quests.notify('event', 'stormguard'); });
+  }
+  /** Far out across the water, on Svartøy: the seven seats and the two hands (Act I, Chapter 7). */
+  playSevenSeats() {
+    const g = this.g, p = g.player, h = g.world.realm.svartoy.hall, y0 = h.y, zs = h.z + h.hl + 1;
+    const F = (id) => FOES.find((f) => f.id === id), set = (n, x, z, yaw, pose, y = 0) => { n.visible = true; n.mode = 'crew'; n.pos.set(x, y0 + y, z); n.yaw = yaw; n.root.rotation.y = yaw; n.h.hold('R', null); n.h.hold('L', null); n.pose = pose; return n; };
+    const mk = (id, name, look) => { const n = g.npcs.get('a1s_' + id) || g.addNPC('a1s_' + id, { name, look }); n.mode = 'crew'; return n; };
+    const C = { hakon: mk('hakon', 'Håkon', { ...CAST.hakon.look, helmet: false }), vigdis: mk('vigdis', 'Vigdis', F('vigdis').look), gorm: mk('gorm', 'Gorm', F('gorm').look), sigurd: mk('sigurd', 'Sigurd Stonehand', CAST2.sigurd.look) };
+    const seats = ['arne', 'rurik', 'skarde', 'eydis', 'bersi', 'ulf', 'kettil'];
+    for (const id of seats) C[id] = mk(id, F(id).name, id === 'kettil' ? CAST.kettil.look : F(id).look);
+    set(C.hakon, h.x, zs - 3.3, Math.PI, 'sit', 0.62); set(C.vigdis, h.x - 1.5, zs - 1.9, Math.PI, null); set(C.gorm, h.x + 1.6, zs - 1.9, Math.PI, null); set(C.sigurd, h.x - 3.2, zs - 5.4, 1.2, 'sit');
+    seats.forEach((id, i) => { const sd = i % 2 ? 1 : -1; set(C[id], h.x + sd * 3.2, zs - 7.6 - (i >> 1) * 1.9, -sd * Math.PI / 2, 'sit'); }); // Kettil last: the lowest seat
+    if (!this.seatSet) { // the champions' table: two boards and their benches down the hall
+      const b = new THREE.Group(), add = (geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; b.add(m); };
+      for (const sd of [-1, 1]) { add(box(1.0, 0.1, 7.8), M.plank, h.x + sd * 2.3, y0 + 0.82, zs - 10.4); add(box(0.42, 0.08, 7.8), M.plank, h.x + sd * 3.2, y0 + 0.46, zs - 10.4); for (const k of [-1, 0, 1]) { add(box(0.9, 0.8, 0.12), M.timber, h.x + sd * 2.3, y0 + 0.4, zs - 10.4 + k * 3.4); add(box(0.36, 0.44, 0.1), M.timber, h.x + sd * 3.2, y0 + 0.22, zs - 10.4 + k * 3.6); } }
+      for (let i = 0; i < 12; i++) add(i % 3 ? cyl(0.08, 0.06, 0.14, 7) : sphere(0.15, 7, 5), M.timber, h.x + (i % 2 ? 2.3 : -2.3) + (i % 3) * 0.12, y0 + 0.94, zs - 13.6 + i * 0.6);
+      g.scene.add(b); this.seatSet = b;
+    }
+    this.seatSet.visible = true;
+    const fires = [g.fx.addFire(h.x, y0 + 0.3, h.z - 4, 1.1), g.fx.addFire(h.x, y0 + 0.3, h.z + 3, 1.1)];
+    this.seatCast = Object.values(C); // posed each frame (update): crew are not moved by their own update
+    p.root.visible = false; g.ravens.setMode('hidden'); p.teleport(h.x, h.z + 2, 0);
+    const at = (n, k = 1.5) => () => [n.pos.x, n.pos.y + k, n.pos.z];
+    return new Promise((done) => {
+      g.ui.fade(false, 1.6);
+      g.cine.play([
+        { dur: 7, from: [h.x, y0 + 3.4, zs - 19], to: [h.x, y0 + 2.6, zs - 14], look: [h.x, y0 + 1.4, zs - 3], fov: 46,
+          sub: ['', 'Far out across the water, on the Black Isle of Svartøy, Håkon Ironwolf sat in his hall and listened to the reports of a dozen raids.', 6.4] },
+        { dur: 6.6, from: [h.x - 2.4, y0 + 1.8, zs - 10.5], to: [h.x - 1.6, y0 + 1.7, zs - 9.5], look: at(C.hakon, 1.3), fov: 36,
+          sub: ['', 'His fleet grew every year. Island kings paid him tribute so he would leave them alone. Sigurd Stonehand\'s silver bought him ships.', 6.2] },
+        { dur: 7, from: [h.x + 2.6, y0 + 2.4, zs - 5], to: [h.x + 1.6, y0 + 2.2, zs - 13], look: [h.x, y0 + 1.0, zs - 9], fov: 44,
+          sub: ['', 'He gathered seven champions around him, the cruelest and strongest in the North, and gave each one a seat at his table and a wolf brooch of black iron.', 6.6] },
+        { dur: 6.2, from: [h.x, y0 + 1.7, zs - 7.5], to: [h.x, y0 + 1.6, zs - 6.5], look: [h.x, y0 + 1.5, zs - 2.2], fov: 38,
+          sub: ['', 'Two more stood behind his chair: Vigdis, the fastest blade anyone had ever seen, and Gorm, who had once walked home from a battle with three arrows in his back.', 6] },
+        { dur: 6.4, from: [h.x - 1.4, y0 + 1.4, zs - 15.6], to: [h.x - 0.8, y0 + 1.35, zs - 15.0], look: at(C.kettil, 1.2), fov: 32,
+          sub: ['', 'Kettil Red-Hand, his right hand ruined and his left hand now his fighting hand, got the lowest seat at the champions\' table. He never forgot it.', 6] },
+      ], { skippable: true, onEnd: () => g.ui.fade(true, 1.6).then(() => { this.seatCast = null; this.seatSet.visible = false; for (const n of Object.values(C)) n.visible = false; for (const f of fires) g.fx.removeFire(f); done(); }) });
+    });
+  }
   playEnding() {
     const g = this.g, A = this.act;
     if (this.ending) return;
     this.ending = true; this.hint(null); g.player.frozen = true; g.ravens.exitEye();
     g.ui.fade(true, 2.6)
-      .then(() => g.ui.card('', 'Ten winters passed.', 3.6))
-      .then(() => g.ui.card('', g.fmt('The boy who came out of the snow grew tall. {w} and {b} grew with him, and were never far from his shoulder.'), 6))
+      .then(() => this.playSevenSeats())
+      .then(() => g.ui.card('', 'And on the mainland, ten winters passed.', 4))
+      .then(() => g.ui.card('', 'Eirik grew tall and strong splitting wood, hauling nets and lifting Bjornstead\'s stones. He learned to fight with spear and shield from Bjorn, and to win arguments from Freydis, mostly by losing them. He learned that a whole village can become your family if you show up when the roof needs fixing.', 9))
+      .then(() => g.ui.card('', 'He never dug up the axe.', 3.6))
       .then(() => g.ui.card('End of Act One', 'Blood of the North', 4.5))
       .then(() => { this.st.stage = 'act1done'; g.autosave(); A.showChapterEnd(); });
   }
@@ -248,7 +327,9 @@ export class Chapter3 {
     'q_hearth.freydis'(r) { this.season(false); if (r) { this.posts(); this.placeChicks(false); } this.hint(null); },
     'q_hearth.nest'(r) {
       const g = this.g, f = this.npc('freydis');
-      this.season(false); this.placeChicks(false); if (r) this.posts();
+      this.season(false); this.placeChicks(false); this.posts(); g.sky.time = 10.2;
+      if (!r) g.ui.card('That spring', 'A storm knocked a raven\'s nest out of the pines above the harbour.', 4);
+      f.say('Snow boy! The storm brought down the raven pine. There is a nest, and they are ALIVE!', 4.5);
       this.atNest = false;
       f.lead(this.S.nestPath, { speed: 3.6, wait: 11, resume: 5, bark: ['Come ON, snow boy!', 'This way! Hurry, they are cold!'], onArrive: (o) => { this.atNest = true; o.face(...this.S.nest); } });
       g.ui.hint('Follow Freydis. She will wait if you fall behind.');
@@ -266,13 +347,23 @@ export class Chapter3 {
     },
     'q_hearth.chop'(r) { this.season(false); this.placeChicks(true); if (r) this.posts(); const b = this.npc('bjorn'); b.setLoop(null); b.h.hold('R', null); b.face(...this.S.chop); this.hint('farmchop'); },
     'q_hearth.bjorn2'(r) { this.season(false); this.placeChicks(true); if (r) this.posts(); const b = this.npc('bjorn'); b.setLoop(null); b.h.hold('R', null); b.faceEntity(this.g.player); this.hint(null); },
-    'q_hearth.hide'(r) { this.season(false); this.placeChicks(true); if (r) this.posts(); this.hint('hideaxe'); },
+    'q_hearth.hide'(r) { this.season(false); this.placeChicks(false); this.chicks.visible = false; if (r) this.posts(); this.g.sky.time = 21.5; this.hint('hideaxe'); if (!r) this.g.ui.subtitle('', 'That night, when the house was asleep...', 4); },
+    'q_hearth.hrefna'(r) { this.season(false); this.placeChicks(true); if (r) this.posts(); this.hint(null); },
+    'q_wings.bones'(r) { // that autumn (the owner's story, Act I, Chapter 5)
+      const g = this.g, p = g.player;
+      this.season(true); this.posts(); this.chicks.visible = false;
+      const h = this.npc('hrefna'); g.sky.time = 16.4; this.st.flags.axeHidden = true;
+      const [hx, hz] = this.S.hrefna; this.npc('freydis').teleport(hx + 1.6, hz + 1.8, -2.4);
+      p.teleport(hx - 2, hz + 3.4, 2.6);
+      if (!r) { p.frozen = true; g.ui.card('That autumn', g.fmt('{w} and {b} had grown faster than he did.'), 4).then(() => { p.frozen = false; }); }
+      h.face(hx - 1, hz + 3);
+    },
     'q_wings.wake'() {
       const g = this.g, p = g.player;
       this.season(true); this.posts(); this.st.flags.axeHidden = true;
       g.sky.time = 9.6; p.frozen = true; p.teleport(...this.S.wake, 1.9);
       this.lambPost();
-      g.ui.card('Spring', g.fmt('{w} and {b} grew faster than he did.'), 4.2).then(() => g.ui.fade(false, 1.6)).then(() => { p.frozen = false; g.quests.notify('event', 'woke4'); });
+      g.ui.card('The spring after his tenth birthday', 'A storm came off the sea so fast that the fishing boats barely made it home.', 4.6).then(() => g.ui.fade(false, 1.6)).then(() => { p.frozen = false; g.quests.notify('event', 'woke4'); });
     },
     'q_wings.storm'(r) { // the spring after his tenth birthday, a storm comes off the sea
       const g = this.g; this.season(true); if (r) this.posts();
@@ -287,6 +378,23 @@ export class Chapter3 {
     'q_wings.spot'(r) { this.season(true); if (r) { this.posts(); this.lambPost(); } this.spawnLamb(false); this.g.ui.hint('The lamb went west, out past the barley. Fly over the field and press {interact} when the prompt appears.'); },
     'q_wings.fetch'(r) { this.season(true); if (r) { this.posts(); this.lambPost(); this.st.marks.lamb = { x: this.S.lamb[0], z: this.S.lamb[1], label: 'Lost lamb' }; } this.spawnLamb(false); this.hint('ravenfree'); },
     'q_wings.home'(r) { this.season(true); if (r) { this.posts(); this.lambPost(); } this.spawnLamb(true); this.lamb.follow = true; this.hint(null); },
+    'q_wings.spar'(r) {
+      const g = this.g, [cx, cz] = this.S.wake;
+      this.season(true); if (r) this.posts();
+      const b = this.npc('bjorn'); this.npc('freydis').teleport(cx + 4, cz + 1, -1.4);
+      g.sky.time = 10.4; this.act.wTarget = { ...SPRING }; Object.assign(g.sky.weather, SPRING);
+      b.stop(); b.setLoop(null); b.h.hold('R', 'woodsword_big'); b.teleport(cx, cz + 2.3, Math.PI);
+      if (!r) g.ui.card('Early summer', 'Bjorn was teaching him to fight with a stick and a little shield, as every boy in Bjornstead was taught.', 5);
+    },
+    'q_wings.guard'() { this.season(true); this.posts(); this.playStick(); },
+    'q_wings.named'(r) {
+      const g = this.g, p = g.player;
+      this.season(true); this.posts();
+      const h = this.npc('hrefna'), b = this.npc('bjorn'); g.sky.time = Math.max(g.sky.time, 11);
+      if (r) p.teleport(...this.S.wake, 0);
+      h.teleport(p.pos.x + 1.6, p.pos.z + 1.2, -2.2); b.teleport(p.pos.x - 1.4, p.pos.z + 1.8, 2.4); b.h.hold('R', null);
+      this.hint(null);
+    },
     'q_wings.dusk'(r) {
       const g = this.g, b = this.npc('bjorn');
       this.season(true); if (r) { this.posts(); this.lambPost(); }
@@ -305,7 +413,9 @@ export class Chapter3 {
     if (!this.built) return;
     const g = this.g, p = g.player, q = g.quests;
     this.t += dt;
-    if (g.mode === 'play') g.sky.time = Math.min(q.at('q_wings', 'dusk') ? 16.9 : 15.6, g.sky.time + dt / 220);
+    if (g.mode === 'play' && !q.at('q_hearth', 'hide') && !q.at('q_wings', 'bones')) g.sky.time = Math.min(q.at('q_wings', 'dusk') ? 16.9 : 15.6, g.sky.time + dt / 220);
+    if (this.seatCast) for (const n of this.seatCast) { n.h.setLoop(n.pose || null); n.h.setLocomotion(0, false); n.h.update(dt); }
+    if (this.guard && g.mode === 'play') { this.guard.t += dt; if (g.input.hit('block') || g.input.held('block')) this.guardDone(true); else if (this.guard.t > this.guard.win) this.guardDone(false); }
     this.st.time = g.sky.time;
     p.speedMul = 1; p.warmth = 100; p.hunger = 100;
     const f = this.npc('freydis');

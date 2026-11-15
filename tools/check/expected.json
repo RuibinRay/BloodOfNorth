@@ -37,11 +37,11 @@
    "marker": "yes"
   },
   "q_supper": {
-   "at": "q_supper.ylva",
+   "at": "q_supper.stranger",
    "stage": "day",
-   "mode": "play",
+   "mode": "cutscene",
    "pos": [-26, 70],
-   "marker": "yes"
+   "marker": "none"
   },
   "q_ashes": {
    "at": "q_ashes.wake",
@@ -79,10 +79,10 @@
    "marker": "yes"
   },
   "q_wings": {
-   "at": "q_wings.storm",
+   "at": "q_wings.bones",
    "stage": "ch3",
    "mode": "play",
-   "pos": [1304, 695],
+   "pos": [1228, 703],
    "marker": "yes"
   },
   "q_ten": {

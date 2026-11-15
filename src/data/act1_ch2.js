@@ -22,7 +22,7 @@ Object.assign(QUESTS, {
       { id: 'shelter', text: 'Mend the lean-to', type: 'event', key: 'shelterDone', marker: { pos: LEANTO } },
       { id: 'food', text: 'Find food. Fresh deer tracks lead away from the old birch', type: 'kill', key: 'deer', marker: { pos: [-126, -100], until: 9 } },
       { id: 'harvest', text: 'Harvest the deer', type: 'event', key: 'harvestDeer', marker: { dyn: 'deerBody' } },
-      { id: 'wolf', text: 'A wolf wants your kill. Shoot it, or give it a share', type: 'event', key: 'wolfDone', marker: { dyn: 'wolf' } },
+      { id: 'wolf', text: 'A thin she-wolf circles the fire. Throw her a share of the meat', type: 'event', key: 'wolfDone', marker: { dyn: 'wolf' } },
       { id: 'return', text: 'Carry the meat back to the fire', type: 'reach', key: 'camp3', marker: { poi: 'camp' } },
       { id: 'cook', text: 'Cook the venison and eat', type: 'event', key: 'ate', marker: { poi: 'camp' } },
       { id: 'sleep', text: 'Sleep in the shelter', type: 'event', key: 'slept', marker: { pos: LEANTO } },
@@ -42,7 +42,7 @@ Object.assign(QUESTS, {
 Object.assign(HINTS, {
   boughs: 'Press {interact} at a young spruce to cut boughs. Stay near the fire to warm up; hunger and cold both wear you down.',
   tracks2: "Hold {sense} to follow the prints in the snow. Deer spook easily: crouch with {crouch}, and aim for the head or neck.",
-  wolf: 'The wolf circles, then lunges. Roll clear with {dodge}. Loose an arrow, or get close and throw it meat with {interact}.',
+  wolf: 'She circles just outside the firelight. Get close and press {interact} to throw her meat.',
   cook: 'Press {interact} at the fire to cook and eat.',
   trackers: 'Trackers. Crouch with {crouch}: among the trees they must be almost on top of you to see you. Running is loud.',
   ice: 'The ice is thin. Crouch with {crouch} and creep across. Running will break it, and so will standing still.',

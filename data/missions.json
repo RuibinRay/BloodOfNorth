@@ -19,8 +19,8 @@
               "type": "tutorial",
               "target_minutes": 20,
               "summary": "The woodpile and Raven-Feeder; Ragnar's lesson; the hunt, the fire, wooden swords; the grey-cloaked stranger at the door.",
-              "status": "partial",
-              "note": "Built as the first chapter's day. The stranger (Torvald), the runes in the ash and the axe's name in dialogue are not in yet."
+              "status": "built",
+              "note": "Built as the first chapter's day: Raven-Feeder named at the woodpile, \"always from the left... change\", runes in the hearth ash, and the grey-cloaked stranger with the war hammer (Torvald, unnamed) arguing with Ragnar at dusk."
             }
           ]
         },
@@ -34,8 +34,8 @@
               "type": "escape",
               "target_minutes": 25,
               "summary": "Thirty torches on the ridge. Ragnar meets Håkon; Ylva gives Eirik the axe and cuts Kettil's hand; the old birch, the ridge, the thin ice.",
-              "status": "partial",
-              "note": "Built as the night raid and escape. Håkon by name, Kettil's hand, Sigurd counting silver and the lie \"he is under the river\" are not shown yet."
+              "status": "built",
+              "note": "Built as the night raid: torches over the ridge, \"Say it.\" \"I do not come back.\", \"Håkon. Brother.\", Ylva running back for the axe and opening Kettil's hand. The chase to the river, Kettil through the ice and the lie \"he is under the river\" (with Sigurd counting silver) come at the end of the game's Chapter Two, three days after the raid, not the same night."
             }
           ]
         },
@@ -58,8 +58,8 @@
               "type": "choice",
               "target_minutes": 10,
               "summary": "A starving wolf with a snare on her leg. Kill her for the meat, or cut the wire.",
-              "status": "partial",
-              "note": "Built as feed-or-kill; the snare and cutting the wire are not in yet."
+              "status": "built",
+              "note": "Built as the story has it: a thin, limping she-wolf with a trapper's snare; he feeds her and cuts the wire. She cannot be killed."
             }
           ]
         },
@@ -104,8 +104,8 @@
               "type": "story",
               "target_minutes": 5,
               "summary": "The seeress and the five sayings.",
-              "status": "planned",
-              "note": "Old Hrefna is not in the game yet. The five omens round Bjornstead are."
+              "status": "built",
+              "note": "Old Hrefna in the village: \"Odin had two ravens\" over the white chick, and the rune-bones in autumn with the five sayings."
             }
           ]
         },
@@ -136,8 +136,8 @@
               "type": "tutorial",
               "target_minutes": 6,
               "summary": "Bjorn's feint from behind; Stormguard answers for the first time; Hrefna names it.",
-              "status": "planned",
-              "note": "Stormguard exists for the grown Eirik; this scene does not."
+              "status": "built",
+              "note": "Early summer: Bjorn's feint from behind, the shield raised in time (one button), his knees giving out, and Hrefna naming the Stormguard."
             }
           ]
         },
@@ -151,7 +151,8 @@
               "type": "cutscene",
               "target_minutes": 4,
               "summary": "Svartøy: the seven champions, the two hands, Kettil in the lowest seat. Ten winters pass.",
-              "status": "planned"
+              "status": "built",
+              "note": "A scene in Håkon's hall on Svartøy: the seven seats, Vigdis and Gorm behind the chair, Kettil in the lowest seat; then ten winters pass."
             }
           ]
         }
@@ -1659,10 +1660,10 @@
     "missions": 89,
     "target_minutes": 1015,
     "by_status": {
-      "built": 83,
-      "partial": 3,
+      "built": 89,
+      "partial": 0,
       "fight_only": 0,
-      "planned": 3
+      "planned": 0
     }
   }
 }

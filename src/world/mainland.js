@@ -63,7 +63,7 @@ export function ACT1_SPOTS(B, barnDoor) {
     nest, logs: [[nest[0] - 8, nest[1] - 5.4], [nest[0], nest[1] - 7.9], [nest[0] - 6.5, nest[1] + 3.1]],
     fire: B(-2.5, 126.4), seat: B(0.6, 128.6), basket: B(-1.4, 129.2), signe: B(-4.8, 127.8), bjorn: B(-19, 127.5), freydis: B(6, 141),
     chop: B(-23, 130), pen: B(100, 34), lambPost: B(-8, 142), wake: B(4, 135), barrow: B(96, -24), axeStone: B(62, 48), tarn: B(-140, -50),
-    skyIron: barnDoor ? [barnDoor.x - 1.4, barnDoor.z + 1.6] : B(34, 124), birch: B(-20, 10), hunters: B(178, 30), lamb: B(-142, 124),
+    hrefna: B(-70, 139.5), skyIron: barnDoor ? [barnDoor.x - 1.4, barnDoor.z + 1.6] : B(34, 124), birch: B(-20, 10), hunters: B(178, 30), lamb: B(-142, 124),
     nestPath: [B(6, 146), B(-6, 160), B(-28, 200), B(-58, 204), [nest[0] + 1.5, nest[1] + 1.2]],
   };
 }

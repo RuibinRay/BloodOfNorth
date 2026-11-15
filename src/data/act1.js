@@ -26,6 +26,9 @@ export const CAST = {
   asa: { name: 'Asa', role: 'Weaver', look: { female: true, scale: 0.95, build: 0.92, hair: 0x4a3a2a, hairStyle: 'bun', tunic: 0x6a5a7a, apron: 0xcfc6ae, age: 0.35, face: 'lean', squint: 0.15 } },
   farmer1: { name: 'Ketil', role: 'Farmer', look: { hair: 0x7a5a3a, tunic: 0x7a6a4a, beard: 'short', face: 'broad', nose: 'broad' } },
   farmer2: { name: 'Dagny', role: 'Farmer', look: { female: true, scale: 0.94, build: 0.92, hair: 0xb89a5a, hairStyle: 'braids', tunic: 0x8a6a4a, apron: 0xbfb49a } },
+  stranger: { name: 'The stranger', role: 'A grey-cloaked man with a war hammer', look: { build: 1.2, scale: 1.04, hair: 0x6a645a, hairStyle: 'crop', beard: 'short', grey: 0.5, tunic: 0x4a4a4a, trim: 0x8a8a90, cloak: 0x7a7a7e, legs: 0x2e2a26, sleeve: 0x4a4a4a, face: 'long', temples: 0.5, age: 0.4, nose: 'broken', brows: 1.2 } },
+  kettil: { name: 'Kettil', role: 'A young raider', look: { scale: 1.0, build: 0.95, hair: 0x5a2a1a, hairStyle: 'crop', beard: 'stubble', tunic: 0x3a2e2a, trim: 0x6a1a14, legs: 0x24201c, cloak: 0x2a2a2e, fur: true, sleeve: 0x3a2e2a, skin: 0xc89878, eyes: 0x5a4632, face: 'gaunt', squint: 0.35, mood: 'scowl', age: 0 } },
+  sigurd: { name: 'The man in the fur cap', role: 'Jarl Sigurd Stonehand', look: { build: 1.1, hair: 0x6a5a48, hairStyle: 'swept', beard: 'short', tunic: 0x4a4a52, trim: 0xc9c2b0, cloak: 0x2a2a34, fur: true, face: 'round', full: 0.35, mood: 'smirk', age: 0.25 } },
   hakon: { name: 'Jarl Håkon Ironwolf', role: 'Antagonist', look: { scale: 1.12, build: 1.26, hair: 0x2a2420, hairStyle: 'long', beard: 'short', tunic: 0x2e2e34, trim: 0x8a8a90, legs: 0x24221f, cloak: 0x34343a, fur: true, helmet: true, mail: true, sleeve: 0x2e2e34, grey: 0.15, face: 'square', ridge: 0.8, eyes: 0x8e979c, nose: 'hooked', brows: 1.2, squint: 0.25 } },
 };
 export const RAIDER_LOOKS = [
@@ -92,13 +95,14 @@ export const QUESTS = {
     title: 'Supper', kind: 'main', xp: 20, next: 'q_ashes',
     desc: 'The light is going. Mother is at the cooking fire, and the first snow is in the air.',
     steps: [
+      { id: 'stranger', text: 'A stranger on the path', type: 'event', key: 'strangerGone' },
       { id: 'ylva', text: "Bring the day's catch to your mother", type: 'talk', key: 'ylva', marker: { npc: 'ylva' } },
       { id: 'sleep', text: 'Go to bed', type: 'event', key: 'sleep', marker: { poi: 'homeDoor' } },
     ],
   },
   q_ashes: {
     title: 'The Night of Ashes', kind: 'main', xp: 100, next: 'q_alone',
-    desc: 'Sails on the fjord. Fire on the roofs.',
+    desc: 'Torches on the ridge. Fire on the roofs.',
     steps: [
       { id: 'wake', text: 'Wake up', type: 'event', key: 'duelDone' },
       { id: 'flee', text: 'Follow your mother to the north gate', type: 'reach', key: 'gate', marker: { npc: 'ylva' } },
@@ -154,6 +158,14 @@ export const DIALOGUE = {
   ragnar_chop_wait: [{ s: 'Ragnar', t: 'The block is right there. The logs will not split themselves, more is the pity.' }],
   ragnar_wood_done: [
     { s: 'Ragnar', t: 'Clean cuts. Your grandfather split wood like he was angry at it. You listen to it.' },
+    { s: 'Ragnar', t: 'Now put the hatchet down. Here. Both hands.' },
+    { s: E, t: 'She is heavier than she looks. There are ravens scratched into the iron.' },
+    { s: 'Ragnar', t: 'Her name is Raven-Feeder.' },
+    { s: E, t: 'Why?' },
+    { s: 'Ragnar', t: 'Because when I carried her, ravens never went hungry.' },
+    { s: 'Ragnar', t: 'That was a long time ago. Now she splits wood. That is a better job.' },
+    { s: '', t: 'Eirik swung, missed the log and buried the axe in the chopping block. Ragnar laughed so hard he had to sit down.' },
+    { s: 'Ragnar', t: 'And another thing. I always strike from the left. Everyone who ever fought me knew it. Do not be like me. Change.' },
     { s: 'Ragnar', t: 'Winter does not care how much wood we have if the smokehouse is empty.' },
     { s: 'Ragnar', t: 'We go to the hare meadow, past the north gate. Stay close, and stay quiet.' },
   ],
@@ -226,6 +238,10 @@ export const DIALOGUE = {
     { s: 'Ylva', t: 'Hares and venison! Who is this hunter, and what has he done with my son?' },
     { s: 'Ylva', t: 'And trout. You remembered.', if: { item: 'fish', n: 2 }, fx: { rel: { ylva: 1 }, flag: 'broughtFish' } },
     { s: 'Ylva', t: 'No fish? Well. The river will still be there tomorrow.', if: { noItem: 'fish', n: 2 } },
+    { s: E, t: 'Mother. Who was that man?' },
+    { s: 'Ylva', t: 'Someone your father knew, once. Eat.' },
+    { s: '', t: 'After the meal she took a stick and drew in the ash of the hearth, the way she did most nights: real runes, which no other farmer\'s wife in Hrafnvik knew. Nobody asked why.' },
+    { s: 'Ylva', t: 'Your name. E, I, R, I, K. Again, and this time the R faces the right way.' },
     { s: 'Ylva', t: 'Sit. Tell me. When you are grown, what will you be?' },
     { s: E, t: '', choices: [
       { t: '"A farmer, like Father."', to: 'a', fx: { trait: { compassion: 1 }, flag: 'dreamFarmer' } },
