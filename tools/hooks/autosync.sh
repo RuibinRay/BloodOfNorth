@@ -35,7 +35,9 @@ check() {
   git archive "$1" | tar -x -C "$dir" || { echo "could not copy $short to check it"; return 1; }
   for try in 1 2; do
     echo "checking $short (npm run check -- --quick, try $try)"
-    if (cd "$dir" && node tools/check.mjs --quick >"$out" 2>&1); then
+    # its temporary files (Chrome's profile among them) inside the copy: some sandboxes do not let a hook write to the system's
+    mkdir -p "$dir/.tmp"
+    if (cd "$dir" && TMPDIR="$dir/.tmp" node tools/check.mjs --quick >"$out" 2>&1); then
       echo "check passed: $(grep -E 'All passed' "$out" | tail -1)"; rm -rf "$dir" "$out"; return 0
     fi
   done
