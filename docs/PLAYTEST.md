@@ -6,7 +6,7 @@ The game now records that play, and a stand-in player checks the champion fights
 ## For a tester
 
 1. Open the game (https://ruibinray.github.io/BloodOfNorth/) in Chrome, Edge or Safari, with a mouse or a gamepad.
-   Choose English, 中文 or Español in the top right corner of the main menu.
+   Choose English, 中文, 日本語 or Español in the top right corner of the main menu.
 2. **New Game**, and play. If you run out of time, any chapter can be started from **Start at an Act**.
 3. Whenever something is unclear, unfair, too easy, too slow, broken or just good: press **F8**, type a line, press
    Enter. The note is kept with the step you were on, where you stood and a small picture of the screen.

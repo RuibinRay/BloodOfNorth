@@ -1,6 +1,7 @@
 // Strings in the source that read like words but are never shown to a player (key names on keycaps, shader code,
 // debug lines, lookup keys), so tools/i18n.mjs does not ask for them to be translated. And EXTRA: short strings that
-// are shown but do not look like words to the scan (the compass points).
+// are shown but do not look like words to the scan (the compass points), and text written from src/i18n itself (the
+// browser tab's title), which the scan does not read.
 export default [
   // keycaps: printed as they are on the keyboard
   'Tab', 'Alt', 'Alt Gr', 'Escape', 'Key', 'Digit', 'Shift', 'R-Shift', 'Ctrl', 'Esc', 'Pad', 'Pad ', 'Mouse', 'Enter',
@@ -16,4 +17,4 @@ export default [
   'the lawspeaker', 'the lawspeaker of kaupang', 'a drunk sailor', 'an ironmonger', 'a salt seller', 'a grain factor', 'a jarnoy smith',
   'the raven stone', 'the twin axe stone', 'the barrow', 'the split birch', 'the spear in the ice', 'the tarn', 'sky iron',
 ];
-export const EXTRA = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+export const EXTRA = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'Blood of the North — Rise of the Raven King'];

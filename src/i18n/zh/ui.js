@@ -740,6 +740,7 @@ export default {
   "SW": "西南",
   "W": "西",
   "NW": "西北",
+  "Blood of the North — Rise of the Raven King": "北境之血 — 渡鸦王的崛起",
   "Off hand: shield or second axe": "副手：盾或第二把斧",
   "Off hand: the Left Brother. Harder blows, no shield.": "副手：左兄弟。出手更重，没有盾。",
   "Off hand: shield.": "副手：盾。",

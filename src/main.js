@@ -52,7 +52,7 @@ class Game {
 
   async boot() {
     // the language first, so the first words drawn are in it (English loads nothing). A first visit takes the browser's.
-    if (!this.settings.lang && !/HeadlessChrome/.test(navigator.userAgent)) { const nl = (navigator.language || '').toLowerCase(); this.settings.lang = nl.startsWith('zh') ? 'zh' : nl.startsWith('es') ? 'es' : 'en'; }
+    if (!this.settings.lang && !/HeadlessChrome/.test(navigator.userAgent)) { const nl = (navigator.language || '').toLowerCase(); this.settings.lang = nl.startsWith('zh') ? 'zh' : nl.startsWith('ja') ? 'ja' : nl.startsWith('es') ? 'es' : 'en'; }
     await I18N.setLang(this.settings.lang || 'en');
     const canvas = document.getElementById('c');
     const renderer = (this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' }));

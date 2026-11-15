@@ -14,7 +14,7 @@ import { icon, itemIcon, questIcon, ARTS } from './icons.js';
 import { SIZE, HALF } from '../world/terrain.js';
 import { paintChart, labeller, SEA_VIEW, REALM_VIEW } from './chart.js';
 import { Minimap } from './minimap.js';
-import { tr, getLang, LANGS, setLang, onLang, canvasFont } from '../i18n/i18n.js';
+import { tr, getLang, isCJK, LANGS, setLang, onLang, canvasFont } from '../i18n/i18n.js';
 import { SLOW, FALLS } from './playtest.js';
 const TOWN_LABELS = { hunt: { camp: 'The camp', tannery: 'Tannery yard', harbor: 'Harbor', mews: 'Mews' }, wessex: { quay: 'Quay', market: 'Market', church: 'Church', hall: "The reeve's hall", farm: 'Farm', wall: 'Harbor wall' }, hedeby: { h1: 'First headland', h2: 'Second headland', h3: 'Third headland', beach: 'Beach' }, bjornstead: { hall: "Bjorn's hall", thing: 'Thing stones', birch: 'The old birch', pier: 'Harbour', smithy: 'Smithy', field: 'Barley', pasture: 'Pasture', bridge: 'Bridge', timber: 'Timber' }, kaupang: { quay: 'Quay', market: 'Market', pen: 'Thrall pen', tavern: 'Tavern', thing: 'Thing', skerry: 'The Skerries' } };
 
@@ -25,7 +25,9 @@ const CARD = [['N', 0], ['NE', 45], ['E', 90], ['SE', 135], ['S', 180], ['SW', 2
 const TRAITS = { wisdom: 'Wisdom', compassion: 'Compassion', ferocity: 'Ferocity', pride: 'Pride' };
 const fmtTime = (s) => { s = Math.floor(s); const m = Math.floor(s / 60); return m >= 60 ? tr('{0}h {1}m', Math.floor(m / 60), m % 60) : tr('{0}m {1}s', m, String(s % 60).padStart(2, '0')); };
 /** "Name:" before a line: Chinese takes the full-width colon. */
-const colon = () => (getLang() === 'zh' ? '：' : ':');
+const colon = () => (isCJK() ? '：' : ':');
+/** A date and time written the way the language in use writes them (saves, playtest notes). */
+const localeDate = (at) => new Date(at).toLocaleString({ zh: 'zh-CN', ja: 'ja-JP', es: 'es' }[getLang()] || undefined);
 /** Text that may come from the data (a quest title, an item's name): translated, or as it is when it has no entry. */
 const T = (s) => tr(s);
 
@@ -499,7 +501,7 @@ export class UI {
       <div class="mapkey"><span><i class="k-you"></i>${esc(tr('You'))}</span><span><i class="k-quest"></i>${esc(tr('Where the quest leads'))}</span><span><i class="k-wp"></i>${esc(tr('Your waypoint'))}</span>${open ? `<span><i class="k-horse"></i>${esc(tr('Your horse'))}</span><span><i class="k-boat"></i>${esc(tr('Your boat'))}</span>${sea ? `<span><i class="k-foe"></i>${esc(tr('A hostile sail'))}</span>` : ''}` : ''}<em>${esc(tr('Scroll to zoom, drag to move'))}</em></div>
       <p class="muted" style="text-align:center">${esc(local ? tr('{0}, {1}', tname, tr(town.title)) : realm ? tr('The ten islands · {0} of {1} great islands found · the home waters are the box in the north', greatSeen, GREAT.length) : sea ? tr('The Whale Road · {0} of {1} islands found', found, named.length) : tr('The Hrafnvik valley'))} · ${esc(tr('click to set or clear a waypoint · north is up'))}</p>`;
     body.querySelectorAll('.maptabs button').forEach((b) => { b.onclick = () => { this.mapPick = b.dataset.v; g.audio.play('ui'); this.render_map(body); }; });
-    const up = (t) => (getLang() === 'zh' ? t : t.toLocaleUpperCase(getLang())), spaced = (t) => t.split('').join(' ');
+    const up = (t) => (isCJK() ? t : t.toLocaleUpperCase(getLang())), spaced = (t) => t.split('').join(' ');
     // what part of the chart is shown: all of it, or a part zoomed into and moved about (kept for each map while the game runs)
     const vkey = local ? 'town:' + town.id : realm ? 'realm' : sea ? 'sea' : 'valley';
     this.mapView ||= {}; let vw = this.mapView[vkey] || { ...V };
@@ -507,7 +509,7 @@ export class UI {
     const setView = (v) => { vw = clampView(v); this.mapView[vkey] = vw; draw(); };
     const cv = body.querySelector('canvas'), x = cv.getContext('2d'), X = (v) => ((v - vw.x0) / vw.w) * W, Z = (v) => ((v - vw.z0) / vw.h) * H;
     let lab = null; // names are placed so that none lands on another (chart.js); the big ones first, and always
-    const label = (t, px, pz, dy = -8, force = false) => { if (getLang() === 'zh' && /Georgia$/.test(x.font)) x.font = canvasFont(x.font); return lab(t, X(px), Z(pz), dy, force); };
+    const label = (t, px, pz, dy = -8, force = false) => { if (isCJK() && /Georgia$/.test(x.font)) x.font = canvasFont(x.font); return lab(t, X(px), Z(pz), dy, force); };
     const draw = () => {
       lab = labeller(x, W, H);
       const whole = local ? this.townBase[town.id] : realm ? this.realmBase : sea ? this.seaBase : this.mapBase, res = W / vw.w, hi = this.mapHi;
@@ -747,7 +749,7 @@ export class UI {
   render_saves(body) {
     const g = this.g, inGame = g.started && g.state.stage !== 'complete', E = (t, ...a) => esc(tr(t, ...a));
     const names = { auto: 'Autosave', slot1: 'Slot I', slot2: 'Slot II', slot3: 'Slot III' };
-    const when = (at) => new Date(at).toLocaleString({ zh: 'zh-CN', es: 'es' }[getLang()] || undefined);
+    const when = localeDate;
     body.innerHTML = `<h3>${E('Saves')}</h3><p class="muted">${E('The game autosaves at every new objective. Manual saves record your position during the day; at night they resume from the last checkpoint.')}</p>` +
       listSaves().map(({ slot, save }) => `<div class="slot"><div class="info"><b>${E(names[slot])}</b><span>${save ? `${esc(T(save.meta.quest))} — ${esc(this.g.fmt(save.meta.step))} · ${E('{0} played', fmtTime(save.meta.playtime))} · ${esc(when(save.at))}` : E('Empty')}</span></div>
         ${slot !== 'auto' ? `<button class="btn" data-save="${slot}" ${inGame ? '' : 'disabled'}>${E('Save')}</button>` : ''}<button class="btn" data-load="${slot}" ${save ? '' : 'disabled'}>${E('Load')}</button><button class="btn danger" data-del="${slot}" ${save ? '' : 'disabled'}>${E('Delete')}</button></div>`).join('');
@@ -764,7 +766,7 @@ export class UI {
       <p>${E('Chapters played: {0} · steps: {1} · time in play: {2} · falls: {3} · notes: {4}', S.chapters, S.rows.length, fmtTime(S.total), S.falls, S.notes.length)}</p>
       <p><button class="btn" id="pt-dl" ${S.rows.length || S.notes.length ? '' : 'disabled'}>${E('Download the report')}</button> <button class="btn danger" id="pt-clear">${E('Start a new record')}</button></p>
       <h4>${E('Where it was hard')}</h4>${S.hard.length ? `<table class="pt">${head}${S.hard.map(row).join('')}</table>` : `<p class="muted">${E('Nowhere yet: no step has taken more than ten minutes or three falls.')}</p>`}
-      <h4>${E('Notes')}</h4>${S.notes.length ? `<div class="ptnotes">${S.notes.slice().reverse().map((n) => `<div class="ptn">${n.pic ? `<img src="${n.pic}" alt="">` : ''}<div><small>${esc(n.title ? T(n.title) : '')} · ${esc(new Date(n.at).toLocaleString())}</small><p>${esc(n.text)}</p></div></div>`).join('')}</div>` : `<p class="muted">${E('None yet. Press F8 while playing.')}</p>`}
+      <h4>${E('Notes')}</h4>${S.notes.length ? `<div class="ptnotes">${S.notes.slice().reverse().map((n) => `<div class="ptn">${n.pic ? `<img src="${n.pic}" alt="">` : ''}<div><small>${esc(n.title ? T(n.title) : '')} · ${esc(localeDate(n.at))}</small><p>${esc(n.text)}</p></div></div>`).join('')}</div>` : `<p class="muted">${E('None yet. Press F8 while playing.')}</p>`}
       <h4>${E('Every step')}</h4>${S.rows.length ? `<table class="pt">${head}${S.rows.map(row).join('')}</table>` : `<p class="muted">${E('Nothing played yet.')}</p>`}`;
     body.querySelector('#pt-dl').onclick = () => P.download();
     body.querySelector('#pt-clear').onclick = (ev) => { const b = ev.currentTarget; if (b.dataset.sure) { P.clear(); this.openPanel('playtest', this.tabs); } else { b.dataset.sure = '1'; b.textContent = tr('Press again to clear it'); } };

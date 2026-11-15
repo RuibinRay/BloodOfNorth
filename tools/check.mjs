@@ -12,9 +12,9 @@
 //      player who fights with his own health (an average player: he braces, cuts at their rank, fights the men who
 //      come through and shields himself from arrows; he must not die), once each by one kept alive who only braces,
 //      and once by one who does nothing; each must end as it was recorded and the story must go on from it.
-//   5. the languages: every string has its 中文 and Español (tools/i18n.mjs), and Act I, the opening of every other
-//      act and the open world, played in both, show nothing in English that should not be (strings with no entry,
-//      and, in Chinese, Latin words left on the screen).
+//   5. the languages: every string has its 中文, 日本語 and Español (tools/i18n.mjs), and Act I, the opening of every
+//      other act and the open world, played in each, show nothing in English that should not be (strings with no
+//      entry, and, in Chinese and Japanese, Latin words left on the screen).
 //
 //   npm run check                 everything (a few minutes)
 //   npm run check -- --quick      each act's opening chapter, the scenes and the fight (under a minute)
@@ -22,7 +22,7 @@
 //   npm run check -- --only=q_shore,q_iron
 //   npm run check -- --update     record what is found as the new known-good (tools/check/expected.json)
 //   npm run check -- --jobs=3     pages at once (default 2)
-//   npm run check -- --langs      only the languages (5 below); --langs=all plays every chapter in both, not only Act I
+//   npm run check -- --langs      only the languages (5 below); --langs=all plays every chapter in each, not only Act I
 //   CHROME_PATH=/path/to/chrome npm run check
 //
 // It is a scripted check: it shows that things start, stand and end as recorded. It cannot say whether they are fun.
@@ -83,7 +83,7 @@ catch (e) { fail('the game does not build:\n' + String(e.stderr || e.stdout || e
 }
 
 { // the translations: every string in all three languages, holes and names kept (tools/i18n.mjs)
-  try { const out = execFileSync(process.execPath, [join(root, 'tools/i18n.mjs')], { cwd: root, encoding: 'utf8' }); ok('the translations: ' + out.trim().split('\n').filter((l) => /must be complete/.test(l)).length + ' areas complete in 中文 and Español (npm run i18n for the table)'); }
+  try { const out = execFileSync(process.execPath, [join(root, 'tools/i18n.mjs')], { cwd: root, encoding: 'utf8' }); ok('the translations: ' + out.trim().split('\n').filter((l) => /must be complete/.test(l)).length + ' areas complete in 中文, 日本語 and Español (npm run i18n for the table)'); }
   catch (e) { fail('the translations (npm run i18n):\n' + String(e.stdout || e.message).trim().split('\n').filter((l) => !/^\w+\s+\d+\s+\d/.test(l)).slice(0, 14).join('\n')); }
 }
 
@@ -159,9 +159,9 @@ try {
     const doneActs = ACTS.filter((a, i) => COMPLETE.includes(i === ACTS.length - 1 ? 'epilogue' : 'act' + (i + 1)));
     // Act I in full and the opening of every other act (and the open world); --langs=all plays every chapter
     const pick = langSpec === 'all' ? [...chaptersOf('all'), 'q_open'] : langSpec ? chaptersOf(langSpec) : quick ? ['q_morning', 'q_wings'] : [...ACTS[0].quests, ...doneActs.slice(1).map((a) => a.quests[0]), 'q_open'];
-    for (const lang of ['zh', 'es']) {
+    for (const lang of ['zh', 'ja', 'es']) {
       const ids = lang === 'es' && langSpec !== 'all' && !quick ? pick.filter((_, i) => i % 2 === 0) : pick; // Spanish: every other one (its words cannot be told from English on screen, so only strings with no entry are caught)
-      console.log(`\nPlayed in ${lang === 'zh' ? '中文' : 'Español'} (${ids.length} chapters, every conversation clicked through):`);
+      console.log(`\nPlayed in ${{ zh: '中文', ja: '日本語', es: 'Español' }[lang]} (${ids.length} chapters, every conversation clicked through):`);
       const r = await sweep(lang, ids, { server, browser, jobs, secs: 12 });
       const inDone = (id) => id === 'q_open' ? COMPLETE.includes('open') : doneActs.some((a) => a.quests.includes(id));
       for (const row of r.rows.sort((a, b) => ORDER.indexOf(a.id) - ORDER.indexOf(b.id))) {

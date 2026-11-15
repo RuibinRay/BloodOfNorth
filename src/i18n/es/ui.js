@@ -740,6 +740,7 @@ export default {
   "SW": "SO",
   "W": "O",
   "NW": "NO",
+  "Blood of the North — Rise of the Raven King": "Sangre del Norte — el ascenso del Rey Cuervo",
   "Off hand: shield or second axe": "Mano izquierda: escudo o segunda hacha",
   "Off hand: the Left Brother. Harder blows, no shield.": "Mano izquierda: el Hermano Izquierdo. Golpes más duros, sin escudo.",
   "Off hand: shield.": "Mano izquierda: escudo.",

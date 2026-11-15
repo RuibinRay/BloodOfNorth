@@ -1,8 +1,8 @@
-// The game's languages: English, 中文 (Simplified Chinese) and Español (neutral Spanish).
+// The game's languages: English, 中文 (Simplified Chinese), 日本語 (Japanese) and Español (neutral Spanish).
 //
 // Every piece of text the player reads goes through tr() on its way to the screen. The English text itself is the key:
-// the data files and story code keep their English exactly as written, and the zh and es tables (src/i18n/zh/*.js,
-// src/i18n/es/*.js) map each English string to its translation. Anything missing falls back to the English.
+// the data files and story code keep their English exactly as written, and the zh, ja and es tables (src/i18n/zh/*.js,
+// src/i18n/ja/*.js, src/i18n/es/*.js) map each English string to its translation. Anything missing falls back to the English.
 //
 //   tr('Speak with your mother')              → '去和母亲说话'
 //   tr('{0} of {1} islands found', 3, 14)     → a table entry with numbered holes, filled in after it is looked up
@@ -14,14 +14,15 @@
 //
 // The tables are loaded only when their language is chosen, so English costs nothing. The choice is a setting
 // (settings.lang), not part of a save: switching it never touches a saved game.
-// `npm run i18n` (tools/i18n.mjs) checks that every string in the game has a zh and an es entry; see that file.
+// `npm run i18n` (tools/i18n.mjs) checks that every string in the game has a zh, a ja and an es entry; see that file.
 
 export const LANGS = [
   { id: 'en', name: 'English', html: 'en' },
   { id: 'zh', name: '中文', html: 'zh-Hans' },
+  { id: 'ja', name: '日本語', html: 'ja' },
   { id: 'es', name: 'Español', html: 'es' },
 ];
-const LOADERS = { zh: () => import('./zh/index.js'), es: () => import('./es/index.js') };
+const LOADERS = { zh: () => import('./zh/index.js'), ja: () => import('./ja/index.js'), es: () => import('./es/index.js') };
 
 let lang = 'en', table = null, patterns = [], cache = new Map();
 const listeners = new Set();
@@ -44,9 +45,10 @@ function compile(t) {
 }
 const fill = (s, args) => (args.length ? s.replace(HOLE, (m, i) => (args[+i] !== undefined ? String(args[+i]) : m)) : s);
 
-/** The language in use: 'en', 'zh' or 'es'. */
+/** The language in use: 'en', 'zh', 'ja' or 'es'. */
 export const getLang = () => lang;
-export const isCJK = () => lang === 'zh';
+/** Chinese or Japanese: no capitals, no spaces between words, full-width punctuation, a serif with the characters. */
+export const isCJK = () => lang === 'zh' || lang === 'ja';
 
 /** Text already translated and filled in (by game.fmt): passed through as it is if it comes round again. */
 const done = new Set();
@@ -93,7 +95,7 @@ export async function setLang(id) {
   lang = id; table = t; patterns = t ? compile(t) : []; cache = new Map(); missing.clear(); done.clear();
   const L = LANGS.find((l) => l.id === id), root = document.documentElement;
   root.lang = L.html; root.dataset.lang = id;
-  if (id === 'zh') loadCJKFont();
+  if (id === 'zh' || id === 'ja') loadCJKFont(id);
   localizeStatic();
   for (const f of listeners) { try { f(id); } catch (e) { console.error(e); } }
   return id;
@@ -110,23 +112,30 @@ export function localizeStatic(root = document) {
   document.title = tr('Blood of the North — Rise of the Raven King');
 }
 
-/** A serif with Chinese characters (Noto Serif SC, from Google Fonts, cut into small pieces by unicode range so only the
- *  characters on screen are fetched). Until it arrives, or with no network, the system's own Chinese fonts are used. */
-let fontAsked = false;
-function loadCJKFont() {
-  if (fontAsked || typeof document === 'undefined') return;
-  fontAsked = true;
+/** A serif with the characters: Noto Serif SC for Chinese, Noto Serif JP for Japanese (from Google Fonts, cut into small
+ *  pieces by unicode range so only the characters on screen are fetched). Until it arrives, or with no network, the
+ *  system's own fonts are used: Song/Ming faces for Chinese, Mincho faces for Japanese. The two are kept apart because the
+ *  same kanji are drawn differently in each (直, 骨, 戸...): a Japanese page must never fall back to a Chinese face. */
+const FONT = { zh: 'Noto+Serif+SC', ja: 'Noto+Serif+JP' };
+const asked = new Set();
+function loadCJKFont(id) {
+  if (asked.has(id) || typeof document === 'undefined') return;
+  asked.add(id);
   if (/HeadlessChrome/.test(navigator.userAgent) && !/[?&]webfont/.test(location.search)) return; // the checks use the system fonts
   const l = document.createElement('link');
   l.rel = 'stylesheet';
-  l.href = 'https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap';
+  l.href = `https://fonts.googleapis.com/css2?family=${FONT[id]}:wght@400;600;700&display=swap`;
   document.head.appendChild(l);
 }
 
-/** Canvas text (the map) needs its font named: the same family with the Chinese fonts behind it. */
+/** Canvas text (the map) needs its font named: the same family with the language's own fonts behind it. */
+const CANVAS = {
+  zh: 'Georgia, "Noto Serif SC", "Songti SC", "STSong", "PingFang SC", "Microsoft YaHei", serif',
+  ja: 'Georgia, "Noto Serif JP", "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Yu Mincho", "YuMincho", "Source Han Serif JP", "MS PMincho", "Hiragino Sans", serif',
+};
 export function canvasFont(spec) {
-  if (lang !== 'zh') return spec;
-  return spec.replace(/\bitalic\s+/, '').replace(/Georgia$/, 'Georgia, "Noto Serif SC", "Songti SC", "STSong", "PingFang SC", "Microsoft YaHei", serif');
+  if (!CANVAS[lang]) return spec;
+  return spec.replace(/\bitalic\s+/, '').replace(/Georgia$/, CANVAS[lang]);
 }
 
 if (typeof window !== 'undefined') window.__i18n = { tr, setLang, getLang, missing, LANGS };

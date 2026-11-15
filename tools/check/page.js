@@ -223,9 +223,9 @@ async function lineup(names, gap = 0.95) {
   return [pl.x, g.world.groundAt(pl.x, z), z];
 }
 
-/** The languages: play a chapter in Chinese (or Spanish) and say what reached the screen in English.
- *  missing: strings that went through tr() with no entry; latin: English words left in the page itself (in Chinese
- *  only: keycaps and the frame counter aside, nothing on a Chinese screen should be in Latin letters). */
+/** The languages: play a chapter in Chinese or Japanese (or Spanish) and say what reached the screen in English.
+ *  missing: strings that went through tr() with no entry; latin: English words left in the page itself (in Chinese and
+ *  Japanese only: keycaps and the frame counter aside, nothing on such a screen should be in Latin letters). */
 const LATIN_OK = /^(fps|ms|Space|Esc|Tab|Shift|Ctrl|Mouse\d|Pad\w*|Key\w|[A-Z]|[A-Z]\d|R-Shift|Enter|English|Español|Higgsfield|Unreal|Engine|AI|IA|Alt|Gr|data|missions|json|Hwæt|wilt|þu|Twa|penegas|God|þe|mid|sie|Norþmenn)$/; // keycaps, names of tools, a file name, the Old English heard in Wessex (kept foreign on purpose)
 function latinOnScreen() {
   const out = new Set(), ui = document.getElementById('ui');
@@ -250,11 +250,11 @@ async function i18n(lang, ids, secs = 10, withPanels = true) {
       if (t % 3 === 0) for (const w of latinOnScreen()) latin.add(w);
     }
     for (const w of latinOnScreen()) latin.add(w);
-    rows.push({ id, missing: [...I.missing], latin: lang === 'zh' ? [...latin] : [] });
+    rows.push({ id, missing: [...I.missing], latin: lang === 'zh' || lang === 'ja' ? [...latin] : [] });
   }
   I.missing.clear(); const panelLatin = {};
   if (withPanels) for (const t of panels) { g.ui.openPanel(t, panels); await wait(30); const l = latinOnScreen(); if (l.length) panelLatin[t] = l; }
   g.ui.closePanel();
-  return { rows, panelMissing: [...I.missing], panelLatin: lang === 'zh' ? panelLatin : {} };
+  return { rows, panelMissing: [...I.missing], panelLatin: lang === 'zh' || lang === 'ja' ? panelLatin : {} };
 }
 window.__check = { chapter, scene, party, lineup, wall, wallFight, i18n, scenes: Object.keys(SCENES) };

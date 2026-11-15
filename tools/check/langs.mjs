@@ -1,7 +1,7 @@
-// The languages, played: each chapter is started in its own page in Chinese (or Spanish), run for a few seconds with
-// every conversation clicked through, and what reached the screen untranslated is listed. Used by `npm run check`
-// (Act I in both languages; --langs=all for every chapter) and on its own:
-//   node tools/check/langs.mjs zh q_morning,q_wood      node tools/check/langs.mjs es act1      node tools/check/langs.mjs zh all
+// The languages, played: each chapter is started in its own page in Chinese, Japanese (or Spanish), run for a few seconds
+// with every conversation clicked through, and what reached the screen untranslated is listed. Used by `npm run check`
+// (Act I in every language; --langs=all for every chapter) and on its own:
+//   node tools/check/langs.mjs zh q_morning,q_wood      node tools/check/langs.mjs ja act1      node tools/check/langs.mjs es all
 import { join, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createServer } from 'vite';

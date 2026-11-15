@@ -1,11 +1,11 @@
-// `npm run i18n` — the translations: what the game says in English, and whether 中文 and Español say all of it.
+// `npm run i18n` — the translations: what the game says in English, and whether 中文, 日本語 and Español say all of it.
 //
 // It reads every source file for the strings a player can see (string literals that read as words; anything shown
 // that is not words, and words that are never shown, are listed in src/i18n/skip.js), groups them by area (the UI,
-// each act, the open world...), and checks them against the tables in src/i18n/zh and src/i18n/es:
-//   - every string of an area marked complete (COMPLETE below) has an entry in both tables;
-//   - no entry anywhere has lost or gained a hole: {0}, {interact}, {w}... must be the same in all three languages;
-//   - every name in the glossary (src/i18n/glossary.js) is written the glossary's way in the Chinese;
+// each act, the open world...), and checks them against the tables in src/i18n/zh, src/i18n/ja and src/i18n/es:
+//   - every string of an area marked complete (COMPLETE below) has an entry in every table;
+//   - no entry anywhere has lost or gained a hole: {0}, {interact}, {w}... must be the same in every language;
+//   - every name in the glossary (src/i18n/glossary.js) is written the glossary's way in the Chinese, Japanese and Spanish;
 //   - no string in a UI file is written into the page without going through tr() (template literals with words in
 //     them, or words set as textContent/innerHTML directly).
 // It fails (exit 1) if any of those is wrong, and prints how much of each area is translated.
@@ -14,6 +14,7 @@
 //   npm run i18n -- todo act2          what act2 still lacks: one line per string, "id<TAB>English"
 //   npm run i18n -- todo act2 --json   the same as JSON
 //   npm run i18n -- merge file.tsv     take translations in: lines "id<TAB>中文<TAB>Español" (blank lines and # ignored)
+//   npm run i18n -- merge file.tsv --lang=ja   lines "id<TAB>日本語": one language only
 //   npm run i18n -- list ui            every string the area has, with its id
 //   npm run i18n -- where "Some text"  which file and area a string is in
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
@@ -22,7 +23,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const LANGS = ['zh', 'es'];
+const LANGS = ['zh', 'ja', 'es'];
 
 /** The areas, in order: a string found in more than one area belongs to the first. */
 export const AREAS = [
@@ -40,7 +41,7 @@ export const AREAS = [
   ['epilogue', ['src/data/epilogue.js', 'src/story/epilogue.js']],
   ['open', ['src/story/open_proto.js', 'src/story/sea_chart.js', 'src/story/fleet.js', 'src/story/seawar.js', 'src/story/champions.js', 'src/systems/openworld.js']],
 ];
-/** Areas that must be translated in full: the check fails if one of their strings has no zh or es entry. */
+/** Areas that must be translated in full: the check fails if one of their strings has no zh, ja or es entry. */
 export const COMPLETE = ['ui', 'chapters', 'items', 'companions', 'act1', 'act2', 'act3', 'act4', 'act5', 'act6', 'act7', 'epilogue', 'open'];
 /** UI files: here a string with words in it must go through tr() (or be data that is translated where it is shown). */
 const UI_FILES = ['src/ui/ui.js', 'src/ui/wallhud.js'];
@@ -176,7 +177,7 @@ export async function tables() {
 }
 
 // ---- writing tables ----------------------------------------------------------------------------------------------
-const HEAD = { zh: '中文 (简体)', es: 'Español' };
+const HEAD = { zh: '中文 (简体)', ja: '日本語', es: 'Español' };
 function writeTable(l, area, entries) {
   const dir = join(root, 'src/i18n', l);
   const lines = entries.map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)},`);
@@ -185,22 +186,27 @@ function writeTable(l, area, entries) {
   const files = readdirSync(dir).filter((f) => f.endsWith('.js') && f !== 'index.js').map((f) => f.replace(/\.js$/, '')).sort((a, b) => order(a) - order(b));
   writeFileSync(join(dir, 'index.js'), `// All of ${HEAD[l]}, merged (loaded only when the language is chosen).\n${files.map((f) => `import ${safe(f)} from './${f}.js';`).join('\n')}\n\nexport default Object.assign({}, ${files.map(safe).join(', ')});\n`);
 }
+/** Which table file an English key already sits in (in any language): for keys the scan does not see. */
+const areaOfTable = (T, en) => { for (const l of LANGS) for (const [a, t] of Object.entries(T[l + 'Files'] || {})) if (t[en] !== undefined) return a; return null; };
 const order = (a) => { const i = AREAS.findIndex((x) => x[0] === a); return i < 0 ? (a === 'names' ? -1 : 99) : i; };
 const safe = (f) => '_' + f.replace(/\W/g, '_');
 
-async function merge(file) {
+async function merge(file, only) {
   const { seen } = await collect(), T = await tables();
   const byId = new Map([...seen].map(([s, e]) => [e.id, s]));
-  const add = { zh: {}, es: {} }; let n = 0; const bad = [];
+  const add = { zh: {}, ja: {}, es: {} }; let n = 0; const bad = [];
+  // a key the scan cannot see (built at run time, or a pattern) is found by its id in the tables already written
+  for (const l of LANGS) for (const en of Object.keys(T[l])) if (!byId.has(idOf(en))) byId.set(idOf(en), en);
+  const cols = only ? [only] : ['zh', 'es'];
   for (const line of readFileSync(file, 'utf8').split('\n')) {
     if (!line.trim() || line.startsWith('#')) continue;
-    const [id, zh, es] = line.split('\t');
+    const [id, ...vals] = line.split('\t');
     let en = byId.get(id.trim());
     if (!en && id.startsWith('=')) en = id.slice(1); // "=English" for a string the scan cannot see (built at run time)
     if (!en) { bad.push(id); continue; }
-    const area = seen.get(en)?.area || 'extra';
-    if (zh && zh.trim()) (add.zh[area] ||= {})[en] = zh.trim();
-    if (es && es.trim()) (add.es[area] ||= {})[en] = es.trim();
+    const area = seen.get(en)?.area || areaOfTable(T, en) || 'extra';
+    const lead = en.match(/^\s*/)[0], tail = en.match(/\s*$/)[0]; // the English's own spaces at the ends are kept
+    cols.forEach((l, i) => { const v = vals[i]; if (v && v.trim()) (add[l][area] ||= {})[en] = lead + v.trim().replace(/\\n/g, '\n') + tail; });
     n++;
   }
   for (const l of LANGS) for (const area in add[l]) {
@@ -219,11 +225,11 @@ async function check() {
   const { areas, seen, raw } = await collect(), T = await tables();
   const { GLOSSARY } = await import(pathToFileURL(join(root, 'src/i18n/glossary.js')).href + '?' + Date.now());
   const fail = [], warn = [];
-  console.log('area          strings   中文      Español');
+  console.log('area          strings   中文      日本語    Español');
   for (const [area, m] of areas) {
     const tot = m.size, have = (l) => [...m.keys()].filter((s) => T[l][s] !== undefined).length;
-    const z = have('zh'), e = have('es'), pc = (k) => (tot ? Math.floor((100 * k) / tot) : 100) + '%';
-    console.log(`${area.padEnd(12)} ${String(tot).padStart(7)}   ${(z + ' ' + pc(z)).padEnd(9)} ${e} ${pc(e)}${COMPLETE.includes(area) ? '   (must be complete)' : ''}`);
+    const z = have('zh'), j = have('ja'), e = have('es'), pc = (k) => (tot ? Math.floor((100 * k) / tot) : 100) + '%';
+    console.log(`${area.padEnd(12)} ${String(tot).padStart(7)}   ${(z + ' ' + pc(z)).padEnd(9)} ${(j + ' ' + pc(j)).padEnd(9)} ${e} ${pc(e)}${COMPLETE.includes(area) ? '   (must be complete)' : ''}`);
     if (COMPLETE.includes(area)) for (const s of m.keys()) for (const l of LANGS) if (T[l][s] === undefined) fail.push(`${area}: no ${l} for ${JSON.stringify(s)} (${[...m.get(s).files][0]}, id ${m.get(s).id})`);
   }
   // holes kept
@@ -234,15 +240,15 @@ async function check() {
     const na = (en.match(/\{\d\}/g) || []), nb = new Set(to.match(/\{\d\}/g) || []);
     for (const h of nb) if (!na.includes(h)) fail.push(`${l}: ${JSON.stringify(to)} has a hole ${h} its English does not`);
   }
-  // glossary: the names written one way in Chinese
-  for (const g of GLOSSARY) {
-    if (!g.zh || g.loose) continue;
+  // glossary: the names written one way in Chinese and in Japanese
+  for (const [l, altKey] of [['zh', 'alt'], ['ja', 'jaAlt']]) for (const g of GLOSSARY) {
+    if (!g[l] || g.loose) continue;
     const re = new RegExp(`(^|[^A-Za-zÀ-ÿ])${g.en.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[^A-Za-zÀ-ÿ])`);
-    for (const [en, zh] of Object.entries(T.zh)) {
-      if (!re.test(en) || zh.includes(g.zh)) continue;
-      if ((g.alt || []).some((a) => zh.includes(a))) continue;
+    for (const [en, to] of Object.entries(T[l])) {
+      if (!re.test(en) || to.includes(g[l])) continue;
+      if ((g[altKey] || []).some((a) => to.includes(a))) continue;
       if (GLOSSARY.some((o) => o !== g && o.en.length > g.en.length && o.en.includes(g.en) && en.includes(o.en))) continue; // a longer name holds it
-      fail.push(`glossary: "${g.en}" should be "${g.zh}" in ${JSON.stringify(zh)} (for ${JSON.stringify(en)})`);
+      fail.push(`glossary: "${g.en}" should be "${g[l]}" in ${JSON.stringify(to)} (for ${JSON.stringify(en)})`);
     }
   }
   // and the Spanish bynames (the Norse names themselves are the same in Spanish): Lobo de Hierro, not Ironwolf
@@ -285,7 +291,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     const want = [...m].filter(([s]) => cmd === 'list' || LANGS.some((l) => T[l][s] === undefined));
     if (rest.includes('--json')) console.log(JSON.stringify(want.map(([s, e]) => ({ id: e.id, en: s, file: [...e.files][0] })), null, 1));
     else for (const [s, e] of want) console.log(`${e.id}\t${s.replace(/\n/g, '\\n')}` + (rest.includes('--files') ? `\t${[...e.files].join(',')}` : ''));
-  } else if (cmd === 'merge') await merge(a);
+  } else if (cmd === 'merge') await merge(a, (rest.find((x) => x.startsWith('--lang=')) || '').slice(7) || null);
   else if (cmd === 'where') { const { seen } = await collect(); const e = seen.get(a); console.log(e ? `${e.area} ${e.id} ${[...e.files].join(', ')}` : 'not found'); }
   else await check();
 }

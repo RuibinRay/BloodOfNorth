@@ -355,21 +355,24 @@ details.chapters li img.thumb { width: 64px; height: 36px; object-fit: cover; ve
 #panel .langs { margin: 0; }
 #panel .langs .lang { color: var(--ink); background: rgba(74, 54, 38, 0.08); border-color: rgba(74, 54, 38, 0.35); }
 #panel .langs .lang.on { color: var(--parch); background: var(--wood-2); border-color: var(--gold); }
-/* Chinese: a serif with the characters (Noto Serif SC from the web, or the system's Song/Ming face), no faked italics,
-   no letter-spacing meant for Latin capitals, and lines that break between characters but never before closing
-   punctuation (line-break: strict keeps 。，、」 off the start of a line). */
+/* Chinese and Japanese: a serif with the characters (Noto Serif SC / JP from the web, or the system's own face), no faked
+   italics, no letter-spacing meant for Latin capitals, and lines that break between characters but never before closing
+   punctuation (line-break: strict keeps 。，、」 and small kana off the start of a line). Each language names its own
+   fonts first: the same kanji are drawn differently in Chinese and Japanese faces (直, 骨, 戸, 言...), so a Japanese page
+   falls back to Mincho faces and never to a Chinese one. */
 :root[data-lang="zh"] { --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", "PingFang SC", "Microsoft YaHei", serif; }
-:root[data-lang="zh"] body { line-break: strict; word-break: normal; overflow-wrap: anywhere; }
-:root[data-lang="zh"] :is(em, i, #subtitle.narr, #menu h2, #card p) { font-style: normal; }
-:root[data-lang="zh"] :is(#tracker .q b, .bar.lab span, #target em, #detect span, #meter .row, #banner small, #dialogue .speaker, #card h1, #menu h1, #pause h3, nav button, #compass span) { letter-spacing: 0.04em; }
-:root[data-lang="zh"] #menu h1 { letter-spacing: 0.12em; }
-:root[data-lang="zh"] #card h1 { letter-spacing: 0.2em; }
-:root[data-lang="zh"] #dialogue .text { line-height: 1.6; }
-:root[data-lang="zh"] #subtitle { line-height: 1.55; }
+:root[data-lang="ja"] { --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Noto Serif JP", "Source Han Serif JP", "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Yu Mincho", "YuMincho", "MS PMincho", "Hiragino Sans", "Yu Gothic", "Meiryo", serif; }
+:root:is([data-lang="zh"], [data-lang="ja"]) body { line-break: strict; word-break: normal; overflow-wrap: anywhere; }
+:root:is([data-lang="zh"], [data-lang="ja"]) :is(em, i, #subtitle.narr, #menu h2, #card p) { font-style: normal; }
+:root:is([data-lang="zh"], [data-lang="ja"]) :is(#tracker .q b, .bar.lab span, #target em, #detect span, #meter .row, #banner small, #dialogue .speaker, #card h1, #menu h1, #pause h3, nav button, #compass span) { letter-spacing: 0.04em; }
+:root:is([data-lang="zh"], [data-lang="ja"]) #menu h1 { letter-spacing: 0.12em; }
+:root:is([data-lang="zh"], [data-lang="ja"]) #card h1 { letter-spacing: 0.2em; }
+:root:is([data-lang="zh"], [data-lang="ja"]) #dialogue .text { line-height: 1.6; }
+:root:is([data-lang="zh"], [data-lang="ja"]) #subtitle { line-height: 1.55; }
 /* Spanish runs about a fifth longer than English: buttons and labels that were sized to English may wrap, not spill. */
 :root[data-lang="es"] nav button { letter-spacing: 0.04em; }
-:root[data-lang="es"] #prompt, :root[data-lang="zh"] #prompt { white-space: normal; max-width: min(640px, 80vw); text-align: center; }
-:root[data-lang="es"] #tabs button, :root[data-lang="zh"] #tabs button { padding: 13px 14px; letter-spacing: 0.06em; }
+:root:is([data-lang="es"], [data-lang="zh"], [data-lang="ja"]) #prompt { white-space: normal; max-width: min(640px, 80vw); text-align: center; }
+:root:is([data-lang="es"], [data-lang="zh"], [data-lang="ja"]) #tabs button { padding: 13px 14px; letter-spacing: 0.06em; }
 /* On the main menu the languages sit in the top right corner, out of the way of the title and the buttons. */
 #menu-langs { position: absolute; top: 18px; right: 22px; }
 #menu-langs .langs { margin: 0; }
