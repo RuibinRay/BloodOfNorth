@@ -50,11 +50,18 @@
    "pos": [-27, 72],
    "marker": "none"
   },
+  "q_ice": {
+   "at": "q_ice.flee",
+   "stage": "ch2",
+   "mode": "play",
+   "pos": [-62, -30],
+   "marker": "yes"
+  },
   "q_alone": {
    "at": "q_alone.birch",
    "stage": "wilderness",
    "mode": "play",
-   "pos": [-63, -31],
+   "pos": [-144, -62],
    "marker": "yes"
   },
   "q_white": {
@@ -63,13 +70,6 @@
    "mode": "play",
    "pos": [-118, -91],
    "marker": "reached"
-  },
-  "q_ice": {
-   "at": "q_ice.wake",
-   "stage": "ch2",
-   "mode": "cutscene",
-   "pos": [-115, -93],
-   "marker": "none"
   },
   "q_hearth": {
    "at": "q_hearth.signe",

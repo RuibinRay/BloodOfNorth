@@ -20,10 +20,12 @@ const PATH_TO_CAMP = [[-142, -118], [-131, -106], [-121.5, -93.5]];
 const FLEE_PATH = [[-23, 66], [-21, 56], [-21, 50], [-10, 43], [-7, 30], [-8, 12], [-19, -9], [-21.5, -13.5]];
 /** Where Raven-Feeder lands in the snow when Ragnar falls, by the woodpile. */
 const AXE_DROP = [-16.4, 67.6];
+/** The hollow under a fallen spruce where he lived his first days alone, a little way from the old birch. */
+const HOLLOW = [POI.camp.x - 26, POI.camp.z + 30];
 const CAMP_SEAT = [POI.camp.x - 1.75, POI.camp.z + 1.0];
 const DUEL = { ragnar: [-15, 70], hakon: [-10.5, 70.4], g1: [-6, 73.2], g2: [-6.5, 67.4] };
 const GATE_PATROL = [[[-13, -9], [-19.5, -13.5]], [[-9, 2], [-14, -7]]];
-const QUESTS_MAIN = ['q_ravenhold', 'q_leifhouse', 'q_lesson', 'q_firewater', 'q_blades', 'q_blackshore', 'q_redhand', 'q_pens', 'q_vigdis', 'q_gorm', 'q_wolfhall', 'q_ironwolf', 'q_dead', 'q_crown', 'q_marsh', 'q_lastforge', 'q_anvil', 'q_smith', 'q_judge', 'q_sigurd', 'q_nine', 'q_wedding', 'q_four', 'q_carry', 'q_hunger', 'q_taken', 'q_ring', 'q_wing', 'q_ribbon', 'q_feast', 'q_gold', 'q_water', 'q_court', 'q_circle', 'q_six', 'q_council', 'q_sound', 'q_drift', 'q_isle', 'q_fifty', 'q_healer', 'q_shore', 'q_long', 'q_ulf', 'q_iron', 'q_price', 'q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings', 'q_ten', 'q_farm', 'q_smoke', 'q_axe', 'q_wolf', 'q_peddlers', 'q_walls', 'q_captain', 'q_oath', 'q_open', 'q_sea'];
+const QUESTS_MAIN = ['q_ravenhold', 'q_leifhouse', 'q_lesson', 'q_firewater', 'q_blades', 'q_blackshore', 'q_redhand', 'q_pens', 'q_vigdis', 'q_gorm', 'q_wolfhall', 'q_ironwolf', 'q_dead', 'q_crown', 'q_marsh', 'q_lastforge', 'q_anvil', 'q_smith', 'q_judge', 'q_sigurd', 'q_nine', 'q_wedding', 'q_four', 'q_carry', 'q_hunger', 'q_taken', 'q_ring', 'q_wing', 'q_ribbon', 'q_feast', 'q_gold', 'q_water', 'q_court', 'q_circle', 'q_six', 'q_council', 'q_sound', 'q_drift', 'q_isle', 'q_fifty', 'q_healer', 'q_shore', 'q_long', 'q_ulf', 'q_iron', 'q_price', 'q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_ice', 'q_alone', 'q_white', 'q_hearth', 'q_wings', 'q_ten', 'q_farm', 'q_smoke', 'q_axe', 'q_wolf', 'q_peddlers', 'q_walls', 'q_captain', 'q_oath', 'q_open', 'q_sea'];
 const WEATHER = {
   day: { snow: 0, fog: 0, overcast: 0.08, wind: 1 },
   dusk: { snow: 0.12, fog: 0.02, overcast: 0.3, wind: 1.1 },
@@ -124,7 +126,7 @@ export class Act1 {
     for (const id of Object.keys(st.quests)) if (st.quests[id].status === 'active') g.quests.enter(id, true);
     // between chapters, or at the end of what is built: show the chapter summary
     const active = Object.values(st.quests).some((q) => q.status === 'active' && QUESTS_MAIN.includes(Object.keys(st.quests).find((k) => st.quests[k] === q)));
-    if (!active && g.quests.isDone('q_alone')) { st.stage = g.quests.isDone('q_oath') ? 'complete' : g.quests.isDone('q_wings') ? 'act1done' : g.quests.isDone('q_ice') ? 'ch2done' : 'ch1done'; this.showChapterEnd(); }
+    if (!active && g.quests.isDone('q_alone')) { st.stage = g.quests.isDone('q_oath') ? 'complete' : g.quests.isDone('q_wings') ? 'act1done' : g.quests.isDone('q_white') ? 'ch2done' : 'ch1done'; this.showChapterEnd(); }
   }
 
   // =====================================================================================
@@ -260,7 +262,8 @@ export class Act1 {
   }
   onQuestDone(id) {
     if (id === 'q_alone') this.playEnding();
-    if (id === 'q_ice') this.ch2.playEnding();
+    if (id === 'q_ice') this.ch2.playAcross();
+    if (id === 'q_white') this.ch2.playThaw();
     if (id === 'q_wings') this.ch3.playEnding();
     if (id === 'q_oath') this.a2.playEnding();
     if (id === 'q_price') this.a2.playEnding3();
@@ -389,7 +392,7 @@ export class Act1 {
     'q_ashes.wake'() { this.startNight(); },
     'q_ashes.flee'(r) { this.buildNight(); this.finalizeDuel(); if (r) this.g.player.teleport(-27.2, 72.0, 1.4); this.beginFlee(); },
     'q_ashes.escape'(r) { this.buildNight(); this.finalizeDuel(); this.beginEscape(r); },
-    'q_alone.birch'(r) { this.buildNight(); this.finalizeDuel(); this.finalizeGate(); this.beginWilderness(r ? [POI.forestEdge.x - 1, POI.forestEdge.z - 1] : null); },
+    'q_alone.birch'(r) { this.buildNight(); this.finalizeDuel(); this.finalizeGate(); this.beginWilderness(HOLLOW); }, // the third day: from his hollow on the far side of the ridge to the old birch
     'q_alone.gather'(r) {
       if (r) { this.buildNight(); this.finalizeDuel(); this.finalizeGate(); this.beginWilderness([POI.camp.x + 3, POI.camp.z + 5]); }
       this.spawnPickups();
@@ -685,7 +688,7 @@ export class Act1 {
     g.sky.time = 4.2;
     g.audio.setMusic('sorrow'); g.audio.setAmbience({ battle: 0, wind: 1 });
     g.player.crouch = false; g.player.speedMul = 0.9;
-    if (!place) g.ui.subtitle('Eirik', 'Do not look back. Do not look back.', 4);
+    
     this.hint('cold');
     for (const n of this.raiders) if (n.raider && n.raider.state !== 'busy') { n.raider.state = 'busy'; n.speed = 0; }
   }
