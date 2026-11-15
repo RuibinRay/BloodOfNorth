@@ -93,8 +93,8 @@ Known gaps:
 - **Eyes and mouths have shapes now, not likenesses**: on top of size, spacing, colour, lids and brows, an eye can be
   round, narrow, hooded, deep-set, or lifted or drooping at the outer corner, and a mouth can have a cupid's bow, a
   full lower lip, a crooked corner, or corners that turn up or down at rest (`eyeShape`, `mouthShape`, `corners`), set
-  for about thirty people from what their portraits say of their eyes and mouths. Eirik's Appearance page does not offer
-  them yet. Unnamed folk, raiders and the rank and file keep the default face (the rank and file their own simpler one).
+  for about thirty people from what their portraits say of their eyes and mouths. Eirik's Appearance page offers them, with
+  his weight (`heft`); the body's belly, bust and stoop are not on it. Unnamed folk, raiders and the rank and file keep the default face (the rank and file their own simpler one).
 - **A portrait and the story disagree in two places, left as the portraits have it**: Liv's eyes are her father's blue
   (the story gives her her mother's), and Håkon in Act VII keeps his black hair streaked with grey, not the grey
   hair and long beard his look had before.

@@ -104,8 +104,8 @@ topknot, balding, shaved, bald), lying in locks, hanging hair that swings with t
 comes in streaks and at the temples first; **beards** as stubble, short, full, long, to the belt, forked, braided or on
 the chin, with moustaches. Each person with a name and a part has a face of their own, from the story and from their
 portrait: Eirik at nine, ten, twenty-two and forty-one; his families; the six companions; the kings, queens and jarls;
-the ten champions and Håkon; the speakers of each act. Eirik's Appearance page offers the new hair, beards, faces and
-noses.
+the ten champions and Håkon; the speakers of each act. Eirik's Appearance page offers the new hair, beards, faces,
+noses, eye shapes, mouths, a resting expression and his weight.
 
 **In 0.29.** An animation pass over everything that moves. **People**: a new walk and run (the swinging knee
 folds and the foot is carried through, the hips turn with the stride and the shoulders against it, the arms bend as

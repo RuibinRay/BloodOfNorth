@@ -596,8 +596,12 @@ export class UI {
       ${row('Eyes', dots('eyes', [0x86aec6, 0x8e979c, 0x6f8f5a, 0x8a6a3a, 0x5a4632, 0xb07a2e]))}
       ${row('Face', chips('face', [['even', 'Even'], ['lean', 'Lean'], ['broad', 'Broad'], ['long', 'Long'], ['square', 'Square'], ['heavy', 'Heavy']]))}
       ${row('Nose', chips('nose', [['straight', 'Straight'], ['hooked', 'Hooked'], ['broken', 'Broken'], ['snub', 'Snub'], ['broad', 'Broad']]))}
+      ${row('Eye shape', chips('eyeShape', [[null, 'Almond'], ['round', 'Round'], ['narrow', 'Narrow'], ['hooded', 'Hooded'], ['deep', 'Deep-set'], ['up', 'Lifted at the corners'], ['down', 'Drooping at the corners']]))}
+      ${row('Mouth', chips('mouthShape', [[null, 'Plain'], ['bow', "Cupid's bow"], ['pout', 'Full lower lip'], ['crooked', 'Crooked']]))}
+      ${row('At rest', chips('corners', [[-0.4, 'Stern'], [null, 'Even'], [0.35, 'Ready to smile']]))}
       ${row('Skin', dots('skin', [0xe8c0a2, 0xdcae8e, 0xc8946e, 0xa87550, 0x7a5236]))}
       ${row('Build', chips('build', [[0.96, 'Lean'], [1.08, 'Strong'], [1.2, 'Heavy']]))}
+      ${row('Weight', chips('heft', [[0.9, 'Wiry'], [null, 'Middling'], [1.1, 'Heavy-set']]))}
       ${row('Height', chips('scale', [[0.96, 'Short'], [1.0, 'Middling'], [1.05, 'Tall']]))}
       ${row('Another scar', chips('scar2', [[null, 'None'], ['cheek', 'Cheek'], ['brow', 'Brow'], ['lip', 'Lip']]))}
       ${row('Tunic', dots('tunic', [0x55664a, 0x6a3a2e, 0x2f4a5c, 0x6a5a40, 0x4a4a52, 0x8a7a5a]))}
