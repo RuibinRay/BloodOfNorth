@@ -10,6 +10,14 @@ Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, th
 (forty-one: Ravenhold twelve years on, Leif's house, the old birch), each as the story tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
+**The rank and file.** The men of the shield walls ([src/entities/ranks.js](src/entities/ranks.js)) now have faces (a
+brow, eyes under it, a shaped nose), a fist on the shield's grip and on the weapon, and a sleeve on the weapon arm
+instead of a bare one. A man whose side gives him an iron cap wears a helmet: a pointed dome on a band, with a guard down
+over his nose; the others show their hair. And they cost less: each man used to be drawn with all four painted shields,
+three of them shrunk to nothing; now one shield picks its painting from the sheet for each man, so the Black Shore
+draws 681k triangles where it drew 724k, with the faces and helmets added. Not done: their legs still step as the line
+moves, not as each man's own feet do.
+
 **Oars.** A ship under way (moving, or with the sea flowing past her as the story sails her) runs out her oars, one a
 side for each metre or so of her waist (about 13 a side on a big ship, two on a boat), through ports under the rail, and
 rows: a stroke every two seconds or so, the blades sweeping aft in the water and lifted clear coming forward. When she
