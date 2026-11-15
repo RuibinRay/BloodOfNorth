@@ -373,7 +373,7 @@ details.chapters li img.thumb { width: 64px; height: 36px; object-fit: cover; ve
 /* On the main menu the languages sit in the top right corner, out of the way of the title and the buttons. */
 #menu-langs { position: absolute; top: 18px; right: 22px; }
 #menu-langs .langs { margin: 0; }
-#menu-langs { display: flex; gap: 6px; align-items: center; }
+#menu-langs { display: flex; gap: 6px; align-items: center; z-index: 6; } /* above the phone notice: a reader may want their language first */
 #menu-langs .fs { font: inherit; font-size: 15px; padding: 5px 13px; color: var(--parch); background: rgba(20, 16, 12, 0.6); border: 1px solid rgba(201, 162, 74, 0.45); cursor: pointer; letter-spacing: 0.04em; }
 #menu { align-items: safe center; overflow-y: auto; }
 :root[data-lang="es"] #tabs button { padding: 12px 9px; font-size: 13px; letter-spacing: 0.03em; }
@@ -391,3 +391,13 @@ details.chapters li img.thumb { width: 64px; height: 36px; object-fit: cover; ve
 #panel-body table.pt tr.hard td { background: rgba(143, 47, 36, 0.1); }
 #panel-body .ptnotes { display: flex; flex-direction: column; gap: 10px; }
 #panel-body .ptn { display: flex; gap: 12px; } #panel-body .ptn img { width: 200px; border: 1px solid #8a7248; } #panel-body .ptn p { margin: 2px 0; }
+
+/* the notice for a phone or a tablet with only a touch screen (ui.js phoneNote) */
+#phone-note { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(8, 7, 6, 0.72); }
+#phone-note .card { max-width: 420px; padding: 22px 22px 18px; background: rgba(28, 22, 16, 0.96); border: 1px solid rgba(201, 162, 74, 0.5); box-shadow: 0 10px 40px #000; }
+#phone-note h3 { margin: 0 0 10px; font-weight: 500; letter-spacing: 0.06em; color: var(--gold-hi); }
+#phone-note p { margin: 0 0 12px; line-height: 1.5; color: var(--parch); }
+#phone-note b { word-break: break-all; color: var(--gold-hi); font-weight: 500; }
+#phone-note .row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+#phone-note .btn { flex: 1 1 140px; min-height: 44px; }
+#phone-note .btn.ghost { background: transparent; }

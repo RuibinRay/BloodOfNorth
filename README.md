@@ -10,6 +10,12 @@ Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, th
 (forty-one: Ravenhold twelve years on, Leif's house, the old birch), each as the story tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
+**On a phone.** The game needs a keyboard and mouse, or a gamepad. A phone or tablet that has only a touch screen
+(no fine pointer: a tablet with a trackpad or mouse does not count) now sees a notice over the title saying so, with
+the address to open on a computer, a "Share the link" button (the phone's own share sheet, or a copy) and "Look around
+anyway", which closes it for the rest of the visit. The language buttons stay above it, and it is in all three
+languages. Desktops never see it.
+
 **A meadow and a sky.** Nine more pictures from Higgsfield ($0.135; $5.25 of the $10 in all).
 - **Plants**: the grass's thin drawn blades are now painted tufts, each three crossed cards cut from one sheet of six
   plants (`plants.webp`): meadow grass, grass in seed, wildflowers (buttercup, harebell, clover), fern, heather and
