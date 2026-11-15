@@ -301,5 +301,47 @@ def buildings():
         save(at, 'banners.jpg', 88)
 
 
-for f in (ground, pine, birch, figure, beasts, gear, ships, buildings):
+def plants():
+    """plants.webp: six plants on white, cut out and stood on the bottom edge of a 256-pixel square each, in a sheet
+    three wide and two high: grass, grass in seed, wildflowers / fern, heather, reeds (see vegetation.js PLANTS)."""
+    names = ['p_grass', 'p_seed', 'p_flowers', 'p_fern', 'p_heather', 'p_reeds']
+    ims = [src(n) for n in names]
+    if not all(ims):
+        return
+    C = 256
+    at = Image.new('RGBA', (C * 3, C * 2), (0, 0, 0, 0))
+    for k, im in enumerate(ims):
+        cut = cutout(im.resize((768, 768), Image.LANCZOS))
+        if names[k] == 'p_grass':                                      # the clump's foot is in deep shade: lift the darks most, toward the meadow's own green
+            px = np.asarray(cut, dtype=np.float32); rgb = px[..., :3] / 255
+            rgb = 1 - (1 - rgb) ** 1.9; rgb = rgb * np.array([1.0, 0.98, 0.82])
+            px[..., :3] = rgb * 255; cut = Image.fromarray(px.clip(0, 255).astype(np.uint8), 'RGBA')
+        r, g, b, al = cut.split()                                       # thin blades a little bolder, so their tips survive being drawn small
+        cut = Image.merge('RGBA', (r, g, b, al.filter(ImageFilter.MaxFilter(3))))
+        box = cut.getchannel('A').point(lambda v: 255 if v > 40 else 0).getbbox()
+        if box:
+            cut = cut.crop(box)
+        w, h = cut.size
+        sc = min((C - 6) / w, (C - 3) / h)
+        cut = cut.resize((max(1, int(w * sc)), max(1, int(h * sc))), Image.LANCZOS)
+        cell = Image.new('RGBA', (C, C), (0, 0, 0, 0))
+        cell.paste(cut, ((C - cut.size[0]) // 2, C - cut.size[1]))     # its foot on the bottom edge, in the middle
+        at.paste(cell, ((k % 3) * C, (k // 3) * C))
+    save(at, 'plants.webp', 90)
+
+
+def clouds():
+    """clouds.jpg: how much cloud there is at each spot of two seamless skies, the heaped clouds in red and the high
+    wisps in green (white on blue: the red channel is low in the blue sky and high in a cloud)."""
+    cu, ci = src('s_cumulus2') or src('s_cumulus'), src('s_cirrus')
+    if not (cu and ci):
+        return
+    def amount(im, lo, hi):
+        a = np.asarray(tile(im, 512), dtype=np.float32)[..., 0]
+        return np.clip((a - lo) / (hi - lo), 0, 1) * 255
+    r, g = amount(cu, 105, 225), amount(ci, 110, 230)
+    save(Image.fromarray(np.dstack([r, g, np.zeros_like(r)]).astype(np.uint8)), 'clouds.jpg', 90)
+
+
+for f in (ground, pine, birch, figure, beasts, gear, ships, buildings, plants, clouds):
     f()

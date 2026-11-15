@@ -5,7 +5,7 @@ export default [
   // keycaps: printed as they are on the keyboard
   'Tab', 'Alt', 'Alt Gr', 'Escape', 'Key', 'Digit', 'Shift', 'R-Shift', 'Ctrl', 'Esc', 'Pad', 'Pad ', 'Mouse', 'Enter',
   // code
-  'WEBGL_debug_renderer_info', 'grayscale(0.75) contrast(1.35) brightness(1.25)', '{0}px {1}px', 'translate({0}px, {1}px)',
+  '(any-pointer: fine)', 'WEBGL_debug_renderer_info', 'grayscale(0.75) contrast(1.35) brightness(1.25)', '{0}px {1}px', 'translate({0}px, {1}px)',
   '(1.0 - uv.y) * (1.0 - uv.y)', 'sin(uv.x * 3.14159) * (0.45 + 0.55 * (1.0 - uv.y))',
   // debug and the frame counter
   '{0}:{1} after {2}s stuck:{3}', 'Failed to start: ', '{0} fps · {1} ms · {2} draws · {3}k triangles · {4}% resolution',

@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { clamp, lerp, smoothstep } from '../core/util.js';
 import { shared, TEX } from './geo.js';
+import { ART } from '../data/art.js';
 
 const C = (r, g, b) => new THREE.Color(r, g, b);
 const NIGHT_TOP = C(0.012, 0.018, 0.045), NIGHT_HOR = C(0.045, 0.065, 0.11);
@@ -27,13 +28,18 @@ export class Sky {
       sunDir: { value: this.sunDir }, sunCol: { value: C(1, 1, 1) }, sunVis: { value: 1 },
       moonDir: { value: MOON_DIR }, moonVis: { value: 0 }, stars: { value: 0 }, uTime: shared.uTime,
       glow: { value: C(1.0, 0.32, 0.08) }, glowAmt: { value: 0 },
+      // clouds (clouds.jpg, tools/art/world.py clouds(): heaped clouds in red, high wisps in green); off until it has loaded
+      uClouds: { value: null }, cloudOn: { value: 0 }, cloudCover: { value: 0.35 }, cloudDrift: { value: new THREE.Vector2() },
     };
+    const cu = (ART.world || {}).clouds;
+    if (cu) this.u.uClouds.value = new THREE.TextureLoader().load(cu, (t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.needsUpdate = true; this.u.cloudOn.value = 1; });
     const mat = new THREE.ShaderMaterial({
       side: THREE.BackSide, depthWrite: false, fog: false, uniforms: this.u,
       vertexShader: `varying vec3 vDir; void main(){ vDir = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
       fragmentShader: `
         uniform vec3 top, horizon, ground, sunDir, sunCol, moonDir, glow;
-        uniform float sunVis, moonVis, stars, uTime, glowAmt;
+        uniform float sunVis, moonVis, stars, uTime, glowAmt, cloudOn, cloudCover;
+        uniform sampler2D uClouds; uniform vec2 cloudDrift;
         varying vec3 vDir;
         void main(){
           vec3 d = normalize(vDir);
@@ -48,6 +54,18 @@ export class Sky {
           float r = fract(sin(dot(ip, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
           float star = step(0.9972, r) * smoothstep(0.42, 0.05, length(fract(p) - 0.5)) * smoothstep(0.0, 0.25, h);
           col += vec3(star * (0.65 + 0.35 * sin(uTime * 2.3 + r * 120.0))) * stars;
+          if (cloudOn > 0.5 && h > 0.0) {
+            // the clouds lie on a high flat ceiling: the lower toward the horizon one looks, the farther off and smaller
+            vec2 cp = d.xz / (h + 0.11);
+            float big = texture2D(uClouds, cp * 0.045 + cloudDrift * 0.9 + vec2(0.31, 0.17)).r;                 // where the heaped clouds gather
+            float heap = texture2D(uClouds, cp * 0.16 + cloudDrift).r * smoothstep(0.25 - cloudCover * 0.4, 0.75 - cloudCover * 0.3, big + cloudCover * 0.35);
+            float wisp = texture2D(uClouds, cp * 0.07 + cloudDrift * 1.7 + vec2(0.6, 0.2)).g * 0.6;
+            float cl = clamp(max(heap, wisp) + cloudCover * 0.25 * big, 0.0, 1.0) * smoothstep(0.015, 0.16, h);
+            // their colour is the sky's own light: white at noon, warm at dusk, dark at night; thick parts a little grey,
+            // and a bright rim toward the sun
+            vec3 lit = mix(horizon, vec3(1.04), 0.8) * (1.0 - heap * 0.24) + sunCol * pow(sd, 6.0) * 0.35 * sunVis;
+            col = mix(col, lit, cl);
+          }
           col += glow * glowAmt * exp(-abs(h) * 5.0);
           gl_FragColor = vec4(col, 1.0);
           #include <tonemapping_fragment>
@@ -116,6 +134,8 @@ export class Sky {
     this.u.moonVis.value = (1 - dayF) * (1 - oc * 0.85);
     this.u.stars.value = (1 - dayF) * (1 - oc);
     this.u.glowAmt.value = this.fireGlow * 0.5;
+    this.u.cloudCover.value = 0.45 + oc * 0.5;
+    this.u.cloudDrift.value.x += dt * 0.0016 * (w.wind || 1); this.u.cloudDrift.value.y += dt * 0.0007 * (w.wind || 1); // the wind carries them
     this.isNight = dayF < 0.35;
 
     // lighting

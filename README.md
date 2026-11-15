@@ -10,14 +10,36 @@ Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, th
 (forty-one: Ravenhold twelve years on, Leif's house, the old birch), each as the story tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
+**On a phone.** The game needs a keyboard and mouse, or a gamepad. A phone or tablet that has only a touch screen
+(no fine pointer: a tablet with a trackpad or mouse does not count) now sees a notice over the title saying so, with
+the address to open on a computer, a "Share the link" button (the phone's own share sheet, or a copy) and "Look around
+anyway", which closes it for the rest of the visit. The language buttons stay above it, and it is in all three
+languages. Desktops never see it.
+
+**A meadow and a sky.** Nine more pictures from Higgsfield ($0.135; $5.25 of the $10 in all).
+- **Plants**: the grass's thin drawn blades are now painted tufts, each three crossed cards cut from one sheet of six
+  plants (`plants.webp`): meadow grass, grass in seed, wildflowers (buttercup, harebell, clover), fern, heather and
+  reeds. Each tuft is chosen by where it grows: reeds on the banks of the river and the fjord, ferns along the wood,
+  heather up the slopes, flowers in patches of open meadow, grass everywhere else. They are the grass's own instances
+  in the grass's own cells, so they cost no more draws, and fewer triangles (6 a tuft, the blades were 16). The
+  farther a tuft is drawn the more its edges are lifted, so thin tips do not wear away into flat-topped clumps.
+- **Clouds**: two painted skies (heaped cumulus and high wisps, `clouds.jpg`) lie on a high ceiling in the sky's
+  shader, drift with the wind, and gather unevenly so their pattern does not show. They take their colour from the
+  sky's own light (white at noon, warm at dusk, dark at night), cover the stars behind them, and thicken when the
+  weather is overcast.
+- The heavy scenes still hold 60 frames a second on the M2 with no dropped frames; drawing times were the same as
+  `main`'s within noise.
+
 **Ships ride the swell.** Every ship afloat is lifted, pitched and rolled the way the water under her bow, stern and
 sides is moving (the same waves the sea is drawn with), and so is everyone standing on her deck: crew, foes and Eirik.
 It is done in the picture only, just before each frame is drawn and undone straight after ([src/world/float.js](src/world/float.js)),
 so walking a deck, fighting on one and the story sailing a ship are as they were. Beached, wrecked and sunk hulls are
 left as they lie; ships in the home fjord and the harbours barely move, as the water there barely does. With the ships
 moving, the swell is back to its full height (it had been held to two thirds while they sat still). Out at sea a ship
-now rises up to about 0.4 m and pitches and rolls a few degrees. Things set loose on a deck that are not people (fire
-pots, chests) stay level. It costs about 0.13 ms a frame with 24 ships out.
+now rises up to about 0.4 m and pitches and rolls a few degrees. Everything else on a ship (benches, shields, mast,
+cargo) is built as part of her, so it goes with her; a sweep of all 67 chapters found nothing else standing loose on
+a deck. The one thing that does not follow is a fire's flames, which rise from a fixed point: on a burning ship that is
+at most 0.4 m out, inside a flame that size. It costs about 0.13 ms a frame with 24 ships out.
 
 **Full screen, the mouse after a conversation, and the mountains.**
 - **Full screen**: F10 (it can be rebound in Settings → Controls), a button beside the languages on the title screen, "Full screen" in the pause menu and a switch in Settings → Graphics. It is not saved: a browser fills the screen only when a click or a key asks it to.

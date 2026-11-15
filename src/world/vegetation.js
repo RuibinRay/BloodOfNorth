@@ -107,6 +107,54 @@ function grassGeo() {
   return merge(blades);
 }
 
+// ---- the meadow's plants (0.30) -----------------------------------------------------------------------------------
+// Six painted plants (tools/art/world.py plants(): plants.webp, three wide and two high), each drawn as three crossed
+// cards on the grass's own instances, so they cost no more draws than the blades did. [width, height] in metres.
+export const PLANTS = [{ id: 'grass', size: [0.46, 0.36] }, { id: 'seed', size: [0.44, 0.6] }, { id: 'flowers', size: [0.52, 0.38] },
+  { id: 'fern', size: [0.8, 0.68] }, { id: 'heather', size: [0.62, 0.4] }, { id: 'reeds', size: [0.52, 1.15] }];
+const hash = (x, z) => { const s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); };
+/** Which plant grows at (x, z), h metres up: reeds by the water, ferns along the wood, heather up the slopes,
+ *  patches of flowers in the open meadow, and grass, some of it in seed, everywhere else. */
+function plantKind(x, z, h) {
+  const r = hash(x, z), wet = h < 1.35 || Math.abs(x - riverX(z)) < 10.5, fd = forestDensity(x, z);
+  if (wet && r < 0.45) return 5;
+  if (fd > 0.25 && r < 0.32) return 3;
+  if (h > 12 && r < 0.4 * Math.min(1, (h - 12) / 10)) return 4;
+  const meadow = noise2(x * 0.045 + 11, z * 0.045 - 4) > 0.22;
+  if (r < (meadow ? 0.5 : 0.08) && fd < 0.3) return 2;
+  return hash(z, x) < 0.3 ? 1 : 0;
+}
+/** Three crossed cards a metre square standing on their foot (the instance scales them), lighter toward the top. */
+function plantGeo() {
+  const cards = [];
+  for (let k = 0; k < 3; k++) {
+    const g = new THREE.PlaneGeometry(1, 1, 1, 2); g.translate(0, 0.5, 0);
+    const p = g.attributes.position, col = new Float32Array(p.count * 3);
+    for (let i = 0; i < p.count; i++) { const t = p.getY(i), c = 0.82 + t * 0.3; col[i * 3] = c; col[i * 3 + 1] = c; col[i * 3 + 2] = c; }
+    g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    g.rotateY((k * Math.PI) / 3); cards.push(g);
+  }
+  return merge(cards);
+}
+/** The tufts' material: the plant sheet, cut out where it is clear, each tuft reading its own square (aCell). */
+function plantMaterial(url) {
+  const map = new THREE.TextureLoader().load(url); map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 4;
+  const mat = patch(new THREE.MeshLambertMaterial({ map, vertexColors: true, side: THREE.DoubleSide, alphaTest: 0.42 }), { sway: 0.07, snow: 1, upNormal: true });
+  const base = mat.onBeforeCompile;
+  mat.onBeforeCompile = (sh, r) => {
+    base(sh, r);
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute vec2 aCell;')
+      .replace('#include <uv_vertex>', '#include <uv_vertex>\nvMapUv = vMapUv * vec2(1.0 / 3.0, 0.5) + aCell;');
+    // A blade's tip is thin: as the picture is drawn smaller (its smaller mip levels) the tip fades below the cut and
+    // the tuft would end in a flat edge. So the farther down the mip chain, the more its edge is lifted.
+    sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
+        { vec2 tx = vMapUv * vec2(768.0, 512.0); float lod = max(0.0, 0.5 * log2(max(dot(dFdx(tx), dFdx(tx)), dot(dFdy(tx), dFdy(tx)))));
+          diffuseColor.a *= 1.0 + lod * 0.45; }`);
+  };
+  const key = mat.customProgramCacheKey; mat.customProgramCacheKey = () => key() + '_plants';
+  return mat;
+}
+
 const PICTURED = new Map();
 /** A tree's picture as a material (one per picture, shared by the forest and by trees placed by hand). */
 function pictured(url, sway, snow) {
@@ -160,9 +208,10 @@ export function scatterVegetation(scene, world, quality) {
   const cells = []; // { near, far, x, y, z, r, lodAt, range }
   const lodAt = quality === 'high' ? 300 : quality === 'low' ? 120 : 200, grassRange = quality === 'high' ? 110 : quality === 'low' ? 70 : 90;
   /** Put a batch of instances (each 16 numbers of matrix and 3 of colour, indexed by `idx`) on the map as one cell. */
-  const cellOf = (geo, mat, mats, cols, idx, { cast, low = null, lowMat = null, ready = null, range = Infinity }) => {
-    const mesh = new THREE.InstancedMesh(geo, mat, idx.length), ic = new Float32Array(idx.length * 3);
+  const cellOf = (geo, mat, mats, cols, idx, { cast, low = null, lowMat = null, ready = null, range = Infinity, extra = null }) => {
+    const mesh = new THREE.InstancedMesh(extra ? geo.clone() : geo, mat, idx.length), ic = new Float32Array(idx.length * 3);
     idx.forEach((i, k) => { mesh.instanceMatrix.array.set(mats.subarray(i * 16, i * 16 + 16), k * 16); ic.set(cols.subarray(i * 3, i * 3 + 3), k * 3); });
+    if (extra) { const d = new Float32Array(idx.length * extra.size); idx.forEach((i, k) => d.set(extra.data.subarray(i * extra.size, (i + 1) * extra.size), k * extra.size)); mesh.geometry.setAttribute(extra.name, new THREE.InstancedBufferAttribute(d, extra.size)); } // one more thing per instance (which plant a tuft is)
     mesh.instanceColor = new THREE.InstancedBufferAttribute(ic, 3); mesh.instanceMatrix.needsUpdate = true;
     mesh.castShadow = cast; mesh.receiveShadow = true; mesh.computeBoundingSphere(); // with bounds, the camera and the sun's shadow box each skip the cells they cannot see
     scene.add(mesh);
@@ -223,8 +272,9 @@ export function scatterVegetation(scene, world, quality) {
 
   // grass
   const want = quality === 'high' ? 90000 : quality === 'low' ? 18000 : 52000;
-  const grassMat = patch(new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide }), { sway: 0.5, snow: 1, upNormal: true });
-  const gm = new Float32Array(want * 16), gc = new Float32Array(want * 3), gxz = new Float32Array(want * 2);
+  const plantsPic = (ART.world || {}).plants; // the painted tufts (plants.webp), else the drawn blades as before
+  const grassMat = plantsPic ? plantMaterial(plantsPic) : patch(new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide }), { sway: 0.5, snow: 1, upNormal: true });
+  const gm = new Float32Array(want * 16), gc = new Float32Array(want * 3), gxz = new Float32Array(want * 2), gk = new Float32Array(want * 2);
   let n = 0;
   for (let i = 0; i < want * 6 && n < want; i++) {
     const x = -200 + R() * 425, z = -200 + R() * 355;
@@ -237,14 +287,17 @@ export function scatterVegetation(scene, world, quality) {
     if (R() > w) continue;
     if (world.pointInBox(x, z, 0.2)) continue;
     const sc = 0.7 + R() * 0.9;
-    e.set(0, R() * 6.28, 0); q.setFromEuler(e); v.set(x, h - 0.03, z); s.set(sc, sc, sc);
-    m4.compose(v, q, s).toArray(gm, n * 16); gxz[n * 2] = x; gxz[n * 2 + 1] = z;
-    const k = 0.75 + R() * 0.5;
-    col.setRGB(k * (0.95 + R() * 0.3), k, k * 0.85).toArray(gc, n * 3);
+    e.set(0, R() * 6.28, 0); q.setFromEuler(e); v.set(x, h - 0.03, z);
+    const kind = plantsPic ? plantKind(x, z, h) : 0, [pw, ph] = PLANTS[kind].size; // (its own dice: the valley's random stream is used as before)
+    if (plantsPic) s.set(pw * sc, ph * sc, pw * sc); else s.set(sc, sc, sc);
+    m4.compose(v, q, s).toArray(gm, n * 16); gxz[n * 2] = x; gxz[n * 2 + 1] = z; gk[n * 2] = (kind % 3) / 3; gk[n * 2 + 1] = 1 - (((kind / 3) | 0) + 1) / 2;
+    const k = 0.75 + R() * 0.5, kg = R();
+    if (!plantsPic) col.setRGB(k * (0.95 + kg * 0.3), k, k * 0.85); else if (kind < 2) { const kk = 1.1 + (k - 1) * 0.5; col.setRGB(kk * (1.12 + kg * 0.18), kk * 1.08, kk * 0.82); } // the painted grass is darker than the ground's: lifted to meet it else col.setRGB(0.85 + k * 0.2, 0.85 + k * 0.2, 0.82 + k * 0.2); // grass is tinted as before; flowers keep their own colours
+    col.toArray(gc, n * 3);
     n++;
   }
-  const grassG = grassGeo(); // a blade is a few centimetres wide: past ninety metres or so it is less than a pixel, so the cells out there are not drawn
-  for (const idx of byCell(n, 40, (i) => [gxz[i * 2], gxz[i * 2 + 1]])) cellOf(grassG, grassMat, gm, gc, idx, { cast: false, range: grassRange });
+  const grassG = plantsPic ? plantGeo() : grassGeo(); // a blade is a few centimetres wide: past ninety metres or so it is less than a pixel, so the cells out there are not drawn
+  for (const idx of byCell(n, 40, (i) => [gxz[i * 2], gxz[i * 2 + 1]])) cellOf(grassG, grassMat, gm, gc, idx, { cast: false, range: grassRange, extra: plantsPic ? { name: 'aCell', data: gk, size: 2 } : null });
   // the sea chart: wind-bent pines and birch in groves, boulders on every shore (own random stream, so
   // the valley's trees stay exactly where the story expects them)
   const R2 = rng(9117), ip = [], ib = [], ir = [];

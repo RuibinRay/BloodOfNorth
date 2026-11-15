@@ -392,6 +392,28 @@ export class UI {
       { label: 'Build Status', sub: tr('What is playable, prototype and planned'), act: () => this.openPanel('status', ['saves', 'settings', 'status', 'playtest']) },
     ]);
     const lp = $('#menu-langs'); if (lp) { lp.innerHTML = this.langPicker() + `<button class="lang fs" id="menu-fs">${esc(tr('Full screen'))}</button>`; this.wireLang(lp); lp.querySelector('#menu-fs').onclick = () => { this.g.audio.init(); this.g.audio.play('ui'); toggleFullscreen(); }; }
+    this.phoneNote();
+  }
+  /** On a phone or a tablet with nothing but a touch screen the game cannot be played (it needs a keyboard and mouse, or
+   *  a gamepad): say so over the title once a visit, and offer to send the link on to a computer. */
+  phoneNote() {
+    const touchOnly = navigator.maxTouchPoints > 0 && !matchMedia('(any-pointer: fine)').matches;
+    let seen = false; try { seen = sessionStorage.getItem('botn.phoneNote') === '1'; } catch { /* no storage */ }
+    if (!touchOnly || seen) return;
+    const old = $('#phone-note'); if (old) old.remove(); // drawn again: the language may have changed
+    const n = document.createElement('div'); n.id = 'phone-note';
+    n.innerHTML = `<div class="card"><h3>${esc(tr('Made for a computer'))}</h3>
+      <p>${esc(tr('Blood of the North is played with a keyboard and mouse, or a gamepad. On a touch screen alone you can look round the menus, but not play.'))}</p>
+      <p>${esc(tr('Open this page on a computer:'))} <b>${esc(location.host + location.pathname)}</b></p>
+      <div class="row"><button class="btn" id="pn-share">${esc(tr('Share the link'))}</button><button class="btn ghost" id="pn-close">${esc(tr('Look around anyway'))}</button></div></div>`;
+    this.e.menu.appendChild(n);
+    const close = () => { try { sessionStorage.setItem('botn.phoneNote', '1'); } catch { /* no storage */ } n.remove(); };
+    n.querySelector('#pn-close').onclick = close;
+    n.querySelector('#pn-share').onclick = async (ev) => {
+      const b = ev.currentTarget, url = location.href.split('#')[0];
+      try { if (navigator.share) { await navigator.share({ title: document.title, url }); return; } await navigator.clipboard.writeText(url); b.textContent = tr('Link copied'); }
+      catch { /* the share sheet was closed, or nothing could be copied: nothing to do */ }
+    };
   }
   hideMain() { this.e.menu.classList.remove('on'); this.e.hud.classList.remove('hidden'); }
   showPause() {
