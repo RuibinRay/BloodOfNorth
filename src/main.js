@@ -202,6 +202,10 @@ class Game {
     this.input.wantLock = lock;
     if (!lock) this.input.unlock();
     else if (this.started) this.input.lock(true); // back from a conversation or a menu: take the mouse again, no click needed
+    if (m === 'play' && this.started && !this.settings.fsTold && !isFullscreen()) { // once, the first time he can move: how to fill the screen
+      this.settings.fsTold = true; saveSettings(this.settings);
+      setTimeout(() => this.mode === 'play' && !isFullscreen() && this.ui.tip('Full screen: {fullscreen}, or Option+Enter on a Mac (Alt+Enter elsewhere), or Full screen in the pause menu ({pause}).'), 2500);
+    }
   }
   findInteraction() {
     const p = this.player.pos;
