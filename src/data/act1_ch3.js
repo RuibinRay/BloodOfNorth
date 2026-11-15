@@ -13,8 +13,8 @@ export const SECRETS = {
 };
 
 Object.assign(CAST, {
-  signe: { name: 'Signe', role: 'Adoptive mother', look: { scale: 0.97, female: true, build: 0.95, hair: 0xc9a25a, hairStyle: 'braid', tunic: 0x7a4a3a, trim: 0xd8c08a, apron: 0xcfc4a8, sleeve: 0xcfc4a8 } },
-  hrefna: { name: 'Old Hrefna', role: "Bjornstead's herb-woman; some say a seeress", look: { female: true, scale: 0.9, build: 0.88, hair: 0xc8c2b8, hairStyle: 'bun', tunic: 0x4a4438, apron: 0x6a6252, cloak: 0x3a3a30, age: 0.9, face: 'gaunt', nose: 'hooked', eyes: 0x6a8a9a, brows: 0.7, lips: 'thin', rosy: 0.15 } },
+  signe: { name: 'Signe', role: 'Adoptive mother', look: { scale: 0.97, female: true, build: 0.95, hair: 0xc9a25a, hairStyle: 'braid', tunic: 0x7a4a3a, trim: 0xd8c08a, apron: 0xcfc4a8, sleeve: 0xcfc4a8, eyeShape: 'up' } },
+  hrefna: { name: 'Old Hrefna', role: "Bjornstead's herb-woman; some say a seeress", look: { female: true, scale: 0.9, build: 0.88, hair: 0xc8c2b8, hairStyle: 'bun', tunic: 0x4a4438, apron: 0x6a6252, cloak: 0x3a3a30, age: 0.9, face: 'gaunt', nose: 'hooked', eyes: 0x6a8a9a, brows: 0.7, lips: 'thin', rosy: 0.15, eyeShape: 'deep', corners: 0.2 } },
   freydis: { name: 'Freydis', role: 'Adoptive sister', look: { scale: 0.66, child: true, female: true, hair: 0xb5562a, hairStyle: 'braids', tunic: 0x4f6a7a, trim: 0xe0c070 } },
 });
 

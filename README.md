@@ -90,7 +90,7 @@ with a jaw, a chin, cheekbones, the ridge of the brow and sockets for the eyes, 
 hooked, snub, broad, broken, button, long) and ears; eyes with an iris and pupil that turn to look and glance aside,
 upper lids that blink and close, lower lids and lashes; brows shaped and thick or thin; lips on a jaw that drops when
 they speak, so the chin and the beard move with the words and the teeth show; rosy cheeks, freckles, lines of age,
-soot and mud. **Hair** in nineteen styles (cropped, short, tousled, swept back, to the shoulder, long, a mane, long with
+soot and mud; eyes round, narrow, hooded, deep-set, lifted or drooping at the corners, and mouths with a cupid's bow, a full lower lip, a crooked corner, or corners turned up or down. **Hair** in nineteen styles (cropped, short, tousled, swept back, to the shoulder, long, a mane, long with
 braids at the temples, tied back, one braid down the back or over the shoulder, two braids, a bun high or low, a
 topknot, balding, shaved, bald), lying in locks, hanging hair that swings with the body and not the head, and grey that
 comes in streaks and at the temples first; **beards** as stubble, short, full, long, to the belt, forked, braided or on

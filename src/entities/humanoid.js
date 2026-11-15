@@ -372,7 +372,7 @@ export class Humanoid {
     // blinking: the upper lids turn down over the eyes
     if ((this.blinkT -= dt) < 0) { this.blink = 0.13; this.blinkT = 2 + Math.random() * 4.5; }
     if (this.blink > 0) this.blink -= dt;
-    this._lid += ((this.blink > 0 ? 1 : Math.min(0.85, c.lid + (this.look.squint || 0) * 0.35)) - this._lid) * (1 - Math.exp(-38 * dt)); // squint: lids that sit low
+    this._lid += ((this.blink > 0 ? 1 : clamp(c.lid + ((this.look.squint || 0) + (this.eyeSq || 0)) * 0.35, -0.1, 0.85)) - this._lid) * (1 - Math.exp(-38 * dt)); // squint: lids that sit low
     this.fLid.rotation.x = -0.72 + 1.16 * this._lid; // open, the lid's edge is just over the iris; shut, it meets the lower lid
     // speech: letters at speaking pace, or fed one by one; the jaw drops and the lower lip with it
     const sp = this.speech;
