@@ -73,8 +73,8 @@
               "type": "story",
               "target_minutes": 15,
               "summary": "Bjorn finds him at the thaw and carries him home; Signe, Freydis, forty days of silence.",
-              "status": "partial",
-              "note": "Built as the fever and the farm. Bjornstead is still one farm in a dale, not the coastal village of twenty houses."
+              "status": "built",
+              "note": "Built as the fever and Bjorn's house in the coastal village (moved there from the old farm in the dale in 0.30)."
             },
             {
               "id": "a1c4m2",
@@ -1659,8 +1659,8 @@
     "missions": 89,
     "target_minutes": 1015,
     "by_status": {
-      "built": 82,
-      "partial": 4,
+      "built": 83,
+      "partial": 3,
       "fight_only": 0,
       "planned": 3
     }
