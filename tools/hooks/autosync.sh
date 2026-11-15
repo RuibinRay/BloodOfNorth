@@ -35,13 +35,29 @@ check() {
   git archive "$1" | tar -x -C "$dir" || { echo "could not copy $short to check it"; return 1; }
   for try in 1 2; do
     echo "checking $short (npm run check -- --quick, try $try)"
-    if (cd "$dir" && node tools/check.mjs --quick >"$out" 2>&1); then
+    # its temporary files (Chrome's profile among them) inside the copy: some sandboxes do not let a hook write to the system's
+    mkdir -p "$dir/.tmp"
+    ( cd "$dir" && TMPDIR="$dir/.tmp" exec node tools/check.mjs --quick ) >"$out" 2>&1 &
+    local pid=$! waited=0
+    while kill -0 "$pid" 2>/dev/null && [ $waited -lt "${BOTN_CHECK_LIMIT:-360}" ]; do sleep 2; waited=$((waited + 2)); done
+    if kill -0 "$pid" 2>/dev/null; then            # it normally takes about a minute: something here is in its way
+      kill "$pid" 2>/dev/null; pkill -f "user-data-dir=$dir/.tmp" 2>/dev/null; sleep 1
+      echo "TIMEOUT: the check did not finish in 6 minutes" >>"$out"
+    elif wait "$pid"; then
       echo "check passed: $(grep -E 'All passed' "$out" | tail -1)"; rm -rf "$dir" "$out"; return 0
     fi
+    pkill -f "user-data-dir=$dir/.tmp" 2>/dev/null || true
   done
-  grep -E 'FAIL' "$out" | head -6
   mv -f "$out" "$common/autosync-failed.log"; rm -rf "$dir"
-  notify "The quick check failed on $short: main was not moved. See .git/autosync-failed.log"
+  if grep -qE 'TIMEOUT|Chrome did not start|Chrome exited' "$common/autosync-failed.log" && ! grep -q 'FAIL ' "$common/autosync-failed.log"; then
+    # Not a fault in the game: the check could not run where this commit was made (an agent's sandbox can slow
+    # Chrome to a crawl). Run the hook again from a terminal: bash tools/hooks/autosync.sh
+    echo "the check could not run here (see .git/autosync-failed.log): to check and merge, run in this folder: bash tools/hooks/autosync.sh"
+    notify "The check could not run for $short: main was not moved. Run bash tools/hooks/autosync.sh in that folder."
+  else
+    grep -E 'FAIL' "$common/autosync-failed.log" | head -6
+    notify "The quick check failed on $short: main was not moved. See .git/autosync-failed.log"
+  fi
   return 1
 }
 

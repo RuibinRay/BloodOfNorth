@@ -261,7 +261,10 @@ a merge); if it fails again, `main` stays where it was, a notification says so, 
 `.git/autosync-failed.log`. `main` also stays put when the folder that has it checked out has uncommitted changes.
 Branches named `wip/…` or `wip-…` are pushed but never merged. If `main` has moved on since a branch began, rebase the
 branch onto `main` and its next commit merges. `BOTN_NO_CHECK=1 git commit …` skips the check for one commit,
-`BOTN_NO_SYNC=1 git commit …` skips all of it. What it did is written to `.git/autosync.log`
+`BOTN_NO_SYNC=1 git commit …` skips all of it. The check is stopped if it runs past 6 minutes (it takes about one).
+A Claude session's own `git commit` runs in a sandbox where Chrome crawls, so there the check cannot finish: the log
+says so, and running `bash tools/hooks/autosync.sh` in that folder (outside `git`) checks the commit and merges it.
+What it did is written to `.git/autosync.log`
 ([tools/hooks/autosync.sh](tools/hooks/autosync.sh)).
 
 ## Controls
