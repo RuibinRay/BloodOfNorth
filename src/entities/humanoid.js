@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import { clamp, smoothstep, damp, angleDiff } from '../core/util.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { M, STUFF, at, box, cyl, cone, sphere, tint, merge, shieldGeo } from '../world/geo.js';
+import { M, STUFF, at, box, cyl, cone, sphere, tint, merge, shieldGeo, shared } from '../world/geo.js';
 import { buildHead } from './heads.js';
 import { buildBody, gripPoint, curl } from './bodies.js';
 
@@ -407,9 +407,20 @@ export class Humanoid {
     // cloth and hair swing back when he moves and settle when he stops
     const sp = this.speed / this.scale, want = -clamp(sp * 0.085, 0, 0.5) + Math.sin(this.t * 1.7) * 0.025 - Math.max(0, -this.cur.crx) * 0.5 + this.cur.crx * 0.6;
     this.sway = damp(this.sway, want, 5, dt);
-    if (j.cloak) j.cloak.rotation.x = this.sway - this.cur.crx * 0.55 + Math.sin(this.phase * 2) * 0.03 * Math.min(1, sp / 3);
+    this.trail = damp(this.trail || 0, clamp(sp * 0.09, 0, 0.55), 4, dt);
+    // and the wind blows them: the weather's wind (shared.uWind, the same that moves the trees and the flags), the
+    // way the snow drifts (toward +x), in gusts that come and go, with a flutter on top; turned into his own frame, so it lifts a cloak from behind or the side
+    const W = Math.min(3, shared.uWind.value ?? 1), gust = W * (0.62 + 0.38 * Math.sin(this.t * 0.71 + this.seed) * Math.sin(this.t * 0.29 + this.seed * 1.7)) + W * 0.1 * Math.sin(this.t * 5.3 + this.seed * 3);
+    const yaw = this.root.rotation.y + this.cur.hry + this.cur.cry, wx = (0.94 * Math.cos(yaw) - 0.34 * Math.sin(yaw)) * gust, wz = (0.94 * Math.sin(yaw) + 0.34 * Math.cos(yaw)) * gust;
+    const flap = Math.sin(this.t * 3.1 + this.seed * 2) * 0.012 * W;
+    if (j.cloak) { // it trails behind him as he goes, hangs straight down when he leans, and the wind fills it
+      j.cloak.rotation.x = clamp(this.trail - this.cur.crx * 0.9 + Math.sin(this.phase * 2) * 0.03 * Math.min(1, sp / 3) - wz * 0.11 + flap, -0.5, 0.75);
+      j.cloak.rotation.z = clamp(wx * 0.07, -0.25, 0.25);
+    }
+    if (j.skirt) { j.skirt.rotation.x = clamp(-wz * 0.035 + flap * 0.5, -0.12, 0.12); j.skirt.rotation.z = clamp(wx * 0.03, -0.1, 0.1); }
     // hair that hangs down the back swings with the body, not the head, and turns a little after the head
-    this.hangPivot.rotation.x = -this.sway * 0.5 + this.cur.crx * 0.15; this.hangPivot.rotation.y = (this.cur.nry + g.yaw * 0.62) * 0.3;
+    this.hangPivot.rotation.x = clamp(-this.sway * 0.5 + this.cur.crx * 0.15 - wz * 0.1 + flap, -0.6, 0.7); this.hangPivot.rotation.y = (this.cur.nry + g.yaw * 0.62) * 0.3;
+    this.hangPivot.rotation.z = clamp(wx * 0.09, -0.3, 0.3);
     // breath
     const b = Math.sin(this.t * (1.5 + this.breath * 1.1)) * 0.012 * this.breath;
     this.chestMesh.scale.set(1 + b * 0.6, 1 + b * 0.25, 1 + b * 1.6);

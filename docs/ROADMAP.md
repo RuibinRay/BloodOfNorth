@@ -63,6 +63,12 @@ Known gaps:
 - **The shoulder does not blend into the chest**: the deltoid is part of the arm, so with an arm raised high the top
   of the torso shows a corner under it.
 - **Long hair, cloaks and arms can still pass through each other**, and a cloak hangs straight down when he sits.
+- **The wind** (added after the bodies): hair that hangs down the back, cloaks and skirts are moved by the weather's
+  wind (`shared.uWind`, the same strength that moves the trees and the flags), always from one direction (toward +x, as the snow drifts), in gusts with a
+  flutter; a cloak now trails behind a runner (it used to swing forward, a sign that was the wrong way round). Short
+  hair, beards and braids lying on the chest do not move in it, and it blows indoors as well as out. A long dress
+  follows the thighs further than a tunic, so it lies over the lap when she sits, and opens a little at the front and
+  back seams in a long stride.
 - **The rank and file of the battle lines keep their own simpler figures.**
 
 ## Faces and hair (built on the branch `faces-and-hair` from 0.29; merged into main)

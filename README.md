@@ -73,7 +73,7 @@ the elbow, with short or long sleeves; legs with a thigh, a knee and a calf that
 and boots with a heel and a toe; **hands** with a palm, four fingers and a thumb, which close round whatever is held and
 into a fist to fight. The tunic's skirt and a woman's dress go a little way with each thigh, so they move when people
 walk, sit and kneel; cloaks hang from the shoulders and round the back; a mail shirt reaches the thigh over the tunic;
-an apron dress has its two brooches. **Builds** differ: the breadth of shoulders and chest, how heavy a person is all
+an apron dress has its two brooches. Hair, cloaks and skirts move in the weather's wind, in gusts. **Builds** differ: the breadth of shoulders and chest, how heavy a person is all
 over, a belly and an old back that stoops, set for the people whose portraits say how they are built (Bjorn's barrel
 chest, Orm's belly, Gorm's bulk, Gisli, Kari and Vigdis slight and wiry, Hrefna, Thrand and Gest bent with age).
 

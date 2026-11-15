@@ -17,7 +17,7 @@ import * as THREE from 'three';
 import { smoothstep } from '../core/util.js';
 import { at, sphere, tint } from '../world/geo.js';
 
-const TAU = Math.PI * 2;
+const TAU = Math.PI * 2, BELT_Y = 0.035; // the belt, in the hips' frame
 const KEYS = ['rx', 'f', 'k', 'cx', 'cz', 'p', 'w', 'bust'];
 const DEF = { rx: 0.05, f: 0.05, k: 0.05, cx: 0, cz: 0, p: 2, w: 0, bust: 0 };
 /** One ring of a profile at height y, between the two rings either side of it. Profiles go from the top down. */
@@ -267,15 +267,17 @@ export function buildBody(h, L, D, part, face, grp, C) {
   ];
   const ys = long ? [0.035, -0.06, -0.2, -0.4, -0.6, -0.82, -0.82, hem] : [0.035, -0.06, -0.17, -0.295, -0.295, hem], sk = [];
   for (const [side, s] of [['L', 1], ['R', -1]]) {
-    const follow = grp(j['lg' + side], -j['lg' + side].position.x, 0, 0), arc = s > 0 ? [-Math.PI / 2, Math.PI / 2] : [Math.PI / 2, Math.PI * 1.5]; // the hips' frame, carried by the thigh
-    const by = (k, low) => (v) => k * smoothstep(0.015, 0.13, s * v.x) * smoothstep(0.0, low, v.y);
+    const follow = grp(j['lg' + side], -j['lg' + side].position.x, BELT_Y, 0), arc = s > 0 ? [-Math.PI / 2, Math.PI / 2] : [Math.PI / 2, Math.PI * 1.5]; // the hips' frame, carried by the thigh
+    const by = (k, low) => (v) => k * ((long ? 0.72 : 0.22) + (long ? 0.28 : 0.78) * smoothstep(0.015, 0.13, s * v.x)) * smoothstep(long ? 0.03 : 0.0, low, v.y); // most at the side over the thigh, a little at the middle, so a seam there opens a little in a long stride
     sk.push(loft(skirt, ys, { n: 8, arc, hex: L.tunic, bone2: follow, seed: 2 + s, col: (y, i) => (i >= ys.length - 2 ? L.trim : L.tunic),
       shape: (v) => { const q = 1 + 0.045 * smoothstep(-0.02, long ? -0.6 : -0.25, v.y) * Math.sin(v.a * 7 + 0.6); v.x *= q; v.z *= q; }, // folds
-      wfn: by(long ? 0.42 : 0.62, long ? -0.5 : -0.25) }));
+      wfn: by(long ? 0.78 : 0.62, long ? -0.2 : -0.25) }));
     if (L.mail) sk.push(loft(skirt, [0.035, -0.06, -0.17], { n: 8, arc, grow: 0.006, hex: C.MAIL, bone2: follow, seed: 20 + s, wfn: by(0.6, -0.25) })); // a mail shirt to the thigh, over the tunic
     if (L.apron) sk.push(loft(skirt, long ? [0.035, -0.06, -0.2, -0.4, -0.62] : [0.035, -0.06, -0.17, -0.28], { n: 3, arc: s > 0 ? [Math.PI / 2 - 0.42, Math.PI / 2] : [Math.PI / 2, Math.PI / 2 + 0.42], grow: 0.012, hex: L.apron, bone2: follow, seed: 30 + s, jitter: 0.03, wfn: by(0.3, -0.3) }));
   }
-  part(j.hips, sk);
+  j.skirt = grp(j.hips, 0, BELT_Y, 0); // the skirt hangs from the belt and the wind moves it from there (see Humanoid.updateSecondary)
+  for (const g of sk) g.translate(0, -BELT_Y, 0);
+  part(j.skirt, sk);
 }
 
 /** A hand: the palm on the wrist (drawn at any distance), the fingers and thumb drawn only near, on joints that curl. */
