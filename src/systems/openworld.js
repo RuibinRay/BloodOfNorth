@@ -15,8 +15,8 @@ export const TIERS = [
   { min: 15, name: 'Stranger', hail: 'Traveller. Keep that axe in your belt while you are here.' },
   { min: 40, name: 'Guest', hail: '{n}. You are welcome at the fire.' },
   { min: 60, name: 'Kinsman', hail: 'Ravensson! Friend. Sit, eat. The white bird too.' },
-  { min: 80, name: 'Jarl', hail: 'Lord. The island is yours to call on.' },
-  { min: 100, name: 'King', hail: 'My king.' },
+  { min: 80, name: 'Hall-friend', hail: "Ravensson. The king's hall is open to you, and so are we." },
+  { min: 100, name: 'Oath-friend', hail: 'Oath-friend. When you call, this island comes.' }, // the owner's story: the islands have their own kings, and Eirik is never one of them
 ];
 /** Law-districts. Outlawry and standing are kept per district: cross the water and you may be a stranger again. */
 export const DISTRICTS = {

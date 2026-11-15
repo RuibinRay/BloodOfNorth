@@ -63,7 +63,7 @@ export function ACT1_SPOTS(B, barnDoor) {
     nest, logs: [[nest[0] - 8, nest[1] - 5.4], [nest[0], nest[1] - 7.9], [nest[0] - 6.5, nest[1] + 3.1]],
     fire: B(-2.5, 126.4), seat: B(0.6, 128.6), basket: B(-1.4, 129.2), signe: B(-4.8, 127.8), bjorn: B(-19, 127.5), freydis: B(6, 141),
     chop: B(-23, 130), pen: B(100, 34), lambPost: B(-8, 142), wake: B(4, 135), barrow: B(96, -24), axeStone: B(62, 48), tarn: B(-140, -50),
-    hrefna: B(-70, 139.5), skyIron: barnDoor ? [barnDoor.x - 1.4, barnDoor.z + 1.6] : B(34, 124), birch: B(-20, 10), hunters: B(178, 30), lamb: B(-142, 124),
+    hrefna: B(-70, 139.5), birch: B(-20, 10), hunters: B(178, 30), lamb: B(-142, 124),
     nestPath: [B(6, 146), B(-6, 160), B(-28, 200), B(-58, 204), [nest[0] + 1.5, nest[1] + 1.2]],
   };
 }
@@ -160,8 +160,6 @@ function bjornstead(ctx, world, scene) {
     mound.receiveShadow = true; objs.push(mound);
     for (let i = 0; i < 9; i++) { const a = (i / 9) * 6.283; c.b.add(at(sphere(0.34 + (i % 3) * 0.08, 6, 5), bx + Math.cos(a) * 3.4, bwy + 0.1, bz + Math.sin(a) * 3.4, 0, i, 0, 1, 0.75, 1), M.stone); }
     c.b.add(at(box(0.05, 0.36, 0.03), bx, bwy + 1.0, bz, 0.12, 0.4, 0.06), M.dark); c.b.add(at(box(0.3, 0.045, 0.06), bx, bwy + 0.84, bz, 0.12, 0.4, 0.06), M.iron); c.b.add(at(sphere(0.045, 6, 5), bx + 0.01, bwy + 1.2, bz + 0.02), M.iron);
-    const [sx, sz] = A1.skyIron; // the black stone that props the barn door
-    c.b.add(tint(at(new THREE.IcosahedronGeometry(0.42, 1), sx, gy(sx, sz) + 0.24, sz, 0, 0.7, 0, 1.15, 0.8, 1), 0x1b1a1e, 0.25, 5), M.vcPlain); c.addCircle(sx, sz, 0.5, 0.6);
     P.runestone(c, ...A1.axeStone, 0.5); // the stone in the north meadow: two axes, a wing, a star
     const [tx, tz] = A1.tarn, ty = gy(tx, tz); // the tarn whose ice never melts, and the long shadow under it
     const ice = new THREE.Mesh(new THREE.CircleGeometry(6.4, 28), new THREE.MeshStandardMaterial({ color: 0xd3e5f0, roughness: 0.22, metalness: 0.1 }));

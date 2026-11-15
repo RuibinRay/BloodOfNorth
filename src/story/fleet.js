@@ -46,7 +46,7 @@ const ROUTES = [
   { name: 'the Otter', pts: [[-5, 312], [0, 470], [90, 528], [50, 640], [0, 648], [-90, 632], [-30, 500]] },
   { name: "the Gull's Road", pts: [[130, 720], [200, 900], [40, 905], [-110, 920], [-195, 800], [-190, 690], [-60, 640], [40, 640]] },
 ];
-const HAILS = { Wolf: 'Keep off! We know that bird, and we know what follows it.', Stranger: 'Fair wind, stranger. Mind the skerries.', Guest: 'Fair wind, {n}!', Kinsman: 'Ravensson! Good sailing to you!', Jarl: 'Way for the jarl! Good sailing, lord!', King: "The king's sail! Dip the yard, lads. Hail, my king!" };
+const HAILS = { Wolf: 'Keep off! We know that bird, and we know what follows it.', Stranger: 'Fair wind, stranger. Mind the skerries.', Guest: 'Fair wind, {n}!', Kinsman: 'Ravensson! Good sailing to you!', 'Hall-friend': "The king's friend! Good sailing, Ravensson!", 'Oath-friend': "That is the Ravensson's sail. Dip the yard, lads: he has our oath!" };
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 
 export class Fleet {

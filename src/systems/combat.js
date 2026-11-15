@@ -106,7 +106,6 @@ export class Combat {
         if (!mod.second && p.breakT <= 0 && !p.stormDead) p.ward = Math.min(100, p.ward + (heavy ? 10 : 6)); // landed blows fill the storm bar
         if (p.breakT > 0) { dmg *= 1.35; if (!mod.second) this.arc(e); } // Stormbreak: harder, and a spark jumps to a second man
         if (riposte) g.slowT = Math.max(g.slowT || 0, 0.18);
-        if (p.dual()) dmg *= 1.25; // the Left Brother in the off hand
         if (riposte) dmg *= W.riposte * (sk.has('s_answer') ? 1.2 : 1);
         if (p.mist()) dmg *= 1.3;
         if (sk.has('b_warm')) p.stamina = Math.min(100, p.stamina + 3);

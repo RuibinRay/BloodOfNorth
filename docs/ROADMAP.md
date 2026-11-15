@@ -42,7 +42,7 @@ playtests; none are claimed until then.
 ## Immediate next steps
 
 1. Play Acts II to VII and the Epilogue by hand (main menu, Start at an Act) and say where they are unfair, unclear, too easy or too slow: Act VII's fights first (Ulf, Kettil, Vigdis, Gorm, Håkon), then the raid, the shore battle, Arne, the fights on the Sea-Raven's deck, Rurik, the tannery yard, Skarde, Eydis and Bersi.
-2. Rule on the items still open under "Under review" in the story bible (the sky-iron, who rules in the sandbox, the Left Brother).
+2. Every item under "Under review" in the story bible is settled (the last three on 2026-11-15).
 3. Look at the world and the people in play and say what to change (the trees, the shore, the clothes, any figure that does not look like its portrait, the ships, the halls and gates, the animals); $4.99 of the approved $10 is unspent. Consider making a new Higgsfield key, since the pair was pasted into a chat.
 4. Decide where the project lives: a PC that can run UE5, or continue in the browser for the epilogue and the polish.
 
@@ -350,7 +350,7 @@ Known gaps:
 
 - The sea is calm and the wind always fair: no weather, no currents, no swimming, no capsizing. The sail is a speed toggle.
 - The islands are sandbox content, not story: a handful of people, no buildings, no routines. Three are landmarks only.
-- The Left Brother is handed out ahead of its act (the design places it in Act IV) to prove the omen-to-weapon chain. It adds damage; it has no moves of its own.
+- ~~The Left Brother~~ was taken out on the owner's ruling (2026-11-15): not in the story.
 - Sailing, landing and the island fights were validated by script, not by hand.
 - The horse cannot be carried by boat, so it stays in the home valley.
 

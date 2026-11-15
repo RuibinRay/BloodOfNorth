@@ -237,8 +237,6 @@ export class World {
     ctx.b.add(at(box(0.05, 0.36, 0.03), POI.barrow.x, by + 0.42, POI.barrow.z, 0.12, 0.4, 0.06), M.dark);
     ctx.b.add(at(box(0.3, 0.045, 0.06), POI.barrow.x, by + 0.26, POI.barrow.z, 0.12, 0.4, 0.06), M.iron);
     ctx.b.add(at(sphere(0.045, 6, 5), POI.barrow.x + 0.01, by + 0.62, POI.barrow.z + 0.02), M.iron);
-    ctx.b.add(tint(at(new THREE.IcosahedronGeometry(0.42, 1), POI.skyIron.x, heightAt(POI.skyIron.x, POI.skyIron.z) + 0.24, POI.skyIron.z, 0, 0.7, 0, 1.15, 0.8, 1), 0x1b1a1e, 0.25, 5), M.vcPlain);
-    this.addCircle(POI.skyIron.x, POI.skyIron.z, 0.5, 0.6);
     P.runestone(ctx, POI.axeStone.x, POI.axeStone.z, 0.5);
     // the old birch on the hill behind Bjornstead: whole until the lightning finds it (Act I), split and still green ever after
     const yy = heightAt(POI.yew.x, POI.yew.z), sb = new Builder(), wb = new Builder();

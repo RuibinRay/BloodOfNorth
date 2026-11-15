@@ -516,8 +516,6 @@ for errors, the right place, the right people and a working objective; none has 
   the chart ends.
 - **Passage:** ferrymen at Gulen, Fedje and Kinn carry you between harbours you have already found, for six
   silver, towing your boat. This is the first fast travel.
-- **The Brothers:** the Twin-Axe Stone a nine-year-old could find in Chapter 3 pays off on Vængr, the wing-shaped
-  island. If you missed the stone, the hermit can still send you there.
 - **Wolf-marks (the wanted level):** hurt or kill someone where a living witness can see and you earn up to five
   marks. Two brings the hue and cry; three brings bounty-hunters. Clear them by paying the blood-price, winning
   the hide-duel, or lying low until talk dies.
@@ -551,7 +549,7 @@ for errors, the right place, the right people and a working objective; none has 
 
   | Weapon | Light blow | Heavy blow | What it is for |
   |---|---|---|---|
-  | Ragnar's axe | 14 in 0.5 s | 32, two men | The baseline. Off hand takes a shield or the Left Brother |
+  | Ragnar's axe | 14 in 0.5 s | 32, two men | The baseline. Off hand takes a shield |
   | Sword | 12 in 0.4 s | 27, two men | Speed and little breath; the widest parry and the hardest riposte; wears a guard slowly |
   | Ash spear | 13 in 0.5 s, at 3.5 m | 29, one man | Reach; a light thrust stops an attack that is winding up |
   | Long axe | 21 in 0.7 s, three men | 48, four men | Two hands, no shield, half again the breath; a heavy blow breaks a shield-bearer's guard outright |
@@ -592,9 +590,10 @@ for errors, the right place, the right people and a working objective; none has 
 - **Traders:** two merchant ships work the sea lanes and hail you by what the district thinks of you.
 - **Two laws:** marks and standing are kept separately in the Vestland and the Skerries. Cross the water and you
   are a stranger again, unless you carried three marks or more, in which case word arrives before you do.
-- **Standing:** each district rates Eirik from Wolf through Stranger, Guest, Kinsman and Jarl to King. Help
-  Bulandet, trade fairly and give to the hall, then ask the lawspeaker to have the folk swear. After that
-  they kneel as you pass and say "My king."
+- **Standing:** each district rates Eirik from Wolf through Stranger, Guest, Kinsman and Hall-friend to Oath-friend.
+  The islands keep their own kings, as in the story (King Hallvard on Gulen; Ragnhild holds Kinn for King Ragnvald):
+  help Bulandet, trade fairly and give to the hall, then ask whether the island would stand with you. Its king swears
+  an oath of friends, not of a lord: Eirik is never king of an island.
 
 In Act I, dialogue and actions raise four traits (Wisdom, Compassion, Ferocity, Pride). Act II does not use
 them: the story makes Eirik's choices. Whether the traits stay is one of the questions under "Under review" in

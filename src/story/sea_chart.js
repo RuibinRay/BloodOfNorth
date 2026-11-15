@@ -1,7 +1,7 @@
 // The sea chart (open-world PROTOTYPE, part two). South of Gulen the fjord opens into the Skerries:
 // twelve named islands in 1.3 km of open water, under a second law. This file is who lives there and
 // what can be done: discovery, passage between harbours, two camps that fight, the reeve's work,
-// a seeress, a hermit, and the first of the childhood omens paid off (the Twin-Axe Stone -> Vængr).
+// a seeress and a hermit.
 // The islands themselves are ISLES in world/layout.js. Design reference: docs/OPEN_WORLD.md.
 import { ISLES, DISTRICT_LINE, POI } from '../world/layout.js';
 import { heightAt } from '../world/terrain.js';
@@ -9,7 +9,6 @@ import { RAIDER_LOOKS, QUESTS, ITEMS } from '../data/act1.js';
 import { KINDS } from './open_proto.js';
 
 Object.assign(ITEMS, {
-  brother_axe: { name: 'The Left Brother', desc: 'One of two axes forged from a single bloom and buried apart. Carried in the off hand beside Ragnar\'s axe. Its twin is in somebody else\'s fist.', cat: 'Weapon' },
 });
 Object.assign(QUESTS, {
   q_sea: {
@@ -35,14 +34,6 @@ Object.assign(QUESTS, {
     title: 'The Cold Beacon', kind: 'side', xp: 60,
     desc: 'The beacon on Skorpa has not burned since its keeper drowned. Light it, and every steersman in the Skerries will ask who did.',
     steps: [{ id: 'light', text: 'Climb Skorpa and light the beacon', type: 'event', key: 'beacon', marker: { pos: [-230, 1040] } }],
-  },
-  s_brothers: {
-    title: 'The Brothers', kind: 'side', xp: 150,
-    desc: 'Two axes made as a pair and buried apart. One lies under a cairn on Vængr, an island shaped like a wing laid on the water.',
-    steps: [
-      { id: 'find', text: 'Find the wing-shaped island, far to the south', type: 'reach', key: 'vaengr' },
-      { id: 'cairn', text: 'Open the cairn on Vængr', type: 'event', key: 'cairn', marker: { pos: [-60, 1260] } },
-    ],
   },
 });
 
@@ -109,7 +100,6 @@ export class SeaChart {
     // ---- things to find ------------------------------------------------------------------
     const play = () => g.mode === 'play' && !o.mounts.on;
     w.addInteractable({ id: 'beacon', x: -230, z: 1040, r: 3.4, priority: 1, label: 'Light the beacon', enabled: () => play() && !fl.beaconLit, use: () => this.lightBeacon() });
-    w.addInteractable({ id: 'cairn', x: -60, z: 1260, r: 2.8, priority: 1, label: 'Search the cairn', enabled: () => play() && !fl.brotherTaken && !this.busy, use: () => this.cairn() });
     w.addInteractable({ id: 'wreck', x: 121, z: 1022, r: 2.4, priority: 1, label: "Search the wreck's cargo", enabled: () => play() && !fl.hovdenLoot,
       use: () => { fl.hovdenLoot = true; g.player.h.play('pickup', 0.8); g.inventory.add('silver', 35); g.inventory.add('arrow', 10); g.ui.toast('Hacksilver sewn into a sailcloth roll, and a sheaf of arrows.'); } });
     w.addInteractable({ id: 'hoard', x: -459, z: 1298.5, r: 2.4, priority: 1, label: 'Open the hoard-chest', enabled: () => play() && fl.cleared_horns && !fl.hornsHoard,
@@ -176,17 +166,10 @@ export class SeaChart {
     return { choice: { t: ask, to: 'work' }, nodes: [{ id: 'work', s: R, t: q.isActive('s_wreckers') ? 'Batalden first. West of here. Then we will talk about beacons.' : 'Nothing I would ask of a guest. Chart the islands, {n}. A man who knows the water is worth ten who own it.', to: 'end' }] };
   }
   hermitTalk(n) {
-    const g = this.g, fl = this.st.flags, T = n.name, omen = !!this.st.secrets.twinaxe;
-    if (fl.brotherTaken) { this.open.say([{ s: T, t: 'You have the left one. I can smell old iron on you. Then the right is walking about in somebody\'s fist, and I would want to know whose.' }], n); return; }
+    const T = n.name;
     this.open.say([
       { s: T, t: 'Thrand. I count gannets. It is honest work: they do not lie about their number.' },
-      { s: 'Eirik', t: '', choices: [
-        { t: omen ? '"As a boy I found a stone. Two axes, a wing, a star."' : '"What lies further out than this?"', to: 'tale' },
-        { t: '"Keep counting, old man."', to: 'end' },
-      ] },
-      { id: 'tale', s: T, t: omen ? 'Then you have seen more than most who came asking. The Brothers. Two axes from one bloom of iron, made for twins who would not share a hall.' : 'Rock, then water, then a story. The Brothers: two axes from one bloom of iron, made for twins who would not share a hall.' },
-      { s: T, t: 'They were buried apart so that they could not find each other. One lies under a cairn on Vængr: low, and shaped like a wing laid on the water.' },
-      { s: T, t: 'Sail for the star that does not move, then turn your back on it and keep going. Vængr is the last land but one.', to: 'end', fx: { do: () => { if (!g.quests.st.s_brothers) g.quests.start('s_brothers'); } } },
+      { s: T, t: 'Go on, then. You are in the way of the light, and I have lost count twice.' },
     ], n);
   }
   seerTalk(n) {
@@ -212,24 +195,11 @@ export class SeaChart {
     g.audio.play('ignite'); g.ui.questBanner('The Skerries', 'The Skorpa beacon burns');
     this.open.law.addStanding(20, 'Every boat can see who lit it'); g.quests.notify('event', 'beacon');
   }
-  cairn() {
-    const g = this.g, q = g.quests, fl = this.st.flags, omen = !!this.st.secrets.twinaxe;
-    if (!q.at('s_brothers', 'cairn')) { g.ui.toast('A cairn of sea-stones, older than any path to it. Nothing tells you to disturb it.'); return; }
-    this.busy = true; g.player.frozen = true; g.player.h.play('pickup', 1.2); g.audio.play('thud');
-    g.ui.subtitle('Eirik', omen ? 'The wing, and the star over it. Just as the stone showed me, ten winters ago.' : "Thrand's wing on the water. And his cairn.", 4);
-    g.after(4.2, () => { g.inventory.add('brother_axe', 1); fl.brotherTaken = true; g.audio.play('steel'); g.ui.questBanner('Secret weapon', 'The Left Brother'); g.player.h.play('pickup', 1.0); });
-    g.after(7.4, () => g.ui.subtitle('Eirik', 'One axe. The bed beside it is empty, and the moss on the lip is torn. Someone lifted the other. Not long ago.', 5.5));
-    g.after(13.2, () => { g.player.frozen = false; this.busy = false; if (g.player.equipped === 'father_axe') { g.player.equip('none'); g.player.equip('father_axe'); } q.notify('event', 'cairn'); g.ui.hint('Draw the axe with {weapon1}: the Left Brother rides in the off hand and every blow lands harder.'); });
-  }
   discover(s, by) {
     const g = this.g;
     this.seen[s.id] = true; this.st.xp += 15;
     g.ui.questBanner(by === 'raven' ? `${g.ravens.names()[0]} sights land` : 'Island found', s.name); g.audio.play('chime');
     g.quests.notify('event', 'isle');
-    if (s.id === 'vaengr') {
-      if (!g.quests.st.s_brothers && this.st.secrets.twinaxe) { g.after(2.5, () => { g.ui.subtitle('Eirik', "A wing laid on the water. The stone. Father's stone had this cut into it.", 5); g.quests.start('s_brothers'); }); }
-      else g.after(0.5, () => g.quests.notify('reach', 'vaengr'));
-    }
   }
   crossLaw(id) {
     const g = this.g, law = this.open.law, old = law.s;
@@ -263,8 +233,6 @@ export class SeaChart {
     's_wreckers.kill'(r) { this.open.build(); if (r) this.g.state.quests.s_wreckers.count = 0; },
     's_wreckers.back'() { this.open.build(); },
     's_beacon.light'() { this.open.build(); if (this.st.flags.beaconLit) this.g.after(0.2, () => this.g.quests.notify('event', 'beacon')); },
-    's_brothers.find'() { this.open.build(); if (this.seen.vaengr) this.g.after(0.3, () => this.g.quests.notify('reach', 'vaengr')); },
-    's_brothers.cairn'(r) { this.open.build(); if (!r) this.g.ui.hint('The cairn stands in the middle of Vængr, the western lobe of the wing.'); },
   };
 
   update(dt) {

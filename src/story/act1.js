@@ -112,6 +112,7 @@ export class Act1 {
   /** Rebuild the scripted world from a loaded save. */
   restore() {
     const g = this.g, st = this.st;
+    delete st.quests.s_brothers; if (g.inventory.has('brother_axe')) g.inventory.remove('brother_axe', 99, true); // the Left Brother: not in the owner's story, taken out
     if (st.quests.q_ten && st.flags.a2v !== 2 && st.stage !== 'open') { // a save from before Act II was rebuilt from the owner's story: the act starts again
       for (const id of ['q_ten', 'q_smoke', 'q_axe']) delete st.quests[id];
       for (const k of ['sparedKettil', 'killedKettil', 'barnBurned']) delete st.flags[k];

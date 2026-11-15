@@ -91,26 +91,16 @@ export class Player {
   }
   /** The numbers for what is in his hand (see data/weapons.js). */
   weaponDef() { return this.equipped === 'father_axe' ? ravenFeeder(this.game.state.flags.reforge) : WEAPONS[this.equipped] || WEAPONS.woodsword; }
-  /** What rides in the off hand beside the axe: a shield if he owns one, else the Left Brother; weapon3 swaps them. */
+  /** What rides in the off hand beside the axe: a shield if he owns one. */
   offItem(name = this.equipped) {
-    const inv = this.game.inventory, fl = this.game.state.flags, W = WEAPONS[name];
+    const inv = this.game.inventory, W = WEAPONS[name];
     if (W && W.offHold) return W.offHold; // a second blade
     if (!W || !W.off) return null;
-    const sh = inv.has('shield') && !(this.fx.noShield > 0), ax = W.off === 'any' && inv.has('brother_axe'); // a split shield is no shield until he has another
-    return sh && !(ax && fl.offAxe) ? 'shield' : ax ? 'brother_axe' : null;
+    return inv.has('shield') && !(this.fx.noShield > 0) ? 'shield' : null; // a split shield is no shield until he has another
   }
   hasShield() { return this.offItem() === 'shield'; }
   /** Red Mist (Berserker): badly hurt, and the better for it. */
   mist() { return this.health < 35 && this.game.skills.has('b_mist'); }
-  /** Both Brothers in hand: every blow lands harder. */
-  dual() { return this.offItem() === 'brother_axe'; }
-  swapOffHand() {
-    const g = this.game, inv = g.inventory, fl = g.state.flags;
-    if (!inv.has('shield') || !inv.has('brother_axe')) return;
-    fl.offAxe = !fl.offAxe; g.audio.play('page');
-    if (this.isMelee()) this.h.hold('L', this.offItem());
-    g.ui.toast(fl.offAxe ? 'Off hand: the Left Brother. Harder blows, no shield.' : 'Off hand: shield.');
-  }
   /** A shove with the shield boss: no wound to speak of, but it breaks a man's rhythm and wears his guard. */
   bash() {
     const g = this.game, h = this.h;
@@ -362,7 +352,6 @@ export class Player {
       if (inp.hit('throw')) this.throwAxe();
       if (inp.hit('weapon2')) this.equip(this.equipped === 'bow' ? 'none' : 'bow');
       if (inp.hit('holster')) this.equip('none');
-      if (inp.hit('weapon3')) this.swapOffHand();
       if (inp.hit('interact')) g.tryInteract();
       if (inp.hit('lock')) this.toggleLock();
     }

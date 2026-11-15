@@ -49,8 +49,8 @@ the story hooks in the table above.
 | Værøy | Skerries | A croft; hares and deer to hunt |
 | Hovden | Skerries | A wrecked karve and its cargo |
 | Skorpa | Skerries | The tallest island; a beacon to light |
-| Gannet Rock | Skerries | A hermit who knows about the Brothers |
-| Vængr | Skerries | The wing-shaped island; the cairn |
+| Gannet Rock | Skerries | A hermit who counts gannets |
+| Vængr | Skerries | The wing-shaped island |
 | Skerry of Horns | Skerries | Two outlaws and their hoard |
 | Storm-Wife's Rock | Skerries | A seeress in a ring of stones |
 | Utvær | Skerries | The last stone; the chart ends |
@@ -95,7 +95,7 @@ Rules that make it a system and not a punishment:
 - **Ways it follows you.** Kin of the dead hold a feud independent of the law. A feud ends only by payment, marriage, or more blood.
 - **It can be used.** At three marks or more in a rival jarl's district, his enemies start offering you work.
 
-## Standing: from wolf to king
+## Standing: from wolf to oath-friend
 
 Each district also tracks how it regards Eirik. This decides who fights him, who trades, and what
 people call him.
@@ -106,14 +106,18 @@ people call him.
 | Stranger | "traveller" | Wary; guards watch; prices are high |
 | Guest | by name | Lodging, rumours, ordinary prices, side missions open |
 | Kinsman | "friend", "Ravensson" | Gifts, discounts, men will join a raid, children follow the ravens |
-| Jarl | "lord" | The district pays tribute, musters when called, brings its disputes to you |
-| King | **"my king"** | People kneel or raise a hand as you pass; free lodging and remounts; levy on a horn-call; bards sing your deeds, including the ones you regret |
+| Hall-friend | "the king's friend" | The island's own king opens his hall; his folk will lend men when asked |
+| Oath-friend | **"oath-friend"** | The island's king swears to come when Eirik calls: an oath of friends, not a crown. People turn to greet him; free lodging and remounts; men on a horn-call; bards sing his deeds, including the ones he regrets |
 
-**[built in the sandbox]** all six tiers in each of two districts, greetings by tier, kneeling for a king, and the oath before the lawspeaker or the reeve. Tribute, musters and enemy-held lands are not built.
+The owner's ruling (2026-11-15): the islands keep their own kings, as in the story (King Hallvard on Gulen, King
+Ragnvald on Kinn, whose reeve Ragnhild holds the Skerries for him), and Eirik is never king of an island. The top
+of the ladder is an alliance, not a crown.
+
+**[built in the sandbox]** all six tiers in each of two districts, greetings by tier, and the oath of friendship before King Hallvard or Ragnhild. Tribute, musters and enemy-held lands are not built.
 
 Standing rises through quests, fair judgments, defending the district, gifts and feasts. It falls through
 outlawry, broken oaths, heavy tribute and abandoning them in a raid. In lands sworn to an enemy jarl the
-ceiling is Guest until that jarl is won over or removed. A man who calls you king in one harbour may
+ceiling is Guest until that jarl is won over or removed. A man who calls you oath-friend in one harbour may
 have a brother two islands away who is sworn to kill you.
 
 Recognition: from Act III strangers know "the one with the white raven" before they know his name.
@@ -150,6 +154,6 @@ weapon. A weapon whose omen was missed can still be found, with more work and no
 | The Lightning Yew | **Storm-Yew**, war bow | Act II | Cut the stave in a thunderstorm; Bjorn refuses to help |
 | The Sword in the Barrow | **Grave-Song**, sword | Act III | Sit out a night on the mound and answer the barrow-king's three questions; it must be given |
 | The Spear in the Ice | **Winter's Tooth**, spear | Act IV | The white raven finds the one warm week; dive for it with a rope and a crew |
-| The Twin-Axe Stone | **The Brothers**, paired axes | Act IV | Sail to Vængr using the star on the stone; one axe is there, the other is in the hand of whoever got there first. **[The first axe is built in the sandbox, ahead of its act: carried in the off hand, +25% damage. The second and its owner are not built]** |
-| Sky-Iron | **Star-Fall**, war hammer | Act V | Needs a forge hot enough: the settlement's smithy at its last upgrade, and Brokk's nephew |
+| The Twin-Axe Stone | *(none)* | — | The story leaves "two brothers" unexplained, and so does the game. (The Left Brother, a second axe once found under a cairn on Vængr, was taken out on the owner's ruling, 2026-11-15: it is not in the story.) |
+| The Falling Star | **Star-Fall**, war hammer | Act VI | As the story has it: the boy sees a star fall far out over the islands; it comes down on Skalløy, and Halvar forges the hammer from it after Brokk's death. (Until 2026-11-15 the omen was a black stone propping Bjorn's barn door.) |
 | *(not an omen)* Ragnar's axe | **Raven-Feeder** | Act II–VII | Never replaced. Reforged three times, each time with something from the story |

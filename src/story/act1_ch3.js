@@ -86,7 +86,7 @@ export class Chapter3 {
     w.addInteractable({ id: 'hearth', x: S.door[0], z: S.door[1], r: 2.6, priority: 3, label: 'Hide the axe under the hearthstone', enabled: () => g.quests.at('q_hearth', 'hide'), use: () => this.hideAxe() });
     const secret = (id, poi, r, tree) => w.addInteractable({ id: 'sec_' + id, x: S[poi][0], z: S[poi][1], r, label: 'Look closer', enabled: () => st.stage === 'ch3' && !st.secrets[id] && g.mode === 'play',
       use: () => g.dialogue.start(tree, { onEnd: () => this.foundSecret(id) }) });
-    secret('barrow', 'barrow', 2.8, 'sec_barrow'); secret('skyiron', 'skyIron', 2.2, 'sec_skyiron');
+    secret('barrow', 'barrow', 2.8, 'sec_barrow');
     secret('twinaxe', 'axeStone', 3, 'sec_twinaxe'); secret('yew', 'birch', 3.2, 'sec_yew');
     { const it = w.interactables.find((o) => o.id === 'sec_yew'), en = it.enabled; it.enabled = () => !!st.flags.lightning && en(); } // the birch is only split once the lightning has found it
     w.addInteractable({ id: 'birchclimb', x: S.birch[0], z: S.birch[1], r: 3.4, priority: 3, label: 'Climb to the ravens', enabled: () => g.quests.at('q_wings', 'climb') && g.mode === 'play', use: () => this.lightning() });
@@ -151,7 +151,7 @@ export class Chapter3 {
     if (id === 'signe') return q.at('q_hearth', 'signe') ? d('signe_wake', done) : d('signe_idle');
     if (id === 'hrefna') {
       if (q.at('q_hearth', 'hrefna')) return d('hrefna_ravens', done);
-      if (q.at('q_wings', 'bones')) return d('hrefna_bones', done);
+      if (q.at('q_wings', 'bones')) return d('hrefna_bones', () => this.fallingStar().then(done));
       if (q.at('q_wings', 'named')) return d('hrefna_storm', done);
       return d('hrefna_idle');
     }
@@ -233,6 +233,30 @@ export class Chapter3 {
   }
   penLamb() { const [px, pz] = this.S.pen; if (this.lamb) { this.lamb.ai = null; this.lamb.home = { x: px, z: pz, r: 9 }; this.lamb.pos.set(px + 1, this.g.world.groundAt(px, pz), pz + 1); this.lamb = null; } }
 
+  /** That night a star falls far out over the sea (Hrefna's last saying; it comes down on Skalløy, where Halvar forges it
+   *  into Star-Fall in Act VI). The fifth omen. */
+  fallingStar() {
+    const g = this.g, p = g.player, h = this.npc('hrefna');
+    if (this.st.secrets.skyiron) return Promise.resolve();
+    return new Promise((done) => {
+      p.frozen = true;
+      g.ui.fade(true, 1.2).then(() => {
+        g.sky.time = 21.6; this.act.wTarget = { snow: 0, fog: 0.01, overcast: 0.05, wind: 0.6 }; Object.assign(g.sky.weather, this.act.wTarget);
+        const V = this.V, y = g.world.groundAt(p.pos.x, p.pos.z), A = new THREE.Vector3(V.s.x + 300, y + 210, V.s.z + 420), B = new THREE.Vector3(V.s.x - 300, y + 50, V.s.z + 560);
+        const mat = new THREE.MeshBasicMaterial({ color: 0xfff2d0, fog: false }), tm = new THREE.MeshBasicMaterial({ color: 0xffd890, transparent: true, opacity: 0.5, fog: false, depthWrite: false });
+        const star = new THREE.Mesh(new THREE.SphereGeometry(3.4, 8, 6), mat), tail = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 3.2, 150, 6, 1, true), tm);
+        const dir = B.clone().sub(A).normalize(); tail.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().negate());
+        star.visible = tail.visible = false; g.scene.add(star, tail);
+        const eye = [p.pos.x, y + 1.5, p.pos.z], put = (k) => { star.position.lerpVectors(A, B, k); tail.position.copy(star.position).addScaledVector(dir, -75); star.visible = tail.visible = k > 0 && k < 1; };
+        g.ui.fade(false, 1.2);
+        g.cine.play([
+          { dur: 5.2, from: eye, look: [V.s.x, y + 110, V.s.z + 480], fov: 60, sub: ['', 'That night a star fell, far out over the sea toward the islands.', 4.6],
+            onUpdate: (k) => put(Math.min(1, Math.max(0, (k - 0.15) / 0.6))) },
+          { dur: 4.6, from: [p.pos.x + 1.6, y + 1.5, p.pos.z + 2.4], look: () => [h.pos.x, h.pos.y + 1.45, h.pos.z], fov: 34, sub: ['', 'Old Hrefna watched it go and said nothing. Eirik remembered it for the rest of his life.', 4.4], onStart: () => { star.visible = tail.visible = false; h.face(V.s.x, V.s.z + 700); } },
+        ], { onEnd: () => { g.scene.remove(star, tail); p.frozen = false; this.foundSecret('skyiron'); done(); } });
+      });
+    });
+  }
   /** Early summer: Bjorn's feint from behind, and the Stormguard answers for the first time (the owner's story, Act I, Chapter 6). */
   playStick() {
     const g = this.g, p = g.player, b = this.npc('bjorn'), [cx, cz] = this.S.wake;
