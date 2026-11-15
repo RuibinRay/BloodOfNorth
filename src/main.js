@@ -26,6 +26,7 @@ import { POI } from './world/layout.js';
 import { Act1 } from './story/act1.js';
 import { Companions } from './systems/companions.js'; // after the story: the companions' looks come from the acts' casts, which need Act I's chapters loaded first
 import { UI } from './ui/ui.js';
+import { Playtest } from './ui/playtest.js';
 import * as I18N from './i18n/i18n.js';
 
 const RUNNING = new Set(['play', 'dialogue', 'cutscene', 'activity']);
@@ -96,6 +97,7 @@ class Game {
     this.cine = new Cine(this);
     this.story = new Act1(this);
     this.story.init();
+    this.playtest = new Playtest(this); // the playtest recorder (0.30): time and falls per step, F8 notes
     this.player.teleport(-26, 70, 1.2);
     this.applySettings();
     this.resize();
@@ -329,6 +331,7 @@ class Game {
         this.story.update(dt);
         this.skills.update();
         this.cine.update(dt);
+        this.playtest.update(dt);
         this.interaction = this.mode === 'play' && !this.ravens.eye ? this.findInteraction() : null;
         this.sense = damp(this.sense, this.mode === 'play' && inp.held('sense') ? 1 : 0, 6, dt);
       }

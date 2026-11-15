@@ -14,6 +14,7 @@ import { icon, itemIcon, questIcon, ARTS } from './icons.js';
 import { SIZE, HALF } from '../world/terrain.js';
 import { paintChart, labeller } from './chart.js';
 import { tr, getLang, LANGS, setLang, onLang, canvasFont } from '../i18n/i18n.js';
+import { SLOW, FALLS } from './playtest.js';
 /** The part of the world the sea chart shows: from the landing beach south to the edge of the chart. */
 const SEA_VIEW = { x0: -640, z0: 160, w: 1280, h: 1440 };
 /** The whole open sea: the home waters in the north, the five great islands round and beyond them. */
@@ -385,10 +386,10 @@ export class UI {
     this.buttons($('#menu-buttons'), [
       { label: 'Continue', sub: last ? `${T(last.save.meta.quest)} · ${fmtTime(last.save.meta.playtime)}` : tr('No saved game yet'), disabled: !last, act: () => g.loadGame(last.slot) },
       { label: 'New Game', act: () => g.startNewGame() },
-      { label: 'Start at an Act', sub: tr('All seven acts and the epilogue, or any chapter of them'), act: () => this.openPanel('acts', ['acts', 'saves', 'settings', 'status']) },
-      { label: 'Load Game', act: () => this.openPanel('saves', ['saves', 'settings', 'status']) },
-      { label: 'Settings', act: () => this.openPanel('settings', ['saves', 'settings', 'status']) },
-      { label: 'Build Status', sub: tr('What is playable, prototype and planned'), act: () => this.openPanel('status', ['saves', 'settings', 'status']) },
+      { label: 'Start at an Act', sub: tr('All seven acts and the epilogue, or any chapter of them'), act: () => this.openPanel('acts', ['acts', 'saves', 'settings', 'status', 'playtest']) },
+      { label: 'Load Game', act: () => this.openPanel('saves', ['saves', 'settings', 'status', 'playtest']) },
+      { label: 'Settings', act: () => this.openPanel('settings', ['saves', 'settings', 'status', 'playtest']) },
+      { label: 'Build Status', sub: tr('What is playable, prototype and planned'), act: () => this.openPanel('status', ['saves', 'settings', 'status', 'playtest']) },
     ]);
     const lp = $('#menu-langs'); if (lp) { lp.innerHTML = this.langPicker(); this.wireLang(lp); }
   }
@@ -407,13 +408,14 @@ export class UI {
       { label: 'Appearance', act: () => this.openPanel('looks', all) },
       { label: 'Settings', act: () => this.openPanel('settings', all) },
       { label: 'Save / Load', act: () => this.openPanel('saves', all) },
+      { label: 'Playtest', act: () => this.openPanel('playtest', ['playtest', 'saves', 'settings']) },
       { label: 'Quit to Main Menu', act: () => g.quitToMenu() },
     ]);
   }
   hidePause() { this.e.pause.classList.remove('on'); }
 
   openPanel(tab, tabs = ['journal', 'inventory', 'map', 'saga', 'skills', 'looks', 'settings', 'saves', 'status']) {
-    const names = { journal: 'Journal', inventory: 'Inventory', map: 'Map', saga: 'Saga', skills: 'Skills', companions: 'Companions', looks: 'Appearance', settings: 'Settings', saves: 'Saves', status: 'Build Status', acts: 'Acts' };
+    const names = { journal: 'Journal', inventory: 'Inventory', map: 'Map', saga: 'Saga', skills: 'Skills', companions: 'Companions', looks: 'Appearance', settings: 'Settings', saves: 'Saves', status: 'Build Status', playtest: 'Playtest', acts: 'Acts' };
     this.tabs = tabs; this.tab = tab;
     this.e.panel.classList.add('on'); this.e.pause.classList.remove('on');
     this.e.tabs.innerHTML = '';
@@ -687,6 +689,20 @@ export class UI {
     body.querySelectorAll('[data-save]').forEach((b) => (b.onclick = () => { g.saveGame(b.dataset.save); this.toast('Game saved'); this.openPanel('saves', this.tabs); }));
     body.querySelectorAll('[data-load]').forEach((b) => (b.onclick = () => g.loadGame(b.dataset.load)));
     body.querySelectorAll('[data-del]').forEach((b) => (b.onclick = () => { deleteSave(b.dataset.del); this.openPanel('saves', this.tabs); }));
+  }
+  /** The playtest record (src/ui/playtest.js): where people struggled, their notes, and the file to send back. */
+  render_playtest(body) {
+    const P = this.g.playtest, S = P.summary(), E = (t, ...a) => esc(tr(t, ...a));
+    const row = (r) => `<tr class="${r.secs > SLOW || r.falls >= FALLS ? 'hard' : ''}"><td>${esc(T(r.title))}<small>${esc(this.g.fmt(r.text))}</small></td><td>${fmtTime(r.secs)}</td><td>${r.falls}</td><td>${esc(Object.entries(r.by).map(([n, c]) => `${T(n)} ×${c}`).join(', '))}</td><td>${r.passed ? '✓' : ''}</td></tr>`;
+    const head = `<tr><th>${E('Step')}</th><th>${E('Time')}</th><th>${E('Falls')}</th><th>${E('Felled by')}</th><th>${E('Passed')}</th></tr>`;
+    body.innerHTML = `<h3>${E('Playtest')}</h3><p class="muted">${E('While you play, the game keeps how long each step takes and how often Eirik falls there. Press F8 at any moment to write a note: it is kept with the step, the place and a picture of the screen. When you have played, download the report and send it back. Nothing leaves this computer otherwise.')}</p>
+      <p>${E('{0} chapters · {1} steps · {2} in play · {3} falls · {4} notes', S.chapters, S.rows.length, fmtTime(S.total), S.falls, S.notes.length)}</p>
+      <p><button class="btn" id="pt-dl" ${S.rows.length || S.notes.length ? '' : 'disabled'}>${E('Download the report')}</button> <button class="btn danger" id="pt-clear">${E('Start a new record')}</button></p>
+      <h4>${E('Where it was hard')}</h4>${S.hard.length ? `<table class="pt">${head}${S.hard.map(row).join('')}</table>` : `<p class="muted">${E('Nowhere yet: no step has taken more than ten minutes or three falls.')}</p>`}
+      <h4>${E('Notes')}</h4>${S.notes.length ? `<div class="ptnotes">${S.notes.slice().reverse().map((n) => `<div class="ptn">${n.pic ? `<img src="${n.pic}" alt="">` : ''}<div><small>${esc(n.title ? T(n.title) : '')} · ${esc(new Date(n.at).toLocaleString())}</small><p>${esc(n.text)}</p></div></div>`).join('')}</div>` : `<p class="muted">${E('None yet. Press F8 while playing.')}</p>`}
+      <h4>${E('Every step')}</h4>${S.rows.length ? `<table class="pt">${head}${S.rows.map(row).join('')}</table>` : `<p class="muted">${E('Nothing played yet.')}</p>`}`;
+    body.querySelector('#pt-dl').onclick = () => P.download();
+    body.querySelector('#pt-clear').onclick = (ev) => { const b = ev.currentTarget; if (b.dataset.sure) { P.clear(); this.openPanel('playtest', this.tabs); } else { b.dataset.sure = '1'; b.textContent = tr('Press again to clear it'); } };
   }
   render_status(body) {
     const E = (t, ...a) => esc(tr(t, ...a)), list = (items) => `<ul>${items.map((t) => `<li>${E(t)}</li>`).join('')}</ul>`;

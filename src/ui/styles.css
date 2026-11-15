@@ -375,3 +375,17 @@ details.chapters li img.thumb { width: 64px; height: 36px; object-fit: cover; ve
 #menu-langs .langs { margin: 0; }
 #menu { align-items: safe center; overflow-y: auto; }
 :root[data-lang="es"] #tabs button { padding: 12px 9px; font-size: 13px; letter-spacing: 0.03em; }
+
+/* ---- the playtest recorder (src/ui/playtest.js) ----------------------------------------------------------------- */
+#ptnote { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(8, 7, 6, 0.55); z-index: 30; pointer-events: auto; }
+#ptnote .box { width: min(560px, 90vw); padding: 18px 20px; background: var(--parch); color: var(--ink); border: 1px solid #8a7248; box-shadow: 0 0 0 4px var(--wood), 0 10px 30px rgba(0, 0, 0, 0.6); display: flex; flex-direction: column; gap: 8px; }
+#ptnote .box b { font-size: 18px; } #ptnote .box > span { font-size: 13px; color: var(--ink-soft); }
+#ptnote textarea { font: inherit; font-size: 16px; padding: 8px; border: 1px solid rgba(74, 54, 38, 0.45); background: #f6eedb; color: var(--ink); resize: vertical; user-select: text; }
+#ptnote .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; } #ptnote small { font-size: 12px; color: var(--ink-soft); }
+#panel-body table.pt { width: 100%; border-collapse: collapse; font-size: 14px; margin: 4px 0 8px; }
+#panel-body table.pt th { text-align: left; font-weight: 600; border-bottom: 1px solid rgba(74, 54, 38, 0.4); padding: 4px 6px; }
+#panel-body table.pt td { padding: 4px 6px; border-bottom: 1px solid rgba(74, 54, 38, 0.15); vertical-align: top; }
+#panel-body table.pt td small { display: block; color: var(--ink-soft); font-size: 12px; }
+#panel-body table.pt tr.hard td { background: rgba(143, 47, 36, 0.1); }
+#panel-body .ptnotes { display: flex; flex-direction: column; gap: 10px; }
+#panel-body .ptn { display: flex; gap: 12px; } #panel-body .ptn img { width: 200px; border: 1px solid #8a7248; } #panel-body .ptn p { margin: 2px 0; }
