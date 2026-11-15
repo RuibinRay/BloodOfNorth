@@ -10,6 +10,13 @@ Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, th
 (forty-one: Ravenhold twelve years on, Leif's house, the old birch), each as the story tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
+**A look over everything together** (after the bodies, faces, wind, oars, plants, clouds and the rank and file all
+landed on one day): conversation close-ups, people walking and running, a fight, the horse, ships under oars and the
+shield walls were photographed in play. One fault: a conversation's first close-up of Eirik could be framed from the
+way he happened to be facing as it began (he turns to whoever he talks to over a moment), so walking up to someone
+from the side gave a shot of the back of their head. Now each speaker is framed as facing the one listening. Nothing
+else was found broken.
+
 **The rank and file.** The men of the shield walls ([src/entities/ranks.js](src/entities/ranks.js)) now have faces (a
 brow, eyes under it, a shaped nose), a fist on the shield's grip and on the weapon, and a sleeve on the weapon arm
 instead of a bare one. A man whose side gives him an iron cap wears a helmet: a pointed dome on a band, with a guard down

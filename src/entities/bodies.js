@@ -98,6 +98,15 @@ function loft(P, ys, o = {}) {
   if (o.bone2) g.userData.bone2 = o.bone2;
   return g;
 }
+/** Give pieces cut from one skin the normals of the whole, so the cuts do not show as creases. */
+function normalsFrom(whole, pieces) {
+  const P = whole.attributes.position, N = whole.attributes.normal, at_ = new Map(), key = (x, y, z) => `${Math.round(x * 2e4)},${Math.round(y * 2e4)},${Math.round(z * 2e4)}`;
+  for (let i = 0; i < P.count; i++) at_.set(key(P.getX(i), P.getY(i), P.getZ(i)), i);
+  for (const g of pieces) {
+    const Q = g.attributes.position, M2 = g.attributes.normal;
+    for (let i = 0; i < Q.count; i++) { const k = at_.get(key(Q.getX(i), Q.getY(i), Q.getZ(i))); if (k !== undefined) M2.setXYZ(i, N.getX(k), N.getY(k), N.getZ(k)); }
+  }
+}
 /** Heights from a to b (a above b) in k equal steps, and any of extra between them. */
 const span = (a, b, k) => Array.from({ length: k + 1 }, (_, i) => a + ((b - a) * i) / k);
 const twin = (grp, joint, x, y, z) => grp(joint, x, y, z);
@@ -179,7 +188,19 @@ export function buildBody(h, L, D, part, face, grp, C) {
   const waist = twin(grp, j.hips, 0, D.chestY, 0);
 
   // ---- the torso, the collar, the belt
-  const torso = [loft(T, [0.405, 0.372, 0.338, 0.29, 0.22, 0.135, 0.05, -0.05, -0.13, -0.21], { n: 16, hex: wear, bone2: waist, seed: 5 })];
+  // the shoulder joints first: the top of the torso follows them a little
+  for (const [side, s] of [['L', 1], ['R', -1]]) { const sh = (j['sh' + side] = grp(j.chest, s * B.shX, D.shoulderY, 0)); sh.rotation.order = 'YXZ'; }
+  // The torso in three pieces: below the chest it bends between the chest and the hips; above, each half bends between the
+  // chest and its own arm, most at the outer corner of the shoulder, so a raised arm stretches the shoulder up with it
+  // instead of leaving the corner of the chest standing under it. Normals come from the whole, so no seam shows.
+  const whole = loft(T, [0.405, 0.372, 0.338, 0.29, 0.22, 0.135, 0.05, -0.05, -0.13, -0.21], { n: 16, hex: wear, seed: 5 });
+  const torso = [loft(T, [0.135, 0.05, -0.05, -0.13, -0.21], { n: 16, hex: wear, bone2: waist, seed: 5 })];
+  for (const [side, s] of [['L', 1], ['R', -1]]) {
+    const sh = j['sh' + side], arm = grp(sh, -sh.position.x, -sh.position.y, 0); // the chest's frame, carried by the arm
+    torso.push(loft(T, [0.405, 0.372, 0.338, 0.29, 0.22, 0.135], { n: 8, arc: s > 0 ? [-Math.PI / 2, Math.PI / 2] : [Math.PI / 2, Math.PI * 1.5], hex: wear, bone2: arm, seed: 5 + s,
+      wfn: (v) => 0.55 * smoothstep(0.09 * B.bw, 0.185 * B.bw, s * v.x) * smoothstep(0.16, 0.3, v.y) }));
+  }
+  normalsFrom(whole, torso);
   torso.push(loft(T, [-0.112, -0.166], { n: 16, grow: 0.007, hex: C.BELT, bone2: waist, seed: 3, jitter: 0.04 })); // the belt
   torso.push(loft(T, [0.388, 0.384, 0.356, 0.35], { n: 16, grow: 0.0045, hex: L.trim, bone2: waist, seed: 9, jitter: 0.03 })); // the neck of the tunic, in the colour of the trim
   if (L.apron) { // an apron, close over the front of the chest
@@ -217,7 +238,7 @@ export function buildBody(h, L, D, part, face, grp, C) {
 
   // ---- the arms and hands
   for (const [side, s] of [['L', 1], ['R', -1]]) {
-    const sh = (j['sh' + side] = grp(j.chest, s * B.shX, D.shoulderY, 0)); sh.rotation.order = 'YXZ';
+    const sh = j['sh' + side];
     const el = (j['el' + side] = grp(sh, 0, -D.upper, 0));
     const ha = (j['ha' + side] = grp(el, 0, -D.fore, 0));
     const elT = twin(grp, el, 0, D.upper, 0), A = armProfile(s, am);
