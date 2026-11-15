@@ -1,9 +1,9 @@
 // Heightfield terrain for the Hrafnvik valley: a fjord to the south, mountains on three sides,
 // a river on the east flank and a flattened shelf for the village.
 import * as THREE from 'three';
-import { fbm, noise2, smoothstep, lerp, clamp, distToPolyline } from '../core/util.js';
+import { fbm, noise2, smoothstep, lerp, clamp, nearPolyline } from '../core/util.js';
 import { FLATS, PATHS, FIELDS, VILLAGE, POI, ISLES } from './layout.js';
-import { patch, waterPatch, TEX } from './geo.js';
+import { patch, waterPatch, TEX, shared } from './geo.js';
 import { realmAt, buildRealmHeights, buildRealm } from './realm.js';
 
 export const SIZE = 640, HALF = SIZE / 2, N = 256, CELL = SIZE / N;
@@ -81,9 +81,10 @@ export function slopeAt(x, z) {
   const e = 1.5;
   return Math.hypot(heightAt(x + e, z) - heightAt(x - e, z), heightAt(x, z + e) - heightAt(x, z - e)) / (2 * e);
 }
-export function distToPaths(x, z) {
+/** How far (x, z) is from the edge of the nearest path. Only distances under `within` are exact; past that it may answer Infinity. */
+export function distToPaths(x, z, within = Infinity) {
   let best = Infinity;
-  for (const p of PATHS) { const d = distToPolyline(x, z, p.pts) - p.w * 0.5; if (d < best) best = d; }
+  for (const p of PATHS) { const d = nearPolyline(x, z, p.pts, within + p.w * 0.5) - p.w * 0.5; if (d < best) best = d; }
   return best;
 }
 export function inField(x, z) {
@@ -100,7 +101,7 @@ export function forestDensity(x, z) {
   if (dv < VILLAGE.r + 6) return 0;
   if (z > 132) return 0;
   if (Math.abs(x - riverX(z)) < 12) return 0;
-  if (distToPaths(x, z) < 1.6) return 0;
+  if (distToPaths(x, z, 1.6) < 1.6) return 0;
   if (inField(x, z) !== null) return 0;
   for (let i = 1; i < FLATS.length; i++) {
     const f = FLATS[i];
@@ -149,7 +150,7 @@ function paintAlbedo() {
       // worn ground in the village and on trails
       const dv = Math.hypot(x - VILLAGE.x, z - VILLAGE.z);
       col = mix3(col, dirt, (1 - smoothstep(18, 60, dv)) * 0.35 * (0.5 + n2 * 0.5));
-      const dp = distToPaths(x, z);
+      const dp = distToPaths(x, z, 1.4);
       if (dp < 1.4) col = mix3(col, dirt, (1 - smoothstep(-0.2, 1.4, dp)) * (0.75 + n2 * 0.25));
       const fl = inField(x, z);
       if (fl !== null) { const furrow = Math.sin(fl * 5.2) * 0.5 + 0.5; col = mix3(soil, [70, 54, 38], furrow * 0.6); }
@@ -212,6 +213,31 @@ function buildChart() {
   return m;
 }
 
+/** Where the sea's depth is known: a square over the home waters and all ten islands, 1024 samples a side (4.7 m). */
+const DEPTH = { x0: -2400, z0: -1100, w: 4800, n: 1024 };
+/** The sea floor as a picture: how deep the water stands over each spot, 0 to 32 m (land is 0). */
+function seaDepth() {
+  const { x0, z0, w, n } = DEPTH, px = w / n, d = new Uint8Array(n * n);
+  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) d[j * n + i] = Math.round(clamp(-heightAt(x0 + (i + 0.5) * px, z0 + (j + 0.5) * px) / 32, 0, 1) * 255);
+  const t = new THREE.DataTexture(d, n, n, THREE.RedFormat, THREE.UnsignedByteType);
+  t.magFilter = t.minFilter = THREE.LinearFilter; t.needsUpdate = true;
+  return t;
+}
+/** A flat grid in x and z centred on 0: square cells of `step` for `inner` cells either way, then each ring of
+ *  cells `grow` times wider than the last, out to `reach` metres. */
+function seaGrid(step, inner, grow, reach) {
+  const xs = [];
+  for (let i = -inner; i <= inner; i++) xs.push(i * step);
+  for (let s = step * grow, x = inner * step + s; x - s < reach; s *= grow, x += s) { xs.push(x); xs.unshift(-x); }
+  const n = xs.length, pos = new Float32Array(n * n * 3), uv = new Float32Array(n * n * 2), idx = [];
+  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) { const k = j * n + i; pos[k * 3] = xs[i]; pos[k * 3 + 2] = xs[j]; uv[k * 2] = xs[i] / 24; uv[k * 2 + 1] = -xs[j] / 24; }
+  for (let j = 0; j < n - 1; j++) for (let i = 0; i < n - 1; i++) { const a = j * n + i, b = a + 1, c = a + n, e = c + 1; idx.push(a, c, b, b, c, e); }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  g.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(n * n * 3).map((v, i) => (i % 3 === 1 ? 1 : 0)), 3));
+  g.setIndex(idx);
+  return g;
+}
 export function buildTerrain(scene) {
   const pos = new Float32Array((N + 1) * (N + 1) * 3), uv = new Float32Array((N + 1) * (N + 1) * 2);
   const idx = new Uint32Array(N * N * 6);
@@ -244,8 +270,17 @@ export function buildTerrain(scene) {
     normalMap: TEX.waterN, normalScale: new THREE.Vector2(0.42, 0.42), envMapIntensity: 1.3,
   }));
   TEX.waterN.repeat.set(580, 580);
-  const sea = new THREE.Mesh(new THREE.PlaneGeometry(10000, 10000), waterMat); // the home waters and the open sea of the ten islands
-  sea.rotation.x = -Math.PI / 2; sea.position.set(0, 0, 1600); sea.receiveShadow = true;
+  const seaDef = { depth: seaDepth(), box: new THREE.Vector4(DEPTH.x0, DEPTH.z0, DEPTH.w, DEPTH.w), calm: new THREE.Vector3(0, 600, 800), swell: { value: 0.65 } };
+  const seaMat = waterPatch(new THREE.MeshStandardMaterial({
+    color: 0x1f4254, roughness: 0.08, metalness: 0.5, transparent: true, opacity: 1,
+    normalMap: TEX.waterA, normalScale: new THREE.Vector2(0.8, 0.8), envMapIntensity: 1.35,
+  }), seaDef);
+  // The home waters and the open sea of the ten islands: a grid that goes where the camera goes, fine near it (3 m)
+  // and coarser outward, so the swell has corners to move. It steps in whole cells, so the near corners always sit
+  // on the same spots of sea and the waves do not crawl as the camera moves.
+  const sea = new THREE.Mesh(seaGrid(3, 32, 1.15, 6000), seaMat);
+  sea.frustumCulled = false; sea.receiveShadow = true;
+  sea.onBeforeRender = (r, s, cam) => { sea.position.set(Math.round(cam.position.x / 3) * 3, 0, Math.round(cam.position.z / 3) * 3); sea.updateMatrixWorld(); };
   scene.add(sea);
 
   const seg = 220, rp = [], ruv = [], ri = [];
@@ -259,14 +294,14 @@ export function buildTerrain(scene) {
   rgeo.setAttribute('position', new THREE.Float32BufferAttribute(rp, 3));
   rgeo.setAttribute('uv', new THREE.Float32BufferAttribute(ruv, 2));
   rgeo.setIndex(ri); rgeo.computeVertexNormals();
-  const riverN = TEX.waterN.clone(); riverN.needsUpdate = true; riverN.repeat.set(1, 1);
+  const riverN = TEX.waterA.clone(); riverN.needsUpdate = true; riverN.repeat.set(1, 1);
   const riverMat = waterPatch(waterMat.clone()); riverMat.normalMap = riverN; riverMat.color.set(0x2c5062); riverMat.opacity = 0.92;
   const river = new THREE.Mesh(rgeo, riverMat);
   river.receiveShadow = true;
   scene.add(river);
 
   return {
-    mesh, sea, river, albedoCanvas: albedo.canvas,
+    mesh, sea, river, albedoCanvas: albedo.canvas, swell: seaDef.swell, seaFloor: seaDef.depth,
     iced: false,
     /** Freeze or thaw the river surface (Chapter 2). */
     setIce(on) {
@@ -275,7 +310,8 @@ export function buildTerrain(scene) {
       riverMat.roughness = on ? 0.42 : 0.08; riverMat.metalness = on ? 0.05 : 0.55; riverMat.normalScale.setScalar(on ? 0.12 : 0.55);
     },
     update(t) {
-      TEX.waterN.offset.set(t * 0.004, t * 0.0026);
+      const dr = shared.uSeaDrift.value; // the sea flowing past a ship the story sails (a tile of ripples is 10000 / 580 m; the plane's v runs against world z)
+      TEX.waterN.offset.set(t * 0.004 + dr.x * 0.058, t * 0.0026 - dr.y * 0.058);
       if (!this.iced) riverN.offset.set(0, -t * 0.22); // flows south, toward the fjord
     },
   };

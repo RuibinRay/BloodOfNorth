@@ -5,6 +5,7 @@
 // WHAT THIS IS NOT YET: the chapters round these fights (the Battle of Iron Shore, the treasure voyage, the marsh
 // hunt, the burning forge, the landing on the Black Shore...) are not built. Here the ten wait in their places and
 // are fought in the story's order: the fights without the missions. The skill engine is in systems/combat.js.
+import * as THREE from 'three';
 import { place, GREAT } from '../world/layout.js';
 import { QUESTS } from '../data/act1.js';
 import { REFORGE } from '../data/weapons.js';
@@ -87,14 +88,14 @@ export const FOES = [
     skills: [['Buckler-Hook', 'A twist of the buckler takes the weapon out of Eirik\'s hand for a few breaths, even through a guard.'], ['Mud in the Eyes', 'Thrown from three paces. A raised guard keeps it out.'], ['Boot-Knife', 'A feint with the axe, then the knife from his boot, which no guard stops.']],
     cb: { hp: 280, dmg: 15, skill: 0.6, dodge: 0.35,
       moves: [{ id: 'hook', anim: 'shove', dur: 0.85, hitAt: 0.45, dmg: 6, name: 'Buckler-Hook', hook: 3 }, { id: 'mud', anim: 'atk1', dur: 0.7, hitAt: 0.5, dmg: 1, reach: 3.4, name: 'Mud in the Eyes', fx: { blind: 3.5 }, min: 2.2 },
-        ...str('bk', [mv('cut', 'a', { dmg: 8, dur: 0.7 }), { id: 'x', anim: 'thrust', dur: 0.5, hitAt: 0.45, dmg: 20, unblockable: true, name: 'Boot-Knife' }], 1), ...str('kc', [mv('cut', 'a'), mv('back', 'b')])],
+        ...str('bk', [mv('cut', 'a', { dmg: 8, dur: 0.7 }), { id: 'x', anim: 'thrust', dur: 0.9, hitAt: 0.45, dmg: 20, unblockable: true, name: 'Boot-Knife' }], 1), ...str('kc', [mv('cut', 'a'), mv('back', 'b')])],
       phases: [{ at: 0.4, line: 'Wait. Wait! I can tell you who paid for it!', set: { dodge: 0.5 } }] } },
   { id: 'vigdis', n: 8, name: 'Vigdis Quickblood', title: 'the Left Hand', act: 'VII', where: 'the long bridge, Svartøy', spot: at('svartoy', 'bridgeN', 0, 26), near: 15,
     task: 'Svartøy: step onto the long bridge, where Vigdis Quickblood waits', says: '', won: 'On the next left-left he does not block. He steps in. She dies with both blades still in her hands.',
     hold: ['seax', 'seax'], trophy: ['twin', "Vigdis's seaxes"],
     look: { female: true, build: 0.9, scale: 0.94, hairStyle: 'cropped', hair: 0x2a2622, tunic: 0x26262a, trim: 0x4a4a50, legs: 0x1e1e20, sleeve: 0x26262a, eyes: 0x8e979c, face: 'lean', brows: 0.7, browArch: 0.001, lips: 'thin' },
     skills: [['Left-Left, Right-Right', 'She steps twice and strikes, always from the side: two blows from the left, then two from the right. Listen for her feet; raise the guard on the beat.'], ['Quickblood', 'Now and then she is behind him instead.'], ['Too fast to chase', 'She is gone the moment her blow is thrown. Two blows turned on the beat break her guard.']],
-    cb: { hp: 300, dmg: 13, skill: 0.9, dodge: 0.75, flit: true, keepDry: true, slow: 0.82, parryBreak: 50,
+    cb: { hp: 400, dmg: 13, skill: 0.9, dodge: 0.75, flit: true, keepDry: true, slow: 0.82, parryBreak: 30, // at 300 and 50, two parries broke her guard and the finisher took 40% of her: the easiest of the ten
       moves: [mv('cut', 'll', { name: 'Left-Left, Right-Right', dash: 'flank', beat: true, dur: 0.78, hitAt: 0.5 }), mv('cut', 'll2', { name: 'Left-Left, Right-Right', dash: 'flank', beat: true, dur: 0.78, hitAt: 0.5 }), mv('cut', 'll3', { name: 'Left-Left, Right-Right', dash: 'flank', beat: true, dur: 0.78, hitAt: 0.5 }), mv('back', 'qb', { name: 'Quickblood', dash: 'behind', dur: 0.62, dmg: 15 })],
       phases: [{ at: 0.55, line: 'So the stories are true.', fire: true, set: {} }, { at: 0.25, line: 'Then let us see what remains when you bleed.', set: { slow: 0.72 } }] } },
   { id: 'gorm', n: 9, name: 'Gorm Stone-Lung', title: 'the Right Hand', act: 'VII', where: "the gate of Håkon's hall, Svartøy", spot: at('svartoy', 'hall', 0, -27), near: 20,
@@ -102,19 +103,19 @@ export const FOES = [
     hold: ['club', 'ironshield'], trophy: null,
     look: { mail: true, build: 1.46, scale: 1.3, hairStyle: 'shaved', hair: 0x4a4038, beard: 'short', tunic: 0x4a4e54, trim: 0x2a2c30, legs: 0x26262a, sleeve: 0x4a4e54, helmet: false, eyes: 0x5a4632, face: 'heavy', ears: 'big' },
     skills: [['Wall of Iron', 'Three layers of mail and an iron-bound shield: nothing gets through from the front until the rim is broken.'], ['Shield-Swat', 'A swing of the shield that no guard stops and that takes the breath out of him.'], ['Stone-Lung Crush', 'The club into the ground, hard enough to turn a stone step to gravel.'], ['He tires, slowly', 'Make him swing. When the shield is gone he is faster, and open.']],
-    cb: { hp: 560, dmg: 28, skill: 0.5, kind: 'shield', armor: 0.4, reach: 2.9, wind: 130, spentLine: "(The big man's breath has started to rasp.)",
-      moves: [{ id: 'swat', anim: 'shove', dur: 0.95, hitAt: 0.45, dmg: 14, unblockable: true, name: 'Shield-Swat', fx: { drain: 40 }, tire: 8 }, mv('slam', 'crush', { name: 'Stone-Lung Crush', dmg: 34, aoe: 3.0, whiff: 2.0, tire: 16 }), mv('cut', 'c', { dmg: 22, dur: 1.2, tire: 8 })],
-      phases: [{ at: 0.5, line: '(He throws away the split shield and takes the club in both hands.)', drop: 'L', set: { kind: null, armor: 0.7, slow: 0.84, moves: [mv('slam', 'crush', { name: 'Stone-Lung Crush', dmg: 36, aoe: 3.1, whiff: 2.2, tire: 16 }), ...str('gp', [mv('pound', 'a', { tire: 9 }), mv('pound', 'b', { tire: 9 })], 1), mv('sweep', 'sw', { dmg: 26, tire: 12, whiff: 1.3 })] } }] } },
+    cb: { hp: 500, dmg: 28, skill: 0.5, kind: 'shield', armor: 0.4, reach: 2.9, wind: 130, spentLine: "(The big man's breath has started to rasp.)",
+      moves: [{ id: 'swat', anim: 'shove', dur: 1.25, hitAt: 0.45, dmg: 14, unblockable: true, name: 'Shield-Swat', fx: { drain: 40 }, tire: 8 }, mv('slam', 'crush', { name: 'Stone-Lung Crush', dmg: 30, aoe: 3.0, whiff: 2.0, tire: 16 }), mv('cut', 'c', { dmg: 22, dur: 1.2, tire: 8 })],
+      phases: [{ at: 0.5, line: '(He throws away the split shield and takes the club in both hands.)', drop: 'L', set: { kind: null, armor: 0.7, slow: 0.84, moves: [mv('slam', 'crush', { name: 'Stone-Lung Crush', dmg: 32, aoe: 3.1, whiff: 2.2, tire: 16 }), ...str('gp', [mv('pound', 'a', { tire: 9 }), mv('pound', 'b', { tire: 9 })], 1), mv('sweep', 'sw', { dmg: 26, tire: 12, whiff: 1.3, dur: 1.6 })] } }] } },
   { id: 'hakon', n: 10, name: 'Jarl Håkon Ironwolf', title: 'the Ironwolf', act: 'VII', where: 'the Hall of Wolves, Svartøy', spot: at('svartoy', 'hall', 0, 9), near: 19,
     task: 'Svartøy: go into the Hall of Wolves alone', says: 'You have your grandfather\'s eyes.', won: '"Will they remember me as a monster?" "They will remember what you did."',
     hold: ['sword', 'shield'], trophy: null,
     look: { mail: true, build: 1.24, scale: 1.08, hairStyle: 'long', hair: 0x2a2420, beard: 'short', tunic: 0x34363c, trim: 0x70747a, legs: 0x242426, cloak: 0x5a5852, sleeve: 0x34363c, fur: true, eyes: 0x8e979c, face: 'square', scar2: 'brow', grey: 0.35, ridge: 0.8, nose: 'hooked', brows: 1.2, squint: 0.25 },
     skills: [['The sword of the guardsman', 'Sword and shield, every block clean, every counter punishing. He reads a blow before it begins.'], ['The weapons of war', 'Spear, then axe, then sword again from the racks, changing whenever Eirik gets used to one; a bench at his legs, the hearth\'s coals in his face.'], ["Wolf's Judgment", 'The spiked hammer. It breaks a shield to pieces and no guard stops it.'], ['The last oath', 'The scar goes cold: no Stormguard, no storm skills. Stop attacking. Wait. Answer.']],
-    cb: { hp: 760, dmg: 20, skill: 0.85, kind: 'shield', counter: true, dodge: 0.3, reach: 2.5,
-      moves: [...str('gs', [mv('cut', 'a', { name: 'The Sword of the Guardsman' }), mv('back', 'b'), mv('cut', 'c')]), mv('jab', 'th', { reach: 2.9 }), { id: 'bash', anim: 'shove', dur: 0.8, hitAt: 0.45, dmg: 10, unblockable: true, fx: { drain: 30 }, name: 'Shield-Rim' }],
+    cb: { hp: 640, dmg: 20, skill: 0.85, kind: 'shield', counter: true, dodge: 0.3, reach: 2.5,
+      moves: [...str('gs', [mv('cut', 'a', { name: 'The Sword of the Guardsman' }), mv('back', 'b'), mv('cut', 'c')]), mv('jab', 'th', { reach: 2.9 }), { id: 'bash', anim: 'shove', dur: 1.15, hitAt: 0.45, dmg: 10, unblockable: true, fx: { drain: 30 }, name: 'Shield-Rim' }],
       phases: [
         { at: 0.75, line: 'Your father always struck from the left.', arms: 'war', set: { kind: null, skill: 0.6, counter: false } },
-        { at: 0.48, line: "(He takes down Wolf's Judgment, the hammer that killed Ragnar.)", arms: 'hammer', set: { skill: 0.35, armor: 0.8, reach: 2.9, moves: [mv('over', 'judge', { name: "Wolf's Judgment", dmg: 36, smash: 600, whiff: 1.6 }), mv('slam', 'ring', { name: 'The Wolf Circle', dmg: 30, aoe: 3.1, whiff: 1.9 }), ...str('hp', [mv('pound', 'a'), mv('pound', 'b')], 1)] } },
+        { at: 0.48, line: "(He takes down Wolf's Judgment, the hammer that killed Ragnar.)", arms: 'hammer', set: { skill: 0.35, armor: 0.8, reach: 2.9, moves: [mv('over', 'judge', { name: "Wolf's Judgment", dmg: 36, smash: 600, whiff: 1.6, dur: 1.5 }), mv('slam', 'ring', { name: 'The Wolf Circle', dmg: 30, aoe: 3.1, whiff: 1.9 }), ...str('hp', [mv('pound', 'a'), mv('pound', 'b', { dur: 1.5 })], 0.6)] } },
         { at: 0.2, line: 'Then let us see whether his lessons can save you.', arms: 'oath', set: { slow: 1.3, dodge: 0, moves: [mv('over', 'last', { name: 'The Last Blow', dmg: 40, dur: 1.7, whiff: 2.6 }), mv('slam', 'ring', { name: 'The Wolf Circle', dmg: 30, aoe: 3.1, whiff: 2.4 })] } },
       ] } },
 ];
@@ -211,12 +212,22 @@ export class Champions {
     g.audio.setMusic('raid'); g.audio.play('horn', { freq: def.n > 7 ? 82 : 110, vol: 0.5 });
     g.ui.questBanner(`${def.title} · ${def.where}`, def.name);
     if (def.says) g.after(0.7, () => e.say(def.says, 5));
-    if (def.id === 'eydis') for (let i = 0; i < 5; i++) { const a = 0.4 + i * 1.257; g.combat.trap(x + Math.cos(a) * 7.5, z + Math.sin(a) * 7.5, { kind: 'stakes', r: 2.1, sec: 9999, dmg: 5, arm: 0 }); } // her stake pits, under the water
+    if (def.id === 'eydis') for (let i = 0; i < 5; i++) { const a = 0.4 + i * 1.257; g.combat.trap(x + Math.cos(a) * 7.5, z + Math.sin(a) * 7.5, { kind: 'stakes', r: 2.1, sec: 9999, dmg: 2.5, arm: 0 }); } // her stake pits, under the water (at 5 a second, unseen, they killed more often than she did)
+    if (def.id === 'eydis') { // the tips of the stakes break the water: a careful man can see where they are
+      const mat = new THREE.MeshStandardMaterial({ color: 0x3e3226, roughness: 0.9 }), cone = new THREE.ConeGeometry(0.045, 0.6, 4);
+      this.marks = new THREE.Group(); g.scene.add(this.marks);
+      for (let i = 0; i < 5; i++) { const a = 0.4 + i * 1.257, px = x + Math.cos(a) * 7.5, pz = z + Math.sin(a) * 7.5;
+        for (let k = 0; k < 7; k++) { const r = 0.3 + Math.random() * 1.6, b = Math.random() * 6.28, sx = px + Math.cos(b) * r, sz = pz + Math.sin(b) * r, m = new THREE.Mesh(cone, mat);
+          m.position.set(sx, Math.max(0, g.world.groundAt(sx, sz)) - 0.12, sz); m.rotation.set((Math.random() - 0.5) * 0.5, 0, (Math.random() - 0.5) * 0.5); this.marks.add(m); } }
+    }
     if (def.id === 'gorm' || def.id === 'rurik') g.after(2.4, () => g.ui.toast(def.id === 'gorm' ? 'Wall of Iron: nothing gets through from the front. Make him swing.' : 'A shield wall of one: break his guard, or catch him in his own swing.'));
     if (def.id === 'vigdis') g.after(1.5, () => g.ui.hint('She steps twice before she strikes, always from the side: left, left, right, right. Watch the arrow at the edge of the screen, listen for her feet, and raise your guard ({block}) on the beat.'));
     if (def.id === 'skarde') g.after(6, () => g.ui.hint('He tires. Give ground, keep your guard up when he talks, and let him swing at air.'));
-    if (!this.st.flags.artHint) { this.st.flags.artHint = true; g.after(9, () => g.ui.hint('{art1} is Thunder Smash: a leap and a stroke of lightning that stops a swing and breaks a guard. It spends the storm bar, which the Stormguard also needs.')); }
+    if (!this.st.flags.artHint) { this.st.flags.artHint = true; g.after(9, () => g.ui.tip('{art1} is Thunder Smash: a leap and a stroke of lightning that stops a swing and breaks a guard. It spends the storm bar, which the Stormguard also needs.')); }
     p.mortal = true;
+    // he has come here to fight: the weapon comes out, as it does in the story's fights (a man who had it put away met them with his fists)
+    if (p.equipped === 'none') { const w = ['father_axe', 'sword', 'longaxe', 'spear'].find((k) => g.inventory.has(k)); if (w) p.equip(w); }
+    if ((def.id === 'arne' || def.id === 'eydis') && !p.hasShield()) g.after(2, () => g.ui.tip(`Only a raised shield stops ${def.id === 'arne' ? 'arrows and knives' : 'javelins'}. The traders sell one.`));
   }
   /** A fight changes: the bridge burns, Gorm throws his shield away, Håkon changes weapons. */
   turn(def, e, ph) {
@@ -250,6 +261,7 @@ export class Champions {
     for (const x of [...g.combat.alive()]) g.combat.kill(x);
     g.combat.clear(); g.audio.setMusic('day'); p.stormDead = false;
     for (const f of this.fires) g.fx.removeFire(f); this.fires = [];
+    if (this.marks) { g.scene.remove(this.marks); this.marks = null; }
     g.ui.questBanner(`The Wolf's Table · ${fl.table} of ${FOES.length}`, `${def.name} has fallen`); g.ui.subtitle('', def.won, 7);
     inv.add('silver', 30);
     if (def.n <= 7) { inv.add('wolf_brooch', 1); }

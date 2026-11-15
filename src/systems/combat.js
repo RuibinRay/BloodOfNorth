@@ -73,7 +73,7 @@ export class Combat {
   kill(e) {
     const c = e.cb;
     if (this.target === e) this.target = null;
-    if (c.onDown) { c.out = true; c.onDown(e); } else e.die();
+    if (c.onDown) { c.out = true; c.onDown(e); } else e.die(false, true);
     if (!c.training) this.g.state.xp += c.boss ? 25 : 6; // renown for the fallen
     this.g.fx.burst('blood', e.pos.x, e.pos.y + 1.1, e.pos.z, c.boss ? 22 : 10); if (c.boss) { this.g.slowT = Math.max(this.g.slowT || 0, 0.9); this.g.player.cam.kick = -9; }
     this.g.events.emit('enemyDown', e);
@@ -331,7 +331,7 @@ export class Combat {
     if (mv && mv.hook && (res === 'blocked' || res === 'hit')) p.afflict('disarm', mv.hook, 'Your weapon is hooked out of your hand');
     if (res === 'blocked') this.habit.block = Math.min(6, this.habit.block + 1);
     if (mv && mv.drain && res === 'hit') { p.stamina = Math.max(0, p.stamina - mv.drain); this.habit.block = 0; } // a shove through the guard takes his breath
-    if (res === 'hit' && mv && mv.unblockable && !this.st.flags.redHint) { this.st.flags.redHint = true; g.ui.hint('A red flash means the blow cannot be blocked. Step out of it with {dodge}, or turn it with the Stormguard ({ward}) if Eirik is calm and the storm bar is half full.'); }
+    if (res === 'hit' && mv && mv.unblockable && !this.st.flags.redHint) { this.st.flags.redHint = true; g.ui.tip('A red flash means the blow cannot be blocked. Step out of it with {dodge}, or turn it with the Stormguard ({ward}) if Eirik is calm and the storm bar is half full.'); }
     if (res === 'warded') { // the Stormguard: the blow comes back up his own arm
       c.state = 'recover'; c.t = 1.5; e.h.action = null; e.h.play('stagger', 0.9);
       g.fx.burst('spark', e.pos.x, e.pos.y + 1.3, e.pos.z, 14);

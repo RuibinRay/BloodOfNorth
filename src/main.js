@@ -7,7 +7,7 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
-import { loadSettings, writeSave, readSave } from './core/save.js';
+import { loadSettings, saveSettings, hasSettings, writeSave, readSave } from './core/save.js';
 import { initMaterials, shared, cullHazed } from './world/geo.js';
 import { World } from './world/world.js';
 import { Sky } from './world/sky.js';
@@ -26,6 +26,7 @@ import { POI } from './world/layout.js';
 import { Act1 } from './story/act1.js';
 import { Companions } from './systems/companions.js'; // after the story: the companions' looks come from the acts' casts, which need Act I's chapters loaded first
 import { UI } from './ui/ui.js';
+import * as I18N from './i18n/i18n.js';
 
 const RUNNING = new Set(['play', 'dialogue', 'cutscene', 'activity']);
 const freshState = () => ({
@@ -48,11 +49,20 @@ class Game {
   }
 
   async boot() {
+    // the language first, so the first words drawn are in it (English loads nothing). A first visit takes the browser's.
+    if (!this.settings.lang && !/HeadlessChrome/.test(navigator.userAgent)) { const nl = (navigator.language || '').toLowerCase(); this.settings.lang = nl.startsWith('zh') ? 'zh' : nl.startsWith('es') ? 'es' : 'en'; }
+    await I18N.setLang(this.settings.lang || 'en');
     const canvas = document.getElementById('c');
     const renderer = (this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' }));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.info.autoReset = false; // counted per frame in draw(), across every pass
+    // A first visit on a machine that draws without a graphics card (software rendering) starts at Low quality.
+    // A test browser keeps the defaults, so the checks measure the same game everywhere.
+    if (!hasSettings() && !/HeadlessChrome/.test(navigator.userAgent)) {
+      const gl = renderer.getContext(), ext = gl.getExtension('WEBGL_debug_renderer_info'), name = String(gl.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER));
+      if (/swiftshader|llvmpipe|softpipe|software|basic render/i.test(name)) { this.settings.quality = 'low'; saveSettings(this.settings); }
+    }
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(this.baseFov, innerWidth / innerHeight, 0.15, 2600);
     // Glow: what is brighter than daylight (fire, sparks, lightning, the stroke of a blade) bleeds a little light round itself.
@@ -99,7 +109,8 @@ class Game {
     this.last = performance.now();
     requestAnimationFrame((t) => this.tick(t));
     if (boot) {
-      document.getElementById('loading-text').textContent = 'Click or press any key to continue';
+      document.getElementById('loading-text').textContent = I18N.tr('Click or press any key to continue');
+      document.getElementById('loading').classList.add('ready');
       const go = () => {
         removeEventListener('pointerdown', go); removeEventListener('keydown', go);
         this.audio.init(); this.ui.hideLoading();
@@ -129,8 +140,14 @@ class Game {
   }
   /** Fill story tokens: {w} white raven, {b} black raven, {n} the name the family uses. */
   fmt(text) {
-    const [w, b] = this.ravens.names();
-    return String(text).replace(/\{w\}/g, w).replace(/\{b\}/g, b).replace(/\{n\}/g, this.state.alias || 'Eirik');
+    if (text == null) return '';
+    const [w, b] = this.ravens ? this.ravens.names() : ['Mjöll', 'Sót'], t = I18N.tr;
+    return I18N.translated(t(String(text)).replace(/\{w\}/g, t(w)).replace(/\{b\}/g, t(b)).replace(/\{n\}/g, t(this.state.alias || 'Eirik')));
+  }
+  /** Switch the language (Settings, main menu). Only the setting changes: a saved game is the same in any language. */
+  async setLanguage(id) {
+    this.settings.lang = id; saveSettings(this.settings);
+    await I18N.setLang(id);
   }
   applySettings() {
     const q = this.settings.quality, dpr = window.devicePixelRatio || 1;
@@ -432,5 +449,5 @@ class Game {
 new Game().boot().catch((e) => {
   console.error(e);
   const t = document.getElementById('loading-text');
-  if (t) t.textContent = 'Failed to start: ' + e.message;
+  if (t) t.textContent = I18N.tr('Failed to start: {0}', e.message);
 });

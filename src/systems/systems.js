@@ -107,14 +107,14 @@ export class Dialogue {
     const tree = this.trees[id];
     if (!tree) { if (onEnd) onEnd(); return; }
     const g = this.game;
-    this.nodes = tree; this.i = -1; this.npc = npc; this.onEnd = onEnd; this.active = true; this.sel = 0;
+    this.nodes = tree; this.i = -1; this.npc = npc; this.onEnd = onEnd; this.active = true; this.sel = 0; this.framed = null; this.lastNpc = npc;
     g.setMode('dialogue');
     g.player.equipHidden = true;
     if (npc) {
       npc.prevMode = npc.mode === 'idle' ? null : { mode: npc.mode, path: npc.path, opts: npc.opts, followT: npc.followT };
       npc.mode = 'idle'; npc.faceEntity(g.player); g.player.faceTarget = npc.pos;
       g.cine.dialogueShot(g.player, npc);
-    }
+    } else if (g.settings.closeTalk !== false && !(g.cine.active && !g.cine.heldShot)) g.cine.speakerShot(g.player, null, 0.8, true); // told, with no one to face: hold on Eirik, not wherever the follow camera drifts
     this.goto(0);
   }
   goto(i) {
@@ -125,9 +125,39 @@ export class Dialogue {
     this.text = this.game.fmt(n.t || '');
     this.choices = n.choices || null;
     if (this.text) this.game.ui.mouth(n.s, this.text);
+    this.frame(n.s);
     if (this.npc) this.npc.h.setLoop && (this.npc.talking = n.s === this.npc.name);
     this.game.ui.showDialogue(n.s, '', this.text.length ? null : this.choices, this.sel);
     this.game.audio.play('page', { vol: 0.5 });
+  }
+  /** The camera goes to whoever speaks this line, when they are here to be seen (settings: Close-ups in conversation).
+   *  Narration, a raven, or a voice from off the scene: the shot stays as it is. */
+  frame(speaker) {
+    const g = this.game, p = g.player;
+    if (!speaker || g.settings.closeTalk === false || speaker === this.framed) return;
+    if (g.cine.active && !g.cine.heldShot) return; // a scene is playing: it has the camera
+    const who = this.speaker(speaker, 10);
+    if (!who) return;
+    // the one listening: whoever Eirik is talking to, or the last one who spoke
+    const other = who === p ? (this.npc || this.lastNpc) : p, seen = other && (other === p || (other.visible !== false && !other.dead));
+    if (g.cine.speakerShot(who, seen ? other : null, this.framed ? 0.28 : 0.8)) { this.framed = speaker; if (who !== p) this.lastNpc = who; }
+  }
+  /** Who in the scene a line's speaker is: Eirik; the one he is talking to; or the nearest by that name, or by part of it
+   *  ('Håkon' is 'Jarl Håkon Ironwolf'). Within `range` metres of Eirik; the one he is talking to, within 30. */
+  speaker(name, range = Infinity) {
+    const g = this.game, p = g.player;
+    if (!name || !p) return null;
+    if (name === 'Eirik') return p;
+    const d = (n) => Math.hypot(n.pos.x - p.pos.x, n.pos.z - p.pos.z), here = (n) => n && n.visible !== false && !n.dead && n.h;
+    const is = (n) => n.name === name || (!!n.name && n.name.split(/\s+/).includes(name));
+    if (this.active && here(this.npc) && is(this.npc) && d(this.npc) < Math.max(range, 30)) return this.npc;
+    let best = null, bs = Infinity;
+    for (const n of g.npcs.values()) {
+      if (!here(n) || !is(n) || d(n) >= range) continue;
+      const s = d(n) + (n.name === name ? 0 : 1000); // a whole-name match before a part-name one
+      if (s < bs) { bs = s; best = n; }
+    }
+    return best;
   }
   jump(label) {
     if (label === 'end') return this.finish();
@@ -184,6 +214,19 @@ export class Dialogue {
 // ---------------------------------------------------------------------------------------
 const pt = (p, k) => (typeof p === 'function' ? p(k) : p);
 const _a = new THREE.Vector3(), _b = new THREE.Vector3();
+const _ray = new THREE.Raycaster(), _o = new THREE.Vector3(), _dir = new THREE.Vector3();
+/** Is anything solid between a face and a camera spot (a hull, a wall, a rail, another person)? Meshes only. */
+function blocked(scene, from, to, own) {
+  _dir.subVectors(to, from); const len = _dir.length(); _dir.divideScalar(len);
+  _o.copy(from).addScaledVector(_dir, 0.3); // out past his own hair and beard
+  _ray.set(_o, _dir); _ray.far = len - 0.35;
+  for (const h of _ray.intersectObjects(scene.children, true)) {
+    const m = h.object; if (!m.isMesh || !m.visible || m.material?.transparent && (m.material.opacity ?? 1) < 0.5) continue;
+    let mine = false; for (let q = m; q; q = q.parent) if (q === own) { mine = true; break; }
+    if (!mine) return true;
+  }
+  return false;
+}
 
 export class Cine {
   constructor(game) { this.game = game; this.active = false; this.shots = null; this.heldShot = null; this.skipT = 0; }
@@ -227,6 +270,24 @@ export class Cine {
       if (!best) best = [cx, cy, cz];
     }
     this.hold(best, () => [nx + dx * 0.4, npc.pos.y + nh * 0.92 - (nh - ph) * 0.25, nz + dz * 0.4], { fov: 44, blend: 0.9 });
+  }
+  /** Close on whoever is speaking: in front of their face, a little to one side, so the listener's shoulder may be in
+   *  the edge of the frame. Returns false when there is no clear place for the camera (the caller keeps what it has). */
+  speakerShot(who, listener, blend = 0.3, wide = false) { // wide: a medium shot, for the opening of a scene told rather than spoken
+    const g = this.game, w = g.world, hh = who.h.headHeight(), hx = who.pos.x, hz = who.pos.z, hy = who.pos.y + hh;
+    const yaw = who.yaw ?? who.root.rotation.y, fx = Math.sin(yaw), fz = Math.cos(yaw);
+    // which side: the listener's, just past their shoulder, so the speaker looks almost into the lens
+    let pref = 1;
+    if (listener) { const lx = listener.pos.x - hx, lz = listener.pos.z - hz; pref = (lx * fz - lz * fx) > 0 ? 1 : -1; }
+    for (const [dist, side] of wide ? [[3.4, 1.2], [2.6, 0.9], [1.8, 0.6]] : [[1.75, 0.6], [1.35, 0.45], [1.0, 0.3]]) for (const s of [pref, -pref]) {
+      const cx = hx + fx * dist + fz * side * s, cz = hz + fz * dist - fx * side * s;
+      if (w.pointInBox(cx, cz, 0.25) || (listener && Math.hypot(cx - listener.pos.x, cz - listener.pos.z) < 0.5)) continue;
+      const cy = Math.max(hy + 0.04, w.groundAt(cx, cz) + 0.45);
+      if (blocked(g.scene, _a.set(hx, hy, hz), _b.set(cx, cy, cz), who.root) || blocked(g.scene, _a.set(hx, hy - (wide ? 0.9 : 0.45), hz), _b.set(cx, cy, cz), who.root)) continue; // the face, and the body below it, in view
+      this.hold([cx, cy, cz], () => [who.pos.x, who.pos.y + who.h.headHeight() - (wide ? 0.35 : 0.13), who.pos.z], { fov: wide ? 42 : 30, blend });
+      return true;
+    }
+    return false;
   }
   update(dt) {
     if (!this.active) return;

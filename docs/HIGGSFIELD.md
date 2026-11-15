@@ -1,14 +1,14 @@
 # Higgsfield integration
 
 **State (13 Nov 2026): working for images, and in the game.** The key pair in `.env` is accepted by the official API,
-324 generations have been charged ($5.01 of an approved $10), and 206 files made from them are in the game.
+326 generations have been charged ($5.04 of an approved $10), and 208 files made from them are in the game.
 **Not possible through this API: 3D models.** Its catalogue is image and video models only.
 
 ## What is in the game
 
 | Art | Count | Where it shows |
 |---|---|---|
-| Portraits of the cast | 73 | Beside a speaker's words in a conversation; on the Companions page. Eirik has three (nine, grown and scarred, forty-one) and the game picks by where the story is |
+| Portraits of the cast | 75 | Beside a speaker's words in a conversation; on the Companions page. Eirik has three (nine, grown and scarred, forty-one) and the game picks by where the story is. Everyone who speaks in a conversation has one; about thirty people who only appear or say a line in a caption do not |
 | Paintings of things he carries | 36 | The Inventory list and the selected item. Raven-Feeder has one for each reforging |
 | Chapter paintings | 67 | One for every chapter, behind its title card and beside it in the Acts menu |
 | Act paintings | 9 | One for each act and the Epilogue (used where a chapter has none), and the title painting behind the loading screen |

@@ -24,8 +24,9 @@ export class Companions {
     const g = this.g;
     if (this.open) return this.party.map((id) => g.npcs.get(id)).filter((n) => n && n.visible);
     const b = g.story.a2 && g.story.a2.battle, sk = b && b.sk;
-    if (!sk || g.state.stage !== 'act2') return [];
-    const out = sk.allies.filter((n) => this.kit(n) && n.visible && !n.dead);
+    if (g.state.stage !== 'act2' || (!sk && !(this.side && this.side.length))) return [];
+    const out = sk ? sk.allies.filter((n) => this.kit(n) && n.visible && !n.dead) : [];
+    for (const r of this.side || []) if (!out.includes(r.n) && r.n.visible && !r.n.dead) out.unshift(r.n); // those who stepped out of the scene to fight beside him
     const a = g.npcs.get('astrid'); // Astrid on the field, bow in hand, is with him whether or not she holds a place in the line
     if (a && a.visible && !a.dead && !out.includes(a) && flat(a, g.player) < 45) out.push(a);
     return out.slice(0, PARTY_MAX);
@@ -300,10 +301,51 @@ export class Companions {
       else if (!n.tending) { n.tending = true; n.stop(); n.setLoop('kneel'); g.after(2.4, () => { n.tending = false; n.setLoop(null); if (hurt.wounded) this.up(hurt, true); this.heel(n); }); }
     } else if (n.mode === 'idle' && !n.tending && !this.waiting) this.heel(n);
   }
-  /** In the story's battles: Astrid on the field shoots for him; the line is the scene's own. */
+  /** In the story's chapters. Astrid on the field shoots for him; the line is the scene's own. And when men come at him,
+   *  up to two of the others the scene has standing ready near him step out and fight at his side with their own kit:
+   *  never a champion (he is Eirik's), never one of them sitting, kneeling or hurt, and none of them can fall (the story
+   *  says who lives: an ally with no health of their own turns every blow). When it is over they go back to where the
+   *  story stood them, unless the story has moved them meanwhile. */
   updateStory(dt) {
-    const a = this.g.npcs.get('astrid');
+    const g = this.g, p = g.player, a = g.npcs.get('astrid'), core = g.story.a2;
     if (a && a.visible && !a.dead && a.mode === 'idle' && this.present().includes(a)) this.updateArcher(a, dt, false);
+    const side = this.side || (this.side = []), phase = core && core.phase;
+    if (phase !== this.sidePhase) { this.sidePhase = phase; side.length = 0; } // the scene has been dressed again: it has put everyone back itself
+    if (g.state.stage !== 'act2') { side.length = 0; return; }
+    const sk = core && core.battle && core.battle.sk, line = sk ? sk.allies : [];
+    const men = this.foes().filter((e) => !e.cb.boss && flat(e, p) < 30), fighting = g.mode === 'play' && men.length > 0;
+    if (fighting) {
+      this.calmT = 0;
+      if (side.length < 2 && (this.joinT = (this.joinT || 0) - dt) <= 0) {
+        this.joinT = 0.6;
+        const ready = (n) => {
+          const pose = n.mode === 'crew' ? n.pose : n.loop;
+          return n && this.kit(n) && !this.kit(n).ranged && !this.kit(n).healer && n.visible && !n.dead && !n.wounded && !n.aboard && !line.includes(n) && !side.some((r) => r.n === n)
+            && (n.mode === 'idle' || n.mode === 'crew') && !['sit', 'lie', 'kneel', 'dead', 'cower', 'sleep', 'tied'].includes(pose) && flat(n, p) < 22;
+        };
+        const n = Object.keys(COMPANIONS).map((id) => g.npcs.get(id)).filter(ready).sort((x, y) => flat(x, p) - flat(y, p))[0];
+        if (n) {
+          const k = this.kit(n);
+          side.push({ n, mode: n.mode, pose: n.pose, loop: n.loop, x: n.pos.x, z: n.pos.z, yaw: n.yaw, R: n.h.items.R && n.h.items.R.userData.name, L: n.h.items.L && n.h.items.L.userData.name, talk: n.talk });
+          n.mode = 'idle'; n.pose = null; n.setLoop(null); n.talk = null; n.h.hold('R', k.hold[0]); n.h.hold('L', k.hold[1]);
+          if (!this.sideTold) { this.sideTold = true; g.ui.tip(`${k.name} fights at your side. ${g.input.label('call1')} and ${g.input.label('call2')} call on the skills of those beside you.`); }
+        }
+      }
+      for (const r of side) { // each takes the nearest man who is free, the one coming for Eirik first
+        const n = r.n;
+        if (n.mode === 'dash' || n.dead || (n.mode === 'fight' && this.fair(n.partner))) continue;
+        const free = men.filter((e) => (!e.cb.duel || e.cb.duel.dead || e.cb.duel.partner !== e || e.cb.duel.mode !== 'fight') && flat(e, n) < 16)
+          .sort((x, y) => flat(x, p) + flat(x, n) * 0.5 - flat(y, p) - flat(y, n) * 0.5)[0];
+        if (free) this.engage(n, free);
+      }
+    } else if (side.length && (this.calmT = (this.calmT || 0) + dt) > 2) { // it is over: back to their places
+      for (const r of side.splice(0)) {
+        const n = r.n;
+        if (!['idle', 'fight', 'goto', 'follow'].includes(n.mode) || n.dead) continue; // the story has them now
+        const back = () => { Object.assign(n, { yaw: r.yaw, pose: r.pose, talk: r.talk }); n.root.rotation.y = r.yaw; n.setLoop(r.loop); n.h.hold('R', r.R || null); n.h.hold('L', r.L || null); if (r.mode === 'crew') n.mode = 'crew'; };
+        n.stop(); if (Math.hypot(n.pos.x - r.x, n.pos.z - r.z) > 0.6) n.goTo(r.x, r.z, { onArrive: back }); else back();
+      }
+    }
   }
 
   // ---- the strip above the health bar ---------------------------------------------------------------------------

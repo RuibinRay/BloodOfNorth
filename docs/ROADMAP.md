@@ -46,7 +46,7 @@ playtests; none are claimed until then.
 3. Look at the world and the people in play and say what to change (the trees, the shore, the clothes, any figure that does not look like its portrait, the ships, the halls and gates, the animals); $4.99 of the approved $10 is unspent. Consider making a new Higgsfield key, since the pair was pasted into a chat.
 4. Decide where the project lives: a PC that can run UE5, or continue in the browser for the epilogue and the polish.
 
-## Faces and hair (built on the branch `faces-and-hair` from 0.29; not yet merged)
+## Faces and hair (built on the branch `faces-and-hair` from 0.29; merged into main)
 
 Asked for: better eyes, noses, ears, mouths and above all hair, and every important character looking like themselves.
 Built: `src/entities/heads.js` builds every head from its look (the skull, nose, ears, eyes, lids, brows, lips, jaw,
@@ -72,11 +72,16 @@ Known gaps:
 
 ## Known gaps in 0.29
 
+- **Everything is in one place again, except what is still being made.** `act7-fight-tuning` (Ulf, Kettil and Vigdis made to last longer, from a bot playtest) and `story-hints-stay` (one-time tips no longer wipe the story's hints) were merged here, and `main` was brought up from 0.16 to this. Both were made in other sessions from 0.22 and were checked there, not replayed here: here every chapter starts and the checks pass with them in. A fifth branch, `faces-and-hair`, is being worked on in another session as this is written (it has uncommitted changes to `src/entities/humanoid.js` and `src/world/geo.js`, cut from the animation pass before the fighting moves were added): it is not merged, and will meet the fighting moves in the same file when it is.
+
 - **Movement was judged from still pictures.** A film strip shows eight moments of a stride side by side; it cannot show whether the walk feels right at speed, whether the bank into a turn is too much, or whether a head that nods is charming or silly. Nobody has watched any of it run, and a person has not seen it at all.
-- **What was not touched**: the blows, guards, bow, dodges and falls (worked on in 0.19), faces and speech, crouching, swimming, the hare's hop, fish, and the ships' own motion on the water.
+- **What was not touched**: the blows themselves and the bow (worked on in 0.19), faces and speech, crouching, swimming, the hare's hop, fish, and the ships' own motion on the water.
+- **The fighting moves that were redone** (guard, block with a shield, roll, sidestep, the falls) were looked at in film strips of one figure standing alone, not in a fight. A roll goes over forwards or backwards by which way he is facing when he starts it; sideways he only tucks. Whether a full turn in 0.42 seconds reads as a roll or a blur at speed, nobody has seen. Only men cut down in a fight fall forward or half turned: anyone the story lays down still falls onto his back, because cameras look at them there.
 - **The lean, the bank, the nod and the tail are read from what moves the figure**, not told to it: someone teleported or turned on the spot by a script banks for a moment as if he had turned.
 - **A hound and a wolf wag alike**, and every horse swishes its tail the same way.
 - **The rank and file step in place when the line creeps**: their legs follow how far the line moves, not their own feet on the ground.
+
+- **Every person who speaks in a conversation now has a face** (Ketil and Kol were the last two). About thirty more cast members (Hallgerd, Ottar the falconer, the priest in Wessex, the frog-cure merchant and others) have no portrait, because they never speak in the conversation box, only in a caption or not at all, so a portrait would show nowhere. Kol's portrait has a short beard where his figure has stubble.
 
 ## Known gaps carried from 0.28
 
@@ -97,7 +102,6 @@ Known gaps:
   - **What it found about balance, and what was changed.** Before: a player who kept his shield up the whole time lost no health (0, 15 and 0 in the three walls) and won them all, because a raised shield cost no breath; one who only braced at the horn lost 46, 154 and 130. The owner asked for the shield to cost breath. Now a raised shield in the line costs 11 breath a second and none comes back while it is up (half with the Shield Wall skill), and a brace only counts if he has 10 breath left (`guard`, `braceNeed` in `src/data/shieldwall.js`); the strip says "The shield is heavy" and then "Your arm is spent".
   - **With that, played three ways** (men who break through taken out at once, so that only the wall is measured): raising the shield at their horn and at each thrust wins all three, fastest, losing 0, 89 and 71 health (on the Black Shore that is the arrows, which this player does not guard against); bracing only at the horn wins all three losing 35, 144 and 94; keeping the shield up the whole time runs out of breath, holds Iron Shore with only 0.8 m won, **loses the harbor town** after thirteen rushes and breaks the line on the road only after two minutes with 56 of 152 left. So the dull way no longer wins; whether 11 a second is the right number for a person, nobody knows yet.
   - **What it does not show:** whether cutting at their front rank, the thunder smash, the war cry or the companions' skills do what they should in a wall, how the men who come through fight, or anything about how it feels.
-- **Two branches made in other sessions are still not in this one** (and nothing is in `main`): `act7-fight-tuning` and `story-hints-stay`, both cut from 0.22. A dry run says they merge without conflicts.
 - **The rank and file are still one rigid figure** in one build: they now have cloth and painted shields, not faces, mail or walking legs. Their shield is painted on both faces, so the picture also shows on the side that faces the man.
 - **Which painted shield a man carries says which side he is on, and nothing else**: there is no shield for a particular king or island.
 

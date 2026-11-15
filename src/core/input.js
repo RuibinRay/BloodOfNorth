@@ -1,4 +1,5 @@
 // Keyboard / mouse / gamepad input with remappable action bindings.
+import { tr } from '../i18n/i18n.js';
 export const DEFAULT_BINDINGS = {
   forward: ['KeyW'], back: ['KeyS'], left: ['KeyA'], right: ['KeyD'],
   sprint: ['ShiftLeft', 'ShiftRight', 'Pad10'],
@@ -37,7 +38,7 @@ export function codeLabel(code) {
   if (code.startsWith('Key')) return code.slice(3);
   if (code.startsWith('Digit')) return code.slice(5);
   const map = {
-    Mouse0: 'LMB', Mouse1: 'MMB', Mouse2: 'RMB', Space: 'Space', ShiftLeft: 'Shift', ShiftRight: 'R-Shift',
+    Mouse0: tr('LMB'), Mouse1: tr('MMB'), Mouse2: tr('RMB'), Space: tr('Space'), ShiftLeft: 'Shift', ShiftRight: 'R-Shift', AltLeft: 'Alt', AltRight: 'Alt Gr',
     ControlLeft: 'Ctrl', Escape: 'Esc', ArrowLeft: '←', ArrowRight: '→', ArrowUp: '↑', ArrowDown: '↓', Tab: 'Tab',
   };
   if (map[code]) return map[code];

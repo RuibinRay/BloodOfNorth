@@ -14,7 +14,7 @@ const My = isle('myrholm'), Sk = isle('skalloy');                               
 /** Every number of Act VI that a designer would want to turn. */
 export const A6 = {
   knack: { leech: [3, 2.8, 0.27] },                                                     // [good strokes, speed, width of the mark]
-  eydis: { hp: 260, dmg: 15, floor: 0.55, after: 0.25, hintAfter: 26 },                  // she cannot be worn below `floor` until the black raven is in her face; then she is left `after`
+  eydis: { hp: 260, dmg: 15, floor: 0.55, after: 0.25, hintAfter: 26, again: 18 },                 // she cannot be worn below `floor` until the black raven is in her face; then she is left `after`. While she is held there, the hint stands again every `again` s
   lane: { hp: 62, dmg: 11, skill: 0.4, allyDmg: 9, n: 4, atOnce: 2, name: "One of Håkon's toughest" }, // eighty warriors, as four to a lane
   bersi: { hp: 480, dmg: 26, beamAt: 0.72, quarryAt: 0.45, window: 1.3 },               // when the beam comes down; when the fight reaches the quarry
 };

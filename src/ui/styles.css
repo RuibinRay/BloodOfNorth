@@ -35,6 +35,8 @@ kbd { font: 600 0.82em/1 ui-monospace, Menlo, monospace; background: rgba(20, 16
 
 #hint { position: absolute; top: 58px; left: 20px; max-width: min(380px, 36vw); padding: 10px 14px; font-size: 14.5px; line-height: 1.45; background: rgba(12, 10, 8, 0.7); border-left: 2px solid var(--gold); opacity: 0; transition: opacity 0.35s; }
 #hint.on { opacity: 1; }
+#hint .tip { margin-top: 8px; padding-top: 7px; border-top: 1px solid rgba(231, 217, 187, 0.25); font-size: 13.5px; opacity: 0.85; }
+#hint .tip.alone { margin-top: 0; padding-top: 0; border-top: 0; font-size: inherit; opacity: 1; }
 
 #bars { position: absolute; left: 22px; bottom: 22px; width: 250px; }
 .bar { position: relative; height: 9px; margin-top: 6px; background: rgba(10, 8, 6, 0.72); border: 1px solid rgba(231, 217, 187, 0.35); }
@@ -297,6 +299,12 @@ details.chapters li img.thumb { width: 64px; height: 36px; object-fit: cover; ve
 #loading.gone { opacity: 0; pointer-events: none; }
 #loading h1 { font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; font-size: clamp(26px, 4vw, 46px); margin: 0; }
 #loading p { font-style: italic; opacity: 0.7; }
+/* a bar that keeps moving while the world is built (a transform runs off the main thread); gone once it is ready */
+#loading .bar { width: 180px; height: 2px; margin: 18px auto 0; background: rgba(255, 255, 255, 0.12); overflow: hidden; border-radius: 1px; }
+#loading .bar i { display: block; width: 40%; height: 100%; background: #c9b48a; animation: loadbar 1.3s ease-in-out infinite; }
+#loading.ready .bar { visibility: hidden; }
+@keyframes loadbar { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+@media (prefers-reduced-motion: reduce) { #loading .bar i { animation: none; width: 100%; opacity: 0.5; } }
 @media (max-width: 760px) { .cols { grid-template-columns: 1fr; } .trees, .status-grid { grid-template-columns: 1fr 1fr; } .set { grid-template-columns: 1fr; } .keys { grid-template-columns: 1fr; } #tracker { width: 46vw; } #hint { max-width: 46vw; } }
 @media (prefers-reduced-motion: reduce) { .lb, nav button, #hud, #hint, #card { transition: none; } }
 
@@ -337,3 +345,33 @@ details.chapters li img.thumb { width: 64px; height: 36px; object-fit: cover; ve
 #law .wm i.on { background: #c8452a; }
 #law small { display: block; margin-top: 5px; font-size: 12px; letter-spacing: 0.08em; color: var(--parch-dim); }
 #law em { display: block; margin-top: 4px; font-style: normal; font-size: 11.5px; letter-spacing: 0.16em; text-transform: uppercase; color: #ff9a8a; }
+
+/* ---- languages ------------------------------------------------------------------------------------------------- */
+/* The language buttons on the main menu and in Settings. */
+.langs { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0 0; }
+.langs .lang { font: inherit; font-size: 15px; padding: 5px 13px; color: var(--parch); background: rgba(20, 16, 12, 0.6); border: 1px solid rgba(201, 162, 74, 0.45); cursor: pointer; letter-spacing: 0.04em; }
+.langs .lang:hover { border-color: var(--gold); }
+.langs .lang.on { background: var(--wood-2); border-color: var(--gold); color: var(--gold-hi); }
+#panel .langs { margin: 0; }
+#panel .langs .lang { color: var(--ink); background: rgba(74, 54, 38, 0.08); border-color: rgba(74, 54, 38, 0.35); }
+#panel .langs .lang.on { color: var(--parch); background: var(--wood-2); border-color: var(--gold); }
+/* Chinese: a serif with the characters (Noto Serif SC from the web, or the system's Song/Ming face), no faked italics,
+   no letter-spacing meant for Latin capitals, and lines that break between characters but never before closing
+   punctuation (line-break: strict keeps 。，、」 off the start of a line). */
+:root[data-lang="zh"] { --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", "PingFang SC", "Microsoft YaHei", serif; }
+:root[data-lang="zh"] body { line-break: strict; word-break: normal; overflow-wrap: anywhere; }
+:root[data-lang="zh"] :is(em, i, #subtitle.narr, #menu h2, #card p) { font-style: normal; }
+:root[data-lang="zh"] :is(#tracker .q b, .bar.lab span, #target em, #detect span, #meter .row, #banner small, #dialogue .speaker, #card h1, #menu h1, #pause h3, nav button, #compass span) { letter-spacing: 0.04em; }
+:root[data-lang="zh"] #menu h1 { letter-spacing: 0.12em; }
+:root[data-lang="zh"] #card h1 { letter-spacing: 0.2em; }
+:root[data-lang="zh"] #dialogue .text { line-height: 1.6; }
+:root[data-lang="zh"] #subtitle { line-height: 1.55; }
+/* Spanish runs about a fifth longer than English: buttons and labels that were sized to English may wrap, not spill. */
+:root[data-lang="es"] nav button { letter-spacing: 0.04em; }
+:root[data-lang="es"] #prompt, :root[data-lang="zh"] #prompt { white-space: normal; max-width: min(640px, 80vw); text-align: center; }
+:root[data-lang="es"] #tabs button, :root[data-lang="zh"] #tabs button { padding: 13px 14px; letter-spacing: 0.06em; }
+/* On the main menu the languages sit in the top right corner, out of the way of the title and the buttons. */
+#menu-langs { position: absolute; top: 18px; right: 22px; }
+#menu-langs .langs { margin: 0; }
+#menu { align-items: safe center; overflow-y: auto; }
+:root[data-lang="es"] #tabs button { padding: 12px 9px; font-size: 13px; letter-spacing: 0.03em; }

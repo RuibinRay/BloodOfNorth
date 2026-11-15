@@ -45,10 +45,10 @@ export class NPC {
   /** Fight someone. opts: lethal (chance a blow kills a man without combat stats), dmg, onWin, wood; kit (a companion's way of fighting, data/companions.js) and scale. */
   fight(partner, opts = {}) { this.mode = 'fight'; this.partner = partner; this.opts = opts; this.fightT = 0.4 + Math.random() * (opts.kit ? 0.5 : 1.2); this.h.setLoop('guard'); return this; }
   say(text, dur) { this.game.ui.subtitle(this.name, text, dur); }
-  die(quiet = false) {
+  die(quiet = false, anyhow = false) { // anyhow: cut down in a fight, he falls whichever way he falls
     if (this.dead) return;
     this.dead = true; this.mode = 'dead'; this.talk = null; this.loop = 'dead';
-    this.h.play('fall', 1.1, { onEnd: () => {} });
+    this.h.play('fall', 1.1, { how: anyhow ? 'any' : 'B', onEnd: () => {} });
     if (!quiet && this.dist(this.game.player) < 30) this.game.audio.play('thud', { vol: 0.6 });
   }
   revive() { this.dead = false; this.mode = 'idle'; this.loop = null; this.h.action = null; if (this.quills) { for (const m of this.quills) this.root.remove(m); this.quills = null; } } // and the arrows that were in him are gone

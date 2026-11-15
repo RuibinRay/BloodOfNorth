@@ -41,9 +41,25 @@ const POSE_KEYS = ['hy', 'hrx', 'hry', 'crx', 'cry', 'crz', 'nrx', 'nry', 'slx',
 const REST = { slz: 0.09, srz: -0.09, elL: -0.12, elR: -0.12 };
 
 // ---- persistent overlay poses -----------------------------------------------------------
+const shielded = (h) => !!(h.items.L && /shield|buckler/.test(h.items.L.userData.name || ''));
 const LOOPS = {
-  block: (p) => { p.srx = -1.45; p.sry = 0.55; p.srz = 0; p.elR = -1.5; p.slx = -0.5; p.elL = -1.2; p.crx = 0.1; p.knL = p.knR = 0.3; p.hy = -0.04; },
-  guard: (p) => { p.srx = -0.75; p.sry = 0.2; p.elR = -1.0; p.slx = -0.5; p.elL = -0.9; p.knL = p.knR = 0.22; p.hy = -0.03; p.crx = 0.08; },
+  // Guarding and waiting to strike. Both breathe and shift, and both leave the legs to the walk when he is moving
+  // (still: how much of the planted stance to put on). With a shield on his arm the shield does the guarding: it
+  // comes up in front of him and his head goes down behind its rim, with the weapon drawn back to answer.
+  block: (p, t, h) => {
+    const b = Math.sin(t * 2.1 + h.seed), still = 1 - Math.min(1, h.speed / 1.2);
+    if (shielded(h)) { p.slx = -0.84 + b * 0.02; p.sly = -0.6; p.slz = 0; p.elL = -1.45; p.srx = 0.2; p.sry = -0.2; p.srz = -0.22; p.elR = -1.55; p.cry = -0.3; p.crx = 0.16 + b * 0.012; p.nry = 0.28; p.nrx = 0.1; }
+    else { p.srx = -1.45 + b * 0.02; p.sry = 0.55; p.srz = 0; p.elR = -1.5; p.slx = -0.5; p.elL = -1.2; p.crx = 0.1 + b * 0.012; }
+    p.hy += (-0.07 + b * 0.008) * (0.4 + 0.6 * still); p.knL += 0.34 * still; p.knR += 0.3 * still; p.llx += -0.22 * still; p.lrx += 0.2 * still; p.hry += 0.2 * still;
+  },
+  guard: (p, t, h) => {
+    const b = Math.sin(t * 2.4 + h.seed), w = Math.sin(t * 0.8 + h.seed * 2), still = 1 - Math.min(1, h.speed / 1.2);
+    p.srx = -0.75 + b * 0.05; p.sry = 0.2; p.elR = -1.0 - b * 0.06;
+    if (shielded(h)) { p.slx = -0.8 + b * 0.03; p.sly = -0.4; p.elL = -1.3; p.cry = -0.2 + w * 0.05; p.nry = 0.18 - w * 0.04; }
+    else { p.slx = -0.5 - b * 0.03; p.elL = -0.9; p.cry = w * 0.06; p.nry = -w * 0.05; }
+    p.crx = 0.08 + b * 0.015; p.hy += (-0.035 + b * 0.012) * (0.4 + 0.6 * still);
+    p.knL += (0.24 + b * 0.05) * still; p.knR += (0.2 - b * 0.03) * still; p.llx += -0.16 * still; p.lrx += 0.14 * still; p.hry += 0.14 * still; // one foot forward, the weight coming and going on it
+  },
   aim: (p, t, h) => { // side on to the mark, the bow arm straight, the string hand coming back to the cheek; at full draw the arm trembles
     const d = h.param || 0, ap = clamp(h.aimPitch || 0, -0.5, 0.6), tr = d >= 0.99 ? Math.sin(t * 37) * 0.006 : 0, br = Math.sin(t * 1.6) * 0.012;
     p.cry = -0.5; p.hry = -0.3; p.crx = -0.05 * d + ap * 0.22; p.nry = 0.32; p.nrx = ap * 0.25;
@@ -64,7 +80,10 @@ const LOOPS = {
   torch: (p) => { p.slx = -1.25; p.sly = 0.2; p.elL = -0.5; },
   cower: (p, t) => { p.crx = 0.4; p.nrx = 0.25; p.slx = p.srx = -0.95; p.elL = p.elR = -2.0; p.hy = -0.12 + Math.sin(t * 9) * 0.004; p.knL = p.knR = 0.5; },
   fish: (p, t) => { p.srx = -0.95 + Math.sin(t * 0.8) * 0.03; p.elR = -0.7; p.slx = -0.6; p.elL = -0.95; },
-  dead: (p) => { p.pitch = -1.5; p.by = 0.16; p.slz = 1.0; p.srz = -1.0; p.llx = 0.08; p.lrx = -0.1; p.nry = 0.5; p.elL = -0.3; p.elR = -0.5; },
+  dead: (p, t, h) => {
+    if (h.fell === 'F') { p.pitch = 1.5; p.by = 0.14; p.slx = -2.4; p.srx = -2.1; p.slz = 0.5; p.srz = -0.6; p.elL = -0.7; p.elR = -1.0; p.nry = 0.7; p.knL = 0.2; p.knR = 0.45; p.lrz = -0.12; } // on his face, one arm under him
+    else { p.pitch = -1.5; p.by = 0.16; p.slz = 1.0; p.srz = -1.0; p.llx = 0.08; p.lrx = -0.1; p.nry = 0.5; p.elL = -0.3; p.elR = -0.5; if (h.fell === 'S') { p.cry = 0.5; p.knL = 0.7; p.llz = 0.25; p.srz = -0.3; p.srx = -0.6; } } // on his back; or half turned, a knee drawn up
+  },
   swim: (p, t) => { const k = Math.sin(t * 3.2); p.pitch = 1.25; p.by = 0.35; p.slx = -2.75 + k * 0.5; p.srx = -2.75 - k * 0.5; p.elL = p.elR = -0.25; p.llx = k * 0.4; p.lrx = -k * 0.4; p.knL = 0.2 + k * 0.2; p.knR = 0.2 - k * 0.2; p.nrx = -0.7; },
   tread: (p, t) => { const k = Math.sin(t * 2.6); p.slx = -1.2; p.srx = -1.2; p.slz = 0.9 + k * 0.25; p.srz = -0.9 - k * 0.25; p.elL = p.elR = -0.5; p.llx = k * 0.3; p.lrx = -k * 0.3; p.knL = p.knR = 0.4; },
   lie: (p) => { p.pitch = -1.5; p.by = 0.16; p.slx = -2.6; p.srx = -2.6; p.elL = -0.9; p.elR = -0.9; p.llx = 0.1; p.lrx = -0.08; },
@@ -131,9 +150,20 @@ const ACTIONS = {
     [0.86, { crx: 0.3, nrx: 0.22, slx: -0.3, srx: -0.4, elL: -0.5, elR: -0.7, hy: -0.1, knL: 0.38, knR: 0.38 }, 'io'],
     [1, {}],
   ]),
-  dodge: [[0, { hy: -0.42, crx: 0.95, nrx: 0.4, llx: -1.3, lrx: -1.3, knL: 2.0, knR: 2.0, slx: -0.9, srx: -0.9, elL: -1.6, elR: -1.6 }], [0.7, { hy: -0.2, crx: 0.4, llx: -0.6, lrx: -0.6, knL: 1.0, knR: 1.0 }]],
+  dodge: S([ // down into a ball, over (the turning is done in update: see `roll`), and up onto his feet
+    [0, { hy: -0.18, crx: 0.45, nrx: 0.35, llx: -0.6, lrx: -0.6, knL: 1.0, knR: 1.0, slx: -0.8, srx: -0.8, elL: -1.3, elR: -1.3 }],
+    [0.22, { hy: -0.44, crx: 1.0, nrx: 0.5, llx: -1.45, lrx: -1.45, knL: 2.15, knR: 2.15, slx: -1.0, srx: -1.0, elL: -1.75, elR: -1.75 }, 'out'],
+    [0.7, { hy: -0.44, crx: 0.95, nrx: 0.45, llx: -1.4, lrx: -1.4, knL: 2.1, knR: 2.1, slx: -1.0, srx: -1.0, elL: -1.7, elR: -1.7 }],
+    [0.9, { hy: -0.2, crx: 0.4, llx: -0.7, lrx: -0.5, knL: 1.1, knR: 0.9, slx: -0.5, srx: -0.6, elL: -1.0, elR: -1.1 }, 'io'],
+    [1, {}],
+  ]),
   parry: S([[0, { srx: -1.4, sry: 0.5, elR: -1.2 }], [0.3, { srx: -2.0, sry: 0.85, elR: -0.75, cry: 0.32, crx: -0.08, hy: -0.05, knL: 0.3, knR: 0.3, lrx: 0.15 }, 'out'], [0.62, { srx: -1.7, sry: 0.6, elR: -1.1, cry: 0.15, hy: -0.03 }, 'io'], [1, {}]]),
-  sidestep: [[0, { hy: -0.13, crx: 0.16, knL: 0.55, knR: 0.55, llz: 0.22, lrz: -0.22, slx: -0.3, srx: -0.3 }], [0.7, { hy: -0.05, knL: 0.2, knR: 0.2 }]],
+  sidestep: S([ // a quick hop off the line: he sinks, the feet go wide, and he comes up ready
+    [0, { hy: -0.08, crx: 0.12, knL: 0.45, knR: 0.45, llz: 0.16, lrz: -0.16, slx: -0.3, srx: -0.4, elL: -0.9, elR: -1.0 }],
+    [0.3, { hy: -0.17, by: 0.05, crx: 0.22, knL: 0.75, knR: 0.7, llz: 0.3, lrz: -0.3, slx: -0.45, srx: -0.5, elL: -1.1, elR: -1.2, nrx: 0.08 }, 'out'],
+    [0.7, { hy: -0.08, by: 0, crx: 0.12, knL: 0.35, knR: 0.3, llz: 0.12, lrz: -0.12, slx: -0.3, srx: -0.5, elL: -0.9, elR: -1.0 }, 'io'],
+    [1, {}],
+  ]),
   blockhit: S([[0, { srx: -1.25, sry: 0.7, elR: -1.9, slx: -0.7, elL: -1.6, crx: -0.2, hy: -0.1, knL: 0.42, knR: 0.42, lrx: 0.22, nrx: -0.1 }], [0.5, { srx: -1.4, sry: 0.55, elR: -1.55, slx: -0.55, elL: -1.3, crx: -0.02, hy: -0.06, knL: 0.3, knR: 0.3 }, 'out'], [1, {}]]),
   twinL: mirror(CUT),
   slam: S([ // sink, rise off the ground, and bring it all down
@@ -170,7 +200,20 @@ const ACTIONS = {
   pickup: [[0, { hy: -0.4, crx: 0.95, llx: -1.0, lrx: -1.0, knL: 1.8, knR: 1.8, srx: -0.9, elR: -0.2, nrx: 0.2 }], [0.65, { hy: -0.15, crx: 0.4 }]],
   strike: [[0, { srx: -1.0, sry: 0.3, elR: -1.2, slx: -0.8, sly: -0.3, elL: -1.0 }], [0.3, { srx: -0.7, sry: 0.45, elR: -0.7, slx: -0.8, sly: -0.3, elL: -1.0 }], [0.6, { srx: -0.9, sry: 0.3, elR: -1.1, slx: -0.8, sly: -0.3, elL: -1.0 }]],
   cast: S([[0, { srx: -1.8, elR: -1.1, cry: -0.3 }], [0.28, { srx: -2.7, elR: -1.0, crx: -0.18, cry: -0.55, lrx: 0.25, llx: -0.15 }, 'out'], [0.42, { srx: -1.0, elR: -0.08, crx: 0.26, cry: 0.45, llx: -0.45, knL: 0.45, lrx: 0.35, hy: -0.07 }, 'in'], [0.7, { srx: -0.8, elR: -0.5, crx: 0.15, cry: 0.2 }, 'out'], [1, {}]]),
-  fall: [[0, { crx: -0.5, nrx: -0.4, slz: 0.9, srz: -0.9, knL: 0.6, knR: 0.6, hy: -0.2 }], [0.35, { pitch: -1.5, by: 0.16, slz: 1.0, srz: -1.0, nry: 0.5 }]],
+  fall: S([ // struck down backwards: the blow takes him, his knees go, and he lands and settles
+    [0, { crx: -0.3, nrx: -0.3, slz: 0.6, srz: -0.6, knL: 0.4, knR: 0.4, hy: -0.1 }],
+    [0.28, { crx: -0.55, nrx: -0.45, cry: 0.25, slx: -0.6, srx: -0.4, slz: 1.0, srz: -0.9, elL: -0.5, elR: -0.7, knL: 0.95, knR: 0.7, hy: -0.3, pitch: -0.45, lrx: 0.3 }, 'out'],
+    [0.6, { pitch: -1.56, by: 0.2, crx: -0.1, nrx: -0.2, nry: 0.4, slz: 1.15, srz: -1.05, elL: -0.4, elR: -0.6, knL: 0.5, knR: 0.3, hy: -0.08, llx: -0.2, lrx: 0.1 }, 'in'],
+    [0.78, { pitch: -1.46, by: 0.15, slz: 1.0, srz: -1.0, nry: 0.5, elL: -0.3, elR: -0.5, llx: 0.08, lrx: -0.1 }, 'out'],
+    [1, { pitch: -1.5, by: 0.16, slz: 1.0, srz: -1.0, nry: 0.5, elL: -0.3, elR: -0.5, llx: 0.08, lrx: -0.1 }, 'io'],
+  ]),
+  fallF: S([ // folding forward: onto his knees, and then onto his face
+    [0, { crx: 0.35, nrx: 0.3, knL: 0.7, knR: 0.7, hy: -0.2, slx: -0.3, srx: -0.3, elL: -0.6, elR: -0.8 }],
+    [0.38, { hy: -0.5, knL: 1.75, knR: 1.75, llx: -0.25, lrx: -0.25, crx: 0.55, nrx: 0.4, slx: -0.5, srx: -0.6, elL: -0.9, elR: -1.0 }, 'out'],
+    [0.52, { hy: -0.5, knL: 1.75, knR: 1.75, llx: -0.25, lrx: -0.25, crx: 0.7, nrx: 0.45, slx: -0.7, srx: -0.7, elL: -0.7, elR: -0.9 }],
+    [0.8, { pitch: 1.56, by: 0.18, hy: -0.08, knL: 0.25, knR: 0.5, crx: 0.1, slx: -2.3, srx: -2.0, slz: 0.5, srz: -0.6, elL: -0.8, elR: -1.0, nry: 0.6 }, 'in'],
+    [1, { pitch: 1.5, by: 0.14, slx: -2.4, srx: -2.1, slz: 0.5, srz: -0.6, elL: -0.7, elR: -1.0, nry: 0.7, knL: 0.2, knR: 0.45, lrz: -0.12 }, 'out'],
+  ]),
   cheer: [[0, { srx: -2.8, elR: -0.3, slx: -2.8, elL: -0.3 }], [0.7, {}]],
   give: [[0, { srx: -1.2, elR: -0.4 }], [0.7, {}]],
   shove: S([[0, { srx: -1.0, slx: -1.0, elL: -1.4, elR: -1.4, crx: -0.1, hy: -0.06 }], [0.3, { srx: -0.9, slx: -0.9, elL: -1.7, elR: -1.7, crx: -0.15, hy: -0.08, lrx: 0.2 }, 'out'], [0.47, { srx: -1.45, slx: -1.45, elL: -0.1, elR: -0.1, crx: 0.38, hy: -0.1, llx: -0.5, knL: 0.5, lrx: 0.4 }, 'in'], [0.75, { srx: -1.3, slx: -1.3, elL: -0.3, elR: -0.3, crx: 0.25, llx: -0.3, knL: 0.3 }, 'out'], [1, {}]]),
@@ -441,7 +484,11 @@ export class Humanoid {
   setLocomotion(speed, crouch = false) { this.speed = speed; this.crouch = crouch; }
   setLoop(name) { this.loop = name; }
   /** Play a one-shot action. opts: { hitAt: 0..1, onHit, onEnd } */
-  play(name, dur, opts = {}) { this.action = { name, t: 0, dur, ...opts, fired: false }; }
+  play(name, dur, opts = {}) {
+    // A fall is onto his back unless it is asked for otherwise: the story lays people down where a camera will look at them. how 'any' (a man cut down in a fight) is forward, half turned or flat, by chance; the dead lie as they fell.
+    if (name === 'fall') { const r = Math.random(); this.fell = opts.how === 'any' ? (r < 0.38 ? 'F' : r < 0.62 ? 'S' : 'B') : opts.how || 'B'; if (this.fell === 'F') name = 'fallF'; }
+    this.action = { name, t: 0, dur, ...opts, fired: false };
+  }
   get busy() { return !!this.action; }
 
   hold(side, name) {
@@ -511,8 +558,9 @@ export class Humanoid {
       else if (keys) { let pose = keys[0][1]; for (const [at_, ps] of keys) if (f >= at_) pose = ps; for (const k in pose) p[k] = pose[k]; }
       lambda = keys && keys.smooth ? 42 : 21;
       if (!a.fired && a.onHit && f >= (a.hitAt ?? 0.4)) { a.fired = true; a.onHit(); }
-      if (f >= 1) { this.action = null; if (a.onEnd) a.onEnd(); }
-    }
+      this.roll = a.name === 'dodge' && a.roll ? a.roll * 6.2832 * smoothstep(0.06, 0.94, Math.min(1, f)) : 0; // a roll turns him right over, forward or back
+      if (f >= 1) { this.action = null; this.roll = 0; if (a.onEnd) a.onEnd(); }
+    } else this.roll = 0;
     const k = 1 - Math.exp(-lambda * dt), cu = this.cur;
     for (const key of POSE_KEYS) cu[key] += (p[key] - cu[key]) * k;
     this.updateSecondary(dt);
@@ -548,7 +596,8 @@ export class Humanoid {
     j.elL.rotation.x = c.elL; j.elR.rotation.x = c.elR;
     j.lgL.rotation.set(c.llx, 0, c.llz); j.lgR.rotation.set(c.lrx, 0, c.lrz);
     j.knL.rotation.x = c.knL; j.knR.rotation.x = c.knR;
-    this.body.rotation.x = c.pitch; this.body.position.y = c.by + (this.lift || 0);
+    const ro = this.roll || 0, rh = 0.5 * this.scale; // he turns over about the middle of the ball he has made of himself, not about his feet
+    this.body.rotation.x = c.pitch + ro; this.body.position.y = c.by + (this.lift || 0) + rh * (1 - Math.cos(ro)); this.body.position.z = -rh * Math.sin(ro);
     this.gripHaft();
   }
   /** Snap straight to the current target pose (used when teleporting / restoring). */

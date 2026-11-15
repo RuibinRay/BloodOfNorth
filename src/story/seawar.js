@@ -143,7 +143,7 @@ export class SeaWar {
     const g = this.g, fl = this.st.flags;
     f.state = 'chase'; f.lostT = 0; f.volleyT = 2.5;
     g.ui.subtitle(f.def.captain ? f.def.captain.name : 'Sea-wolf steersman', f.def.hail, 4.5); g.audio.play('horn', { freq: 98, vol: 0.5 }); g.audio.setMusic('raid');
-    if (!fl.seaHint) { fl.seaHint = true; g.ui.hint('A hostile sail. {attack} looses a volley within bowshot; hold {block} for shields. Strike her side under sail to break her hull, or let her come alongside and fight for her deck.'); }
+    if (!fl.seaHint) { fl.seaHint = true; g.ui.tip('A hostile sail. {attack} looses a volley within bowshot; hold {block} for shields. Strike her side under sail to break her hull, or let her come alongside and fight for her deck.'); }
     g.quests.notify('event', 'sighted_' + f.kind);
   }
   lose(f) {

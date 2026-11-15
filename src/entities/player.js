@@ -218,7 +218,7 @@ export class Player {
     const g = this.game;
     if (this.lock) { this.lock = null; g.audio.play('uiBack'); return; }
     const e = g.combat.active ? g.combat.pickLock(null) : null;
-    if (e) { this.lock = e; g.audio.play('ui'); if (!g.state.flags.lockHint) { g.state.flags.lockHint = true; g.ui.hint('Locked on. The camera and Eirik keep to that man: move round him with {left} and {right}. Flick the mouse to change man; {lock} again lets go.'); } }
+    if (e) { this.lock = e; g.audio.play('ui'); if (!g.state.flags.lockHint) { g.state.flags.lockHint = true; g.ui.tip('Locked on. The camera and Eirik keep to that man: move round him with {left} and {right}. Flick the mouse to change man; {lock} again lets go.'); } }
     else g.ui.toast('No one to lock on to');
   }
   /** Can a storm skill be used: learned, the bar full enough, nothing else in hand. Says why not. */
@@ -317,7 +317,7 @@ export class Player {
     if (g.inventory.has('mail')) dmg *= MAIL; // a mail shirt takes the edge off every blow (Act III)
     // death a heartbeat away: the scar burns, and the Stormguard answers on its own, if he has kept his head
     if (!guarded && this.health - dmg <= STORM.near && this.isMelee() && this.canGuard()) { this.ward -= this.guardCost(); g.events.emit('ward', true); this.wardFlash(attacker.pos); return 'warded'; }
-    if (!guarded && this.health - dmg <= STORM.near && this.adult && !this.calm() && !this.stormDead && this.ward >= this.guardCost() && !g.state.flags.calmHint) { g.state.flags.calmHint = true; g.ui.hint('The Stormguard did not answer: Eirik is too angry. Every blow he throws feeds the anger (the storm bar turns red). Hold {block} and breathe, and it comes back.'); }
+    if (!guarded && this.health - dmg <= STORM.near && this.adult && !this.calm() && !this.stormDead && this.ward >= this.guardCost() && !g.state.flags.calmHint) { g.state.flags.calmHint = true; g.ui.tip('The Stormguard did not answer: Eirik is too angry. Every blow he throws feeds the anger (the storm bar turns red). Hold {block} and breathe, and it comes back.'); }
     if (guarded) {
       if (this.blockT < this.weaponDef().parry + (g.skills.has('s_turn') ? 0.1 : 0)) {
         g.audio.play('parry'); this.h.play('parry', 0.3);
@@ -388,7 +388,8 @@ export class Player {
       this.dodgeDur = this.dodgeT = roll ? 0.42 : 0.26; this.dodgeK = roll ? 6.2 : 7.4; this.iframes = roll ? 0.32 : 0.2;
       this.stamina -= dodgeCost; this.staminaDelay = roll ? 0.7 : 0.45; this.crouch = false;
       if (dm > 0.2) this.dodgeDir.set(dx, 0, dz); else this.dodgeDir.set(-Math.sin(this.yaw), 0, -Math.cos(this.yaw));
-      h.play(roll ? 'dodge' : 'sidestep', this.dodgeT); g.audio.play('whoosh', { vol: 0.6 }); g.events.emit('dodge', roll);
+      const ahead = this.dodgeDir.x * Math.sin(this.yaw) + this.dodgeDir.z * Math.cos(this.yaw); // how much of the roll is the way he faces: forward he goes over forwards, back over backwards, sideways he stays tucked
+      h.play(roll ? 'dodge' : 'sidestep', this.dodgeT, { roll: ahead > 0.5 ? 1 : ahead < -0.5 ? -1 : 0 }); g.audio.play('whoosh', { vol: 0.6 }); g.events.emit('dodge', roll);
     }
     // the Stormguard: for a moment, whatever comes is turned. It answers on its own when death is close (see receive);
     // the key calls it early, for a blow that cannot be blocked. Either way: only a calm man, and it costs more each time.

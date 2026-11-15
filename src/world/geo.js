@@ -7,7 +7,7 @@ import { rng } from '../core/util.js';
 import { ART } from '../data/art.js';
 
 /** Uniforms shared by every patched material (wind sway + snow cover). */
-export const shared = { uTime: { value: 0 }, uSnow: { value: 0 }, uWind: { value: 1 } };
+export const shared = { uTime: { value: 0 }, uSnow: { value: 0 }, uWind: { value: 1 }, uSeaDrift: { value: new THREE.Vector2() } }; // uSeaDrift: metres the sea has moved past a ship that stands still while the story sails her
 
 // The ground. Its colour is painted once for a whole valley or island (about half a metre to a pixel); close to, that is
 // a smear. So the grain comes from three small repeating pictures laid out in the world itself: grass, sand along
@@ -15,14 +15,30 @@ export const shared = { uTime: { value: 0 }, uSnow: { value: 0 }, uWind: { value
 // (tools/art/world.py), so the painted colour still decides the hue. At the water's edge the sand is dark and wet,
 // and a thin line of foam moves up and down it: both are measured in metres along the sand, not in height, so a
 // flat beach and a steep one get the same narrow edge. Until the pictures load they are flat grey, which changes nothing.
+// The graphics pass (0.30) adds four more: trodden earth and forest floor, chosen by the painted colour itself (light
+// brown is a path, a yard or a field; dark brown is under the trees), snow where the heights are painted white, and
+// cliff on the steepest faces, laid on the upright planes so its layers do not smear down the slope. The grain also
+// gives the ground a little relief near the camera (gH, used after the normals: see GROUND_BUMP).
 const GROUND = `
         vec2 gw = vGround.xz;
         float gSand = 1.0 - smoothstep(0.9, 1.9, vGround.y);
-        float gRock = smoothstep(0.24, 0.5, vSteep);
+        float gRock = smoothstep(0.24, 0.5, vSteep), gCl = smoothstep(0.42, 0.72, vSteep);
+        vec3 gBase = diffuseColor.rgb;
+        float gLum = dot(gBase, vec3(0.3, 0.59, 0.11)), gBrown = smoothstep(0.02, 0.12, (gBase.r - gBase.g) / (gBase.r + gBase.g + 0.001));
+        float gFor = gBrown * (1.0 - smoothstep(0.045, 0.09, gLum)), gDirt = gBrown * smoothstep(0.045, 0.09, gLum) * (1.0 - gSand);
+        float gSnowL = smoothstep(0.38, 0.6, gLum) * smoothstep(18.0, 38.0, vGround.y);
         vec3 gG = texture2D(uGrass, gw * 0.37).rgb * texture2D(uGrass, gw * 0.047).rgb * 4.0;
         vec3 gS = texture2D(uSand, gw * 0.29).rgb * texture2D(uSand, gw * 0.041).rgb * 4.0;
         vec3 gR = texture2D(uRock, gw * 0.21).rgb * texture2D(uRock, gw * 0.033).rgb * 4.0;
-        diffuseColor.rgb *= mix(mix(gG, gS, gSand), gR, gRock) * (texture2D(uDetail, vMapUv * 17.3).r * 0.3 + 0.86);
+        vec3 gD = texture2D(uDirt, gw * 0.31).rgb * texture2D(uDirt, gw * 0.043).rgb * 4.0;
+        vec3 gF = texture2D(uForest, gw * 0.35).rgb * texture2D(uForest, gw * 0.05).rgb * 4.0;
+        vec3 gW = texture2D(uSnowT, gw * 0.16).rgb * texture2D(uSnowT, gw * 0.027).rgb * 4.0;
+        vec3 gAn = abs(vGN); vec2 gcw = gAn.x > gAn.z ? vGround.zy : vGround.xy;
+        vec3 gC = texture2D(uCliff, gcw * 0.085).rgb * texture2D(uCliff, gcw * 0.019).rgb * 4.0;
+        vec3 gFlat = mix(mix(mix(gG, gD, gDirt), gF, gFor), gW, gSnowL);
+        vec3 gMix = mix(mix(gFlat, gS, gSand), mix(gR, gC, gCl), gRock);
+        gH = dot(gMix, vec3(0.333));
+        diffuseColor.rgb *= gMix * (texture2D(uDetail, vMapUv * 17.3).r * 0.3 + 0.86);
         float gUp = 1.0 - vSteep, gSlope = max(sqrt(max(1.0 - gUp * gUp, 0.0)) / max(gUp, 0.2), 0.035);
         float shore = vGround.y / gSlope;                                   // metres up the beach from the waterline
         float tide = 0.45 * sin(uTime * 0.8 + gw.x * 0.11 + gw.y * 0.07) + 0.3 * sin(uTime * 1.37 + gw.y * 0.19 - gw.x * 0.05);
@@ -31,26 +47,115 @@ const GROUND = `
         float lap = 1.0 - smoothstep(0.0, 0.42, abs(shore - (0.35 + tide)));
         float fm = texture2D(uFoam, gw * 0.83 + vec2(uTime * 0.03, uTime * 0.02)).r;
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.93, 0.96, 0.97), lap * (0.25 + 0.75 * fm) * 0.9);`;
+// Relief from the grain: the lighter a spot of grain, the higher it stands (a few centimetres), within ~60 m.
+const GROUND_BUMP = `
+        {
+          vec3 sx = dFdx(-vViewPosition), sy = dFdy(-vViewPosition), r1 = cross(sy, normal), r2 = cross(normal, sx);
+          float det = dot(sx, r1), k = 0.045 * (1.0 - smoothstep(18.0, 60.0, length(vViewPosition)));
+          vec2 dh = vec2(dFdx(gH), dFdy(gH)) * k;
+          normal = normalize(abs(det) * normal - sign(det) * (dh.x * r1 + dh.y * r2));
+        }`;
 
 /** The sea and the river. Looking down through it the water is clear and green over the sand; toward the horizon it
  *  is the deep colour and mirrors the sky. Its ripples are the same small pattern at two sizes, so the repeat does
  *  not show, and patches of foam drift on it. */
-export function waterPatch(mat) {
+export function waterPatch(mat, sea = null) {
   mat.userData.ice = { value: 0 }; // 1: frozen over (the river in winter): no clear shallows, no foam
+  if (sea) return seaPatch(mat, sea);
   mat.onBeforeCompile = (sh) => {
-    sh.uniforms.uTime = shared.uTime; sh.uniforms.uFoam = { value: TEX.foam }; sh.uniforms.uIce = mat.userData.ice;
+    sh.uniforms.uTime = shared.uTime; sh.uniforms.uFoam = { value: TEX.foam }; sh.uniforms.uIce = mat.userData.ice; sh.uniforms.uSeaDrift = shared.uSeaDrift;
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vSeaXZ;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvSeaXZ = (modelMatrix * vec4(transformed, 1.0)).xz;');
-    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform float uTime;\nuniform float uIce;\nuniform sampler2D uFoam;\nvarying vec2 vSeaXZ;')
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform float uTime;\nuniform float uIce;\nuniform sampler2D uFoam;\nuniform vec2 uSeaDrift;\nvarying vec2 vSeaXZ;')
       .replace('vec3 mapN = texture2D( normalMap, vNormalMapUv ).xyz * 2.0 - 1.0;', 'vec3 mapN = texture2D( normalMap, vNormalMapUv ).xyz + texture2D( normalMap, vNormalMapUv * 0.23 + vec2( 0.37, 0.11 ) ).xyz * 1.4 - 1.7;')
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
         float seaF = pow(1.0 - clamp(dot(normalize(vViewPosition), normal), 0.0, 1.0), 2.2);
         diffuseColor.rgb = mix(vec3(0.07, 0.3, 0.32), diffuseColor.rgb, max(0.3 + 0.7 * seaF, uIce));
         diffuseColor.a = mix(mix(0.58, 0.97, seaF), 0.96, uIce);
-        float seaFm = texture2D(uFoam, vSeaXZ * 0.045 + vec2(uTime * 0.006, uTime * 0.004)).r * texture2D(uFoam, vSeaXZ * 0.013 - vec2(uTime * 0.003, 0.0)).r;
+        vec2 seaXZ = vSeaXZ + uSeaDrift;
+        float seaFm = texture2D(uFoam, seaXZ * 0.045 + vec2(uTime * 0.006, uTime * 0.004)).r * texture2D(uFoam, seaXZ * 0.013 - vec2(uTime * 0.003, 0.0)).r;
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.86, 0.92, 0.94), smoothstep(0.32, 0.75, seaFm) * 0.55 * (1.0 - uIce));`);
   };
-  mat.customProgramCacheKey = () => 'sea1';
+  mat.customProgramCacheKey = () => 'sea2';
+  return mat;
+}
+
+// The sea's waves: five long swells summed as Gerstner waves (a point on the surface moves round in a circle, so crests
+// come sharp and troughs broad). [direction x, z, wavelength m, height m, steepness]. Their height is scaled by how
+// open the water is: nothing on the shore, little in the home fjord, the full swell out among the great islands.
+const SWELL = [[1, 0.25, 34, 0.32, 0.7], [0.8, -0.6, 21, 0.2, 0.75], [0.35, 0.94, 13, 0.11, 0.8], [1, -0.1, 57, 0.4, 0.5], [-0.3, 1, 8.5, 0.05, 0.8]];
+const swellGLSL = SWELL.map(([dx, dz, L, A, Q]) => { const l = Math.hypot(dx, dz), k = (2 * Math.PI) / L, c = Math.sqrt(9.8 / k); return `wave(p, vec2(${(dx / l).toFixed(4)}, ${(dz / l).toFixed(4)}), ${k.toFixed(5)}, ${c.toFixed(4)}, ${A.toFixed(3)} * amp, ${Q.toFixed(2)}, d, n, crest);`; }).join('\n          ');
+/** The same waves in JavaScript: how high the sea stands at (x, z) at time t (for things that float). */
+export function swellAt(x, z, t, amp) {
+  let y = 0;
+  for (const [dx, dz, L, A, Q] of SWELL) { const l = Math.hypot(dx, dz), k = (2 * Math.PI) / L, c = Math.sqrt(9.8 / k); y += A * amp * Math.sin(k * ((dx / l) * x + (dz / l) * z - c * t)); }
+  return y;
+}
+/** The open sea and the home waters, on a grid that follows the camera (see terrain.js). It knows how deep it is
+ *  (sea.depth, a picture of the sea floor), so it is clear and green over sand, dark over the deeps, foams in lines
+ *  that run up every shore, and heaves with the swell only where the water is deep and open. Its ripples are two
+ *  computed normal maps (tools/art/water.py) laid out in the world itself at four sizes running different ways, the
+ *  fine one fading with distance, so no repeat shows. Whitecaps break on the crests of the swell. */
+function seaPatch(mat, sea) {
+  mat.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, { uTime: shared.uTime, uFoam: { value: TEX.foam }, uSeaDrift: shared.uSeaDrift, uWaterA: { value: TEX.waterA }, uWaterB: { value: TEX.waterB },
+      uDepth: { value: sea.depth }, uDepthBox: { value: sea.box }, uCalm: { value: sea.calm }, uSwell: sea.swell });
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', `#include <common>
+        uniform float uTime; uniform vec2 uSeaDrift; uniform sampler2D uDepth; uniform vec4 uDepthBox; uniform vec3 uCalm; uniform float uSwell;
+        varying vec2 vSeaXZ; varying float vDepth; varying float vCrest;
+        float seaDepth(vec2 xz) { vec2 u = (xz - uDepthBox.xy) / uDepthBox.zw; return (u.x < 0.0 || u.y < 0.0 || u.x > 1.0 || u.y > 1.0) ? 40.0 : textureLod(uDepth, u, 0.0).r * 32.0; }
+        void wave(vec2 p, vec2 dir, float k, float c, float a, float q, inout vec3 d, inout vec3 n, inout float crest) {
+          float f = k * (dot(dir, p) - c * uTime), cf = cos(f), sf = sin(f);
+          d += vec3(dir.x * q * a * cf, a * sf, dir.y * q * a * cf);
+          n += vec3(-dir.x * k * a * cf, -q * k * a * sf, -dir.y * k * a * cf);
+          crest += max(sf, 0.0) * k * a;
+        }`)
+      .replace('#include <beginnormal_vertex>', `
+        vec2 wxz = (modelMatrix * vec4(position, 1.0)).xz;
+        vec2 p = wxz + uSeaDrift;
+        float dep = seaDepth(wxz);
+        // calm: uCalm.xy is the middle of the home fjord, uCalm.z how far its calm reaches
+        float amp = uSwell * smoothstep(0.6, 14.0, dep) * mix(0.28, 1.0, smoothstep(uCalm.z * 0.5, uCalm.z * 1.6, distance(wxz, uCalm.xy)));
+        vec3 d = vec3(0.0), n = vec3(0.0, 1.0, 0.0); float crest = 0.0;
+        ${swellGLSL}
+        vec3 objectNormal = normalize(n);
+        vDepth = dep; vCrest = crest; vSeaXZ = wxz;
+        #ifdef USE_TANGENT
+          vec3 objectTangent = vec3( tangent.xyz );
+        #endif`)
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\n        transformed += d;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
+        uniform float uTime; uniform sampler2D uFoam; uniform vec2 uSeaDrift; uniform sampler2D uWaterA; uniform sampler2D uWaterB;
+        varying vec2 vSeaXZ; varying float vDepth; varying float vCrest;`)
+      .replace('vec3 mapN = texture2D( normalMap, vNormalMapUv ).xyz * 2.0 - 1.0;', `
+        vec2 sxz = vSeaXZ + uSeaDrift;
+        float far = length(vViewPosition);
+        vec2 r1 = texture2D(uWaterA, sxz / 24.0 + vec2(uTime * 0.021, uTime * 0.004)).xy * 2.0 - 1.0;
+        vec2 r2 = texture2D(uWaterA, vec2(sxz.y, -sxz.x) / 41.0 + vec2(uTime * 0.008, -uTime * 0.013)).yx * vec2(1.0, -1.0) * 2.0 - vec2(1.0, -1.0);
+        vec2 r3 = texture2D(uWaterB, sxz / 6.3 + vec2(-uTime * 0.035, uTime * 0.052)).xy * 2.0 - 1.0;
+        vec2 r4 = texture2D(uWaterB, sxz / 2.7 + vec2(uTime * 0.06, uTime * 0.041)).xy * 2.0 - 1.0;
+        float fine = 1.0 - smoothstep(25.0, 160.0, far), finer = 1.0 - smoothstep(8.0, 45.0, far);
+        vec3 mapN = vec3(r1 * 0.9 + r2 * 0.6 + r3 * 0.7 * fine + r4 * 0.45 * finer, 1.0);`)
+      .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+        float seaF = pow(1.0 - clamp(dot(normalize(vViewPosition), normal), 0.0, 1.0), 2.4);
+        float deep = smoothstep(0.2, 5.0, vDepth);
+        vec3 water = mix(vec3(0.16, 0.42, 0.38), mix(vec3(0.05, 0.22, 0.27), vec3(0.02, 0.10, 0.14), smoothstep(5.0, 14.0, vDepth)), deep);
+        diffuseColor.rgb = mix(water, diffuseColor.rgb, 0.25 + 0.6 * seaF);
+        diffuseColor.a = mix(mix(0.5, 0.96, smoothstep(0.1, 2.6, vDepth)), 0.98, seaF * 0.85);
+        // whitecaps on the crests of the swell, broken up by the foam picture
+        vec2 seaP = vSeaXZ + uSeaDrift; // (the one worked out for the ripples is inside a block of three.js's own)
+        float fmA = texture2D(uFoam, seaP * 0.045 + vec2(uTime * 0.012, uTime * 0.006)).r, fmB = texture2D(uFoam, seaP * 0.11 - vec2(uTime * 0.02, -uTime * 0.01)).r;
+        float caps = smoothstep(0.55, 1.1, vCrest * 3.2 + fmA * 0.7 - 0.35) * smoothstep(0.25, 0.7, fmB);
+        // lines of surf running up every shore: their phase falls with depth, so they travel toward the beach
+        float surfPh = vDepth * 6.0 + uTime * 1.25 + fmA * 1.5;
+        float surf = smoothstep(0.62, 0.97, sin(surfPh)) * (1.0 - smoothstep(0.25, 1.3, vDepth)) * step(0.03, vDepth);
+        float lace = smoothstep(0.3, 0.75, fmB * 0.6 + fmA * 0.6);
+        float white = clamp(caps * 0.75 + surf * lace * 0.85, 0.0, 1.0);
+        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.88, 0.93, 0.95), white);
+        diffuseColor.a = max(diffuseColor.a, white * 0.9);
+        roughnessFactor = mix(roughnessFactor, 0.85, white);`);
+  };
+  mat.customProgramCacheKey = () => 'sea3';
   return mat;
 }
 
@@ -60,9 +165,12 @@ export function patch(mat, { sway = 0, snow = 1, detail = null, upNormal = false
     sh.uniforms.uTime = shared.uTime;
     sh.uniforms.uSnow = shared.uSnow;
     sh.uniforms.uWind = shared.uWind;
-    if (detail) { sh.uniforms.uDetail = { value: detail }; sh.uniforms.uGrass = { value: TEX.gGrass }; sh.uniforms.uSand = { value: TEX.gSand }; sh.uniforms.uRock = { value: TEX.gRock }; sh.uniforms.uFoam = { value: TEX.foam }; }
+    if (detail) {
+      sh.uniforms.uDetail = { value: detail }; sh.uniforms.uGrass = { value: TEX.gGrass }; sh.uniforms.uSand = { value: TEX.gSand }; sh.uniforms.uRock = { value: TEX.gRock }; sh.uniforms.uFoam = { value: TEX.foam };
+      sh.uniforms.uDirt = { value: TEX.gDirt }; sh.uniforms.uForest = { value: TEX.gForest }; sh.uniforms.uSnowT = { value: TEX.gSnowT }; sh.uniforms.uCliff = { value: TEX.gCliff };
+    }
     sh.vertexShader = sh.vertexShader
-      .replace('#include <common>', '#include <common>\nuniform float uTime;\nuniform float uWind;\nvarying float vSnowF;\nvarying vec3 vGround;\nvarying float vSteep;')
+      .replace('#include <common>', '#include <common>\nuniform float uTime;\nuniform float uWind;\nvarying float vSnowF;\nvarying vec3 vGround;\nvarying float vSteep;\nvarying vec3 vGN;')
       .replace('#include <begin_vertex>', `#include <begin_vertex>
         vec3 nW = normal;
         float ph = 0.0;
@@ -71,17 +179,19 @@ export function patch(mat, { sway = 0, snow = 1, detail = null, upNormal = false
           vec4 iw = instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
           ph = iw.x * 0.31 + iw.z * 0.27;
         #endif
-        float upN = normalize(mat3(modelMatrix) * nW).y;
+        vGN = normalize(mat3(modelMatrix) * nW);
+        float upN = vGN.y;
         vSnowF = smoothstep(0.2, 0.85, upN);
         vSteep = 1.0 - upN;
         ${sway > 0 ? `float sw = (sin(uTime * 1.6 + ph) + 0.5 * sin(uTime * 3.3 + ph * 1.7)) * uWind * ${sway.toFixed(5)} * position.y * position.y;
         transformed.x += sw; transformed.z += sw * 0.6;` : ''}
         vGround = (modelMatrix * vec4(transformed, 1.0)).xyz;`);
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', `#include <common>\nuniform float uSnow;\nvarying float vSnowF;\nvarying vec3 vGround;\nvarying float vSteep;\n${detail ? 'uniform sampler2D uDetail;\nuniform sampler2D uGrass;\nuniform sampler2D uSand;\nuniform sampler2D uRock;\nuniform sampler2D uFoam;\nuniform float uTime;' : ''}`)
+      .replace('#include <common>', `#include <common>\nuniform float uSnow;\nvarying float vSnowF;\nvarying vec3 vGround;\nvarying float vSteep;\nvarying vec3 vGN;\n${detail ? 'uniform sampler2D uDetail;\nuniform sampler2D uGrass;\nuniform sampler2D uSand;\nuniform sampler2D uRock;\nuniform sampler2D uFoam;\nuniform sampler2D uDirt;\nuniform sampler2D uForest;\nuniform sampler2D uSnowT;\nuniform sampler2D uCliff;\nuniform float uTime;\nfloat gH = 0.0;' : ''}`)
       .replace('#include <color_fragment>', `#include <color_fragment>
         ${detail ? GROUND : ''}
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.86, 0.9, 0.96), clamp(uSnow * ${snow.toFixed(2)} * vSnowF, 0.0, 1.0));`);
+    if (detail) sh.fragmentShader = sh.fragmentShader.replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\n' + GROUND_BUMP);
     if (upNormal) sh.fragmentShader = sh.fragmentShader.replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\n normal = normalize(vNormal);');
   };
   mat.customProgramCacheKey = () => `p${sway}_${snow}_${detail ? 2 : 0}_${upNormal ? 1 : 0}`;
@@ -304,8 +414,14 @@ export function initMaterials() {
   // Grain for the ground, foam for the water's edge, and cloth, fur, mail, leather and hair for the figures
   // (public/art/world, built by tools/art/world.py). Flat grey until they load: flat grey changes nothing.
   const W3 = ART.world || {};
-  for (const [k, file, flat] of [['gGrass', 'ground_grass', 128], ['gSand', 'ground_sand', 128], ['gRock', 'ground_rock', 128], ['foam', 'foam', 0]]) {
+  for (const [k, file, flat] of [['gGrass', 'ground_grass', 128], ['gSand', 'ground_sand', 128], ['gRock', 'ground_rock', 128], ['foam', 'foam', 0],
+    ['gDirt', 'ground_dirt', 128], ['gForest', 'ground_forest', 128], ['gSnowT', 'ground_snow', 128], ['gCliff', 'ground_cliff', 128]]) {
     TEX[k] = canvasTex(512, (g, sz) => { g.fillStyle = rgb(flat, flat, flat); g.fillRect(0, 0, sz, sz); }, { srgb: false });
+    paint(TEX[k], W3[file]);
+  }
+  // The sea's ripples (tools/art/water.py): until they load, the old drawn ripples stand in for both.
+  for (const [k, file] of [['waterA', 'water_a'], ['waterB', 'water_b']]) {
+    TEX[k] = canvasTex(512, (g, sz) => g.drawImage(TEX.waterN.image, 0, 0, sz, sz), { srgb: false });
     paint(TEX[k], W3[file]);
   }
   TEX.figure = (() => { // six squares: wool fur mail / plain hair leather

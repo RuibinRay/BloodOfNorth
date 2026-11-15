@@ -15,14 +15,19 @@ export const A7 = {
   knack: { rocks: [3, 2.8, 0.26], lock: [2, 2.6, 0.3] },                                 // [good strokes, speed, width of the mark]
   volley: { every: 5.5, n: 7, dmg: 9 },                                                  // fire arrows on the fleet: how often, how many, what one costs a man with no shield up
   board: { hp: 64, dmg: 12, skill: 0.5, allyDmg: 9, n: 6, atOnce: 2, name: "One of Ulf's best", opt: { keepDry: true } }, // twenty of his best men, as six
-  ulf: { hp: 340, dmg: 15, endAt: 0.2 },                                                 // when he goes for the kill, and the black raven comes down
+  // Ulf and Kettil: at hp 340 and 280, with a boss's guard (two or three parries broke it, and the finisher on a broken
+  // guard does triple), both were over in 11-24 s at every skill (bot playtest, 0.22). parryBreak: see champion().
+  ulf: { hp: 700, dmg: 15, endAt: 0.2, parryBreak: 12 },                               // endAt: when he goes for the kill, and the black raven comes down
   shore: { hp: 58, dmg: 11, skill: 0.42, allyDmg: 10, n: 15, atOnce: 3, name: "One of Håkon's warriors" }, // five hundred hold the slopes: fifteen to a push
   rescue: { hp: 58, dmg: 11, skill: 0.42, allyDmg: 10, n: 4, atOnce: 3, name: "One of Håkon's warriors" },
   wall: [{ goal: 7, approach: 7.5, reserve: [10, 50] }, { goal: 6, approach: 8, reserve: [10, 40] }], // the two pushes up from the sand, as shield walls: paces of ground to win before they break (the rest is data/shieldwall.js)
-  kettil: { hp: 280, dmg: 15, kneelAt: 0.14 },
+  kettil: { hp: 420, dmg: 15, kneelAt: 0.14, parryBreak: 14 },
   pens: { hp: 60, dmg: 11, skill: 0.4, allyDmg: 10, n: 8, atOnce: 3, name: 'A guard of the pens' }, // "many more than twenty"
-  vigdis: { hp: 300, dmg: 13 }, gorm: { hp: 560, dmg: 28 },
-  hakon: { hp: 760, dmg: 20, lastAt: 0.1 },                                              // from here he cannot be cut down: only the answer will do it
+  // Vigdis: guard a parry wears (the Wolf's Table's 50 broke her guard in two, and the finisher on a broken guard took 40%
+  // of her life at once); seconds between the bridge's beats; how long the Stormguard waits to turn her blow at 62%;
+  // seconds her words take once it has (the next beat waits for them).
+  vigdis: { hp: 400, dmg: 13, parryBreak: 30, beat: 7, wardFor: 15, talk: 17 }, gorm: { hp: 500, dmg: 28 },
+  hakon: { hp: 640, dmg: 20, lastAt: 0.1 },                                              // from here he cannot be cut down: only the answer will do it
 };
 
 const folk = (o) => ({ build: 1, hair: 0x7a5a3a, tunic: 0x6a6a5a, ...o });

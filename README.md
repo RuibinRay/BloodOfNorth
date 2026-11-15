@@ -10,7 +10,27 @@ Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, th
 (forty-one: Ravenhold twelve years on, Leif's house, the old birch), each as the story tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
-**New on the branch `faces-and-hair` (built on 0.29).** Faces and hair. Every head is now shaped, not a ball: a skull
+**The graphics pass: water, ground and the map.**
+- **The sea moves.** It is a grid that goes where the camera goes (3 m cells near it, wider farther out), lifted by five long swells summed as Gerstner waves, so crests come sharp and troughs broad. The swell is full out among the great islands, about a quarter of that in the home fjord, and nothing in the shallows.
+- **The sea knows how deep it is.** A picture of the sea floor (1024 a side over the home waters and all ten islands, made at start-up in 0.12 s) makes it clear and green over sand, darker over the deeps, with lines of surf running up every beach and whitecaps on the crests of the swell.
+- **Ripples that do not repeat.** Two normal maps are computed from a wind-wave spectrum (`tools/art/water.py`, free) and laid in the world at four sizes running different ways; the finest fade with distance. The river uses them too.
+- **Five new pictures from Higgsfield** ($0.075): finer sea foam (the old one was big round holes, the polka dots on the river), snow, cliff, trodden earth and forest floor. The ground now picks trodden earth for paths, yards and fields and forest floor under the trees, both from its own painted colour, as well as snow on the white heights and cliff on the steepest faces, laid on the upright planes so its layers do not smear. Within ~60 m the grain gives the ground a little relief that the sun picks out.
+- **The map is drawn as a chart** (`src/ui/chart.js`): land tinted by height and hill-shaded from the north-west, woodland as soft green with little tree marks, paths dashed, fields hatched, the coast inked, the sea pale over the shallows with a line at every 3 m of depth, all at the size the map is shown (it was the 1024-pixel ground picture shrunk to 512 and stretched to 840). Names are placed so that none lands on another; the big ones first.
+- **What it costs:** about 40k more triangles for the sea (every scene stays inside its budget) and a few more texture reads on the ground. The heavy scenes still hold 60 frames a second on the M2; measured against `main` at the same moment, the drawing time was the same within noise.
+- **Not done:** ships do not ride the swell (it is kept to about half a metre at its highest so that hulls and crews, which the story places at fixed heights, still look right); the mountains are still mostly plain snow.
+
+**Faster to start.** The title now comes up in about 1.9 s instead of 6.2 s on an M2 (production build, fast
+connection). Measured, three quarters of the old wait was painting the ten islands' ground picture by picture, and
+measuring every pixel's distance to every road and path, near or not. Now a road too far away to matter is skipped,
+and the islands, all out of sight behind the sea haze when the title comes up, are painted in the gaps between
+frames over the next four seconds. One that comes into view before its turn is painted there and then, in 160 ms.
+Every picture is the same to the pixel as before (checked by hashing all ten islands, the valley and all 1,142 sets
+of trees, rocks and grass). The loading screen has a moving bar, which keeps moving while the world is built.
+A first visit on a machine with no graphics card (software drawing) starts at Low quality. The frame rate was not
+the problem: the five heavy scenes hold 60 frames a second at Medium and High on the M2, each frame taking 1.4–3.7 ms
+to draw.
+
+**Faces and hair** (built on the branch `faces-and-hair`, merged). Every head is now shaped, not a ball: a skull
 with a jaw, a chin, cheekbones, the ridge of the brow and sockets for the eyes, in one of nine shapes; a nose (straight,
 hooked, snub, broad, broken, button, long) and ears; eyes with an iris and pupil that turn to look and glance aside,
 upper lids that blink and close, lower lids and lashes; brows shaped and thick or thin; lips on a jaw that drops when
@@ -32,7 +52,13 @@ which the weight goes from one leg to the other, different for each person · **
 sheep (which used to slide), the goat, the pigs and the cow as well as the wolf and the horse; the wolf and the horse
 nod their heads with their stride, look about when they stand, and swing their tails; a raven's wing bends at the
 wrist as it beats · **the battle lines**: the rank and file step with their legs when the line goes forward, gives
-ground, comes up from the rear or runs · **cloth**: banners wave from their poles and sails move in the wind.
+ground, comes up from the rear or runs · **cloth**: banners wave from their poles and sails move in the wind ·
+**fighting**: with a shield on his arm a man now guards with it (it comes up in front of him and he looks over its
+rim, the weapon drawn back) instead of holding it out to one side; the guard stance breathes and shifts with one foot
+forward; a roll turns him right over, forwards or backwards as he goes; the sidestep is a hop off the line; a man
+struck down buckles and lands and settles, and one cut down in a fight may fall forward onto his knees and his face,
+or half turned, and lies as he fell. **Merged**: the two branches other sessions had made from 0.22 (`act7-fight-tuning`,
+`story-hints-stay`) are in, and `main` is level with all of it.
 
 **In 0.28.** Animals and weapons. **Animals** are covered in something: a wolf has a shaggy pelt, a horse a
 short coat and a mane and tail of hair, a sheep a curly fleece, deer and hares a coat, ravens feathers. Three were
@@ -59,8 +85,7 @@ fighters in the front rank, instead of skirmishes in pairs (see "Real shield wal
 [docs/ROADMAP.md](docs/ROADMAP.md) for how they work and what is not known about them). **The rank and file now wear
 what everyone else wears**: the same weave, leather and hair as the jointed figures beside them, and the four painted
 shields in place of flat quartered discs, ours in red and blue, Håkon's in black and yellow and bare boards, so the
-two lines can be told apart at a glance. Two branches from other sessions are still not merged: `act7-fight-tuning`
-and `story-hints-stay`.
+two lines can be told apart at a glance.
 
 **In 0.26.** Halls and towns. **A hall is now built as a hall**: any longhouse wide and long enough (the
 kings' halls on Jarnøy, Solvik and Myrholm, the hall at Bjornstead and Ravenhold, the elder's hall in Hrafnvik, the
@@ -212,6 +237,23 @@ It builds the game, starts every chapter of every act the way the Acts menu does
 [tools/check/expected.json](tools/check/expected.json), holds five heavy scenes to a drawing budget, and plays one
 fight beside two companions. About five minutes; `npm run check -- --quick` does each act's opening in about one.
 After a change that is meant to move something, `npm run check -- --update` records the new state.
+
+**Play it online:** https://ruibinray.github.io/BloodOfNorth/ (nothing to install). Every push to `main` rebuilds it
+there ([.github/workflows/pages.yml](.github/workflows/pages.yml)); the new version is up a minute or two later.
+
+The code is on GitHub at https://github.com/RuibinRay/BloodOfNorth. To have every commit go there on its own,
+turn on the project's git hooks once:
+
+```bash
+git config core.hooksPath tools/hooks
+```
+
+After that, every commit (and every merge, rebase or amend) pushes its branch to GitHub. If `main` can fast-forward
+to that branch, `main` moves there too and is pushed, but only when the folder that has `main` checked out has no
+uncommitted changes. Branches named `wip/…` or `wip-…` are pushed but never merged. If `main` has moved on since a
+branch began, rebase the branch onto `main` and its next commit merges. `BOTN_NO_SYNC=1 git commit …` skips all of it
+for one commit. What it did is written to `.git/autosync.log`
+([tools/hooks/autosync.sh](tools/hooks/autosync.sh)).
 
 ## Controls
 

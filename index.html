@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="./src/ui/styles.css" />
 </head>
 <body>
-  <canvas id="c" tabindex="0" aria-label="Game view"></canvas>
+  <canvas id="c" tabindex="0" aria-label="Game view" data-t-label="Game view"></canvas>
 
   <div id="ui">
     <div id="sense"></div>
@@ -19,12 +19,12 @@
       <div id="tracker"></div>
       <div id="hint"></div>
       <div id="bars">
-        <div class="bar" id="bar-health" title="Health"><i></i></div>
-        <div class="bar" id="bar-stamina" title="Stamina"><i></i></div>
-        <div class="bar lab" id="bar-warmth" title="Warmth"><i></i><span>Warmth</span></div>
-        <div class="bar lab" id="bar-hunger" title="Hunger"><i></i><span>Food</span></div>
-        <div class="bar lab" id="bar-ice" title="Ice strain"><i></i><span>Ice strain</span></div>
-        <div class="bar lab" id="bar-ward" title="The storm in him: Stormguard and the storm skills spend it"><i></i><span>Storm</span></div>
+        <div class="bar" id="bar-health" title="Health" data-t-title="Health"><i></i></div>
+        <div class="bar" id="bar-stamina" title="Stamina" data-t-title="Stamina"><i></i></div>
+        <div class="bar lab" id="bar-warmth" title="Warmth" data-t-title="Warmth"><i></i><span data-t="Warmth">Warmth</span></div>
+        <div class="bar lab" id="bar-hunger" title="Hunger" data-t-title="Hunger"><i></i><span data-t="Food">Food</span></div>
+        <div class="bar lab" id="bar-ice" title="Ice strain" data-t-title="Ice strain"><i></i><span data-t="Ice strain">Ice strain</span></div>
+        <div class="bar lab" id="bar-ward" title="The storm in him: Stormguard and the storm skills spend it" data-t-title="The storm in him: Stormguard and the storm skills spend it"><i></i><span data-t="Storm">Storm</span></div>
         <div id="equip"></div>
       </div>
       <div id="toasts"></div>
@@ -39,7 +39,7 @@
       <div id="meter">
         <div class="label"></div>
         <div class="track"><div class="zone"></div><div class="mark"></div></div>
-        <div class="reel"><div class="row"><span>Catch</span><div class="rbar"><i id="reel-p"></i></div></div><div class="row"><span>Line</span><div class="rbar strain"><i id="reel-t"></i></div></div></div>
+        <div class="reel"><div class="row"><span data-t="Catch">Catch</span><div class="rbar"><i id="reel-p"></i></div></div><div class="row"><span data-t="Line">Line</span><div class="rbar strain"><i id="reel-t"></i></div></div></div>
         <div class="hint"></div>
       </div>
       <div id="banner"><small></small><b></b></div>
@@ -51,7 +51,7 @@
 
     <div id="subtitle"></div>
     <div id="lb-top" class="lb"></div><div id="lb-bot" class="lb"></div>
-    <div id="skip"><span>Hold <kbd>Space</kbd> to skip</span><i></i></div>
+    <div id="skip"><span data-t-html="Hold &lt;kbd&gt;Space&lt;/kbd&gt; to skip">Hold <kbd>Space</kbd> to skip</span><i></i></div>
 
     <div id="dialogue">
       <div class="portrait" aria-hidden="true"></div>
@@ -67,28 +67,29 @@
     <div id="menu" class="screen">
       <div class="menu-inner">
         <div class="runes" aria-hidden="true">ᛒᛚᚢᚦ · ᚢᚠ · ᚦᛖ · ᚾᚢᚱᚦ</div>
-        <h1>Blood of the North</h1>
-        <h2>Rise of the Raven King</h2>
+        <h1 data-t="Blood of the North">Blood of the North</h1>
+        <h2 data-t="Rise of the Raven King">Rise of the Raven King</h2>
         <nav id="menu-buttons"></nav>
-        <p class="build">Slice 0.29 · the whole story, Acts I to VII and the epilogue, from any chapter · companions who fight · shield walls at Iron Shore and the Black Shore · open-world sandbox · painted portraits, items and scenes · textured ground, shore, trees, clothes, animals, weapons, ships, houses and halls; the shapes of the 3D world and the audio are still made in code</p>
+        <div id="menu-langs"></div>
+        <p class="build" data-t="Slice 0.29 · the whole story, Acts I to VII and the epilogue, from any chapter · companions who fight · shield walls at Iron Shore and the Black Shore · open-world sandbox · painted portraits, items and scenes · textured ground, shore, trees, clothes, animals, weapons, ships, houses and halls; the shapes of the 3D world and the audio are still made in code">Slice 0.29 · the whole story, Acts I to VII and the epilogue, from any chapter · companions who fight · shield walls at Iron Shore and the Black Shore · open-world sandbox · painted portraits, items and scenes · textured ground, shore, trees, clothes, animals, weapons, ships, houses and halls; the shapes of the 3D world and the audio are still made in code</p>
       </div>
     </div>
 
     <div id="pause" class="screen">
       <div class="menu-inner narrow">
-        <h3>Paused</h3>
+        <h3 data-t="Paused">Paused</h3>
         <nav id="pause-buttons"></nav>
       </div>
     </div>
 
     <div id="panel" class="screen">
       <div class="frame">
-        <header><nav id="tabs"></nav><button id="panel-close" aria-label="Close">✕</button></header>
+        <header><nav id="tabs"></nav><button id="panel-close" aria-label="Close" data-t-label="Close">✕</button></header>
         <section id="panel-body"></section>
       </div>
     </div>
 
-    <div id="loading"><div><h1>Blood of the North</h1><p id="loading-text">Raising the valley…</p></div></div>
+    <div id="loading"><div><h1 data-t="Blood of the North">Blood of the North</h1><p id="loading-text" data-t="Raising the valley…">Raising the valley…</p><div class="bar"><i></i></div></div></div>
   </div>
 
   <script type="module" src="./src/main.js"></script>
