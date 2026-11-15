@@ -30,6 +30,9 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer } from 'vite';
+import { createRequire } from 'node:module';
+// vite wherever Node finds it: in this folder, or a folder above it (a worktree, or the copy the git hook checks)
+const viteBin = join(dirname(createRequire(import.meta.url).resolve('vite/package.json')), 'bin/vite.js');
 import { Browser } from './check/browser.mjs';
 import { ACTS, ORDER } from '../src/data/chapters.js';
 import { sweep, chaptersOf } from './check/langs.mjs';
@@ -69,7 +72,7 @@ const t0 = Date.now(), expected = existsSync(expectedPath) ? JSON.parse(readFile
 let failed = 0; const fail = (line) => { failed++; console.log('  FAIL  ' + line); }, ok = (line) => console.log('  ok    ' + line);
 
 console.log('Building…');
-try { execFileSync(process.execPath, [join(root, 'node_modules/vite/bin/vite.js'), 'build', '--logLevel', 'error'], { cwd: root, stdio: ['ignore', 'pipe', 'pipe'] }); ok('the game builds'); }
+try { execFileSync(process.execPath, [viteBin, 'build', '--logLevel', 'error'], { cwd: root, stdio: ['ignore', 'pipe', 'pipe'] }); ok('the game builds'); }
 catch (e) { fail('the game does not build:\n' + String(e.stderr || e.stdout || e.message).trim().split('\n').slice(0, 12).join('\n')); process.exit(1); }
 
 { // the paintings the game lists (src/data/art.js) are files that exist

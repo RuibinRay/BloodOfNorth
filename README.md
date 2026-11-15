@@ -254,10 +254,14 @@ git config core.hooksPath tools/hooks
 ```
 
 After that, every commit (and every merge, rebase or amend) pushes its branch to GitHub. If `main` can fast-forward
-to that branch, `main` moves there too and is pushed, but only when the folder that has `main` checked out has no
-uncommitted changes. Branches named `wip/…` or `wip-…` are pushed but never merged. If `main` has moved on since a
-branch began, rebase the branch onto `main` and its next commit merges. `BOTN_NO_SYNC=1 git commit …` skips all of it
-for one commit. What it did is written to `.git/autosync.log`
+to that branch, the quick check (`npm run check -- --quick`, about a minute) runs first on a copy of that exact commit,
+and only if it passes does `main` move there and get pushed, which puts it on the website. A commit made on `main`
+itself is checked the same way before it is pushed. A failing check is tried once more (a slow page should not block
+a merge); if it fails again, `main` stays where it was, a notification says so, and the check's output is kept in
+`.git/autosync-failed.log`. `main` also stays put when the folder that has it checked out has uncommitted changes.
+Branches named `wip/…` or `wip-…` are pushed but never merged. If `main` has moved on since a branch began, rebase the
+branch onto `main` and its next commit merges. `BOTN_NO_CHECK=1 git commit …` skips the check for one commit,
+`BOTN_NO_SYNC=1 git commit …` skips all of it. What it did is written to `.git/autosync.log`
 ([tools/hooks/autosync.sh](tools/hooks/autosync.sh)).
 
 ## Controls
