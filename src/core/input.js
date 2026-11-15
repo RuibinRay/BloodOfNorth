@@ -80,7 +80,7 @@ export class Input {
       if (['Tab', 'Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
       if (e.repeat) return;
       this.usingPad = false;
-      if ((this.bindings.fullscreen || []).includes(e.code)) { e.preventDefault(); toggleFullscreen(); return; } // here, in the key's own event: a browser lets a page fill the screen only then
+      if ((this.bindings.fullscreen || []).includes(e.code) || (e.code === 'Enter' && e.altKey)) { e.preventDefault(); toggleFullscreen(); return; } // here, in the key's own event: a browser lets a page fill the screen only then. Alt+Enter (Option+Enter on a Mac, where F10 needs the fn key) as well
       this.down.add(e.code); this.pressed.add(e.code);
     });
     window.addEventListener('keyup', (e) => { this.down.delete(e.code); this.releasedSet.add(e.code); });

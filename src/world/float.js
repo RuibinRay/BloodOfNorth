@@ -21,7 +21,7 @@ const inScene = (o, scene) => {
   }
   return false;
 };
-const _q = new THREE.Quaternion(), _e = new THREE.Euler(), _v = new THREE.Vector3(), _w = new THREE.Vector3(), _yaw = new THREE.Quaternion();
+const _half = new THREE.Quaternion(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _v = new THREE.Vector3(), _w = new THREE.Vector3(), _yaw = new THREE.Quaternion();
 
 /** How strongly the swell lifts the sea at (x, z): as the sea's shader works it out (terrain.js, geo.js seaPatch). */
 function ampAt(x, z, sea) {
@@ -55,12 +55,12 @@ function underWay(s, f, g, dt, dr) {
 function seaMoved(dr) { driftWas = driftWas || { x: 0, y: 0 }; driftWas.x = dr.x; driftWas.y = dr.y; }
 
 /** What the last frame did (for tests): ships afloat and people carried. */
-export const lastRide = { ships: 0, riders: 0 };
+export const lastRide = { ships: 0, riders: 0, camera: false };
 /** Lift the ships and their crews for this frame. dt: seconds since the last frame (for smoothing). */
 export function rideSwell(g, dt) {
   const sea = g.world.terrain.seaInfo; if (!sea) return;
   const t = shared.uTime.value, dr = shared.uSeaDrift.value, k = 1 - Math.exp(-dt * 6);
-  let riders = null; lastRide.ships = 0; lastRide.riders = 0;
+  let riders = null; lastRide.ships = 0; lastRide.riders = 0; lastRide.camera = false;
   for (const s of SHIPS) {
     if (!s.parent || !inScene(s, g.scene)) continue;
     const f = s.userData.float, P = s.position;
@@ -88,6 +88,18 @@ export function rideSwell(g, dt) {
       if (moved.some((m) => m[0] === o)) continue;
       const dx = o.position.x - P.x, dz = o.position.z - P.z, lz = dx * fx + dz * fz, lx = dx * fz - dz * fx, dy = o.position.y - P.y;
       if (Math.abs(lz) < f.L / 2 + 0.3 && Math.abs(lx) < f.B / 2 + 0.3 && dy > -1 && dy < 3.5) { shift(o); lastRide.riders++; }
+    }
+    // and so does the camera, when he is aboard her and it is near her (behind him, or close on a face as people talk):
+    // it goes with the deck, so the people on it do not bob against the picture and a face a metre away does not swing
+    // through the front of the camera; it takes half her tilt, so the horizon still rocks a little
+    const cam = g.camera, pr = g.player && g.player.root;
+    if (cam && pr && moved.some((m) => m[0] === pr) && !moved.some((m) => m[0] === cam)) {
+      const dx = cam.position.x - P.x, dz = cam.position.z - P.z, lz = dx * fx + dz * fz, lx = dx * fz - dz * fx, dy = cam.position.y - P.y;
+      if (Math.abs(lz) < f.L / 2 + 8 && Math.abs(lx) < f.B / 2 + 8 && dy < 14) {
+        moved.push([cam, cam.position.clone(), cam.quaternion.clone()]);
+        _v.copy(cam.position).sub(P).applyQuaternion(_q); cam.position.copy(P).add(_v); cam.position.y += f.h;
+        _half.identity().slerp(_q, 0.5); cam.quaternion.premultiply(_half); cam.updateMatrixWorld(true); lastRide.camera = true;
+      }
     }
     shift(s); lastRide.ships++;
   }
