@@ -36,8 +36,10 @@ It is done in the picture only, just before each frame is drawn and undone strai
 so walking a deck, fighting on one and the story sailing a ship are as they were. Beached, wrecked and sunk hulls are
 left as they lie; ships in the home fjord and the harbours barely move, as the water there barely does. With the ships
 moving, the swell is back to its full height (it had been held to two thirds while they sat still). Out at sea a ship
-now rises up to about 0.4 m and pitches and rolls a few degrees. Things set loose on a deck that are not people (fire
-pots, chests) stay level. It costs about 0.13 ms a frame with 24 ships out.
+now rises up to about 0.4 m and pitches and rolls a few degrees. Everything else on a ship (benches, shields, mast,
+cargo) is built as part of her, so it goes with her; a sweep of all 67 chapters found nothing else standing loose on
+a deck. The one thing that does not follow is a fire's flames, which rise from a fixed point: on a burning ship that is
+at most 0.4 m out, inside a flame that size. It costs about 0.13 ms a frame with 24 ships out.
 
 **Full screen, the mouse after a conversation, and the mountains.**
 - **Full screen**: F10 (it can be rebound in Settings → Controls), a button beside the languages on the title screen, "Full screen" in the pause menu and a switch in Settings → Graphics. It is not saved: a browser fills the screen only when a click or a key asks it to.
