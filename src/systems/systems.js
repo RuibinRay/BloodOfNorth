@@ -279,12 +279,13 @@ export class Cine {
     // which side: the listener's, just past their shoulder, so the speaker looks almost into the lens
     let pref = 1;
     if (listener) { const lx = listener.pos.x - hx, lz = listener.pos.z - hz; pref = (lx * fz - lz * fx) > 0 ? 1 : -1; }
-    for (const [dist, side] of wide ? [[3.4, 1.2], [2.6, 0.9], [1.8, 0.6]] : [[1.75, 0.6], [1.35, 0.45], [1.0, 0.3]]) for (const s of [pref, -pref]) {
+    for (const [dist, side] of wide ? [[3.4, 1.2], [2.6, 0.9], [1.8, 0.6]] : [[1.6, 0.5], [1.25, 0.38], [0.95, 0.28]]) for (const s of [pref, -pref]) {
       const cx = hx + fx * dist + fz * side * s, cz = hz + fz * dist - fx * side * s;
       if (w.pointInBox(cx, cz, 0.25) || (listener && Math.hypot(cx - listener.pos.x, cz - listener.pos.z) < 0.5)) continue;
       const cy = Math.max(hy + 0.04, w.groundAt(cx, cz) + 0.45);
       if (blocked(g.scene, _a.set(hx, hy, hz), _b.set(cx, cy, cz), who.root) || blocked(g.scene, _a.set(hx, hy - (wide ? 0.9 : 0.45), hz), _b.set(cx, cy, cz), who.root)) continue; // the face, and the body below it, in view
-      this.hold([cx, cy, cz], () => [who.pos.x, who.pos.y + who.h.headHeight() - (wide ? 0.35 : 0.13), who.pos.z], { fov: wide ? 42 : 30, blend });
+      // close: head and shoulders, the eyes a little above the middle of the picture, so a face can be read
+      this.hold([cx, cy, cz], () => [who.pos.x, who.pos.y + who.h.headHeight() - (wide ? 0.35 : 0.07 * (who.h.scale || 1)), who.pos.z], { fov: wide ? 42 : 25, blend });
       return true;
     }
     return false;
