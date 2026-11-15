@@ -609,7 +609,7 @@ export default {
   "Next": "接下来",
   "Chapter Two, “The Long White”: keep the fire, find food, and stay ahead of the men who are still looking for you.": "第二章“漫漫白雪”：守住火，找到食物，甩开那些还在找你的人。",
   "Continue to Chapter Two": "继续第二章",
-  "Chapter Three, “A Stranger's Hearth”: fever, a farm in a hidden dale, and a girl who has found something in a fallen tree.": "第三章“陌生人的炉火”：高烧、隐秘山谷里的一座农庄，还有一个在倒下的树里发现了东西的女孩。",
+  "Chapter Three, “A Stranger's Hearth”: fever, a village by the sea, and a girl who has found something in a fallen tree.": "第三章“陌生人的炉火”：高烧、一个海边的村子，还有一个在倒下的树里发现了东西的女孩。",
   "Continue to Chapter Three": "继续第三章",
   "Act II, “The Farmer's Axe”. Ten winters pass. Eirik is nineteen, the ravens are grown, and somebody is coming along the river road.": "第二幕“农夫之斧”。十个冬天过去了。埃里克十九岁，渡鸦已经长大，有人正沿着河边的路走来。",
   "Continue to Act II": "继续第二幕",
@@ -712,4 +712,5 @@ export default {
   "SW": "西南",
   "W": "西",
   "NW": "西北",
+  "Chapter Three, “A Stranger's Hearth”: fever, a farm in a hidden dale, and a girl who has found something in a fallen tree.": "第三章“陌生人的炉火”：高烧、隐秘山谷里的一座农庄，还有一个在倒下的树里发现了东西的女孩。",
 };

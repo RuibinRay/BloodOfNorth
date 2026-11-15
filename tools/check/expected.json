@@ -75,14 +75,14 @@
    "at": "q_hearth.signe",
    "stage": "ch3",
    "mode": "play",
-   "pos": [147, -136],
+   "pos": [1301, 689],
    "marker": "yes"
   },
   "q_wings": {
    "at": "q_wings.storm",
    "stage": "ch3",
    "mode": "play",
-   "pos": [150, -139],
+   "pos": [1304, 695],
    "marker": "yes"
   },
   "q_ten": {

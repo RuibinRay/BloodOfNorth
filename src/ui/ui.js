@@ -743,7 +743,7 @@ export class UI {
     const cont = (label, sandbox = false) => `<p>${B('next', label)} ${sandbox ? B('sandbox', 'Try the open world (prototype)') + ' ' : ''}${B('tomenu', 'Return to main menu')}</p>`;
     const next = [
       `${H('Next')}${P('Chapter Two, “The Long White”: keep the fire, find food, and stay ahead of the men who are still looking for you.')}${cont('Continue to Chapter Two')}`,
-      `${H('Next')}${P("Chapter Three, “A Stranger's Hearth”: fever, a farm in a hidden dale, and a girl who has found something in a fallen tree.")}${cont('Continue to Chapter Three')}`,
+      `${H('Next')}${P("Chapter Three, “A Stranger's Hearth”: fever, a village by the sea, and a girl who has found something in a fallen tree.")}${cont('Continue to Chapter Three')}`,
       `${this.omensHTML()}${H('Next')}${P("Act II, “The Farmer's Axe”. Ten winters pass. Eirik is nineteen, the ravens are grown, and somebody is coming along the river road.")}${cont('Continue to Act II')}`,
       `${H('Next')}${P('Act III, “The Wolves of Iron”. In spring the Sea-Raven sails for Jarnøy, the Iron Isle, to trade wool and salted fish for iron.')}${cont('Continue to Act III', true)}`,
       `${H('Next')}${P('Act IV, “Blood Across the Sea”. Two quiet years pass. Then a ship arrives from Solvik, the Golden Quay.')}${cont('Continue to Act IV', true)}`,

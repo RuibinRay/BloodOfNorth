@@ -3,7 +3,8 @@
 // place that the story changes (houses that burn, walls that get built, a ship that comes home) are stages: each has
 // its own meshes and its own colliders, and is switched on and off by the story (world.main.<place>.stages).
 import * as THREE from 'three';
-import { M, Builder, at, box, cyl, cone, sphere, tint } from './geo.js';
+import { M, Builder, at, box, cyl, cone, sphere, tint, merge, patch } from './geo.js';
+import { standOfPines } from './vegetation.js';
 import { heightAt } from './terrain.js';
 import * as P from './props.js';
 import { MAIN, place } from './layout.js';
@@ -52,6 +53,19 @@ export function table(ctx, x, z, ry, len = 6) {
 export function range(b, pts, seed) {
   const r = rng(seed);
   for (const [x, z, h, w] of pts) b.add(tint(at(cone(w, h, 7), x, h / 2 - 14, z, 0, r() * 3, 0, 1, 1, 0.8 + r() * 0.5), [0x5c6a58, 0x66705e, 0x545f56][(r() * 3) | 0], 0.2, (x + z) | 0), M.vcPlain);
+}
+
+/** Where Act I's last chapters happen in Bjornstead (offsets from the village's centre, as B() takes them). Used by
+ *  the village (the props) and by story/act1_ch3.js (the people, the markers, what can be used). */
+export function ACT1_SPOTS(B, barnDoor) {
+  const nest = B(-80, 196);
+  return {
+    nest, logs: [[nest[0] - 8, nest[1] - 5.4], [nest[0], nest[1] - 7.9], [nest[0] - 6.5, nest[1] + 3.1]],
+    fire: B(-2.5, 126.4), seat: B(0.6, 128.6), basket: B(-1.4, 129.2), signe: B(-4.8, 127.8), bjorn: B(-19, 127.5), freydis: B(6, 141),
+    chop: B(-23, 130), pen: B(100, 34), lambPost: B(-8, 142), wake: B(4, 135), barrow: B(96, -24), axeStone: B(62, 48), tarn: B(-140, -50),
+    skyIron: barnDoor ? [barnDoor.x - 1.4, barnDoor.z + 1.6] : B(34, 124), birch: B(-20, 10), hunters: B(178, 30), lamb: B(-142, 124),
+    nestPath: [B(6, 146), B(-6, 160), B(-28, 200), B(-58, 204), [nest[0] + 1.5, nest[1] + 1.2]],
+  };
 }
 
 function bjornstead(ctx, world, scene) {
@@ -110,12 +124,52 @@ function bjornstead(ctx, world, scene) {
   // the old latrine, inside where the wall will run (until it is moved)
   st('privy', true, (c) => { const [x, z] = W('latrine'), y = gy(x, z); for (const [dx, dz, ry] of [[0, -1.2, 0], [-1.2, 0, 1.57], [1.2, 0, 1.57]]) c.b.add(tint(at(box(2.4, 1.5, 0.08), x + dx, y + 0.75, z + dz, 0, ry, 0), 0x6a5a40, 0.25, 3), M.vcPlain); c.b.add(at(box(2, 0.1, 1.6), x, y + 0.03, z + 0.3), M.dark); c.addBox(x, z - 1.2, 1.2, 0.15, 0, 1.5); });
   st('trench', false, (c) => { const [x, z] = W('trench'), y = gy(x, z); c.b.add(at(box(6, 0.1, 1.1), x, y + 0.04, z, 0, 0.3, 0), M.dark); c.b.add(tint(at(box(6.4, 0.5, 0.9), x + 0.4, y + 0.2, z - 1.3, 0, 0.3, 0), 0x4a3a28, 0.25, 4), M.vcPlain); for (const k of [-1, 1]) c.b.add(tint(at(box(2.6, 1.5, 0.08), x + k * 1.6, y + 0.75, z + 1.5, 0, 0.3, 0), 0x6a5a40, 0.25, 5 + k), M.vcPlain); });
-  // the old birch on the hill behind the village: split by the lightning ten years ago, and still green
+  // the old birch on the hill behind the village. Act I: whole until the lightning finds it (birchWhole), then split
+  // (birchSplit); from Act II on, split and still green, with the young yew grown up through the scorched stump (yew)
   const bi = W('birch'), by = gy(...bi);
-  for (const k of [-1, 1]) ctx.b.add(tint(at(cyl(0.14, 0.32, 3.8, 6), bi[0] + k * 0.3, by + 1.8, bi[1], 0, 0, -k * 0.17), 0x2a221c, 0.2, 6), M.vcPlain);
-  for (const [dx, dy, dz, sc] of [[-1.0, 3.7, 0.2, 1.4], [1.1, 4.0, -0.3, 1.5], [0.1, 4.9, 0.5, 1.2], [-0.3, 2.9, -0.9, 1.0], [1.6, 3.0, 0.8, 0.9]]) ctx.b.add(tint(at(new THREE.IcosahedronGeometry(1, 1), bi[0] + dx, by + dy, bi[1] + dz, 0, dx, 0, sc, sc * 0.8, sc), 0x4a7a3a, 0.3, 7), M.vcPlain);
-  ctx.addCircle(bi[0], bi[1], 0.7, 4);
-  for (const [dx, dz, h] of [[0.05, -0.15, 2.4], [0.45, 0.3, 1.5], [-0.4, 0.25, 1.7]]) ctx.b.add(tint(at(cone(0.55, h, 6), bi[0] + dx, by + h / 2 + 0.2, bi[1] + dz), 0x1e3a26, 0.25, 12), M.vcPlain); // the young yew that has grown up through the scorched stump
+  st('birchSplit', true, (c) => {
+    for (const k of [-1, 1]) c.b.add(tint(at(cyl(0.14, 0.32, 3.8, 6), bi[0] + k * 0.3, by + 1.8, bi[1], 0, 0, -k * 0.17), 0x2a221c, 0.2, 6), M.vcPlain);
+    for (const [dx, dy, dz, sc] of [[-1.0, 3.7, 0.2, 1.4], [1.1, 4.0, -0.3, 1.5], [0.1, 4.9, 0.5, 1.2], [-0.3, 2.9, -0.9, 1.0], [1.6, 3.0, 0.8, 0.9]]) c.b.add(tint(at(new THREE.IcosahedronGeometry(1, 1), bi[0] + dx, by + dy, bi[1] + dz, 0, dx, 0, sc, sc * 0.8, sc), 0x2c4a2a, 0.3, 7), M.vcPlain);
+    c.addCircle(bi[0], bi[1], 0.7, 4);
+  });
+  st('yew', true, (c) => { for (const [dx, dz, h] of [[0.05, -0.15, 2.4], [0.45, 0.3, 1.5], [-0.4, 0.25, 1.7]]) c.b.add(tint(at(cone(0.55, h, 6), bi[0] + dx, by + h / 2 + 0.2, bi[1] + dz), 0x1e3a26, 0.25, 12), M.vcPlain); }); // the young yew that has grown
+  st('birchWhole', false, (c) => {
+    c.b.add(tint(at(cyl(0.16, 0.34, 8.4, 7), bi[0], by + 4.1, bi[1]), 0xd9d5c8, 0.18, 8), M.vcPlain);
+    for (const [dx, dy, dz, sc] of [[0, 8.6, 0, 2.3], [-1.6, 7.2, 0.6, 1.7], [1.5, 7.4, -0.5, 1.8], [0.3, 6.2, 1.5, 1.4], [-0.4, 6.4, -1.5, 1.4]]) c.b.add(tint(at(new THREE.IcosahedronGeometry(1, 1), bi[0] + dx, by + dy, bi[1] + dz, 0, dx, 0, sc, sc * 0.85, sc), 0x6a8a3a, 0.3, 9), M.vcPlain);
+    c.b.add(tint(at(cyl(0.05, 0.09, 3.2, 5), bi[0] + 1.3, by + 6.6, bi[1] + 0.2, 0, 0, -1.1), 0xd9d5c8, 0.18, 10), M.vcPlain); // the branch the ravens cling to
+    c.addCircle(bi[0], bi[1], 0.6, 4);
+  });
+  // Act I's Bjornstead (the owner's story, Chapters 4 to 6): the raven pines on the rise west of the harbour and the one
+  // the storm brought down with its nest, and the old things round the village that wait for a grown man (the omens)
+  const A1 = ACT1_SPOTS(B, houses.barn.door);
+  st('act1', false, (c, _w, objs) => {
+    const [nx, nz] = A1.nest, ny = gy(nx, nz), R1 = rng(31);
+    const pines = []; // the raven pines: the forest's own tree (vegetation.js), placed by hand
+    for (const [dx, dz, sc] of [[-6, -4, 0.95], [4, -7, 1.15], [-11, 3, 0.9], [7, 5, 1.05], [-2, 9, 1.0], [12, -2, 0.85]]) {
+      const x = nx + dx, z = nz + dz;
+      pines.push({ x, y: gy(x, z) - 0.15, z, sc: sc * 1.15, ry: R1() * 6.28 });
+      c.addCircle(x, z, 0.4, 2);
+    }
+    objs.push(standOfPines(pines));
+    c.b.add(at(cyl(0.2, 0.34, 9.5, 7), nx - 3.6, ny + 0.32, nz - 1.6, Math.PI / 2 - 0.05, 1.15, 0), M.bark); // the storm-felled pine
+    c.addBox(nx - 3.6, nz - 1.6, 4.6, 0.35, 1.15 - Math.PI / 2, 0.7);
+    c.b.add(tint(at(new THREE.TorusGeometry(0.34, 0.13, 5, 10), nx, ny + 0.14, nz, Math.PI / 2, 0, 0), 0x4a3a28, 0.35, 3), M.vc);
+    for (const [[x, z], r] of A1.logs.map((l, i) => [l, [0.4, 1.9, 2.7][i]])) c.b.add(at(cyl(0.17, 0.2, 1.5, 6), x, gy(x, z) + 0.16, z, Math.PI / 2, r, 0), M.bark);
+    const [bx, bz] = A1.barrow, bwy = gy(bx, bz); // the mound ringed with stones, and a hilt standing out of it
+    const mound = new THREE.Mesh(tint(at(sphere(3.3, 14, 8), bx, bwy - 0.55, bz, 0, 0, 0, 1, 0.55, 1), 0x56603e, 0.3, 4), patch(new THREE.MeshLambertMaterial({ vertexColors: true }), { snow: 0.9 })); // turf under the snow
+    mound.receiveShadow = true; objs.push(mound);
+    for (let i = 0; i < 9; i++) { const a = (i / 9) * 6.283; c.b.add(at(sphere(0.34 + (i % 3) * 0.08, 6, 5), bx + Math.cos(a) * 3.4, bwy + 0.1, bz + Math.sin(a) * 3.4, 0, i, 0, 1, 0.75, 1), M.stone); }
+    c.b.add(at(box(0.05, 0.36, 0.03), bx, bwy + 1.0, bz, 0.12, 0.4, 0.06), M.dark); c.b.add(at(box(0.3, 0.045, 0.06), bx, bwy + 0.84, bz, 0.12, 0.4, 0.06), M.iron); c.b.add(at(sphere(0.045, 6, 5), bx + 0.01, bwy + 1.2, bz + 0.02), M.iron);
+    const [sx, sz] = A1.skyIron; // the black stone that props the barn door
+    c.b.add(tint(at(new THREE.IcosahedronGeometry(0.42, 1), sx, gy(sx, sz) + 0.24, sz, 0, 0.7, 0, 1.15, 0.8, 1), 0x1b1a1e, 0.25, 5), M.vcPlain); c.addCircle(sx, sz, 0.5, 0.6);
+    P.runestone(c, ...A1.axeStone, 0.5); // the stone in the north meadow: two axes, a wing, a star
+    const [tx, tz] = A1.tarn, ty = gy(tx, tz); // the tarn whose ice never melts, and the long shadow under it
+    const ice = new THREE.Mesh(new THREE.CircleGeometry(6.4, 28), new THREE.MeshStandardMaterial({ color: 0xd3e5f0, roughness: 0.22, metalness: 0.1 }));
+    ice.rotation.x = -Math.PI / 2; ice.position.set(tx, ty + 0.06, tz); ice.receiveShadow = true;
+    const shade = new THREE.Mesh(new THREE.PlaneGeometry(0.14, 3.3), new THREE.MeshBasicMaterial({ color: 0x1c2a36, transparent: true, opacity: 0.6, depthWrite: false }));
+    shade.rotation.set(-Math.PI / 2, 0, 0.5); shade.position.set(tx + 0.6, ty + 0.085, tz - 0.4);
+    objs.push(ice, shade);
+  });
   // timber in the hills: stumps and felled trunks
   const tm = W('timber'), R = rng(77);
   for (let i = 0; i < 7; i++) { const x = tm[0] + (R() - 0.5) * 22, z = tm[1] + (R() - 0.5) * 18; ctx.b.add(at(cyl(0.3, 0.36, 0.5, 7), x, gy(x, z) + 0.2, z), M.bark); }

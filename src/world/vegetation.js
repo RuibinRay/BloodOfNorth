@@ -107,6 +107,35 @@ function grassGeo() {
   return merge(blades);
 }
 
+const PICTURED = new Map();
+/** A tree's picture as a material (one per picture, shared by the forest and by trees placed by hand). */
+function pictured(url, sway, snow) {
+  if (PICTURED.has(url)) return PICTURED.get(url);
+  const ready = { ok: false }, map = new THREE.TextureLoader().load(url, () => { ready.ok = true; });
+  map.colorSpace = THREE.SRGBColorSpace; map.wrapS = THREE.ClampToEdgeWrapping; map.wrapT = THREE.RepeatWrapping; map.anisotropy = 4;
+  const p = { ready, mat: patch(new THREE.MeshLambertMaterial({ map, vertexColors: true, side: THREE.DoubleSide, alphaTest: 0.42 }), { sway, snow, upNormal: true }) }; // both sides of a bough take the light alike
+  PICTURED.set(url, p);
+  return p;
+}
+let standGeo = null;
+/** Pines placed by hand (a story's grove): the forest's own tree, dressed as the forest draws it close to.
+ *  `list` is [{ x, y, z, sc, ry }]; one draw for all of them. */
+export function standOfPines(list) {
+  const W3 = ART.world || {}, pic = W3.pine ? pictured(W3.pine, 0.0032, 0.8) : null;
+  if (!standGeo) standGeo = pic ? pineNearGeo() : pineGeo();
+  const mat = pic ? pic.mat : patch(new THREE.MeshLambertMaterial({ vertexColors: true }), { sway: 0.0032, snow: 0.8 });
+  const mesh = new THREE.InstancedMesh(standGeo, mat, list.length), m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler();
+  const ic = new Float32Array(list.length * 3);
+  list.forEach((t, i) => {
+    q.setFromEuler(e.set(0, t.ry, 0));
+    mesh.setMatrixAt(i, m4.compose(new THREE.Vector3(t.x, t.y, t.z), q, new THREE.Vector3(t.sc, t.sc, t.sc)));
+    const k = 0.85 + (i % 3) * 0.1; ic.set([k, k, k * 0.95], i * 3);
+  });
+  mesh.instanceColor = new THREE.InstancedBufferAttribute(ic, 3); mesh.instanceMatrix.needsUpdate = true;
+  mesh.castShadow = mesh.receiveShadow = true; mesh.computeBoundingSphere();
+  return mesh;
+}
+
 export function scatterVegetation(scene, world, quality) {
   const R = rng(20241);
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), s = new THREE.Vector3(), col = new THREE.Color();
@@ -165,11 +194,6 @@ export function scatterVegetation(scene, world, quality) {
   // Close to, trees wear their pictures (when the game has them); far off, and until a picture has loaded, they are
   // the plain shapes. One draw for a cell of trees either way.
   const W3 = ART.world || {}, pineFar = pineFarGeo(), birchFar = birchFarGeo(), rock = rockGeo();
-  const pictured = (url, sway, snow) => {
-    const ready = { ok: false }, map = new THREE.TextureLoader().load(url, () => { ready.ok = true; });
-    map.colorSpace = THREE.SRGBColorSpace; map.wrapS = THREE.ClampToEdgeWrapping; map.wrapT = THREE.RepeatWrapping; map.anisotropy = 4;
-    return { ready, mat: patch(new THREE.MeshLambertMaterial({ map, vertexColors: true, side: THREE.DoubleSide, alphaTest: 0.42 }), { sway, snow, upNormal: true }) }; // both sides of a bough take the light alike
-  };
   const pinePic = W3.pine ? pictured(W3.pine, 0.0032, 0.8) : null, birchPic = W3.birch ? pictured(W3.birch, 0.006, 0.7) : null;
   const pine = pinePic ? pineNearGeo() : pineGeo(), birch = birchPic ? birchNearGeo() : birchGeo();
   const pineOpt = { collide: 0.36, low: pineFar, ...(pinePic ? { lowMat: treeMat, ready: pinePic.ready } : {}) }, pineMat = pinePic ? pinePic.mat : treeMat;

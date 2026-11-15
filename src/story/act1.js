@@ -866,6 +866,7 @@ export class Act1 {
     const m = step && step.marker;
     if (!m) return null;
     if (m.dyn && this.st.stage === 'act2') return this.a2.dyn(m.dyn);
+    if (m.dyn && this.st.stage === 'ch3') return this.ch3.dyn(m.dyn);
     if (m.npc) { const n = this.npc(m.npc); return n && n.visible ? { x: n.pos.x, z: n.pos.z, y: n.pos.y + n.h.headHeight() + 0.45 } : null; }
     if (m.dyn === 'deerBody') return this.deerBody && !this.deerBody.harvested ? { x: this.deerBody.pos.x, z: this.deerBody.pos.z, y: this.deerBody.pos.y + 1.2 } : null;
     if (m.dyn === 'horse' || m.dyn === 'boat' || m.dyn === 'ship' || m.dyn === 'hound' || m.dyn === 'tooth') return this.open.dyn(m.dyn);

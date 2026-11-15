@@ -609,7 +609,7 @@ export default {
   "Next": "Lo que viene",
   "Chapter Two, “The Long White”: keep the fire, find food, and stay ahead of the men who are still looking for you.": "Capítulo II, «El largo blanco»: mantén el fuego, busca comida y ve siempre por delante de los hombres que aún te buscan.",
   "Continue to Chapter Two": "Continuar al capítulo II",
-  "Chapter Three, “A Stranger's Hearth”: fever, a farm in a hidden dale, and a girl who has found something in a fallen tree.": "Capítulo III, «El hogar de un extraño»: fiebre, una granja en un valle escondido y una chica que ha encontrado algo en un árbol caído.",
+  "Chapter Three, “A Stranger's Hearth”: fever, a village by the sea, and a girl who has found something in a fallen tree.": "Capítulo III, «El hogar de un extraño»: fiebre, una aldea junto al mar y una chica que ha encontrado algo en un árbol caído.",
   "Continue to Chapter Three": "Continuar al capítulo III",
   "Act II, “The Farmer's Axe”. Ten winters pass. Eirik is nineteen, the ravens are grown, and somebody is coming along the river road.": "Acto II, «El hacha del granjero». Pasan diez inviernos. Eirik tiene diecinueve años, los cuervos han crecido, y alguien viene por el camino del río.",
   "Continue to Act II": "Continuar al Acto II",
@@ -712,4 +712,5 @@ export default {
   "SW": "SO",
   "W": "O",
   "NW": "NO",
+  "Chapter Three, “A Stranger's Hearth”: fever, a farm in a hidden dale, and a girl who has found something in a fallen tree.": "Capítulo III, «El hogar de un extraño»: fiebre, una granja en un valle escondido y una chica que ha encontrado algo en un árbol caído.",
 };
