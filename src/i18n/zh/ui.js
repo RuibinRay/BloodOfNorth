@@ -560,7 +560,7 @@ export default {
   "Felled by": "被谁打倒",
   "Passed": "已通过",
   "While you play, the game keeps how long each step takes and how often Eirik falls there. Press F8 at any moment to write a note: it is kept with the step, the place and a picture of the screen. When you have played, download the report and send it back. Nothing leaves this computer otherwise.": "你玩的时候，游戏会记下每一步花了多久，埃里克在那里倒下了几次。随时按 F8 写一条记录：它会和当时的步骤、位置以及一张屏幕截图一起保存。玩完以后，下载报告发回来。除此之外，什么都不会离开这台电脑。",
-  "{0} chapters · {1} steps · {2} in play · {3} falls · {4} notes": "{0} 章 · {1} 步 · 游戏时间 {2} · 倒下 {3} 次 · {4} 条记录",
+  "Chapters played: {0} · steps: {1} · time in play: {2} · falls: {3} · notes: {4}": "已玩章节：{0} · 步骤：{1} · 游戏时间：{2} · 倒下：{3} · 记录：{4}",
   "Download the report": "下载报告",
   "Start a new record": "重新开始记录",
   "Where it was hard": "难关",

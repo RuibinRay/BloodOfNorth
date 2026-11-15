@@ -7,7 +7,7 @@
     // rt: seconds to notice a swing; jit: spread of timing; miss: chance a blow goes unseen; greed: chance per
     // half-second to swing at a man who is not open; parry: chance of trying a timed parry rather than holding the
     // guard early; red: chance of reading a red flash and stepping out rather than blocking; ward/arts: uses Z / 4.
-    novice: { raven: 0, rt: 0.42, rtSd: 0.1, jit: 0.16, miss: 0.22, greed: 0.35, parry: 0.3, red: 0.55, ward: 0, arts: 0, stam: 6, hazard: 0.5 },
+    novice: { raven: 0.03, rt: 0.42, rtSd: 0.1, jit: 0.16, miss: 0.22, greed: 0.35, parry: 0.3, red: 0.55, ward: 0, arts: 0, stam: 6, hazard: 0.5 },
     average: { raven: 0.08, rt: 0.3, rtSd: 0.07, jit: 0.1, miss: 0.1, greed: 0.2, parry: 0.6, red: 0.85, ward: 0.4, arts: 0, stam: 16, hazard: 0.85 },
     good: { raven: 0.2, rt: 0.22, rtSd: 0.05, jit: 0.06, miss: 0.04, greed: 0.1, parry: 0.85, red: 0.95, ward: 0.9, arts: 1, stam: 22, hazard: 1 },
   };
@@ -113,7 +113,7 @@
           const heavy = c.state === 'stagger' || (c.kind === 'shield' && !open && !(p.riposteT > 0));
           if (open || Math.random() < P.greed / 2) atk = { heavy, left: heavy ? 1 : (open ? 3 : 2), t: 0 };
         }
-        if (P.raven && g.ravens.mode === 'follow' && !(g.combat.harryCd > 0) && Math.random() < P.raven) { inp.simulate('KeyR', true); g.frame(dt, false); inp.simulate('KeyR', false); }
+        if (P.raven && !c.training && g.ravens.mode === 'follow' && !(g.combat.harryCd > 0) && Math.random() < P.raven) { inp.simulate('KeyR', true); g.frame(dt, false); inp.simulate('KeyR', false); }
         if (P.arts && p.ward >= 70 && open && dist < 3 && g.skills.has('st_smash')) { inp.simulate('Digit4', true); g.frame(dt, false); inp.simulate('Digit4', false); }
       }
       let mouse0 = false;
@@ -127,6 +127,19 @@
         if (atk && p.stamina < 8) atk = null;
       } else if (!dodge) {
         if (dist < 1.9) mvKeys.KeyS = true; else if (dist > 3.3) mvKeys.KeyW = true; else mvKeys.KeyA = true;
+      }
+      // a fight the story ends some other way (Bersi on the quarry ledge): when the champion cannot be cut down and the
+      // objective marks a spot, a player who reads the hint goes there, stops fighting and does what it says (crouch)
+      if (c.training && P.reads !== false) {
+        const tr0 = g.quests.tracked()[0], mk = tr0 ? g.story.markerFor(tr0.step) : null;
+        if (mk) {
+          const mx = mk.x - p.pos.x, mz = mk.z - p.pos.z, md = Math.hypot(mx, mz);
+          S.trick = S.trick || { t: +t.toFixed(1), minD: 1e9, crouchT: 0, windups: 0, near: 1e9 }; S.trick.minD = Math.min(S.trick.minD, +md.toFixed(1)); if (p.crouch) S.trick.crouchT += dt; S.trick.near = Math.min(S.trick.near, +e.dist(p).toFixed(1)); if (c.state === 'windup' && prevState !== 'windup') S.trick.windups++; S.trick.st = S.trick.st || {}; const sk = c.state + (e.h.action ? ':' + e.h.action.name : ''); S.trick.st[sk] = (S.trick.st[sk] || 0) + 1;
+          atk = null; block = false; plan = null;
+          if (md > 2.2) { p.cam.yaw = Math.atan2(mx, mz); mvKeys = { KeyW: true, KeyS: false, KeyA: false, KeyD: false }; if (p.crouch) { inp.simulate('KeyC', true); g.frame(dt, false); inp.simulate('KeyC', false); } }
+          else { mvKeys = { KeyW: false, KeyS: false, KeyA: false, KeyD: false }; if (!p.crouch && e.dist(p) < 6) { inp.simulate('KeyC', true); g.frame(dt, false); inp.simulate('KeyC', false); } }
+          mouse0 = false; dodge = false; ward = false;
+        }
       }
       // fire and stakes on the ground
       if (Math.random() < P.hazard) for (const h of g.combat.hazards) { const hx = p.pos.x - h.x, hz = p.pos.z - h.z, hd = Math.hypot(hx, hz); if (h.t > 0 && hd < h.r + 0.7) { const rel = Math.atan2(hx, hz) - ang; mvKeys = { KeyW: Math.cos(rel) > 0.3, KeyS: Math.cos(rel) < -0.3, KeyD: Math.sin(rel) > 0.3, KeyA: Math.sin(rel) < -0.3 }; } }

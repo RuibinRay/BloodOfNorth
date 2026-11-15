@@ -25,7 +25,9 @@ export class A6Marsh extends A4Part {
       onMark: () => { this.found[id] = true; c.sub(text, 6); q.notify('event', 'a6sign'); if (q.at('q_marsh', 'surety')) g.after(6.2, () => c.sub('He needs a tracker.', 4)); } }));
     M.archers.forEach(([x, z], i) => g.ravens.addMarkable({ id: 'a6archer' + i, pos: () => ({ x, z }), r: 40, label: 'an archer in the reeds', enabled: () => q.at('q_marsh', 'archers') && !this.seen[i],
       onMark: () => { this.seen[i] = true; const n = c.battle.foes[i]; n.crouch = false; q.notify('event', 'a6archer'); if (q.at('q_marsh', 'eydis')) c.sub('{w} spots the archers.', 4); } }));
-    g.events.on('harried', (e) => { if (e === this.eydis && this.duel && !this.duel.called) this.raven(e); });
+    // the raven ends it only once she has worn him down, or once the game has told him to call it: called at the first
+    // breath it would skip the fight (game)
+    g.events.on('harried', (e) => { const d = this.duel; if (e === this.eydis && d && !d.called && (d.hinted || (e.cb && e.cb.hp <= e.cb.maxHp * (A6.eydis.floor + 0.04)))) this.raven(e); });
     g.events.on('enemyHit', (e) => { if (e === this.eydis && this.duel && this.duel.called && !this.duel.broke) this.shaft(e); });
   }
   clear(phase) {

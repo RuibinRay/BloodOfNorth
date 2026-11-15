@@ -24,7 +24,7 @@ const expr = (id, prof) => `(async () => { for (let i = 0; i < 300 && !(window._
   const r = await __bot.fight(${JSON.stringify(prof)}); return JSON.stringify(r); })()`;
 await Promise.all(Array.from({ length: jobs }, async () => {
   for (let job; (job = queue.shift());) {
-    try { const { value } = await browser.run(base, expr(job.id, job.prof), 600000); const r = { ...job, ...JSON.parse(value) }; rows.push(r); console.log(`${job.id.padEnd(8)} ${job.prof.padEnd(8)} ${r.error || r.outcome} ${r.sec ?? ''}s hp ${r.hpLeft ?? ''} boss ${r.bossLeft ?? ''}`); }
+    try { const { value } = await browser.run(base, expr(job.id, job.prof), 600000); const r = { ...job, ...JSON.parse(value) }; rows.push(r); console.log(`${job.id.padEnd(8)} ${job.prof.padEnd(8)} ${r.error || r.outcome} ${r.sec ?? ''}s hp ${r.hpLeft ?? ''} boss ${r.bossLeft ?? ''}${r.trick ? ' trick ' + JSON.stringify(r.trick) : ''}`); }
     catch (e) { rows.push({ ...job, error: e.message }); console.log(`${job.id} ${job.prof} ERROR ${e.message}`); }
   }
 }));

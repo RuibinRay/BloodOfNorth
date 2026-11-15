@@ -560,7 +560,7 @@ export default {
   "Felled by": "Derribado por",
   "Passed": "Superado",
   "While you play, the game keeps how long each step takes and how often Eirik falls there. Press F8 at any moment to write a note: it is kept with the step, the place and a picture of the screen. When you have played, download the report and send it back. Nothing leaves this computer otherwise.": "Mientras juegas, el juego anota cuánto tarda cada paso y cuántas veces cae Eirik en él. Pulsa F8 en cualquier momento para escribir una nota: se guarda con el paso, el lugar y una imagen de la pantalla. Cuando hayas jugado, descarga el informe y envíalo. Por lo demás, nada sale de este ordenador.",
-  "{0} chapters · {1} steps · {2} in play · {3} falls · {4} notes": "{0} capítulos · {1} pasos · {2} de juego · {3} caídas · {4} notas",
+  "Chapters played: {0} · steps: {1} · time in play: {2} · falls: {3} · notes: {4}": "Capítulos jugados: {0} · pasos: {1} · tiempo de juego: {2} · caídas: {3} · notas: {4}",
   "Download the report": "Descargar el informe",
   "Start a new record": "Empezar un registro nuevo",
   "Where it was hard": "Dónde costó",
