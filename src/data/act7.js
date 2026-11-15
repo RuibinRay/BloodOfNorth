@@ -32,7 +32,7 @@ export const A7 = {
 
 const folk = (o) => ({ build: 1, hair: 0x7a5a3a, tunic: 0x6a6a5a, ...o });
 export const CAST7 = {
-  kari: { name: 'Kári', role: "Astrid's brother, seventeen", look: { build: 0.86, scale: 0.96, hair: 0x1c1c20, hairStyle: 'short', tunic: 0x5a5448, legs: 0x3a342c, sleeve: null, face: 'gaunt', scar2: 'cheek', hollow: 0.5, eyes: 0x7a8a6a, squint: 0.25, heft: 0.86 } },
+  kari: { name: 'Kári', role: "Astrid's brother, seventeen", look: { build: 0.86, scale: 0.96, hair: 0x1c1c20, hairStyle: 'short', tunic: 0x5a5448, legs: 0x3a342c, sleeve: null, face: 'gaunt', scar2: 'cheek', hollow: 0.5, eyes: 0x7a8a6a, squint: 0.25, heft: 0.86, eyeShape: 'narrow' } },
   guide: { name: 'A guide of Myrholm', role: "One of Queen Thora's", look: folk({ hair: 0x8a8070, hairStyle: 'long', tunic: 0x4a5a3a, trim: 0xc9b27a, sleeve: 0x4a5a3a, build: 0.94 }) },
 };
 

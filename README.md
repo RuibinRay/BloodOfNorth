@@ -10,6 +10,14 @@ Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, th
 (forty-one: Ravenhold twelve years on, Leif's house, the old birch), each as the story tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
+**Oars.** A ship under way (moving, or with the sea flowing past her as the story sails her) runs out her oars, one a
+side for each metre or so of her waist (about 13 a side on a big ship, two on a boat), through ports under the rail, and
+rows: a stroke every two seconds or so, the blades sweeping aft in the water and lifted clear coming forward. When she
+stops they come in. They are built the first time a ship moves, so the hundred moored ships cost nothing, and each
+ship's oars are one mesh rowed in the vertex shader. Her steering oar is now a piece of its own and swings as she
+turns. A ship that is put somewhere else by the story is not counted as sailing. Not done: nobody sits at the oars,
+and the shields stay on the rail while she rows.
+
 **On a phone.** The game needs a keyboard and mouse, or a gamepad. A phone or tablet that has only a touch screen
 (no fine pointer: a tablet with a trackpad or mouse does not count) now sees a notice over the title saying so, with
 the address to open on a computer, a "Share the link" button (the phone's own share sheet, or a copy) and "Look around
@@ -82,7 +90,7 @@ with a jaw, a chin, cheekbones, the ridge of the brow and sockets for the eyes, 
 hooked, snub, broad, broken, button, long) and ears; eyes with an iris and pupil that turn to look and glance aside,
 upper lids that blink and close, lower lids and lashes; brows shaped and thick or thin; lips on a jaw that drops when
 they speak, so the chin and the beard move with the words and the teeth show; rosy cheeks, freckles, lines of age,
-soot and mud. **Hair** in nineteen styles (cropped, short, tousled, swept back, to the shoulder, long, a mane, long with
+soot and mud; eyes round, narrow, hooded, deep-set, lifted or drooping at the corners, and mouths with a cupid's bow, a full lower lip, a crooked corner, or corners turned up or down. **Hair** in nineteen styles (cropped, short, tousled, swept back, to the shoulder, long, a mane, long with
 braids at the temples, tied back, one braid down the back or over the shoulder, two braids, a bun high or low, a
 topknot, balding, shaved, bald), lying in locks, hanging hair that swings with the body and not the head, and grey that
 comes in streaks and at the temples first; **beards** as stubble, short, full, long, to the belt, forked, braided or on

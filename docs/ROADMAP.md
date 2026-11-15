@@ -90,8 +90,11 @@ Known gaps:
   wind, and long hair can pass through a raised arm or a cloak's collar.
 - **Long beards and braids lying on the chest bend between the head and the chest**: with the head turned far they
   kink at the neck.
-- **Faces share one set of eyes and lips**, varied by size, spacing, colour, lids and brows; there are no sculpted
-  likenesses. Unnamed folk, raiders and the rank and file keep the default face (the rank and file their own simpler one).
+- **Eyes and mouths have shapes now, not likenesses**: on top of size, spacing, colour, lids and brows, an eye can be
+  round, narrow, hooded, deep-set, or lifted or drooping at the outer corner, and a mouth can have a cupid's bow, a
+  full lower lip, a crooked corner, or corners that turn up or down at rest (`eyeShape`, `mouthShape`, `corners`), set
+  for about thirty people from what their portraits say of their eyes and mouths. Eirik's Appearance page does not offer
+  them yet. Unnamed folk, raiders and the rank and file keep the default face (the rank and file their own simpler one).
 - **A portrait and the story disagree in two places, left as the portraits have it**: Liv's eyes are her father's blue
   (the story gives her her mother's), and Håkon in Act VII keeps his black hair streaked with grey, not the grey
   hair and long beard his look had before.

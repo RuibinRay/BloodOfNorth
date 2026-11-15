@@ -18,6 +18,10 @@
 //   ears       small | big | out        eyeSize, eyeSet (how far apart), eyes (colour), blind (milky eyes)
 //   brows      thickness, about 1 (0.7 thin, 1.4 heavy)   browArch: how high they curve
 //   lips       thin | full                mouth: width, about 1
+//   eyeShape   round | narrow | hooded | deep | up | down   (wide open, narrowed, a fold of skin over the lid, set deep
+//              under the brow, the outer corners lifted, the outer corners drooping); almond, the default, says nothing
+//   mouthShape bow | pout | crooked     (a cupid's bow, a full lower lip, one corner higher)   corners: -1..1, the mouth
+//              turned down or up when the face is at rest
 //   age        0..1, lines in the face    rosy: 0..1 cheeks   freckles: 0..1   soot, mud: 0..1 (smears on the face)
 //   hairStyle  see HAIR below            fringe: 0..1 (hair over the brow)   recede: 0..1 (a receding hairline)
 //   part       center | side            grey: 0..1 (grey through hair and beard)   temples: 0..1 (grey at the temples)
@@ -31,6 +35,10 @@ import { clamp, smoothstep, lerp, noise2 } from '../core/util.js';
 import { at } from '../world/geo.js';
 
 const HC = 0.138, R0 = 0.112, DEG = Math.PI / 180; // the middle of the skull, above the joint
+/** Eye shapes: sq lids lower (+) or higher (-) at rest; low the lower lid lower (+) or higher (-); tilt the outer corners up (+);
+ *  deep set back under the brow; hood a fold of skin over the upper lid. */
+const EYES = { almond: {}, round: { sq: -0.28, low: 0.14 }, narrow: { sq: 0.38, low: -0.13 }, hooded: { sq: 0.14, hood: 1 }, deep: { sq: 0.16, deep: 0.0048 },
+  up: { tilt: 0.26, sq: 0.04 }, down: { tilt: -0.24, sq: 0.1 } };
 const G = (v, m, w) => Math.exp(-(((v - m) / w) ** 2));
 const lin = (hex) => { const c = new THREE.Color(hex); return [c.r, c.g, c.b]; };
 const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
@@ -465,16 +473,23 @@ function moustache(s, kind, beardC, grey, temples, Ym, hw) {
 function buildFace(h, L, s, face, grp, o) {
   const j = h.j, f = (h.face = grp(j.head, 0, 0, 0)), { skin, hairC, grey, Ym, hw, age } = o;
   const re = 0.0128 * (L.eyeSize || 1) * (L.child ? 1.12 : 1), exr = s.ex * s.W, ey = HC + s.ey * s.H;
-  const zc = surfZ(s, exr, ey) + 0.1 * s.D * 0.98 - re * 1.04;
+  const E = EYES[L.eyeShape] || EYES.almond;
+  const zc = surfZ(s, exr, ey) + 0.1 * s.D * 0.98 - re * 1.04 - (E.deep || 0);
+  h.eyeSq = E.sq || 0; // how low the lids sit, read by updateFace
+  const tilt = (g, cx, cy, sx) => { if (E.tilt) { g.translate(-cx, -cy, 0); g.rotateZ(sx * E.tilt); g.translate(cx, cy, 0); } return g; }; // lift (or drop) the outer corner
   const still = [], ink = lin(L.eyes);
   // the whites of the eyes, and the lower lids
   for (const sx of [1, -1]) {
     const w = new THREE.SphereGeometry(re, 12, 8), P = w.attributes.position, col = new Float32Array(P.count * 3), white = lin(L.blind ? 0xd8d6d0 : 0xe9e3d6);
     for (let i = 0; i < P.count; i++) { const z = P.getZ(i) / re, x = (P.getX(i) / re) * sx; col.set(mix(mul(white, 0.78 + 0.22 * z), lin(0xd09a90), 0.25 * smoothstep(0.2, 0.9, -x) * (1 - z)), i * 3); }
     w.setAttribute('color', new THREE.BufferAttribute(col, 3)); still.push(w.translate(sx * exr, ey, zc));
-    const low = grid(10, 2, (i, k) => { const a = Math.PI / 2 - 1.3 + (2.6 * i) / 10, t = 1.9 + 0.36 * k, r = re * 1.1; return [sx * exr - r * Math.cos(a) * Math.sin(t), ey + r * Math.cos(t), zc + r * Math.sin(a) * Math.sin(t)]; },
+    const low = grid(10, 2, (i, k) => { const a = Math.PI / 2 - 1.3 + (2.6 * i) / 10, t = 1.9 + (E.low || 0) + 0.36 * k, r = re * 1.1; return [sx * exr - r * Math.cos(a) * Math.sin(t), ey + r * Math.cos(t), zc + r * Math.sin(a) * Math.sin(t)]; },
       (i, k) => (k === 0 ? mul(skin, 0.62) : mul(skin, 0.92)));
-    still.push(low);
+    still.push(tilt(low, sx * exr, ey, sx));
+    if (E.hood) still.push(grid(10, 2, (i, k) => { // a fold of skin from the brow bone over the upper lid, lowest at the outer corner
+      const a = Math.PI / 2 - 1.25 + (2.5 * i) / 10, outer = sx > 0 ? i / 10 : 1 - i / 10, t = [0.55, 0.95, 1.18 + 0.12 * outer][k], r = re * (1.24 - 0.04 * k);
+      return [sx * exr - r * Math.cos(a) * Math.sin(t), ey + r * Math.cos(t), zc + r * Math.sin(a) * Math.sin(t)];
+    }, (i, k) => mul(skin, k === 2 ? 0.74 : 0.92)));
   }
   // scars, lines of age, freckles: thin strokes on the skin
   const scar = (pts, col) => still.push(stroke(s, pts.map(([x, y]) => [x, y - 0.1665 + ey]), 0.0036, col)); // drawn about the eyes where they were first placed
@@ -516,12 +531,12 @@ function buildFace(h, L, s, face, grp, o) {
   const lash = lin(L.child ? 0x2a1e18 : 0x1a1410), lashLen = L.female ? 1.3 : L.child ? 1.2 : 1.12, lids = [];
   for (const sx of [1, -1]) {
     const r = re * 1.14, cx = sx * exr;
-    lids.push(grid(12, 5, (i, k) => { const a = Math.PI / 2 - 1.3 + (2.6 * i) / 12, t = (1.78 * k) / 5; return [cx - r * Math.cos(a) * Math.sin(t), r * Math.cos(t), r * Math.sin(a) * Math.sin(t)]; },
-      (i, k) => (k === 5 ? lash : k === 4 ? mul(skin, 0.8) : mul(skin, 0.92 - 0.04 * age))));
-    lids.push(grid(12, 1, (i, k) => { // the lashes, longest at the outer corner
+    lids.push(tilt(grid(12, 5, (i, k) => { const a = Math.PI / 2 - 1.3 + (2.6 * i) / 12, t = (1.78 * k) / 5; return [cx - r * Math.cos(a) * Math.sin(t), r * Math.cos(t), r * Math.sin(a) * Math.sin(t)]; },
+      (i, k) => (k === 5 ? lash : k === 4 ? mul(skin, 0.8) : mul(skin, 0.92 - 0.04 * age))), cx, 0, sx));
+    lids.push(tilt(grid(12, 1, (i, k) => { // the lashes, longest at the outer corner
       const a = Math.PI / 2 - 1.3 + (2.6 * i) / 12, outer = sx > 0 ? i / 12 : 1 - i / 12, rr = k ? r * (lashLen + 0.1 * outer * (lashLen - 1) * 4) : r, t = k ? 1.62 : 1.78;
       return [cx - rr * Math.cos(a) * Math.sin(t), rr * Math.cos(t), rr * Math.sin(a) * Math.sin(t)];
-    }, () => lash));
+    }, () => lash), cx, 0, sx));
   }
   face(h.fLid, lids);
   // brows, each on its own joint so it can tilt and rise
@@ -538,19 +553,23 @@ function buildFace(h, L, s, face, grp, o) {
   }
   // the mouth: lips in two halves (each bends toward its own corner), the dark inside, the upper teeth
   const lipC = mix(skin, lin(L.female ? 0xb04a4a : 0x9a5048), L.female ? 0.66 : L.child ? 0.55 : 0.5);
-  const full = L.lips === 'thin' ? 0.62 : L.lips === 'full' ? 1.3 : 1, upH = 0.0042 * full * (L.female ? 1.12 : 1), loH = 0.0058 * full * (L.female ? 1.12 : 1);
+  const ms = L.mouthShape, full = L.lips === 'thin' ? 0.62 : L.lips === 'full' ? 1.3 : 1;
+  const upH = 0.0042 * full * (L.female ? 1.12 : 1) * (ms === 'pout' ? 0.85 : 1), loH = 0.0058 * full * (L.female ? 1.12 : 1) * (ms === 'pout' ? 1.55 : 1);
+  // the mouth at rest: its corners turned up or down (one of them, crooked), and a cupid's bow in the top of the upper lip
+  const cn = L.corners || 0, rest = (x) => { const side = ms === 'crooked' ? (x > 0 ? 2.4 : 0) : 1; return 0.0034 * (cn + (ms === 'crooked' ? 0.35 : 0)) * side * (x / hw) ** 2; };
+  const bow = (xl) => (ms === 'bow' ? 0.0013 * (G(xl, 0.0058, 0.0032) - 0.85 * G(xl, 0, 0.0022)) : 0);
   const lip = (sx, upper) => {
     const g = grid(4, 2, (i, r) => {
       const xl = (hw * i) / 4, prof = 0.35 + 0.65 * (1 - (xl / hw) ** 2), x = sx * xl;
-      const y = upper ? [Ym + 0.0003, Ym + upH * prof * 0.5, Ym + upH * prof][r] : [Ym - 0.0002, Ym - loH * prof * 0.5, Ym - loH * prof][r];
-      const dz = [0.0032 * prof + 0.001, (upper ? 0.0042 : 0.005) * prof + 0.001, 0.0008][r];
+      const y = (upper ? [Ym + 0.0003, Ym + upH * prof * 0.5, Ym + upH * prof + bow(xl)][r] : [Ym - 0.0002, Ym - loH * prof * 0.5, Ym - loH * prof][r]) + rest(x);
+      const dz = [0.0032 * prof + 0.001, (upper ? 0.0042 : 0.005 * (ms === 'pout' ? 1.7 : 1)) * prof + 0.001, 0.0008][r];
       return [x, y, surfZ(s, x, y) + dz];
     }, (i, r) => mul(lipC, r === 1 ? 1.1 : r === 0 ? 0.6 : 0.95));
     return blend(g, sx > 0 ? h.fCornL : h.fCornR, (p) => smoothstep(0.45 * hw, hw, Math.abs(p[0])));
   };
   face(f, [lip(1, true), lip(-1, true)]);
   face(j.jaw, [lip(1, false), lip(-1, false)]);
-  const inside = grid(6, 2, (i, r) => { const x = -0.85 * hw + (1.7 * hw * i) / 6, y = Ym + 0.0006 - 0.0006 * r; return [x, y, surfZ(s, x, y) + 0.0016]; }, () => lin(0x1c0c0a));
+  const inside = grid(6, 2, (i, r) => { const x = -0.85 * hw + (1.7 * hw * i) / 6, y = Ym + 0.0006 - 0.0006 * r + rest(x); return [x, y, surfZ(s, x, y) + 0.0016]; }, () => lin(0x1c0c0a));
   const teeth = grid(4, 1, (i, r) => { const x = -0.7 * hw + (1.4 * hw * i) / 4, y = Ym + 0.0004 - 0.0042 * r; return [x, y, surfZ(s, x, y) + 0.0022]; }, (i, r) => lin(r ? 0xc8c0ae : 0xdcd5c4));
   face(f, [blend(inside, j.jaw, (p) => smoothstep(Ym + 0.0006, Ym - 0.0006, p[1])), teeth]);
 }

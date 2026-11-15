@@ -20,9 +20,9 @@ export const A5 = {
 
 const folk = (o) => ({ build: 1, hair: 0x7a5a3a, tunic: 0x6a6a5a, ...o });
 export const CAST5 = {
-  svanhild: { name: 'Svanhild', role: "Captain of Jarl Jorund's household guard", look: { female: true, build: 1.05, scale: 1.03, hair: 0xd8c890, hairStyle: 'braidfront', tunic: 0x3a4a5a, trim: 0xc9c2b0, sleeve: 0x3a4a5a, face: 'long', scar2: 'brow', braidSide: -1, jaw: 0.85, cheek: 0.55, noseSize: 1.05, brows: 0.8 } },
-  jorund: { name: 'Jarl Jorund', role: 'Ruler of Vængr, the Wing Isle', look: { build: 0.95, hair: 0x6a6258, hairStyle: 'short', beard: 'stubble', tunic: 0x3a3a4a, trim: 0x8a8a90, cloak: 0x2a2a34, sleeve: 0x3a3a4a, face: 'gaunt', recede: 0.3, squint: 0.45, heft: 0.92 } },
-  thrand: { name: 'Old Thrand', role: "Once of King Halfdan's guard", look: { build: 0.9, scale: 0.94, hair: 0xe0dcd4, hairStyle: 'long', beard: 'long', tunic: 0x5a5448, cloak: 0x4a463c, sleeve: 0x5a5448, eyes: 0xb8bcc0, face: 'gaunt', blind: true, age: 1, squint: 0.4, stoop: 0.85, heft: 0.88 } },
+  svanhild: { name: 'Svanhild', role: "Captain of Jarl Jorund's household guard", look: { female: true, build: 1.05, scale: 1.03, hair: 0xd8c890, hairStyle: 'braidfront', tunic: 0x3a4a5a, trim: 0xc9c2b0, sleeve: 0x3a4a5a, face: 'long', scar2: 'brow', braidSide: -1, jaw: 0.85, cheek: 0.55, noseSize: 1.05, brows: 0.8, eyeShape: 'up', mouthShape: 'bow' } },
+  jorund: { name: 'Jarl Jorund', role: 'Ruler of Vængr, the Wing Isle', look: { build: 0.95, hair: 0x6a6258, hairStyle: 'short', beard: 'stubble', tunic: 0x3a3a4a, trim: 0x8a8a90, cloak: 0x2a2a34, sleeve: 0x3a3a4a, face: 'gaunt', recede: 0.3, squint: 0.45, heft: 0.92, eyeShape: 'narrow', corners: -0.3 } },
+  thrand: { name: 'Old Thrand', role: "Once of King Halfdan's guard", look: { build: 0.9, scale: 0.94, hair: 0xe0dcd4, hairStyle: 'long', beard: 'long', tunic: 0x5a5448, cloak: 0x4a463c, sleeve: 0x5a5448, eyes: 0xb8bcc0, face: 'gaunt', blind: true, age: 1, squint: 0.4, stoop: 0.85, heft: 0.88, eyeShape: 'deep' } },
   ottar: { name: 'Ottar', role: "Håkon's falconer", look: folk({ hair: 0x3a2e24, hairStyle: 'tail', beard: 'stubble', tunic: 0x4a3e2e, trim: 0x16161a, sleeve: 0x4a3e2e, build: 0.98, squint: 0.3, face: 'lean' }) },
   frogman: { name: 'A traveling merchant', role: 'Seller of cures', look: folk({ hair: 0x2e2620, hairStyle: 'long', beard: 'short', tunic: 0x7a3a5a, trim: 0xc9a24a, cloak: 0x3a5a4a, build: 0.92 }) },
   farmer: { name: 'A neighboring farmer', role: 'It beached on his shore', look: folk({ build: 1.15, hair: 0x8a3a1c, beard: 'long', tunic: 0x5a5a3a }) },
