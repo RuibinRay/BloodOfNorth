@@ -60,8 +60,9 @@ quarters, standing, walking and in ten poses; `npm run check` passes.
 
 Known gaps:
 - **Judged from still pictures**: no one has watched the fingers close, a skirt swing or a cloak sway in play.
-- **The shoulder does not blend into the chest**: the deltoid is part of the arm, so with an arm raised high the top
-  of the torso shows a corner under it.
+- **The shoulder blends into the chest** (added after): the top of the torso goes up to halfway with each arm, most
+  at the outer corner, so a raised arm no longer leaves a corner of the chest under it. It is a plain blend: with an
+  arm all the way up the shoulder thins a little.
 - **Long hair, cloaks and arms can still pass through each other**, and a cloak hangs straight down when he sits.
 - **The wind** (added after the bodies): hair that hangs down the back, cloaks and skirts are moved by the weather's
   wind (`shared.uWind`, the same strength that moves the trees and the flags), always from one direction (toward +x, as the snow drifts), in gusts with a
