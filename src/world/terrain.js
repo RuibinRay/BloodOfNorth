@@ -275,7 +275,7 @@ export function buildTerrain(scene) {
     normalMap: TEX.waterN, normalScale: new THREE.Vector2(0.42, 0.42), envMapIntensity: 1.3,
   }));
   TEX.waterN.repeat.set(580, 580);
-  const seaDef = { depth: seaDepth(), box: new THREE.Vector4(DEPTH.x0, DEPTH.z0, DEPTH.w, DEPTH.w), calm: new THREE.Vector3(0, 600, 800), swell: { value: 0.65 } };
+  const seaDef = { depth: seaDepth(), box: new THREE.Vector4(DEPTH.x0, DEPTH.z0, DEPTH.w, DEPTH.w), calm: new THREE.Vector3(0, 600, 800), swell: { value: 1 } };
   const seaMat = waterPatch(new THREE.MeshStandardMaterial({
     color: 0x1f4254, roughness: 0.08, metalness: 0.5, transparent: true, opacity: 1,
     normalMap: TEX.waterA, normalScale: new THREE.Vector2(0.8, 0.8), envMapIntensity: 1.35,
@@ -306,7 +306,7 @@ export function buildTerrain(scene) {
   scene.add(river);
 
   return {
-    mesh, sea, river, albedoCanvas: albedo.canvas, swell: seaDef.swell, seaFloor: seaDef.depth,
+    mesh, sea, river, albedoCanvas: albedo.canvas, swell: seaDef.swell, seaFloor: seaDef.depth, seaInfo: seaDef,
     iced: false,
     /** Freeze or thaw the river surface (Chapter 2). */
     setIce(on) {

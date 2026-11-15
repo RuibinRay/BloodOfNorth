@@ -10,6 +10,7 @@ import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { loadSettings, saveSettings, hasSettings, writeSave, readSave } from './core/save.js';
 import { initMaterials, shared, cullHazed } from './world/geo.js';
 import { World } from './world/world.js';
+import { rideSwell, settle } from './world/float.js';
 import { Sky } from './world/sky.js';
 import { FX } from './world/fx.js';
 import { Player } from './entities/player.js';
@@ -178,6 +179,7 @@ class Game {
   /** Put the frame on the screen: through the glow pass when it is on. */
   draw() {
     this.renderer.info.reset();
+    rideSwell(this, this.frameDt || 1 / 60); // ships, and those aboard, ride the swell for this picture only (float.js)
     this.world.veg.update(this.camera, this.scene.fog.density); // only the trees, rocks and grass worth drawing from here
     cullHazed(this.camera, this.scene.fog.density);             // and no far island or far town the haze has taken
     if (this.settings.bloom !== false && this.settings.quality !== 'low' && this.composer) {
@@ -185,6 +187,7 @@ class Game {
       this.bloom.threshold = dark ? 0.9 : 1.6; this.bloom.strength = dark ? 0.7 : 0.4;
       this.composer.render();
     } else this.renderer.render(this.scene, this.camera);
+    settle();
     this.drawn.calls = this.renderer.info.render.calls; this.drawn.tris = this.renderer.info.render.triangles;
   }
   resize() {
@@ -304,6 +307,7 @@ class Game {
   }
   /** Advance the whole game by `real` seconds. Also driven directly by the test harness. */
   frame(real, render = true) {
+    this.frameDt = real;
     const inp = this.input, m = this.mode, run = RUNNING.has(m);
     let scale = 1; // a landed blow holds the world for an instant; a finishing blow slows it
     if (this.hitStop > 0) { this.hitStop -= real; scale = 0.04; } else if (this.slowT > 0) { this.slowT -= real; scale = 0.3; }

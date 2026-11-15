@@ -10,6 +10,15 @@ Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, th
 (forty-one: Ravenhold twelve years on, Leif's house, the old birch), each as the story tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
+**Ships ride the swell.** Every ship afloat is lifted, pitched and rolled the way the water under her bow, stern and
+sides is moving (the same waves the sea is drawn with), and so is everyone standing on her deck: crew, foes and Eirik.
+It is done in the picture only, just before each frame is drawn and undone straight after ([src/world/float.js](src/world/float.js)),
+so walking a deck, fighting on one and the story sailing a ship are as they were. Beached, wrecked and sunk hulls are
+left as they lie; ships in the home fjord and the harbours barely move, as the water there barely does. With the ships
+moving, the swell is back to its full height (it had been held to two thirds while they sat still). Out at sea a ship
+now rises up to about 0.4 m and pitches and rolls a few degrees. Things set loose on a deck that are not people (fire
+pots, chests) stay level. It costs about 0.13 ms a frame with 24 ships out.
+
 **Full screen, the mouse after a conversation, and the mountains.**
 - **Full screen**: F10 (it can be rebound in Settings → Controls), a button beside the languages on the title screen, "Full screen" in the pause menu and a switch in Settings → Graphics. It is not saved: a browser fills the screen only when a click or a key asks it to.
 - **The mouse comes back by itself**: when a conversation, a menu or a cutscene hands control back, the game takes the pointer again at once, with no click. (Tested in Chrome. Should a browser refuse, the next click takes it as before, and that click is not swung as a blow.)

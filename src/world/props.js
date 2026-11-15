@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { M, Builder, at, box, cyl, cone, sphere, tri, tint, shieldGeo, doorLeaf, rope, bannerGeo } from './geo.js';
 import { heightAt } from './terrain.js';
 import { rng } from '../core/util.js';
+import { floats } from './float.js';
 
 /** Local (lx, lz) on an object at (x, z) rotated ry -> world [x, z]. */
 export function toWorld(x, z, ry, lx, lz) {
@@ -331,5 +332,5 @@ export function makeShip({ L = 21, B = 4.4, D = 1.55, rise = 2.5, sail = true, s
   }
   const grp = b.build();
   grp.userData.deckY = D * 0.42 + 0.06; grp.userData.yardY = D * 0.42 + mast - 0.9;
-  return grp;
+  return floats(grp, L, B); // she rides the swell (float.js)
 }
