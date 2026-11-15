@@ -275,7 +275,10 @@ export class Cine {
    *  the edge of the frame. Returns false when there is no clear place for the camera (the caller keeps what it has). */
   speakerShot(who, listener, blend = 0.3, wide = false) { // wide: a medium shot, for the opening of a scene told rather than spoken
     const g = this.game, w = g.world, hh = who.h.headHeight(), hx = who.pos.x, hz = who.pos.z, hy = who.pos.y + hh;
-    const yaw = who.yaw ?? who.root.rotation.y, fx = Math.sin(yaw), fz = Math.cos(yaw);
+    // which way the speaker faces: toward the one listening, where they are turning (Eirik turns to whoever he talks to
+    // over a moment, so at the first line his own facing may still be away); with no one listening, their own facing
+    const ly = listener && Math.hypot(listener.pos.x - hx, listener.pos.z - hz) > 0.3 ? Math.atan2(listener.pos.x - hx, listener.pos.z - hz) : null;
+    const yaw = ly ?? who.yaw ?? who.root.rotation.y, fx = Math.sin(yaw), fz = Math.cos(yaw);
     // which side: the listener's, just past their shoulder, so the speaker looks almost into the lens
     let pref = 1;
     if (listener) { const lx = listener.pos.x - hx, lz = listener.pos.z - hz; pref = (lx * fz - lz * fx) > 0 ? 1 : -1; }
