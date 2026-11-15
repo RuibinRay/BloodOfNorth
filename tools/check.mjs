@@ -8,16 +8,17 @@
 //   2. counts what five heavy scenes ask the machine to draw (draw calls and triangles: exact numbers, the same on any
 //      machine) against a budget, so a change that makes the game heavier is noticed;
 //   3. plays one fight with two companions and calls both their skills;
-//   4. plays the shield walls through (Iron Shore, and both pushes on the Black Shore) with a scripted player who
-//      stands in the line, braces when their horn sounds and sounds his own when they reel, and once with one who
-//      does nothing; each must end as it was recorded (held, broken, lost) and the story must go on from it;
+//   4. plays the shield walls through (Iron Shore, and both pushes on the Black Shore): once each by a scripted
+//      player who fights with his own health (an average player: he braces, cuts at their rank, fights the men who
+//      come through and shields himself from arrows; he must not die), once each by one kept alive who only braces,
+//      and once by one who does nothing; each must end as it was recorded and the story must go on from it.
 //   5. the languages: every string has its 中文 and Español (tools/i18n.mjs), and Act I, the opening of every other
 //      act and the open world, played in both, show nothing in English that should not be (strings with no entry,
 //      and, in Chinese, Latin words left on the screen).
 //
 //   npm run check                 everything (a few minutes)
 //   npm run check -- --quick      each act's opening chapter, the scenes and the fight (under a minute)
-//   npm run check -- --walls      only the shield walls (about three minutes)
+//   npm run check -- --walls      only the shield walls (about five minutes)
 //   npm run check -- --only=q_shore,q_iron
 //   npm run check -- --update     record what is found as the new known-good (tools/check/expected.json)
 //   npm run check -- --jobs=3     pages at once (default 2)
@@ -42,7 +43,8 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..'), expectedPath =
 const args = process.argv.slice(2), flag = (n) => args.includes('--' + n), opt = (n, d) => { const a = args.find((x) => x.startsWith('--' + n + '=')); return a ? a.slice(n.length + 3) : d; };
 const langsOnly = args.some((a) => a === '--langs' || a.startsWith('--langs=')), langSpec = opt('langs', '');
 const update = flag('update'), quick = flag('quick'), wallsOnly = flag('walls') || langsOnly, only = opt('only', ''), jobs = Math.max(1, +opt('jobs', 2));
-const WALLS = [['q_shore', 'wall', 'brace', 'Iron Shore, braced'], ['q_blackshore', 'town', 'brace', 'the Black Shore, the harbor town, braced'], ['q_blackshore', 'road', 'brace', 'the Black Shore, the road, braced'], ['q_blackshore', 'town', 'idle', 'the Black Shore, the harbor town, doing nothing']];
+// how: brace / idle play the wall with Eirik kept alive (wall()); fight:<level> plays it with his real health, fighting (wallFight())
+const WALLS = [['q_shore', 'wall', 'fight:average', 'Iron Shore, fought by an average player'], ['q_blackshore', 'town', 'fight:average', 'the Black Shore, the harbor town, fought'], ['q_blackshore', 'road', 'fight:average', 'the Black Shore, the road, fought'], ['q_shore', 'wall', 'brace', 'Iron Shore, braced'], ['q_blackshore', 'town', 'brace', 'the Black Shore, the harbor town, braced'], ['q_blackshore', 'road', 'brace', 'the Black Shore, the road, braced'], ['q_blackshore', 'town', 'idle', 'the Black Shore, the harbor town, doing nothing']];
 const SCENES = ['hrafnvik', 'open world farm', 'iron shore gate', 'black shore battle', 'fleet at sea'];
 const title = (id) => { for (const a of ACTS) { const i = a.quests.indexOf(id); if (i >= 0) return `${a.title.split(' · ')[0]} · ${i + 1}`; } return id; };
 
@@ -139,12 +141,13 @@ try {
     await pool(WALLS, async ([q, st, how, name]) => {
       const key = `${q}.${st}.${how}`;
       try {
-        const { value } = await browser.run(base, inPage(`wall(${JSON.stringify(q)}, ${JSON.stringify(st)}, ${JSON.stringify(how)})`), 420000), r = JSON.parse(value), want = expected.walls && expected.walls[key], L = r.last || {};
+        const fight = how.startsWith('fight:'), call = fight ? `wallFight(${JSON.stringify(q)}, ${JSON.stringify(st)}, ${JSON.stringify(how.slice(6))})` : `wall(${JSON.stringify(q)}, ${JSON.stringify(st)}, ${JSON.stringify(how)})`;
+        const { value } = await browser.run(base, inPage(call), 600000), r = JSON.parse(value), want = expected.walls && expected.walls[key], L = r.last || r.info || {};
         wallFound[key] = { over: r.over, to: r.to };
         const bad = [...(r.crash ? ['crashed: ' + r.crash] : []), ...(r.errs && r.errs.length ? ['threw: ' + r.errs.join(' ; ')] : []), ...(r.over === 'no wall' ? ['no wall ever formed'] : []),
-          ...(how !== 'idle' && r.reloads ? ['asked for a checkpoint reload'] : []), ...(!update && want && r.over !== want.over ? [`ended "${r.over}", was "${want.over}"`] : []), ...(!update && want && r.to !== want.to ? [`the story stands at ${r.to}, was ${want.to}`] : []),
+          ...(how !== 'idle' && r.reloads ? ['asked for a checkpoint reload'] : []), ...(fight && r.over === 'died' ? ['he died'] : []), ...(!update && want && r.over !== want.over ? [`ended "${r.over}", was "${want.over}"`] : []), ...(!update && want && r.to !== want.to ? [`the story stands at ${r.to}, was ${want.to}`] : []),
           ...(!update && !want ? ['nothing recorded for it yet: run with --update'] : [])];
-        const line = `${name}: ${r.over} in ${r.seconds} s after ${L.surges} rushes and ${L.pushes} pushes, ${L.mean} m of ground, ${L.ours} of ${L.start && L.start[0]} left against ${L.theirs} of ${L.start && L.start[1]}; he lost ${r.hurt} health; the story stands at ${r.to}`;
+        const line = `${name}: ${r.over} in ${r.seconds} s after ${L.surges} rushes and ${L.pushes} pushes, ${L.mean} m of ground, ${L.ours} of ${L.start && L.start[0]} left against ${L.theirs} of ${L.start && L.start[1]}; ${fight ? `he ended on ${r.left} health and cut down ${r.felled} of their men` : `he lost ${r.hurt} health`}; the story stands at ${r.to}`;
         bad.length ? fail(`${name}: ${bad.join(' · ')}`) : ok(line);
       } catch (e) { fail(`${name}: ${e.message}`); }
     });

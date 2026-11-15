@@ -509,6 +509,18 @@
   "q_blackshore.town.idle": {
    "over": "lost",
    "to": "q_blackshore.town"
+  },
+  "q_blackshore.town.fight:average": {
+   "over": "broke",
+   "to": "q_blackshore.back1"
+  },
+  "q_shore.wall.fight:average": {
+   "over": "held",
+   "to": "q_shore.gate"
+  },
+  "q_blackshore.road.fight:average": {
+   "over": "broke",
+   "to": "q_blackshore.back2"
   }
  }
 }
