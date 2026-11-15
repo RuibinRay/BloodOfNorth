@@ -9,7 +9,7 @@ export const SECRETS = {
   barrow: { name: 'The Sword in the Barrow', returns: 'Act III', weapon: "Grave-Song — a barrow-king's sword, given, not taken" },
   icespear: { name: 'The Spear in the Ice', returns: 'Act IV', weapon: "Winter's Tooth — a spear from the tarn that never thaws" },
   twinaxe: { name: 'The Twin-Axe Stone', returns: 'Act IV', weapon: 'The Brothers — paired axes on an island shaped like a wing' },
-  skyiron: { name: 'Sky-Iron', returns: 'Act V', weapon: 'Star-Fall — a war hammer forged from a fallen star' },
+  skyiron: { name: 'The Falling Star', returns: 'Act VI', weapon: 'Star-Fall — the hammer Halvar forges from it when it comes down on Skalløy' },
 };
 
 Object.assign(CAST, {
@@ -148,10 +148,6 @@ Object.assign(DIALOGUE, {
     { s: 'The Barrow', t: 'A hilt, black with age, stands out of the stones on top of the mound. You pull until your arms shake. It does not move. Not for a boy.' },
     { s: E, t: 'Somebody is buried with a sword in his hand. One day I will be strong enough to ask him for it.' },
   ],
-  sec_skyiron: [
-    { s: 'Sky-Iron', t: 'The stone Bjorn props the barn door with is black, pitted, and far too heavy for its size. Snow will not settle on it.' },
-    { s: 'Sky-Iron', t: 'It fell burning the year Freydis was born, he says. No smith in the dale could make it take a shape. "Not yet," he says, and laughs.' },
-  ],
   sec_twinaxe: [
     { s: 'The Twin-Axe Stone', t: "Two axes, crossed, cut deep into the stone. Beneath them an island shaped like a raven's wing, and a single star." },
     { s: E, t: 'It is a map. To somewhere across the sea. Two axes. Two brothers?' },
@@ -177,7 +173,7 @@ Object.assign(HINTS, {
   farmchop: "Press {interact} at Bjorn's chopping block.",
   hideaxe: 'When the house is asleep, press {interact} at the door of the longhouse.',
   stick: 'Bjorn feints high. Raise the little shield with {block} when the blow comes.',
-  explore: 'There are old things around Bjornstead. Wander: the mound to the north-east, the barn door, the stone in the north meadow, the tarn in the woods to the north-west.',
+  explore: 'There are old things around Bjornstead. Wander: the mound to the north-east, the stone in the north meadow, the tarn in the woods to the north-west.',
   raven: "Press {raven} to see through the white raven's eyes. {forward} faster, {back} slower, {left}{right} or the mouse to turn, {dodge} to climb, {crouch} to dive. Press {interact} to mark what she sees, {raven} to come back.",
   ravenfree: 'Press {raven} at any time to send the white raven up. From the air she can find things you would never see from the ground.',
 });

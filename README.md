@@ -10,6 +10,32 @@ Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, th
 (forty-one: Ravenhold twelve years on, Leif's house, the old birch), each as the story tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
+**The islands and coasts filled in.** The great islands and the mainland coasts were bare grass slopes. Now:
+- **Ground cover everywhere**: the valley's painted tufts (grass, grass in seed, flowers, fern, heather, reeds) on every
+  island of the chart, every great island and every stretch of mainland, a little thinner than the valley's and chosen
+  by place the same way (reeds by the water, more on the marsh island, heather up the hills, ferns where the island's
+  woods are, flowers in patches of open grass). They keep off roads, yards and buildings. There is far more land out
+  there than in the valley (about 210,000 tufts at Medium), so each piece is built only the first time the camera
+  comes within a few hundred metres of it, a few milliseconds at a time between frames: the start of the game is no
+  slower, and nothing stutters as an island comes near.
+- **The far mountains** behind the mainland towns were grey seven-sided cones. Each is now broken up by ridged noise
+  into shoulders, ridges and gullies, coloured by height: green-grey slopes, bare rock, and snow over the top quarter
+  with a line that wavers.
+
+**The map, and a minimap.**
+- **The map screen (M)** can be zoomed (the wheel, or + and −) and moved (drag), with "Find me" and "The whole map";
+  a click that is not a drag still sets or clears a waypoint. Zoomed in, the part shown is painted again at the size it
+  is shown a moment after the view settles, so it stays sharp. Its hills are shaded over 2.5 m or more (the heights are
+  on a 2.5 m grid; shaded closer, its flat triangles showed as squares). The brown wash is gone and the vellum is
+  lighter; a drawn compass replaces the picture that sat in a dark square; your arrow is larger; and a key under the map
+  says what each mark is.
+- **Buildings and walls are on every chart**: the world's solid footprints, houses as dark shapes, palisades and fences
+  as lines.
+- **The minimap** (bottom right; Settings → Minimap) is a round piece of the same charts, turned so that the way the
+  camera looks is up: about 60 m round you in the valley and the towns, 160 m in the home waters, 320 m on the open sea.
+  It shows you, where the quest leads (on the rim, pointing, when it is farther), your waypoint, companions (green),
+  anyone fighting you (red), your horse and your boat. The district and the companions' strip move up above it.
+
 **A look over everything together** (after the bodies, faces, wind, oars, plants, clouds and the rank and file all
 landed on one day): conversation close-ups, people walking and running, a fight, the horse, ships under oars and the
 shield walls were photographed in play. One fault: a conversation's first close-up of Eirik could be framed from the
@@ -523,8 +549,6 @@ for errors, the right place, the right people and a working objective; none has 
   the chart ends.
 - **Passage:** ferrymen at Gulen, Fedje and Kinn carry you between harbours you have already found, for six
   silver, towing your boat. This is the first fast travel.
-- **The Brothers:** the Twin-Axe Stone a nine-year-old could find in Chapter 3 pays off on Vængr, the wing-shaped
-  island. If you missed the stone, the hermit can still send you there.
 - **Wolf-marks (the wanted level):** hurt or kill someone where a living witness can see and you earn up to five
   marks. Two brings the hue and cry; three brings bounty-hunters. Clear them by paying the blood-price, winning
   the hide-duel, or lying low until talk dies.
@@ -558,7 +582,7 @@ for errors, the right place, the right people and a working objective; none has 
 
   | Weapon | Light blow | Heavy blow | What it is for |
   |---|---|---|---|
-  | Ragnar's axe | 14 in 0.5 s | 32, two men | The baseline. Off hand takes a shield or the Left Brother |
+  | Ragnar's axe | 14 in 0.5 s | 32, two men | The baseline. Off hand takes a shield |
   | Sword | 12 in 0.4 s | 27, two men | Speed and little breath; the widest parry and the hardest riposte; wears a guard slowly |
   | Ash spear | 13 in 0.5 s, at 3.5 m | 29, one man | Reach; a light thrust stops an attack that is winding up |
   | Long axe | 21 in 0.7 s, three men | 48, four men | Two hands, no shield, half again the breath; a heavy blow breaks a shield-bearer's guard outright |
@@ -599,9 +623,10 @@ for errors, the right place, the right people and a working objective; none has 
 - **Traders:** two merchant ships work the sea lanes and hail you by what the district thinks of you.
 - **Two laws:** marks and standing are kept separately in the Vestland and the Skerries. Cross the water and you
   are a stranger again, unless you carried three marks or more, in which case word arrives before you do.
-- **Standing:** each district rates Eirik from Wolf through Stranger, Guest, Kinsman and Jarl to King. Help
-  Bulandet, trade fairly and give to the hall, then ask the lawspeaker to have the folk swear. After that
-  they kneel as you pass and say "My king."
+- **Standing:** each district rates Eirik from Wolf through Stranger, Guest, Kinsman and Hall-friend to Oath-friend.
+  The islands keep their own kings, as in the story (King Hallvard on Gulen; Ragnhild holds Kinn for King Ragnvald):
+  help Bulandet, trade fairly and give to the hall, then ask whether the island would stand with you. Its king swears
+  an oath of friends, not of a lord: Eirik is never king of an island.
 
 In Act I, dialogue and actions raise four traits (Wisdom, Compassion, Ferocity, Pride). Act II does not use
 them: the story makes Eirik's choices. Whether the traits stay is one of the questions under "Under review" in

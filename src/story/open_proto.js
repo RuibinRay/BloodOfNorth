@@ -1,6 +1,6 @@
 // Open-world PROTOTYPE (after Act II, Chapter 1). A sandbox to prove the systems, not story content:
 // ride from Bjornstead to the shore, row to two islands, trade, break or keep the law, and earn standing
-// until a district calls Eirik king. See docs/OPEN_WORLD.md for the full design this is a first slice of.
+// until an island's king swears to stand with Eirik (never to serve him). See docs/OPEN_WORLD.md for the full design this is a first slice of.
 import { POI } from '../world/layout.js';
 import { heightAt } from '../world/terrain.js';
 import { shared } from '../world/geo.js';
@@ -102,7 +102,7 @@ export class OpenProto {
     mk('bjorn', 'Bjorn', CAST2.bjorn.look, 157, -133.4, -2.4, { law: false, role: 'kin' });
     mk('signe', 'Signe', CAST2.signe.look, 144.6, -137.9, 0.8, { law: false, role: 'kin', loop: 'cook' });
     mk('freydis', 'Freydis', CAST2.freydis.look, 151.8, -141, -2.2, { law: false, role: 'kin' });
-    mk('law', 'Hallvard the Lawspeaker', CAST.gunnar.look, POI.lawRock.x - 1.6, POI.lawRock.z + 1.7, 2.6, { role: 'law' });
+    mk('law', 'King Hallvard the Lawspeaker', CAST.gunnar.look, POI.lawRock.x - 1.6, POI.lawRock.z + 1.7, 2.6, { role: 'law' });
     mk('merchant', 'Asgerd', CAST.asa.look, -56.6, 260.2, 2.4, { role: 'merchant' });
     mk('folk0', 'Ivar Ferryman', CAST.odd.look, -45, 263.5, 1.2, { loop: 'fish', hold: 'rod' });
     mk('folk1', 'Havard', CAST.farmer1.look, -62, 271, 0.4, { weapon: 'spear', loop: 'guard', hold: 'spear' });
@@ -153,10 +153,10 @@ export class OpenProto {
     if (n.role === 'kin') { n.say(g.fmt({ bjorn: 'Take the bay mare. And come back with all your fingers, {n}.', signe: 'Eat before you go. The sea is hungry enough for both of you.', freydis: 'If {b} steals from the islanders, you are paying for it.' }[n.id]), 4); return; }
     n.say(g.fmt(n.line && tier.min >= 15 && Math.random() < 0.6 ? n.line : tier.hail), n.line ? 5 : 3.5);
   }
-  /** The keeper of the law in whichever district this is: Hallvard on Gulen, Ragnhild on Kinn. */
+  /** The keeper of the law in whichever district this is: King Hallvard on Gulen; on Kinn, Ragnhild, reeve for King Ragnvald. */
   lawTalk(n) {
     const g = this.g, s = this.law.s, D = this.law.def, inv = g.inventory, L = n.name, E = 'Eirik', silver = inv.count('silver'), cost = s.marks * 25;
-    const kin = n.id === 'reeve', work = kin ? this.sea.reeveWork() : this.table.offer(), flag = kin ? 'metReeve' : 'metLaw', king = kin ? 'kingOfSkerries' : 'kingOfGulen';
+    const kin = n.id === 'reeve', work = kin ? this.sea.reeveWork() : this.table.offer(), flag = kin ? 'metReeve' : 'metLaw', oath = kin ? 'oathKinn' : 'oathGulen';
     let tree;
     if (s.marks > 0) tree = [
       { s: L, t: `You carry ${s.marks} wolf-mark${s.marks > 1 ? 's' : ''} in ${D.local}, {n}: ${MARK_NAMES[s.marks].toLowerCase()}. The law offers two roads. Silver, or the hide.` },
@@ -171,12 +171,12 @@ export class OpenProto {
     ];
     else tree = [
       { s: L, t: work.intro || (this.st.flags[flag] ? 'No man here names you wolf, {n}.' : kin
-        ? 'A white raven, and a Vestland boat. I am Ragnhild; I hold the Skerries for whoever is strong enough to ask me to. So far nobody has asked well.'
-        : 'So you are the one with the white raven. I am Hallvard. I keep the law on Gulen: what is sworn, what is owed, and who is a wolf.'), fx: { flag } },
+        ? 'A white raven, and a Vestland boat. I am Ragnhild. I hold Kinn and the Skerries for King Ragnvald, and he likes to hear who comes asking.'
+        : 'So you are the one with the white raven. I am Hallvard, king of Gulen. I keep the law here: what is sworn, what is owed, and who is a wolf.'), fx: { flag } },
       { s: E, t: '', choices: [
         { t: '"What is the law here?"', to: 'law' },
         ...(work.choices || []),
-        { t: `"Would the folk of ${D.seat} swear to me?" (standing ${Math.round(s.standing)} of 80)`, to: s.standing >= 100 ? 'king' : s.standing >= 80 ? 'swear' : 'notyet', fx: s.standing >= 80 && s.standing < 100 ? { do: () => { this.st.flags[king] = true; this.law.addStanding(100, `The folk of ${D.seat} swear to you`); } } : null },
+        { t: `"Would ${D.seat} stand with me, if I called?" (standing ${Math.round(s.standing)} of 80)`, to: s.standing >= 100 ? 'sworn' : s.standing >= 80 ? 'swear' : 'notyet', fx: s.standing >= 80 && s.standing < 100 ? { do: () => { this.st.flags[oath] = true; this.law.addStanding(100, `${D.seat} gives you its oath`); } } : null },
         { t: '"Nothing. Keep well."', to: 'end' },
       ] },
       { id: 'law', s: L, t: kin
@@ -185,8 +185,8 @@ export class OpenProto {
       { id: 'notyet', s: L, t: kin
         ? 'Not yet. Out here a name is worth what it has done. Put out the fire on Batalden. Light the one on Skorpa. Trade fair with Gyda.'
         : 'Not yet. They know your name, not your worth. Help the fishers on Bulandet. Trade fair. Be seen to be generous.', to: 'end' },
-      { id: 'king', s: L, t: 'They have sworn already, my king. A second oath is worth less than the first.', to: 'end' },
-      { id: 'swear', s: L, t: `Then hear it, ${D.seat}! This is Eirik Ravensson. By rock and by ring, he is our king, and we are his folk.`, to: 'end' },
+      { id: 'sworn', s: L, t: kin ? 'King Ragnvald has given his word already. He does not give it twice.' : 'Gulen has sworn already. A second oath is worth less than the first.', to: 'end' },
+      { id: 'swear', s: L, t: kin ? 'Then I will carry it to King Ragnvald myself, and bring his word back: when Eirik Ravensson calls, Kinn comes. An oath of friends, not of a lord.' : `Then hear it, ${D.seat}! Eirik Ravensson is a friend of this island. When he calls, we come. By rock and by ring: an oath of friends, not a crown.`, to: 'end' },
       ...(work.nodes || []),
     ];
     this.say(tree, n, () => { g.quests.notify('talk', n.id); if (work.after) work.after(); if (this.pendingHolm) { const at = this.pendingHolm; this.pendingHolm = null; this.holmgang(at); } });
@@ -214,7 +214,7 @@ export class OpenProto {
   buyWare(k) {
     const g = this.g, inv = g.inventory, w = WARES[k];
     inv.remove('silver', w.cost, true); inv.add(w.give[0], w.give[1]);
-    if (k === 'shield') g.after(0.5, () => g.ui.hint('With a weapon drawn, hold {block} to raise the shield: it stops arrows and blocking costs less. {attack} while blocking shoves with the boss. {weapon3} swaps shield and second axe.'));
+    if (k === 'shield') g.after(0.5, () => g.ui.hint('With a weapon drawn, hold {block} to raise the shield: it stops arrows and blocking costs less. {attack} while blocking shoves with the boss.'));
     else if (k === 'throwaxe') g.after(0.5, () => g.ui.hint('{throw} throws an axe at the man you are facing. It stops a swing and shakes a guard. One that misses can be picked up.'));
     else if (k !== 'arrows') g.after(0.5, () => g.ui.hint('{weapon1} draws your weapon; press it again to step through the ones you carry. Each fights differently: the inventory says how.'));
   }
@@ -321,12 +321,12 @@ export class OpenProto {
     if (q.at('q_open', 'shore') && dist(p.pos, POI.dock.x, POI.dock.z) < 28) q.notify('reach', 'shore');
     if (q.at('q_open', 'gulen') && dist(p.pos, POI.gulen.x, POI.gulen.z) < 44) q.notify('reach', 'gulen');
 
-    const king = this.law.tier().name === 'King';
+    const sworn = this.law.tier().name === 'Oath-friend';
     for (const f of this.folk) {
       if (f.dead || f.cb || !f.visible) continue;
       const d = f.dist(p);
       if (s.marks >= 2 && f.weapon && d < 20 && !this.mounts.on) this.makeHostile(f); // hue and cry
-      else if (king && f.mode === 'idle') f.setLoop(d < 6 ? 'kneel' : f.baseLoop);    // they kneel as he passes
+      else if (sworn && f.mode === 'idle' && d < 6) f.faceEntity(p);                   // sworn friends turn to greet him (no kneeling: he is nobody's king)
     }
     if (s.marks >= 3 && !this.hunters && !this.mounts.on && g.mode === 'play') { this.huntT += dt; if (this.huntT > 22 && this.spawnHunters()) this.huntT = 0; }
     if (this.hunters && this.hunters.every((e) => e.dead)) { this.hunters = null; this.huntT = -40; if (!g.combat.alive().length) { g.combat.clear(); g.audio.setMusic('day'); } }

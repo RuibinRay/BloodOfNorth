@@ -23,7 +23,7 @@ export default {
   "Ragnar, then Eirik": "Ragnar, luego Eirik",
   "A bearded iron head, ravens scratched into the steel, and a collar of darker iron wrapped round the top of the haft.": "Una cabeza de hacha barbada de hierro, con cuervos grabados en el acero y un collar de hierro más oscuro alrededor de lo alto del mango.",
   "\"When I carried her, ravens never went hungry. Now she splits wood. That is a better job.\" The collar hides King Halfdan's oath-ring. Her haft cracks in the tannery fight and is snapped a hand short by Wolf's Judgment in the last one; the collar holds, and the head stays on.": "«Cuando yo la llevaba, los cuervos nunca pasaban hambre. Ahora parte leña. Es un trabajo mejor.» El collar esconde el anillo de juramento del rey Halfdan. Su mango se agrieta en la pelea de los curtidores y el Juicio del Lobo lo parte un palmo más corto en la última; el collar aguanta y la cabeza sigue en su sitio.",
-  "The baseline every fight is tuned on. Takes a shield or the Left Brother. Reforged three times, each a little harder-hitting. Thunder Smash and the Turning Blow are hers.": "La base sobre la que se ajusta cada combate. Admite escudo o el Hermano Izquierdo. Forjada de nuevo tres veces, cada una golpea un poco más fuerte. El Golpe de Trueno y el Golpe Giratorio son suyos.",
+  "The baseline every fight is tuned on. Takes a shield. Reforged three times, each a little harder-hitting. Thunder Smash and the Turning Blow are hers.": "La base con la que se ajusta cada combate. Admite escudo. Reforjada tres veces, cada una con un poco más de golpe. El Golpe de Trueno y el Golpe Giratorio son suyos.",
   "Round shield": "Escudo redondo",
   "Ragnar, Bjorn (the spare), Eirik": "Ragnar, Bjorn (el de repuesto), Eirik",
   "Linden boards, a painted face, an iron boss.": "Tablas de tilo, una cara pintada, un umbo de hierro.",
@@ -121,4 +121,5 @@ export default {
   "Black iron, a wolf's head. The Ironwolf gave one to each of his seven champions with a seat at his table.": "Hierro negro, una cabeza de lobo. Lobo de Hierro dio uno a cada uno de sus siete campeones junto con un asiento en su mesa.",
   "Keepsake": "Recuerdo",
   "Your father's axe: a bearded head with ravens scratched into the steel, and a collar of darker iron at the top of the haft. \"A blade may save your life, but wisdom decides when to draw it.\"": "El hacha de tu padre: una cabeza barbada con cuervos grabados en el acero, y un collar de hierro más oscuro en lo alto del mango. «Una hoja puede salvarte la vida, pero la sabiduría decide cuándo desenvainarla.»",
+  "The baseline every fight is tuned on. Takes a shield or the Left Brother. Reforged three times, each a little harder-hitting. Thunder Smash and the Turning Blow are hers.": "La base sobre la que se ajusta cada combate. Admite escudo o el Hermano Izquierdo. Forjada de nuevo tres veces, cada una golpea un poco más fuerte. El Golpe de Trueno y el Golpe Giratorio son suyos.",
 };

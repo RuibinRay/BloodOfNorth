@@ -220,7 +220,7 @@ const ACTIONS = {
   shove: S([[0, { srx: -1.0, slx: -1.0, elL: -1.4, elR: -1.4, crx: -0.1, hy: -0.06 }], [0.3, { srx: -0.9, slx: -0.9, elL: -1.7, elR: -1.7, crx: -0.15, hy: -0.08, lrx: 0.2 }, 'out'], [0.47, { srx: -1.45, slx: -1.45, elL: -0.1, elR: -0.1, crx: 0.38, hy: -0.1, llx: -0.5, knL: 0.5, lrx: 0.4 }, 'in'], [0.75, { srx: -1.3, slx: -1.3, elL: -0.3, elR: -0.3, crx: 0.25, llx: -0.3, knL: 0.3 }, 'out'], [1, {}]]),
 };
 /** Where each weapon's edge runs, as distances up from the fist: the stroke it leaves in the air is drawn between them. */
-const BLADE = { woodsword: [0.12, 0.58], woodsword_big: [0.12, 0.85], sword: [0.14, 0.9], axe: [0.32, 0.62], father_axe: [0.3, 0.64], brother_axe: [0.32, 0.62], daneaxe: [0.95, 1.55], anvilhammer: [0.85, 1.42], wolfsjudgment: [0.8, 1.3], starfall: [0.55, 0.95],
+const BLADE = { woodsword: [0.12, 0.58], woodsword_big: [0.12, 0.85], sword: [0.14, 0.9], axe: [0.32, 0.62], father_axe: [0.3, 0.64], daneaxe: [0.95, 1.55], anvilhammer: [0.85, 1.42], wolfsjudgment: [0.8, 1.3], starfall: [0.55, 0.95],
   club: [0.55, 1.15], woodaxe: [0.45, 0.8], longaxe: [0.75, 1.25], seax: [0.1, 0.52], maul: [0.75, 1.25], smallaxe: [0.2, 0.45], throwaxe: [0.2, 0.45], spear: [1.05, 1.7], hammer: [0.2, 0.38] };
 
 const grp = (parent, x, y, z) => { const g = new THREE.Group(); g.position.set(x, y, z); parent.add(g); return g; };
@@ -603,10 +603,9 @@ function itemGeo(name) {
     case 'woodsword': g.push(bladeZ(0.52, 0.045, W, 1), tint(at(box(0.15, 0.03, 0.03), 0, 0, 0.07), WD, 0, 2), tint(at(cyl(0.017, 0.017, 0.13, 5), 0, 0, 0, Math.PI / 2, 0, 0), WD, 0, 3)); break;
     case 'woodsword_big': g.push(bladeZ(0.78, 0.055, W, 1), tint(at(box(0.2, 0.035, 0.035), 0, 0, 0.07), WD, 0, 2), tint(at(cyl(0.02, 0.02, 0.16, 5), 0, 0, 0, Math.PI / 2, 0, 0), WD, 0, 3)); break;
     case 'sword': g.push(bladeZ(0.82, 0.05, IR, 1), as(tint(at(box(0.2, 0.035, 0.035), 0, 0, 0.07), 0x6e5a36, 0, 2), 'plain'), as(tint(at(cyl(0.02, 0.02, 0.16, 5), 0, 0, 0, Math.PI / 2, 0, 0), WD, 0, 3), 'wrap'), tint(at(sphere(0.03, 5, 4), 0, 0, -0.09), 0x6e5a36, 0, 4)); break;
-    case 'axe': case 'father_axe': case 'brother_axe':
+    case 'axe': case 'father_axe':
       g.push(tint(at(cyl(0.016, 0.02, 0.66, 5), 0, 0, 0.23, Math.PI / 2, 0, 0), WD, 0.08, 1));
       g.push(tint(at(box(0.022, 0.2, 0.1), 0, -0.07, 0.5), IR, 0.06, 2), tint(at(box(0.024, 0.07, 0.07), 0, 0.0, 0.5), 0x70747a, 0, 3));
-      if (name === 'brother_axe') g.push(tint(at(box(0.026, 0.03, 0.03), 0, 0, 0.12), 0x4f7a8c, 0, 4), tint(at(box(0.026, 0.03, 0.03), 0, 0, 0.36), 0x4f7a8c, 0, 5), tint(at(box(0.028, 0.05, 0.05), 0, -0.1, 0.5), 0xc9b27a, 0, 6));
       if (name === 'father_axe') g.push( // Raven-Feeder: a bearded head, the dark iron collar at the top of the haft, ravens scratched into the steel
         tint(at(box(0.02, 0.1, 0.07), 0, -0.2, 0.47), IR, 0.06, 4), tint(at(cyl(0.027, 0.027, 0.085, 7), 0, 0, 0.41, Math.PI / 2, 0, 0), 0x1c1c20, 0, 5),
         tint(at(box(0.024, 0.045, 0.03), 0, -0.05, 0.5), 0x2a2a2e, 0, 6), tint(at(box(0.024, 0.03, 0.05), 0, -0.12, 0.5), 0x2a2a2e, 0, 7));

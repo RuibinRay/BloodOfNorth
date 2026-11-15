@@ -23,7 +23,7 @@ export default {
   "Ragnar, then Eirik": "拉格纳，后来是埃里克",
   "A bearded iron head, ravens scratched into the steel, and a collar of darker iron wrapped round the top of the haft.": "一个带胡须的铁斧头，钢上刻着渡鸦，斧柄顶端缠着一圈颜色更深的铁箍。",
   "\"When I carried her, ravens never went hungry. Now she splits wood. That is a better job.\" The collar hides King Halfdan's oath-ring. Her haft cracks in the tannery fight and is snapped a hand short by Wolf's Judgment in the last one; the collar holds, and the head stays on.": "“我带着她的时候，渡鸦从没饿过。如今她劈柴。这活儿更好。”铁箍里藏着哈夫丹国王的誓环。她的斧柄在鞣皮场一战中开裂，在最后一战中被“狼之裁决”打断，短了一掌；铁箍守住了，斧头没掉。",
-  "The baseline every fight is tuned on. Takes a shield or the Left Brother. Reforged three times, each a little harder-hitting. Thunder Smash and the Turning Blow are hers.": "每一场战斗都以它为基准调校。可配盾或左兄弟。重铸三次，每次都更有力一点。雷霆重击和回旋一击都属于她。",
+  "The baseline every fight is tuned on. Takes a shield. Reforged three times, each a little harder-hitting. Thunder Smash and the Turning Blow are hers.": "所有战斗都以她为基准调校。可配盾。重铸三次，每次都更有力一些。雷霆重击和回旋一击是她的招式。",
   "Round shield": "圆盾",
   "Ragnar, Bjorn (the spare), Eirik": "拉格纳、比约恩（备用的那面）、埃里克",
   "Linden boards, a painted face, an iron boss.": "椴木板、绘过的盾面、铁盾心。",
@@ -121,4 +121,5 @@ export default {
   "Black iron, a wolf's head. The Ironwolf gave one to each of his seven champions with a seat at his table.": "黑铁打的狼头。铁狼给他的七位勇士每人一枚，连同他席上的一个座位。",
   "Keepsake": "信物",
   "Your father's axe: a bearded head with ravens scratched into the steel, and a collar of darker iron at the top of the haft. \"A blade may save your life, but wisdom decides when to draw it.\"": "你父亲的斧：带胡须的斧头，钢上刻着渡鸦，斧柄顶端有一圈颜色更深的铁箍。“刀刃也许能救你的命，但什么时候拔它，得由智慧来决定。”",
+  "The baseline every fight is tuned on. Takes a shield or the Left Brother. Reforged three times, each a little harder-hitting. Thunder Smash and the Turning Blow are hers.": "每一场战斗都以它为基准调校。可配盾或左兄弟。重铸三次，每次都更有力一点。雷霆重击和回旋一击都属于她。",
 };

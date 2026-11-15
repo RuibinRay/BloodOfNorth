@@ -7,7 +7,7 @@
 //   parry    seconds after raising a guard in which a block is a parry
 //   block    breath a blocked blow costs without a shield
 //   riposte  damage multiplier on the blow after a parry
-//   off      what the off hand may hold: 'any' (shield or the Left Brother), 'shield', or null (two hands)
+//   off      what the off hand may hold: 'any' or 'shield' (a shield), , or null (two hands)
 //   stop     a light blow stops an attack that is winding up        breaker  a heavy blow breaks a shield-bearer's guard outright
 //   anim / animHeavy   attack animation instead of the three-blow combo
 import { ITEMS } from './act1.js';
@@ -57,7 +57,7 @@ export function ravenFeeder(level) {
 export const ARSENAL = [
   { id: 'father_axe', name: 'Raven-Feeder', bearer: 'Ragnar, then Eirik', status: 'yours', look: 'A bearded iron head, ravens scratched into the steel, and a collar of darker iron wrapped round the top of the haft.',
     text: "\"When I carried her, ravens never went hungry. Now she splits wood. That is a better job.\" The collar hides King Halfdan's oath-ring. Her haft cracks in the tannery fight and is snapped a hand short by Wolf's Judgment in the last one; the collar holds, and the head stays on.",
-    play: 'The baseline every fight is tuned on. Takes a shield or the Left Brother. Reforged three times, each a little harder-hitting. Thunder Smash and the Turning Blow are hers.' },
+    play: 'The baseline every fight is tuned on. Takes a shield. Reforged three times, each a little harder-hitting. Thunder Smash and the Turning Blow are hers.' },
   { id: 'shield', name: 'Round shield', bearer: 'Ragnar, Bjorn (the spare), Eirik', status: 'yours', look: 'Linden boards, a painted face, an iron boss.',
     text: "Ragnar takes one down the night the wolves come. Eirik walks out to meet Kettil with Bjorn's spare. Champions split them: Skarde on the first blow, Bersi twice, Håkon to pieces.", play: 'Stops arrows; blocking costs less; the boss shoves. A champion with a shield-splitting skill leaves Eirik without one for a while.' },
   { id: 'twin', name: 'The Twins', bearer: 'Leif', status: 'yours', look: 'A long seax on one hip and a short sword on the other.',

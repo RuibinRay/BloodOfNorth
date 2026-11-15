@@ -38,7 +38,7 @@ export function icon(name, cls = '') {
 }
 const ITEM = {
   firewood: 'wood', stick: 'wood', bark: 'wood', arrow: 'arrow', bow: 'bow', woodsword: 'sword', hare: 'meat', venison: 'meat', hide: 'hide', fish: 'fish', flint: 'flint',
-  father_axe: 'axe', brother_axe: 'axe', sword: 'sword', spear: 'spear', longaxe: 'longaxe', twin: 'twin', maul: 'maul', throwaxe: 'axe', shield: 'shield', silver: 'coins', wolf_brooch: 'wolf',
+  father_axe: 'axe', sword: 'sword', spear: 'spear', longaxe: 'longaxe', twin: 'twin', maul: 'maul', throwaxe: 'axe', shield: 'shield', silver: 'coins', wolf_brooch: 'wolf',
 };
 const CAT = { Weapon: 'sword', Ammunition: 'arrow', Game: 'meat', Resource: 'wood', Tool: 'flint', Keepsake: 'ring' };
 /** The icon for an inventory item (by its id, else by its category). */

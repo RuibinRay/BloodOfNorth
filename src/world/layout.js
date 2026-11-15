@@ -34,7 +34,7 @@ export const POI = {
   farmFire: { x: 146, z: -137 }, farmChop: { x: 158, z: -139 }, farmDoor: { x: 152, z: -142.4 }, pen: { x: 148.5, z: -155.5 },
   nest: { x: 126, z: -151 }, barrow: { x: 178, z: -166 }, axeStone: { x: 139, z: -178 }, yew: { x: 187, z: -121 },
   gulen: { x: -55, z: 262, name: 'Gulen (law-island)' }, lawRock: { x: -52, z: 256 }, bulandet: { x: 62, z: 282, name: 'Bulandet' },
-  tarn: { x: 197, z: -150 }, skyIron: { x: 165.3, z: -133.2 }, lamb: { x: 113, z: -171 }, hunters: { x: 57, z: -150 }, // filled in by terrain.js (depends on the river curve)
+  tarn: { x: 197, z: -150 }, lamb: { x: 113, z: -171 }, hunters: { x: 57, z: -150 }, // filled in by terrain.js (depends on the river curve)
 };
 
 /** Flattened pads. `h` is absolute; `dh` is relative to the natural height at the centre. */

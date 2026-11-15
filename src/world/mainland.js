@@ -9,7 +9,7 @@ import { heightAt } from './terrain.js';
 import * as P from './props.js';
 import { MAIN, place } from './layout.js';
 import { house, palisade, deck, ruin, stakes, pole, gate } from './realm_props.js';
-import { rng } from '../core/util.js';
+import { rng, noise2 } from '../core/util.js';
 
 /** A switchable part of a place. build(ctx, w, objs) adds geometry to ctx.b, colliders through ctx and w, and whole
  *  objects (a ship) to objs; whatever it returns is kept on the stage. */
@@ -52,7 +52,26 @@ export function table(ctx, x, z, ry, len = 6) {
 /** Far mountains: the land goes on beyond what can be walked. */
 export function range(b, pts, seed) {
   const r = rng(seed);
-  for (const [x, z, h, w] of pts) b.add(tint(at(cone(w, h, 7), x, h / 2 - 14, z, 0, r() * 3, 0, 1, 1, 0.8 + r() * 0.5), [0x5c6a58, 0x66705e, 0x545f56][(r() * 3) | 0], 0.2, (x + z) | 0), M.vcPlain);
+  for (const [x, z, h, w] of pts) b.add(at(peakGeo(w, h, r), x, -14, z, 0, r() * 3, 0, 1, 1, 0.8 + r() * 0.5), M.vcPlain);
+}
+/** One far mountain: a cone broken up by ridged noise into shoulders, ridges and gullies, its foot on y = 0, coloured
+ *  by height: green-grey slopes, bare rock, snow over the top quarter (the line wavers), darker in the gullies. */
+function peakGeo(w, h, r) {
+  const g = new THREE.ConeGeometry(w, h, 16, 9, true), p = g.attributes.position, col = new Float32Array(p.count * 3), o = r() * 100;
+  g.translate(0, h / 2, 0);
+  const lo = [0.36, 0.42, 0.34], rock = [0.42, 0.42, 0.44], snow = [0.9, 0.92, 0.96];
+  for (let i = 0; i < p.count; i++) {
+    const vx = p.getX(i), vy = p.getY(i), vz = p.getZ(i), t = vy / h, a = Math.atan2(vz, vx);
+    if (t > 0.999) continue; // the summit stays where it is
+    const ridge = 1 - Math.abs(noise2(Math.cos(a) * 2.2 + o, Math.sin(a) * 2.2 + t * 2.5)), cut = ridge * ridge;      // ridges run up the slopes
+    const k = 1 + (cut - 0.45) * 0.42 * Math.sin(Math.PI * Math.min(1, t * 1.15)) + noise2(a * 3 + o, t * 6) * 0.08; // in and out, most at the shoulders
+    p.setXYZ(i, vx * k, vy * (1 + (noise2(a * 1.7 + o, 4.2) * 0.08) * t), vz * k);
+    const sn = Math.min(1, Math.max(0, (t - 0.72 + noise2(a * 4 + o, 1.3) * 0.08 - (1 - cut) * 0.06) / 0.07));
+    const rk = Math.min(1, Math.max(0, (t - 0.32) / 0.25)), shade = 0.82 + cut * 0.26;
+    for (let c = 0; c < 3; c++) col[i * 3 + c] = (lo[c] + (rock[c] - lo[c]) * rk + (snow[c] - (lo[c] + (rock[c] - lo[c]) * rk)) * sn) * shade;
+  }
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3)); g.computeVertexNormals();
+  return g;
 }
 
 /** Where Act I's last chapters happen in Bjornstead (offsets from the village's centre, as B() takes them). Used by
@@ -63,7 +82,7 @@ export function ACT1_SPOTS(B, barnDoor) {
     nest, logs: [[nest[0] - 8, nest[1] - 5.4], [nest[0], nest[1] - 7.9], [nest[0] - 6.5, nest[1] + 3.1]],
     fire: B(-2.5, 126.4), seat: B(0.6, 128.6), basket: B(-1.4, 129.2), signe: B(-4.8, 127.8), bjorn: B(-19, 127.5), freydis: B(6, 141),
     chop: B(-23, 130), pen: B(100, 34), lambPost: B(-8, 142), wake: B(4, 135), barrow: B(96, -24), axeStone: B(62, 48), tarn: B(-140, -50),
-    hrefna: B(-70, 139.5), skyIron: barnDoor ? [barnDoor.x - 1.4, barnDoor.z + 1.6] : B(34, 124), birch: B(-20, 10), hunters: B(178, 30), lamb: B(-142, 124),
+    hrefna: B(-70, 139.5), birch: B(-20, 10), hunters: B(178, 30), lamb: B(-142, 124),
     nestPath: [B(6, 146), B(-6, 160), B(-28, 200), B(-58, 204), [nest[0] + 1.5, nest[1] + 1.2]],
   };
 }
@@ -160,8 +179,6 @@ function bjornstead(ctx, world, scene) {
     mound.receiveShadow = true; objs.push(mound);
     for (let i = 0; i < 9; i++) { const a = (i / 9) * 6.283; c.b.add(at(sphere(0.34 + (i % 3) * 0.08, 6, 5), bx + Math.cos(a) * 3.4, bwy + 0.1, bz + Math.sin(a) * 3.4, 0, i, 0, 1, 0.75, 1), M.stone); }
     c.b.add(at(box(0.05, 0.36, 0.03), bx, bwy + 1.0, bz, 0.12, 0.4, 0.06), M.dark); c.b.add(at(box(0.3, 0.045, 0.06), bx, bwy + 0.84, bz, 0.12, 0.4, 0.06), M.iron); c.b.add(at(sphere(0.045, 6, 5), bx + 0.01, bwy + 1.2, bz + 0.02), M.iron);
-    const [sx, sz] = A1.skyIron; // the black stone that props the barn door
-    c.b.add(tint(at(new THREE.IcosahedronGeometry(0.42, 1), sx, gy(sx, sz) + 0.24, sz, 0, 0.7, 0, 1.15, 0.8, 1), 0x1b1a1e, 0.25, 5), M.vcPlain); c.addCircle(sx, sz, 0.5, 0.6);
     P.runestone(c, ...A1.axeStone, 0.5); // the stone in the north meadow: two axes, a wing, a star
     const [tx, tz] = A1.tarn, ty = gy(tx, tz); // the tarn whose ice never melts, and the long shadow under it
     const ice = new THREE.Mesh(new THREE.CircleGeometry(6.4, 28), new THREE.MeshStandardMaterial({ color: 0xd3e5f0, roughness: 0.22, metalness: 0.1 }));
