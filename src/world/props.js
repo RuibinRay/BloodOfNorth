@@ -1,7 +1,7 @@
 // Procedural Viking-age props: longhouses, fences, boats and village clutter.
 // Static props are baked into the shared world Builder (ctx.b); ships are separate groups so they can move.
 import * as THREE from 'three';
-import { M, Builder, at, box, cyl, cone, sphere, tri, tint, shieldGeo, doorLeaf, rope, bannerGeo } from './geo.js';
+import { M, Builder, at, box, cyl, cone, sphere, tri, tint, shieldGeo, doorLeaf, rope, bannerGeo, merge } from './geo.js';
 import { heightAt } from './terrain.js';
 import { rng } from '../core/util.js';
 import { floats } from './float.js';
@@ -284,6 +284,7 @@ function deckGeo(L, B, D, rise, y) {
 }
 export function makeShip({ L = 21, B = 4.4, D = 1.55, rise = 2.5, sail = true, shields = true, seed = 1, mast = 9.5 } = {}) {
   const b = new Builder(), r = rng(seed);
+  let helm = null;
   b.add(hullGeo(L, B, D, rise), M.hull);
   b.add(deckGeo(L, B, D, rise, D * 0.42 + 0.05), M.plank);
   for (let i = -3; i <= 3; i++) b.add(at(box(B * 0.8, 0.09, 0.3), 0, D * 0.7, (i * L) / 11), M.timber); // rowing benches
@@ -320,8 +321,9 @@ export function makeShip({ L = 21, B = 4.4, D = 1.55, rise = 2.5, sail = true, s
       b.add(rope(top, [0, yp, zs]), M.timber); b.add(rope(top, [0, yp, -zs]), M.timber);
       for (const s of [-1, 1]) for (const dz of [-0.9, 0.9]) b.add(rope(top, [s * (B / 2) * 0.97, D * 0.98, dz]), M.timber);
       const zq = -L * 0.39, tq = Math.pow(1 - Math.pow(0.78, 2.4), 0.7), xq = -((B / 2) * tq + 0.14), yq = Math.pow(0.78, 3.4) * rise + D * (0.55 + 0.45 * tq);
-      b.add(at(box(0.07, yq + 0.3, 0.36), xq, yq / 2 + 0.15, zq, 0.12, 0, 0), M.timber); // from above the rail to just under the water
-      b.add(at(box(0.9, 0.06, 0.07), xq + 0.45, yq + 0.42, zq + 0.06), M.timber); // the tiller, inboard
+      // the steering oar is a piece of its own, turning about its own length at the rail (float.js turns it with her course)
+      helm = new THREE.Mesh(merge([at(box(0.07, yq + 0.3, 0.36), 0, -yq / 2 + 0.15 - 0.42, 0, 0.12, 0, 0), at(box(0.9, 0.06, 0.07), 0.45, 0, 0.06)]), M.timber); // blade from the rail to under the water; the tiller, inboard
+      helm.position.set(xq, yq + 0.42, zq); helm.castShadow = true;
     }
     if (shields) {
       for (let i = -7; i <= 7; i++) for (const s of [-1, 1]) {
@@ -331,6 +333,54 @@ export function makeShip({ L = 21, B = 4.4, D = 1.55, rise = 2.5, sail = true, s
     }
   }
   const grp = b.build();
-  grp.userData.deckY = D * 0.42 + 0.06; grp.userData.yardY = D * 0.42 + mast - 0.9;
+  if (helm) { grp.add(helm); grp.userData.helm = helm; }
+  grp.userData.deckY = D * 0.42 + 0.06; grp.userData.yardY = D * 0.42 + mast - 0.9; grp.userData.hull = { L, B, D, rise };
+  grp.userData.makeOars = () => makeOars(grp.userData.hull); // float.js, the first time she is under way
   return floats(grp, L, B); // she rides the swell (float.js)
+}
+
+// ---- oars ------------------------------------------------------------------------------------------------------------
+// One oar a side for each metre or so of her waist, through a port just under the rail, as one mesh per ship that the
+// vertex shader rows: each oar turns about its port, sweeping aft through the water and lifted clear coming forward.
+// float.js builds them the first time a ship is under way (a moored ship never needs them) and sets uRow (0 shipped,
+// 1 rowing) and uPhase. Every oar carries its port (aPort) and its side (aSide), so one draw rows them all.
+/** The oars' shader, shared by every ship's oars (one program); each ship's material brings its own uRow and uPhase. */
+function oarCompile(sh) {
+  sh.uniforms.uRow = this.userData.row; sh.uniforms.uPhase = this.userData.phase;
+  sh.vertexShader = sh.vertexShader.replace('#include <common>', `#include <common>
+      attribute vec3 aPort; attribute float aSide; uniform float uRow; uniform float uPhase;
+      vec3 oarTurn(vec3 v) {
+        // sweep: the blade travels aft in the water and forward in the air; lift: up in the air, down to pull;
+        // shipped (uRow 0): drawn up steeply, out of the water
+        float sweep = uRow * 0.42 * sin(uPhase), lift = uRow * 0.16 * cos(uPhase) + (1.0 - uRow) * 0.55;
+        float cs = cos(sweep), ss = sin(sweep), cl = cos(lift * aSide), sl = sin(lift * aSide);
+        v = vec3(v.x * cl - v.y * sl, v.x * sl + v.y * cl, v.z);                       // lift about the fore-aft line
+        return vec3(v.x * cs + v.z * ss * aSide, v.y, -v.x * ss * aSide + v.z * cs);   // sweep about the upright through the port
+      }`)
+    .replace('#include <beginnormal_vertex>', '#include <beginnormal_vertex>\n      objectNormal = oarTurn(objectNormal);')
+    .replace('#include <begin_vertex>', '#include <begin_vertex>\n      transformed = aPort + oarTurn(transformed - aPort);');
+}
+/** The oars for a hull of this size, as a mesh to add to the ship, with its own rowing uniforms. */
+export function makeOars({ L, B, D, rise }) {
+  const n = L > 10 ? Math.max(5, Math.round((L * 0.62) / 1.0)) : 2, span = L > 10 ? 0.62 : 0.4, len = B * 0.4 + (L > 10 ? 2.9 : 1.6);
+  const geos = [];
+  for (let i = 0; i < n; i++) for (const s of [-1, 1]) {
+    const u = n === 1 ? 0 : -span + (2 * span * i) / (n - 1), z = (u * L) / 2, taper = Math.pow(1 - Math.pow(Math.abs(u), 2.4), 0.7);
+    const px = s * ((B / 2) * taper + 0.04), py = Math.pow(Math.abs(u), 3.4) * rise + D * (0.55 + 0.45 * taper) - 0.18, inboard = len * 0.28;
+    // laid along +x (outward), then dropped 22 degrees, then set at the port
+    const shaft = at(cyl(0.04, 0.05, len, 5), 0, 0, 0, 0, 0, Math.PI / 2); shaft.translate(len / 2 - inboard, 0, 0);
+    const blade = at(box(0.95, 0.03, 0.16), len - inboard - 0.45, 0, 0);
+    const oar = merge([shaft, blade]);
+    if (s < 0) oar.scale(-1, 1, 1);
+    oar.rotateZ(-0.38 * s); oar.translate(px, py, z);
+    const c = oar.attributes.position.count;
+    oar.setAttribute('aPort', new THREE.BufferAttribute(new Float32Array(c * 3).map((_, k) => [px, py, z][k % 3]), 3));
+    oar.setAttribute('aSide', new THREE.BufferAttribute(new Float32Array(c).fill(s), 1));
+    geos.push(oar);
+  }
+  const mat = new THREE.MeshLambertMaterial({ color: 0x8a6a48 });
+  mat.userData.row = { value: 0 }; mat.userData.phase = { value: 0 }; mat.onBeforeCompile = oarCompile; mat.customProgramCacheKey = () => 'oars1';
+  const mesh = new THREE.Mesh(merge(geos), mat); mesh.castShadow = true; mesh.receiveShadow = true;
+  mesh.userData.row = mat.userData.row; mesh.userData.phase = mat.userData.phase;
+  return mesh;
 }

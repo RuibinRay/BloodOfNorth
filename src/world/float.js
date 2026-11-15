@@ -30,6 +30,30 @@ function ampAt(x, z, sea) {
 }
 
 const moved = []; // [object, saved position, saved quaternion]
+const TAU = Math.PI * 2;
+let driftWas = null;
+/** Is she under way (moving, or the sea flowing past her as the story sails her)? Then out oars and row, in time; when
+ *  she stops they come in. Her steering oar swings as she turns. The oars are built the first time she moves. */
+function underWay(s, f, g, dt, dr) {
+  const P = s.position, yaw = s.rotation.y;
+  if (!f.last) { f.last = { x: P.x, z: P.z, yaw, t: 0 }; f.row = 0; f.phase = Math.random() * TAU; f.helm = 0; }
+  const L = f.last, dx = P.x - L.x, dz = P.z - L.z, step = Math.hypot(dx, dz);
+  let dyaw = yaw - L.yaw; dyaw = Math.atan2(Math.sin(dyaw), Math.cos(dyaw));
+  L.x = P.x; L.z = P.z; L.yaw = yaw;
+  if (!(dt > 0) || step > 6 || Math.abs(dyaw) > 0.5) return; // a jump (the story put her somewhere else) is not sailing
+  const cam = g.camera.position, sea = driftWas && Math.hypot(P.x - cam.x, P.z - cam.z) < 600 ? Math.hypot(dr.x - driftWas.x, dr.y - driftWas.y) : 0;
+  const speed = (step + sea) / dt, want = speed > 0.6 ? 1 : 0;
+  f.row += (want - f.row) * Math.min(1, dt * 1.2);
+  f.phase = (f.phase + dt * TAU * 0.45) % TAU; // a stroke every two seconds or so
+  let oars = s.userData.oars;
+  if (!oars && want && s.userData.makeOars) { oars = s.userData.oars = s.userData.makeOars(); s.add(oars); }
+  if (oars) { oars.visible = f.row > 0.02; oars.userData.row.value = f.row; oars.userData.phase.value = f.phase; }
+  const helm = s.userData.helm;
+  if (helm) { f.helm += (Math.max(-0.5, Math.min(0.5, (dyaw / dt) * 1.4)) - f.helm) * Math.min(1, dt * 3); helm.rotation.y = f.helm; }
+}
+/** Called once a frame after the ships (rideSwell): remember where the sea stood. */
+function seaMoved(dr) { driftWas = driftWas || { x: 0, y: 0 }; driftWas.x = dr.x; driftWas.y = dr.y; }
+
 /** What the last frame did (for tests): ships afloat and people carried. */
 export const lastRide = { ships: 0, riders: 0 };
 /** Lift the ships and their crews for this frame. dt: seconds since the last frame (for smoothing). */
@@ -42,6 +66,7 @@ export function rideSwell(g, dt) {
     const f = s.userData.float, P = s.position;
     // afloat: at the waterline, sitting level (a beached, wrecked or sunk hull is tilted, low or on land)
     if (P.y < -0.35 || P.y > 0.1 || Math.abs(s.rotation.x) > 0.02 || Math.abs(s.rotation.z) > 0.02) continue;
+    underWay(s, f, g, dt, dr);
     const amp = ampAt(P.x, P.z, sea);
     if (amp < 0.01) { f.h = f.p = f.r = 0; continue; }
     const yaw = s.rotation.y, fx = Math.sin(yaw), fz = Math.cos(yaw), hl = f.L * 0.4, hb = f.B * 0.5; // the hull runs along its local z
@@ -66,6 +91,7 @@ export function rideSwell(g, dt) {
     }
     shift(s); lastRide.ships++;
   }
+  seaMoved(dr);
 }
 /** Put back everything rideSwell moved. */
 export function settle() {
