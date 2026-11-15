@@ -246,7 +246,7 @@ class Game {
     let stage = 'act2', time = 9.2;
     if (i < at('q_ten')) { // Act I: Eirik is nine
       stage = i >= at('q_hearth') ? 'ch3' : i >= at('q_white') ? 'ch2' : 'day';
-      time = { q_wood: 8.9, q_hunt: 9.4, q_fire: 12.4, q_sword: 15.1, q_supper: 16.3, q_ashes: 16.6, q_white: 7.5, q_ice: 3.2, q_hearth: 10, q_wings: 10 }[first] ?? 9;
+      time = { q_wood: 8.9, q_hunt: 9.4, q_fire: 12.4, q_sword: 15.1, q_supper: 16.3, q_ashes: 16.6, q_white: 7.5, q_ice: 8, q_hearth: 10, q_wings: 10 }[first] ?? 9;
       if (past('q_hunt')) Object.assign(inv, { bow: 1, arrow: 12 });
       if (past('q_fire')) inv.flint = 1;
       if (past('q_sword')) inv.woodsword = 1;

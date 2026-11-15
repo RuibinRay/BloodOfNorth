@@ -611,7 +611,8 @@ the [story bible](docs/STORY_BIBLE.md).
 
 How it was tested: an automated playtest drives the real game loop through every quest step (see
 `debug` in [src/main.js](src/main.js)), and `npm run check` starts every chapter and compares it with a recorded
-known-good state, and plays the three shield walls through with a scripted player (and once with one who does nothing). What each scene asks the machine to draw is counted exactly; the frame rate on an Apple M2 has not
+known-good state, and plays the three shield walls through: once each fighting with his own health as an average player would, once
+each braced and kept alive, and once doing nothing. What each scene asks the machine to draw is counted exactly; the frame rate on an Apple M2 has not
 been measured since the early slices (Settings has a frame counter). It has **not** been
 played end to end by a person with mouse and keyboard, so feel and difficulty tuning are unverified.
 

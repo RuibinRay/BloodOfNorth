@@ -371,9 +371,9 @@ export class ShieldWall {
     if (live && !this.over && !this.o.rest) {
       this.locate();
       // a raised shield is heavy: while he stands in the line with it up his breath goes, and none comes back
-      const p = g.player, up = this.inLine && p.blocking && this.phase !== 'wait' && this.phase !== 'advance';
+      const p = g.player, up = this.inLine && p.blocking && this.phase !== 'wait' && this.phase !== 'advance' && p.blockT > this.cfg.guardGrace; // a shield raised for their horn, or against one thrust, costs nothing: one held up from rush to rush does
       if (up) { p.stamina = Math.max(0, p.stamina - this.cfg.guard * (g.skills.has('s_wall') ? 0.5 : 1) * dt); p.staminaDelay = Math.max(p.staminaDelay, 0.5); }
-      this.spent = up && p.stamina < this.cfg.braceNeed; this.heavy = up && !this.spent && p.stamina < 40;
+      const raised = this.inLine && p.blocking; this.spent = raised && p.stamina < this.cfg.braceNeed; this.heavy = up && !this.spent && p.stamina < 40;
       if (this.phase === 'wait') this.threat(dt);
       else if (this.phase === 'advance') { this.approach = Math.max(0, this.approach - this.cfg.pace * dt); this.threat(dt); if (this.approach <= 0) this.crash(); }
       else {

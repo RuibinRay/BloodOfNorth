@@ -4,7 +4,7 @@
 // story was written down in chapters, so its quests are smaller pieces of the story's first chapters.
 export const ACTS = [
   { title: 'Act I · The Burning Snow', text: 'Eirik is nine. Hrafnvik, the night it burns, the winter alone, the Bear\'s house, two ravens, the lightning.',
-    quests: ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_ice', 'q_alone', 'q_white', 'q_hearth', 'q_wings'] },
+    quests: ['q_morning', 'q_wood', 'q_hunt', 'q_fire', 'q_sword', 'q_supper', 'q_ashes', 'q_alone', 'q_white', 'q_ice', 'q_hearth', 'q_wings'] },
   { title: "Act II · The Farmer's Axe", text: 'Eirik is nineteen. Bjornstead: the raid, Kettil Red-Hand, the walls, Kaupang and the Sea-Raven.',
     quests: ['q_ten', 'q_farm', 'q_smoke', 'q_axe', 'q_wolf', 'q_peddlers', 'q_walls', 'q_captain', 'q_oath'] },
   { title: 'Act III · The Wolves of Iron', text: 'Eirik is twenty. Jarnøy: fifty from Ravenhold, the Battle of Iron Shore, Arne Longshot, Ulf Two-Blades.',

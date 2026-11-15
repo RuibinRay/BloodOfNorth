@@ -101,7 +101,7 @@ export const QUESTS = {
     ],
   },
   q_ashes: {
-    title: 'The Night of Ashes', kind: 'main', xp: 100, next: 'q_ice',
+    title: 'The Night of Ashes', kind: 'main', xp: 100, next: 'q_alone',
     desc: 'Torches on the ridge. Fire on the roofs.',
     steps: [
       { id: 'wake', text: 'Wake up', type: 'event', key: 'duelDone' },
@@ -113,7 +113,7 @@ export const QUESTS = {
     title: 'Alone', kind: 'main', xp: 100, next: null,
     desc: '"If you are ever lost in these woods, find this tree."',
     steps: [
-      { id: 'birch', text: 'The third day: find the old birch, out of the wind', type: 'reach', key: 'camp2', marker: { poi: 'camp' } },
+      { id: 'birch', text: 'Find the old birch before the cold takes you', type: 'reach', key: 'camp2', marker: { poi: 'camp' } },
       { id: 'gather', text: 'Gather 3 dry sticks and a strip of birch bark', type: 'event', key: 'tinderReady', marker: { poi: 'camp' } },
       { id: 'light', text: 'Light a fire', type: 'activity', key: 'fire', marker: { poi: 'camp' } },
     ],

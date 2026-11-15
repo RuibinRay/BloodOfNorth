@@ -101,6 +101,13 @@ Known gaps:
 
 ## Known gaps in 0.29
 
+- **The shield walls have been fought through by a script with real health** (`wallFight()` in `tools/check/page.js`, at three levels of skill taken from the champion-fight bot). It stands in the line, braces at their horn, sounds its own when they reel, cuts at their front rank, guards against their thrusts, raises its shield when fire arrows come at it, and turns on the men who break through. Results, in seconds and the health he ended on:
+  - **a good player** holds Iron Shore (85 s, 48 left) and breaks both Black Shore lines (47 s, 79 left; 118 s, 21 left);
+  - **an average player** holds Iron Shore (91 s, 18 to 28 left) and breaks both Black Shore lines (75 to 81 s, 65 to 77 left);
+  - **a novice dies in all three**, mostly to their thrusts over the rim (about 100 of his health at Iron Shore) and the men who come through.
+  - **One fix came out of it**: the breath a raised shield costs (added at the owner's request) was so steep that raising it for their horn left him too winded to brace when the rush came, and every player died. A shield now costs nothing for its first 2.6 seconds up (`guardGrace`), so raising it for the horn or against one thrust is free and only a shield held up from rush to rush drains him. Holding it up the whole time now costs 108 to 117 health a wall, more than he has.
+  - **Not decided**: whether a novice should die at all three. The thrust over the rim (9 health, a 0.55 s warning) is what kills him; a longer warning would help slow hands. The check runs the average player and fails if he dies.
+
 - **Everything is in one place again, except what is still being made.** `act7-fight-tuning` (Ulf, Kettil and Vigdis made to last longer, from a bot playtest) and `story-hints-stay` (one-time tips no longer wipe the story's hints) were merged here, and `main` was brought up from 0.16 to this. Both were made in other sessions from 0.22 and were checked there, not replayed here: here every chapter starts and the checks pass with them in. A fifth branch, `faces-and-hair`, is being worked on in another session as this is written (it has uncommitted changes to `src/entities/humanoid.js` and `src/world/geo.js`, cut from the animation pass before the fighting moves were added): it is not merged, and will meet the fighting moves in the same file when it is.
 
 - **Movement was judged from still pictures.** A film strip shows eight moments of a stride side by side; it cannot show whether the walk feels right at speed, whether the bank into a turn is too much, or whether a head that nods is charming or silly. Nobody has watched any of it run, and a person has not seen it at all.

@@ -14,8 +14,8 @@ Object.assign(CAST, {
 });
 Object.assign(QUESTS, {
   q_white: {
-    title: 'The Long White', kind: 'main', xp: 120, next: null,
-    desc: 'The fire is embers. The smoke over the fjord is still rising. Nobody is coming, and nobody is looking: they think he is under the river.',
+    title: 'The Long White', kind: 'main', xp: 120, next: 'q_ice',
+    desc: 'The fire is embers. The smoke over the fjord is still rising. Nobody is coming.',
     steps: [
       { id: 'wake', text: 'Wake', type: 'event', key: 'woke' },
       { id: 'boughs', text: "Cut spruce boughs with your father's axe", type: 'event', key: 'bough', count: 4, marker: { poi: 'camp', until: 16 } },
@@ -29,12 +29,12 @@ Object.assign(QUESTS, {
     ],
   },
   q_ice: {
-    title: 'Thin Ice', kind: 'main', xp: 150, next: null, // q_alone follows once the camp scene has played (story/act1_ch2.js)
-    desc: 'Kettil is behind him, cursing and bleeding. Ahead is the river, and the ice on it is thin and black.',
+    title: 'Thin Ice', kind: 'main', xp: 150, next: null,
+    desc: "Torches between the trees. Håkon's trackers have followed the smoke.",
     steps: [
-      { id: 'wake', text: 'Kettil is coming', type: 'event', key: 'woke2' },
-      { id: 'flee', text: 'Run for the river. Stay low and out of the torchlight', type: 'reach', key: 'riverbank', marker: { pos: BANK_W } },
-      { id: 'cross', text: 'Cross the ice on your belly, the way Father taught you', type: 'reach', key: 'eastbank', marker: { pos: BANK_E } },
+      { id: 'wake', text: 'Wake', type: 'event', key: 'woke2' },
+      { id: 'flee', text: 'Slip away east to the river. Stay low and out of the torchlight', type: 'reach', key: 'riverbank', marker: { pos: BANK_W } },
+      { id: 'cross', text: 'Cross the ice. Go gently', type: 'reach', key: 'eastbank', marker: { pos: BANK_E } },
       { id: 'climb', text: 'Keep moving', type: 'reach', key: 'collapse', marker: { pos: COLLAPSE } },
     ],
   },

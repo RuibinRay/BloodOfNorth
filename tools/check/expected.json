@@ -50,18 +50,11 @@
    "pos": [-27, 72],
    "marker": "none"
   },
-  "q_ice": {
-   "at": "q_ice.flee",
-   "stage": "ch2",
-   "mode": "play",
-   "pos": [-62, -30],
-   "marker": "yes"
-  },
   "q_alone": {
    "at": "q_alone.birch",
    "stage": "wilderness",
    "mode": "play",
-   "pos": [-144, -62],
+   "pos": [-63, -31],
    "marker": "yes"
   },
   "q_white": {
@@ -70,6 +63,13 @@
    "mode": "play",
    "pos": [-118, -91],
    "marker": "reached"
+  },
+  "q_ice": {
+   "at": "q_ice.wake",
+   "stage": "ch2",
+   "mode": "cutscene",
+   "pos": [-115, -93],
+   "marker": "none"
   },
   "q_hearth": {
    "at": "q_hearth.signe",
@@ -509,6 +509,18 @@
   "q_blackshore.town.idle": {
    "over": "lost",
    "to": "q_blackshore.town"
+  },
+  "q_blackshore.town.fight:average": {
+   "over": "broke",
+   "to": "q_blackshore.back1"
+  },
+  "q_shore.wall.fight:average": {
+   "over": "held",
+   "to": "q_shore.gate"
+  },
+  "q_blackshore.road.fight:average": {
+   "over": "broke",
+   "to": "q_blackshore.back2"
   }
  }
 }

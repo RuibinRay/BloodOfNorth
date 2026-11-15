@@ -12,10 +12,8 @@ const SAPLINGS = [[-9, -7], [-12, 2.5], [7.5, -9], [10.5, 5], [-4, -13.5]];
 const TRACKS2 = [[-125, -99], [-134, -110], [-144, -121]];
 const W_DAY = { snow: 0.25, fog: 0.05, overcast: 0.55, wind: 1.2 };
 const W_HUNT = { snow: 0.6, fog: 0.13, overcast: 0.85, wind: 1.8 };
-const EDGE = [-62, -30]; // where he came out of the village into the trees (layout.js POI.forestEdge)
 const PATROLS = [
-  { at: [-40, -22], route: [[-48, -40], [-34, -68], [-8, -92], [22, -108], [40, -116]], pause: 1.6 }, // Kettil, on the boy's trail
-
+  { at: [-88, -56], route: [[-100, -72], [-113, -88], [-122, -97], [-104, -112], [-84, -122]], pause: 2.5 },
   { at: [-66, -98], route: [[-66, -98], [-30, -118], [-46, -146], [-18, -150]], pause: 3 },
   { at: [22, -104], route: [[22, -104], [47, -117], [34, -144]], pause: 3.2 },
 ];
@@ -253,7 +251,7 @@ export class Chapter2 {
     k.teleport(c[0] - 1.6, c[1] + 0.4, 1.6); k.setLoop(null); k.h.hold('R', null); k.h.hold('L', null);
     sg.teleport(c[0] + 4.6, c[1] + 2.4, -2.4); sg.setLoop(null); r.teleport(c[0] + 3.6, c[1] + 3.4, 0.7); r.setLoop(null);
     const fire = g.fx.addFire(c[0], gy(c[0], c[1], 0.1), c[1], 0.9);
-    p.root.visible = false; g.sky.time = 3.6; A.wTarget = { snow: 0.3, fog: 0.08, overcast: 0.8, wind: 1 }; Object.assign(g.sky.weather, A.wTarget);
+    p.root.visible = false; g.sky.time = 22.5; A.wTarget = { snow: 0.3, fog: 0.08, overcast: 0.8, wind: 1 }; Object.assign(g.sky.weather, A.wTarget);
     g.ui.dim(0);
     const head = (n, h = 1.65) => () => [n.pos.x, n.pos.y + h, n.pos.z];
     return new Promise((done) => {
@@ -263,58 +261,40 @@ export class Chapter2 {
           sub: ['', 'When Kettil reached the camp in the ashes of Hrafnvik, shaking and blue, Håkon asked him one question.', 5.8] },
         { dur: 2.8, from: [c[0] - 0.4, gy(c[0] - 0.4, c[1] - 0.2, 1.6), c[1] - 0.2], look: head(hk, 1.72), fov: 30, sub: ['Jarl Håkon', 'The boy?', 2.2] },
         { dur: 6.2, from: [c[0] + 0.2, gy(c[0] + 0.2, c[1] + 0.2, 1.5), c[1] + 0.2], look: head(k, 1.6), fov: 30,
-          sub: ['', 'Kettil had lost a child, and nearly his own life, to a farmer\'s wife with a cooking knife. He was not going to admit any more failure tonight.', 5.8] },
+          sub: ['', 'Kettil had lost a child, and nearly his own life, to a farmer\'s wife with a cooking knife. He was not going to admit any more failure.', 5.8] },
         { dur: 3.8, from: [c[0] + 0.1, gy(c[0] + 0.1, c[1] + 0.3, 1.5), c[1] + 0.3], look: head(k, 1.6), fov: 28, sub: ['Kettil', 'Through the ice, my lord. He is under the river.', 3.4] },
         { dur: 6.4, from: [c[0] - 2.6, gy(c[0] - 2.6, c[1] - 2.2, 1.8), c[1] - 2.2], to: [c[0] - 1.6, gy(c[0] - 1.6, c[1] - 1.6, 1.7), c[1] - 1.6], look: head(sg, 1.3), fov: 36,
           sub: ['', 'Håkon nodded and turned away. Behind him, a quiet, well-dressed man in a fur cap counted silver into a raider\'s palm.', 5.8],
           onStart: () => { hk.face(c[0] + 12, c[1] - 6); sg.face(r.pos.x, r.pos.z); r.face(sg.pos.x, sg.pos.z); sg.h.play('pickup', 1.2); } },
         { dur: 6.6, from: [c[0] + 6.2, gy(c[0] + 6.2, c[1] + 1.2, 1.7), c[1] + 1.2], look: head(sg, 1.62), fov: 28,
-          sub: ['', 'His name was Sigurd Stonehand, and he had paid for this night. He looked at the burned farm the way a merchant looks at a sale that has closed.', 6.2] },
+          sub: ['', 'His name was Sigurd Stonehand, and he had paid for that night. He looked at the burned farm the way a merchant looks at a sale that has closed.', 6.2] },
       ], { skippable: true, onEnd: () => {
         g.ui.fade(true, 1.6).then(() => { for (const n of [hk, sg, k, r]) n.visible = false; g.fx.removeFire(fire); p.root.visible = true; done(); });
       } });
     });
   }
 
-  /** Hrafnvik behind him, still burning (the same night as the raid). */
-  burning() { const A = this.act; for (const id of ['elder', 'skald', 'odd', 'houseF', 'boathouse', 'weaver', 'home']) A.burn(id); A.glowTarget = 0.6; }
-  /** Over the river that night (the owner's story, Act I, Chapter 2): his legs give out on the far bank; at Håkon's camp
-   *  Kettil tells his lie; and the boy finds a hollow under a fallen spruce, where for two days he cannot make fire. */
-  playAcross() {
+  playEnding() {
     const g = this.g, p = g.player, A = this.act;
     if (this.ending) return;
     this.ending = true; this.hint(null); A.stealthActive = false; g.ui.setDetection(-1); this.iceShown = false;
     p.frozen = true; p.crouch = false; p.equip('none');
+    p.h.play('fall', 1.2, { onEnd: () => { p.loopOverride = 'dead'; } });
+    g.audio.play('thud', { vol: 0.5 });
+    // frame everything around where the body actually lies (he falls backward from where he stood)
+    const fx = Math.sin(p.yaw), fz = Math.cos(p.yaw), sx = fz, sz = -fx;
+    const bx = p.pos.x - fx * 0.65, bz = p.pos.z - fz * 0.65, by = () => p.pos.y;
+    const P = (a, side, h) => { const x = bx + fx * a + sx * side, z = bz + fz * a + sz * side; return [x, g.world.groundAt(x, z) + h, z]; };
+    const kneel = P(0.1, 1.25, 0), far = P(5, 22, 0);
+    const b = g.npcs.get('bjorn') || g.addNPC('bjorn', CAST.bjorn);
+    b.teleport(far[0], far[2], 0); b.walkSpeed = 1.9; b.h.hold('R', 'spear');
+    const settle = (o) => { o.teleport(kneel[0], kneel[2], Math.atan2(bx - kneel[0], bz - kneel[2])); o.setLoop('kneel'); };
+    const back = { x: p.pos.x, z: p.pos.z, yaw: p.yaw };
     g.ui.fade(true, 2.2).then(() => this.playLie()).then(() => {
-      g.ui.dim(0);
-      return g.ui.card('', 'He found a hollow under a fallen spruce on the far side of the ridge and lined it with branches.', 4.4);
-    }).then(() => g.ui.card('', "He tried to make fire with a flint from his mother's pouch, and failed for two days.", 4.4))
-      .then(() => {
-        this.ending = false; p.frozen = false;
-        if (g.quests.isDone('q_alone')) return this.playThaw(); // a save from before the chapters were put in the story's order
-        g.quests.start('q_alone');
-        g.ui.fade(false, 1.6);
-      });
-  }
-  /** The end of the winter (Chapter 3 of the story): Bjorn finds him at the first thaw. */
-  playThaw() {
-    const g = this.g, p = g.player, A = this.act;
-    if (this.ending) return;
-    this.ending = true; this.hint(null); A.stealthActive = false; g.ui.setDetection(-1);
-    p.frozen = true; p.crouch = false; p.equip('none');
-    g.ui.fade(true, 2.2).then(() => {
-      p.teleport(LEANTO[0] + 0.6, LEANTO[1] + 0.4, 2.3); p.loopOverride = 'dead';
+      p.teleport(back.x, back.z, back.yaw); p.loopOverride = 'dead';
       return g.ui.card('', 'He lived through that winter, though there were many days he did not expect to.', 4.2);
     }).then(() => g.ui.card('', 'He chewed his leather belt when there was nothing else. He learned that birch bark burns even when wet, and that you must never sleep with wet feet.', 5.2))
       .then(() => {
-        const fx = Math.sin(p.yaw), fz = Math.cos(p.yaw), sx = fz, sz = -fx;
-        const bx = p.pos.x - fx * 0.65, bz = p.pos.z - fz * 0.65, by = () => p.pos.y;
-        const P = (a, side, h) => { const x = bx + fx * a + sx * side, z = bz + fz * a + sz * side; return [x, g.world.groundAt(x, z) + h, z]; };
-        const kneel = P(0.1, 1.25, 0), far = P(5, 22, 0);
-        const b = g.npcs.get('bjorn') || g.addNPC('bjorn', CAST.bjorn);
-        b.visible = true; b.teleport(far[0], far[2], 0); b.walkSpeed = 1.9; b.h.hold('R', 'spear');
-        const settle = (o) => { o.teleport(kneel[0], kneel[2], Math.atan2(bx - kneel[0], bz - kneel[2])); o.setLoop('kneel'); };
-        A.campFire.on = false; this.wolf && g.wildlife.remove(this.wolf);
         g.ui.dim(0); g.sky.time = 9.2; A.wTarget = { snow: 0, fog: 0.04, overcast: 0.35, wind: 0.6 }; Object.assign(g.sky.weather, A.wTarget); shared.uSnow.value = 0.45; A.snowTarget = 0.45;
         g.ui.fade(false, 2);
         g.cine.play([
@@ -353,42 +333,44 @@ export class Chapter2 {
         this.st.quests.q_white.step--; this.act.onKill('deer', a, true);
       }
     },
-    'q_white.wolf'(r) { this.enter(); this.tracks.visible = false; if (!r) this.g.ui.card('Midwinter', 'The she-wolf found him.', 3); if (r && !this.g.inventory.has('venison', 2)) this.g.inventory.add('venison', 3, true); this.spawnWolf(); },
+    'q_white.wolf'(r) { this.enter(); this.tracks.visible = false; if (r && !this.g.inventory.has('venison', 2)) this.g.inventory.add('venison', 3, true); this.spawnWolf(); },
     'q_white.return'(r) { this.enter(); this.hint(null); if (!r) this.g.ui.subtitle('Eirik', 'Back to the fire. Before anything else smells it.', 4); },
     'q_white.cook'() { this.enter(); this.hint('cook'); },
     'q_white.sleep'() { this.enter(); this.g.ui.hint('Press {interact} at the lean-to to sleep.'); },
     'q_ice.wake'() {
       const g = this.g, p = g.player, A = this.act;
-      this.enter(); this.spawnTrackers(); this.burning();
-      g.sky.time = 3.2; A.wTarget = { ...W_HUNT }; Object.assign(g.sky.weather, W_HUNT); g.audio.setMusic('raid');
-      A.campFire.on = false; A.stealthActive = false;
-      p.frozen = true; p.crouch = false; p.equip('none'); p.teleport(EDGE[0], EDGE[1], 2.4); p.loopOverride = null;
-      const K = this.trackers[0], gy = (x, z, h) => g.world.groundAt(x, z) + h;
-      K.raider.state = 'busy'; K.teleport(-21.5, -12, Math.PI);
-      g.cine.play([
-        { dur: 4.6, from: [-27, gy(-27, -2, 1.7), -2], to: [-29, gy(-29, -6, 1.6), -6], look: () => [K.pos.x, K.pos.y + 1.4, K.pos.z], fov: 42,
-          sub: ['', 'Eirik ran with the axe dragging in the snow behind him. Kettil came after him, cursing and bleeding.', 4.4], onStart: () => K.goTo(-34, -20, { run: true }) },
-        { dur: 3.4, from: [-30, gy(-30, -15, 1.7), -15], look: () => [K.pos.x, K.pos.y + 1.5, K.pos.z], fov: 34, sub: ['Kettil', 'Come back here! You little-', 3] },
-      ], { onEnd: () => { K.raider.state = 'patrol'; g.quests.notify('event', 'woke2'); } });
+      this.enter(); this.spawnTrackers();
+      g.sky.time = 5.7; A.wTarget = { ...W_HUNT }; Object.assign(g.sky.weather, W_HUNT);
+      A.campFire.on = true; A.campFire.size = 0.3; A.stealthActive = false;
+      p.frozen = true; p.crouch = false; p.equip('none'); p.teleport(LEANTO[0] + 0.4, LEANTO[1] - 0.2, 2.3); p.loopOverride = 'sit';
+      const T = this.trackers[0], gy = (x, z, h) => g.world.groundAt(x, z) + h, ex = p.pos.x, ez = p.pos.z;
+      g.ui.card('Thin Ice', 'Two nights later', 3.4).then(() => g.ui.fade(false, 1.5));
+      g.after(3.0, () => g.cine.play([
+        { dur: 5.5, from: [ex - 3.4, gy(ex - 3.4, ez + 2.8, 1.0), ez + 2.8], to: [ex - 2.4, gy(ex - 2.4, ez + 2.0, 0.9), ez + 2.0], look: [ex, p.pos.y + 0.55, ez], fov: 36,
+          sub: ['', 'On the third morning the forest was not empty.', 4.2], onStart: () => g.after(1.6, () => g.audio.play('horn', { freq: 98, vol: 0.5 })) },
+        { dur: 6.5, from: [-97, gy(-97, -62, 1.5), -62], to: [-100, gy(-100, -66, 1.5), -66], look: () => [T.pos.x, T.pos.y + 1.5, T.pos.z], fov: 40,
+          sub: ['Kettil', 'Smoke. There, by the big birch. The whelp is alive. Spread out.', 4.6], onStart: () => T.goPath([[-98, -70], [-107, -81]]) },
+        { dur: 3.6, from: [ex - 1.8, gy(ex - 1.8, ez + 1.5, 0.8), ez + 1.5], look: [ex, p.pos.y + 0.7, ez], fov: 30, sub: ['Eirik', 'They followed the smoke.', 3], onStart: () => { p.loopOverride = null; } },
+      ], { onEnd: () => g.quests.notify('event', 'woke2') }));
     },
     'q_ice.flee'(r) {
       const g = this.g, p = g.player, A = this.act;
-      this.enter(); this.spawnTrackers(); this.burning(); g.world.setIce(true);
-      if (r) { g.sky.time = 3.4; A.wTarget = { ...W_HUNT }; Object.assign(g.sky.weather, W_HUNT); p.teleport(EDGE[0], EDGE[1], 2.4); }
+      this.enter(); this.spawnTrackers(); g.world.setIce(true);
+      if (r) { g.sky.time = 5.9; A.wTarget = { ...W_HUNT }; Object.assign(g.sky.weather, W_HUNT); p.teleport(LEANTO[0] + 0.4, LEANTO[1] - 0.2, 2.3); }
       A.campFire.on = false; p.frozen = false; p.loopOverride = null; p.crouch = true;
       A.stealthActive = true; this.hint('trackers');
     },
     'q_ice.cross'(r) {
       const g = this.g, p = g.player, A = this.act;
       this.enter(); this.spawnTrackers(); g.world.setIce(true); A.campFire.on = false;
-      if (r) { g.sky.time = 3.8; A.wTarget = { ...W_HUNT }; Object.assign(g.sky.weather, W_HUNT); p.teleport(BANK_W[0], BANK_W[1], Math.PI / 2); p.crouch = true; }
+      if (r) { g.sky.time = 6.4; A.wTarget = { ...W_HUNT }; Object.assign(g.sky.weather, W_HUNT); p.teleport(BANK_W[0], BANK_W[1], Math.PI / 2); p.crouch = true; }
       A.stealthActive = true; this.hint('ice');
       if (!r) g.ui.subtitle('Eirik', 'Father said never to trust river ice before midwinter.', 4.5);
     },
     'q_ice.climb'(r) {
       const g = this.g, p = g.player, A = this.act;
       this.enter(); this.spawnTrackers(); g.world.setIce(true); A.campFire.on = false;
-      if (r) { g.sky.time = 4.0; A.wTarget = { ...W_HUNT }; Object.assign(g.sky.weather, W_HUNT); p.teleport(BANK_E[0] + 2, BANK_E[1], Math.PI / 2); }
+      if (r) { g.sky.time = 6.9; A.wTarget = { ...W_HUNT }; Object.assign(g.sky.weather, W_HUNT); p.teleport(BANK_E[0] + 2, BANK_E[1], Math.PI / 2); }
       A.stealthActive = false; this.iceShown = false; g.ui.setDetection(-1); this.hint(null);
       for (const n of this.trackers) { n.raider.state = 'busy'; n.speed = 0; }
       g.ui.subtitle('', 'His legs had stopped belonging to him.', 4.5);
@@ -403,7 +385,7 @@ export class Chapter2 {
     const g = this.g, p = g.player, q = g.quests, A = this.act, play = g.mode === 'play';
     this.t += dt;
     if (play && q.isActive('q_white')) g.sky.time = Math.min(16.4, g.sky.time + dt / 75);
-    if (play && q.isActive('q_ice')) g.sky.time = Math.min(4.6, g.sky.time + dt / 150);
+    if (play && q.isActive('q_ice')) g.sky.time = Math.min(7.7, g.sky.time + dt / 150);
     this.st.time = g.sky.time;
 
     // warmth, hunger
