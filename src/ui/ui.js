@@ -1,6 +1,6 @@
 // HUD, dialogue box, menus and panels (DOM overlay on top of the WebGL canvas).
 import * as THREE from 'three';
-import { codeLabel, ACTION_LABELS, DEFAULT_BINDINGS } from '../core/input.js';
+import { codeLabel, ACTION_LABELS, DEFAULT_BINDINGS, toggleFullscreen, isFullscreen } from '../core/input.js';
 import { listSaves, saveSettings, deleteSave, latestSave, DEFAULT_SETTINGS } from '../core/save.js';
 import { ITEMS, QUESTS } from '../data/act1.js';
 import { ACTS } from '../data/chapters.js';
@@ -391,7 +391,7 @@ export class UI {
       { label: 'Settings', act: () => this.openPanel('settings', ['saves', 'settings', 'status', 'playtest']) },
       { label: 'Build Status', sub: tr('What is playable, prototype and planned'), act: () => this.openPanel('status', ['saves', 'settings', 'status', 'playtest']) },
     ]);
-    const lp = $('#menu-langs'); if (lp) { lp.innerHTML = this.langPicker(); this.wireLang(lp); }
+    const lp = $('#menu-langs'); if (lp) { lp.innerHTML = this.langPicker() + `<button class="lang fs" id="menu-fs">${esc(tr('Full screen'))}</button>`; this.wireLang(lp); lp.querySelector('#menu-fs').onclick = () => { this.g.audio.init(); this.g.audio.play('ui'); toggleFullscreen(); }; }
   }
   hideMain() { this.e.menu.classList.remove('on'); this.e.hud.classList.remove('hidden'); }
   showPause() {
@@ -409,6 +409,7 @@ export class UI {
       { label: 'Settings', act: () => this.openPanel('settings', all) },
       { label: 'Save / Load', act: () => this.openPanel('saves', all) },
       { label: 'Playtest', act: () => this.openPanel('playtest', ['playtest', 'saves', 'settings']) },
+      { label: 'Full screen', act: () => toggleFullscreen() },
       { label: 'Quit to Main Menu', act: () => g.quitToMenu() },
     ]);
   }
@@ -643,11 +644,12 @@ export class UI {
       ${row('Difficulty', select('difficulty', [['easy', 'Skald (forgiving)'], ['normal', 'Warrior (standard)'], ['hard', 'Jarl (demanding)']]))}
       ${row('Objective markers', check('objectiveMarkers'))}${row('Subtitles', check('subtitles'))}${row('Subtitle size', range('subtitleSize', 0.8, 1.6, 0.1))}${row('Camera shake', check('cameraShake'))}</div>
       <h4>${E('Camera')}</h4><div class="set">${row('Camera follows the mouse', check('mouseLook'))}${row('Close-ups in conversation', check('closeTalk'))}${row('Look sensitivity', range('sensitivity', 0.3, 2.5, 0.1))}${row('Invert vertical look', check('invertY'))}<span></span><span class="muted">${E('With this off the mouse does not turn the view: use the arrow keys or a gamepad stick.')}</span></div>
-      <h4>${E('Graphics')}</h4><div class="set">${row('Quality', select('quality', [['low', 'Low'], ['medium', 'Medium'], ['high', 'High']]))}${row('Glow on fire and steel', check('bloom'))}${row('Resolution follows the frame rate', check('autoRes'))}${row('Show frame rate', check('showFps'))}<span></span><span class="muted">${E('Grass density and how far trees keep their full shape apply after reloading the game. With "Resolution follows the frame rate" on, the picture is drawn with fewer pixels whenever frames come slower than fifty a second, and sharpens again when there is room.')}</span></div>
+      <h4>${E('Graphics')}</h4><div class="set">${row('Quality', select('quality', [['low', 'Low'], ['medium', 'Medium'], ['high', 'High']]))}${row('Glow on fire and steel', check('bloom'))}${row('Resolution follows the frame rate', check('autoRes'))}${row('Show frame rate', check('showFps'))}${row('Full screen', `<input type="checkbox" id="fs" ${isFullscreen() ? 'checked' : ''}>`)}<span></span><span class="muted">${E('Grass density and how far trees keep their full shape apply after reloading the game. With "Resolution follows the frame rate" on, the picture is drawn with fewer pixels whenever frames come slower than fifty a second, and sharpens again when there is room.')}</span></div>
       <h4>${E('Audio')}</h4><div class="set">${row('Master volume', range('volMaster', 0, 1, 0.05))}${row('Music', range('volMusic', 0, 1, 0.05))}${row('Effects', range('volSfx', 0, 1, 0.05))}</div>
       <h4>${E('Controls')} <span class="muted">· ${E('click a key to rebind · gamepad is supported with a fixed layout')}</span></h4><div class="keys">${Object.keys(ACTION_LABELS).map((a) => `<div><span>${E(ACTION_LABELS[a])}</span><button data-a="${a}">${esc(codeLabel(g.input.bindings[a][0]))}</button></div>`).join('')}</div>
       <p><button class="btn" id="reset">${E('Restore defaults')}</button></p>`;
     this.wireLang(body);
+    const fs = body.querySelector('#fs'); if (fs) fs.onchange = () => toggleFullscreen(); // not a saved setting: a browser fills the screen only when asked by a click
     body.querySelectorAll('[data-k]').forEach((inp) => (inp.oninput = inp.onchange = () => {
       const k = inp.dataset.k; s[k] = inp.type === 'checkbox' ? inp.checked : inp.type === 'range' ? parseFloat(inp.value) : inp.value;
       saveSettings(s); g.applySettings();

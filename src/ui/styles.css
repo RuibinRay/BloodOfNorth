@@ -373,6 +373,8 @@ details.chapters li img.thumb { width: 64px; height: 36px; object-fit: cover; ve
 /* On the main menu the languages sit in the top right corner, out of the way of the title and the buttons. */
 #menu-langs { position: absolute; top: 18px; right: 22px; }
 #menu-langs .langs { margin: 0; }
+#menu-langs { display: flex; gap: 6px; align-items: center; }
+#menu-langs .fs { font: inherit; font-size: 15px; padding: 5px 13px; color: var(--parch); background: rgba(20, 16, 12, 0.6); border: 1px solid rgba(201, 162, 74, 0.45); cursor: pointer; letter-spacing: 0.04em; }
 #menu { align-items: safe center; overflow-y: auto; }
 :root[data-lang="es"] #tabs button { padding: 12px 9px; font-size: 13px; letter-spacing: 0.03em; }
 

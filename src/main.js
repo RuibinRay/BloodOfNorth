@@ -1,7 +1,7 @@
 // Blood of the North — game bootstrap, main loop, modes, save/load.
 import * as THREE from 'three';
 import { Emitter, damp } from './core/util.js';
-import { Input } from './core/input.js';
+import { Input, isFullscreen } from './core/input.js';
 import { AudioSys } from './core/audio.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
@@ -102,6 +102,7 @@ class Game {
     this.applySettings();
     this.resize();
     addEventListener('resize', () => this.resize());
+    for (const ev of ['fullscreenchange', 'webkitfullscreenchange']) document.addEventListener(ev, () => { const f = document.getElementById('fs'); if (f) f.checked = isFullscreen(); this.resize(); });
     this.input.onLockLost = () => { if (this.mode === 'play' || this.mode === 'activity') this.pause(); };
     this.installDebug();
 
@@ -197,6 +198,7 @@ class Game {
     const lock = m === 'play' || m === 'activity' || m === 'cutscene';
     this.input.wantLock = lock;
     if (!lock) this.input.unlock();
+    else if (this.started) this.input.lock(true); // back from a conversation or a menu: take the mouse again, no click needed
   }
   findInteraction() {
     const p = this.player.pos;

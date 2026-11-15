@@ -46,7 +46,7 @@ playtests; none are claimed until then.
 3. Look at the world and the people in play and say what to change (the trees, the shore, the clothes, any figure that does not look like its portrait, the ships, the halls and gates, the animals); $4.99 of the approved $10 is unspent. Consider making a new Higgsfield key, since the pair was pasted into a chat.
 4. Decide where the project lives: a PC that can run UE5, or continue in the browser for the epilogue and the polish.
 
-## Faces and hair (built on the branch `faces-and-hair` from 0.29; not yet merged)
+## Faces and hair (built on the branch `faces-and-hair` from 0.29; merged into main)
 
 Asked for: better eyes, noses, ears, mouths and above all hair, and every important character looking like themselves.
 Built: `src/entities/heads.js` builds every head from its look (the skull, nose, ears, eyes, lids, brows, lips, jaw,

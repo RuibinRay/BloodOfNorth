@@ -37,6 +37,7 @@ export default {
   "Map": "Mapa",
   "Skills": "Habilidades",
   "Pause": "Pausa",
+  "Full screen": "Pantalla completa",
   "Camera left": "Cámara a la izquierda",
   "Camera right": "Cámara a la derecha",
   "Camera up": "Cámara arriba",

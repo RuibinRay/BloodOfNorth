@@ -21,6 +21,7 @@ export const DEFAULT_BINDINGS = {
   weapon1: ['Digit1', 'Pad14'], weapon2: ['Digit2', 'Pad15'], weapon3: ['Digit3'], holster: ['KeyX', 'Pad13'],
   inventory: ['KeyI', 'Tab'], journal: ['KeyJ', 'Pad8'], map: ['KeyM'], skills: ['KeyK'],
   pause: ['Escape', 'KeyP', 'Pad9'],
+  fullscreen: ['F10'],
   camLeft: ['ArrowLeft'], camRight: ['ArrowRight'], camUp: ['ArrowUp'], camDown: ['ArrowDown'],
 };
 export const ACTION_LABELS = {
@@ -29,9 +30,19 @@ export const ACTION_LABELS = {
   attack: 'Attack / loose arrow', block: 'Block / aim', sense: "Hunter's sense", raven: "Raven's Eye", harry: 'Send the black raven', whistle: 'Whistle for your horse', horn: 'Sound the horn (crew ashore / back aboard)',
   weapon1: 'Draw, or change, melee weapon', throw: 'Throw an axe', ward: 'Stormguard (turn any blow)', lock: 'Lock on / let go', walk: 'Walk (hold)', art1: 'Thunder Smash', art2: 'Storm-Step', art3: 'Storm-Cry', art4: 'Stormbreak', shoulder: 'Bow: swap shoulder', weapon2: 'Equip bow', weapon3: 'Off hand: shield or second axe', holster: 'Put weapon away',
   call1: "First companion's skill", call2: "Second companion's skill", order: 'Companions: wait here / with me',
-  inventory: 'Inventory', journal: 'Journal', map: 'Map', skills: 'Skills', pause: 'Pause',
+  inventory: 'Inventory', journal: 'Journal', map: 'Map', skills: 'Skills', pause: 'Pause', fullscreen: 'Full screen',
   camLeft: 'Camera left', camRight: 'Camera right', camUp: 'Camera up', camDown: 'Camera down',
 };
+
+/** Fill the screen with the game, or stop. Only works inside a click or a key press (the browser's rule). */
+export function toggleFullscreen() {
+  const d = document, el = d.documentElement;
+  try {
+    if (d.fullscreenElement || d.webkitFullscreenElement) (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+    else { const p = (el.requestFullscreen || el.webkitRequestFullscreen).call(el, { navigationUI: 'hide' }); if (p && p.catch) p.catch(() => {}); }
+  } catch { /* the browser cannot: nothing changes */ }
+}
+export const isFullscreen = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
 
 export function codeLabel(code) {
   if (!code) return '—';
@@ -69,6 +80,7 @@ export class Input {
       if (['Tab', 'Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
       if (e.repeat) return;
       this.usingPad = false;
+      if ((this.bindings.fullscreen || []).includes(e.code)) { e.preventDefault(); toggleFullscreen(); return; } // here, in the key's own event: a browser lets a page fill the screen only then
       this.down.add(e.code); this.pressed.add(e.code);
     });
     window.addEventListener('keyup', (e) => { this.down.delete(e.code); this.releasedSet.add(e.code); });
@@ -98,7 +110,13 @@ export class Input {
       this.expectUnlock = false;
     });
   }
-  lock() { try { const p = this.canvas.requestPointerLock(); if (p && p.catch) p.catch(() => { this.lockWorks = false; }); } catch { this.lockWorks = false; } }
+  /** Take the pointer. auto: the game asking by itself (a conversation or a menu has handed control back); if the
+   *  browser says no, that is not a sign that it never can, and the next click takes it as usual. */
+  lock(auto = false) {
+    if (auto && (this.locked || document.hidden || this.settings.mouseLook === false)) return;
+    const fail = () => { if (!auto) this.lockWorks = false; };
+    try { const p = this.canvas.requestPointerLock(); if (p && p.catch) p.catch(fail); } catch { fail(); }
+  }
   unlock() { if (this.locked) { this.expectUnlock = true; document.exitPointerLock(); } }
 
   held(action) { const b = this.bindings[action]; return !!b && b.some((c) => this.down.has(c)); }

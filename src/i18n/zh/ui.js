@@ -37,6 +37,7 @@ export default {
   "Map": "地图",
   "Skills": "技能",
   "Pause": "暂停",
+  "Full screen": "全屏",
   "Camera left": "镜头向左",
   "Camera right": "镜头向右",
   "Camera up": "镜头向上",

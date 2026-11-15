@@ -26,6 +26,9 @@ function base(x, z) {
   let h = floor + m * m * 95;
   h += fbm(x * 0.011 + 3.1, z * 0.011 - 7.7, 4) * (2.2 + m * 26);
   h += fbm(x * 0.06, z * 0.06, 2) * 0.35;
+  // ridges and gullies, high up only (m cubed: the lower slopes where the story walks are as they were)
+  const r1 = 1 - Math.abs(noise2(x * 0.016 + 5.3, z * 0.016 - 1.9)), r2 = 1 - Math.abs(noise2(x * 0.041 - 2.2, z * 0.041 + 8.1));
+  h += m * m * m * ((r1 * r1 * 0.75 + r2 * r2 * 0.25) * 26 - 9);
   return h;
 }
 function raw(x, z) {
@@ -161,7 +164,9 @@ function paintAlbedo() {
       if (dr < 12 && z < 200) col = mix3(col, n2 > 0.5 ? gravel : mud, 1 - smoothstep(6, 12, dr));
       // rock on slopes, snow on the heights
       col = mix3(col, rock, smoothstep(0.42, 0.85, sl));
-      col = mix3(col, snow, smoothstep(46, 62, h + n * 10) * (1 - smoothstep(0.9, 1.5, sl) * 0.7));
+      // snow lies above a line that wanders, thins out on steep faces, and leaves the steepest bare
+      const nl = noise2(x * 0.017 + 3, z * 0.017 - 8);
+      col = mix3(col, snow, smoothstep(44, 60, h + n * 10 + nl * 12) * (1 - smoothstep(0.55, 1.05, sl) * 0.9));
       if (h < -2.5) col = mix3(col, [58, 70, 76], smoothstep(-2.5, -8, h)); // the deep fjord floor matches the open sea's
       const k = 1.04 + n2 * 0.16, o = (j * T + i) * 4;
       d[o] = col[0] * k; d[o + 1] = col[1] * k; d[o + 2] = col[2] * k; d[o + 3] = 255;
