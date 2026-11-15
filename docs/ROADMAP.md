@@ -58,8 +58,9 @@ three-quarters, and in scenes; `npm run check` passes.
 
 Known gaps:
 - **Judged from still pictures**, like the animation pass: no one has watched a face talk, blink or glance in play.
-- **The camera in play is four or five metres behind Eirik**, and dialogue does not move it, so most of the face work is
-  seen in cutscenes and up close; at play distance what tells people apart is their hair, beard, colour and build.
+- **In play the camera is four or five metres behind Eirik**, so faces are read in conversation (the close-ups, tightened
+  to head and shoulders after the new faces) and in cutscenes; at play distance what tells people apart is their hair,
+  beard, colour and build.
 - **Hair is a shaped shell with locks, a hanging curtain and tubes for braids**, not strands: it does not move in the
   wind, and long hair can pass through a raised arm or a cloak's collar.
 - **Long beards and braids lying on the chest bend between the head and the chest**: with the head turned far they
