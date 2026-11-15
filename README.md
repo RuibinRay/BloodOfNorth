@@ -10,6 +10,11 @@ Vængr), Act VI (twenty-six: Myrholm, Skalløy, the judgment, the nine oaths, th
 (forty-one: Ravenhold twelve years on, Leif's house, the old birch), each as the story tells it, and an open world that runs from the home valley across the home waters to five great islands of the
 story built at full scale.
 
+**Full screen, the mouse after a conversation, and the mountains.**
+- **Full screen**: F10 (it can be rebound in Settings → Controls), a button beside the languages on the title screen, "Full screen" in the pause menu and a switch in Settings → Graphics. It is not saved: a browser fills the screen only when a click or a key asks it to.
+- **The mouse comes back by itself**: when a conversation, a menu or a cutscene hands control back, the game takes the pointer again at once, with no click. (Tested in Chrome. Should a browser refuse, the next click takes it as before, and that click is not swung as a blow.)
+- **The mountains have ridges**: sharp crests and gullies high up the valley's walls, where the story never walks, so the lower slopes are as they were. Snow lies above a line that wanders, thins on steep faces and leaves the steepest bare, so grey rock shows through.
+
 **The graphics pass: water, ground and the map.**
 - **The sea moves.** It is a grid that goes where the camera goes (3 m cells near it, wider farther out), lifted by five long swells summed as Gerstner waves, so crests come sharp and troughs broad. The swell is full out among the great islands, about a quarter of that in the home fjord, and nothing in the shallows.
 - **The sea knows how deep it is.** A picture of the sea floor (1024 a side over the home waters and all ten islands, made at start-up in 0.12 s) makes it clear and green over sand, darker over the deeps, with lines of surf running up every beach and whitecaps on the crests of the swell.
