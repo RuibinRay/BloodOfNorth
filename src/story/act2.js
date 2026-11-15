@@ -275,7 +275,7 @@ export class Act2 {
     if (q.at('q_farm', 'sides') && (id === 'hauk' || id === 'grjotgard')) return this.say(id === 'hauk' ? 'a2_hauk' : 'a2_grjot', n, () => { if (!this.heard[id]) { this.heard[id] = true; done(); } });
     if (id === 'bjorn' && q.at('q_farm', 'judge')) return this.say('a2_cow', n, done);
     if (id === 'freydis' && q.at('q_farm', 'kaestur')) return this.say('a2_kaestur', n, () => this.kaestur());
-    if (id === 'bjorn' && q.at('q_farm', 'wrestle')) return this.say('a2_wrestle', n, () => this.wrestle());
+    if (id === 'bjorn' && q.at('q_farm', 'wrestle') && !this.wrestled && !g.activity) return this.say('a2_wrestle', n, () => this.wrestle()); // once: E in the breath after the throw must not start a second bout
     if (id === 'bjorn' && q.at('q_smoke', 'yard')) return this.tribute();
     if (n.kid) return n.say(['Skeggi ate a boot!', 'Is the white bird yours? Can I hold her?', 'Tag! You are the wolf!'][(Math.random() * 3) | 0], 3);
     n.say(g.fmt(IDLE[(Math.random() * IDLE.length) | 0]), 3.5);
@@ -326,6 +326,8 @@ export class Act2 {
   }
   wrestle() {
     const g = this.g, b = this.npc('bjorn'), p = g.player, [x, z] = this.B(8, 143);
+    if (this.wrestled || g.activity) return;
+    this.wrestled = true;
     b.teleport(x + 1.5, z, -Math.PI / 2); b.setLoop('guard'); p.teleport(x, z, Math.PI / 2);
     for (const id of this.folk) { const n = this.npc(id); if (n.visible && !n.kid) n.face(x, z); }
     new Bout(g, { title: 'Wrestling Bjorn', need: A2.bout.wrestle, window: A2.bout.window, loop: 'guard', cam: [[x + 0.7, g.world.groundAt(x, z) + 1.7, z + 4.2], [x + 0.75, g.world.groundAt(x, z) + 1.0, z]],

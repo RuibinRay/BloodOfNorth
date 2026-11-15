@@ -382,6 +382,9 @@ export class A7Shore extends A7Part {
 
   update(dt) {
     const g = this.g, c = this.c, q = g.quests, p = g.player, ph = c.phase;
+    // a safety net: at Gorm's step there is always either his scene or his duel. Once in a playtest (2026-11-15) the
+    // duel was wiped mid-fight (clear() ran: no gd, no Gorm) and the chapter could never end; set the step up again
+    if (q.at('q_gorm', 'gorm') && !this.gd && !this.gormOn && g.mode === 'play' && !p.frozen && !c.act.failing) { this.gormLost = (this.gormLost || 0) + dt; if (this.gormLost > 1.5) { this.gormLost = 0; q.enter('q_gorm', true); return; } } else this.gormLost = 0;
     if (!SHORE7.includes(ph)) return;
     this.crew([...c.sea.town, ...c.battle.jarn, this.gorm, c.npc('svanhild')], dt);
     for (const f of this.flung) { // through the air, and down

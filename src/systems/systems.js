@@ -25,6 +25,11 @@ export class Quests {
   enter(id, restoring = false) {
     const s = this.step(id);
     if (!s) return;
+    if (this.defs[id].kind === 'main') { // a new step of the story: the last step's hint (a countdown, the raven's keys...) goes; the step sets its own
+      const g = this.game;
+      g.ui.hint(null);
+      if (g.activity && g.mode !== 'activity') { const a = g.activity; g.activity = null; g.ui.meter.hide(); try { a.cleanup(false); } catch (e) { /* already torn down */ } } // a mini-game nobody can see any more must not block the rest
+    }
     this.game.story.onStep(id, s.id, restoring);
     this.game.ui.refreshTracker();
     if (!restoring && !s.noSave) this.game.autosave();
