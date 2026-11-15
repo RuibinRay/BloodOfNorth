@@ -28,15 +28,15 @@ export class Activity {
 // Woodcutting: stop the swinging marker inside the sweet spot to split each log.
 // ---------------------------------------------------------------------------------------
 export class Woodcutting extends Activity {
-  constructor(game, { x, z, count = 5, onSplit, onDone }) {
-    super(game); this.x = x; this.z = z; this.need = count; this.onSplit = onSplit; this.onDone = onDone;
+  constructor(game, { x, z, count = 5, onSplit, onDone, tool = 'smallaxe' }) {
+    super(game); this.x = x; this.z = z; this.need = count; this.onSplit = onSplit; this.onDone = onDone; this.tool = tool;
     this.split = 0; this.t = 0; this.swinging = false; this.halves = [];
   }
   start() {
     const g = this.game, p = g.player;
     this.begin();
     p.teleport(this.x + 0.05, this.z + 1.0, Math.PI);
-    p.h.hold('R', 'smallaxe');
+    p.h.hold('R', this.tool);
     this.y = g.world.groundAt(this.x, this.z) + 0.55;
     this.log = new THREE.Mesh(tint(cyl(0.15, 0.16, 0.5, 8), 0x8a6a48, 0.15, 3), M.vcPlain);
     this.log.castShadow = true; g.scene.add(this.log);

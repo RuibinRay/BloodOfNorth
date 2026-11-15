@@ -175,10 +175,10 @@ export class Act1 {
   startChopping() {
     const g = this.g, q = this.st.quests.q_wood;
     new Woodcutting(g, {
-      x: POI.chop.x, z: POI.chop.z, count: 5 - (q?.count || 0),
+      x: POI.chop.x, z: POI.chop.z, count: 5 - (q?.count || 0), tool: 'father_axe', // the story: Raven-Feeder in his hands for the first time
       onSplit: () => {
         g.inventory.add('firewood', 2);
-        const lines = ['Good.', 'Again. Let the hatchet fall.', "That's the way.", 'One more like that.'];
+        const lines = ['Good.', 'Again. Let her fall.', "That's the way.", 'One more like that.'];
         if (Math.random() < 0.7) this.npc('ragnar').say(lines[(Math.random() * lines.length) | 0], 1.8);
         g.quests.notify('activity', 'chop');
       },

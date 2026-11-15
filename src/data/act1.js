@@ -153,17 +153,18 @@ export const DIALOGUE = {
   ylva_idle: [{ s: 'Ylva', t: 'Go on, your father is waiting. I will have something hot when you are back.' }],
   ragnar_chop: [
     { s: 'Ragnar', t: 'Ha. The boy lives. I thought the blankets had eaten you.' },
-    { s: 'Ragnar', t: "Take the hatchet. Don't fight the wood. Let the weight do the work, and strike when the moment is right." },
-  ],
-  ragnar_chop_wait: [{ s: 'Ragnar', t: 'The block is right there. The logs will not split themselves, more is the pity.' }],
-  ragnar_wood_done: [
-    { s: 'Ragnar', t: 'Clean cuts. Your grandfather split wood like he was angry at it. You listen to it.' },
-    { s: 'Ragnar', t: 'Now put the hatchet down. Here. Both hands.' },
+    // the story, Act I, Chapter 1: the old axe in his hands for the first time, at the woodpile
+    { s: 'Ragnar', t: 'Not the hatchet today. Here. Both hands.' },
     { s: E, t: 'She is heavier than she looks. There are ravens scratched into the iron.' },
     { s: 'Ragnar', t: 'Her name is Raven-Feeder.' },
     { s: E, t: 'Why?' },
     { s: 'Ragnar', t: 'Because when I carried her, ravens never went hungry.' },
     { s: 'Ragnar', t: 'That was a long time ago. Now she splits wood. That is a better job.' },
+    { s: 'Ragnar', t: 'Plant your feet. Let her fall instead of forcing her, and strike where the grain is weak.' },
+  ],
+  ragnar_chop_wait: [{ s: 'Ragnar', t: 'The block is right there. The logs will not split themselves, more is the pity.' }],
+  ragnar_wood_done: [
+    { s: 'Ragnar', t: 'Clean cuts. Your grandfather split wood like he was angry at it. You listen to it.' },
     { s: '', t: 'Eirik swung, missed the log and buried the axe in the chopping block. Ragnar laughed so hard he had to sit down.' },
     { s: 'Ragnar', t: 'And another thing. I always strike from the left. Everyone who ever fought me knew it. Do not be like me. Change.' },
     { s: 'Ragnar', t: 'Winter does not care how much wood we have if the smokehouse is empty.' },
