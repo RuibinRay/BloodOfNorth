@@ -17,6 +17,12 @@ const talk = async (id) => { await d.near(id, 1.4); await d.use(); await d.run(0
 /** A seeded generator (mulberry32). */
 const seeded = (seed) => { let sd = seed >>> 0; return () => { sd = (sd + 0x6d2b79f5) >>> 0; let t = Math.imul(sd ^ (sd >>> 15), 1 | sd); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
 const { ShieldWall: Wall } = await import('/src/systems/shieldwall.js'); // the same module the game runs
+/** Before a seeded run: play a few frames by hand, so that what the game makes on its first frames is made already.
+ *  The page plays frames by itself while it loads, as many as the machine has time for, and three.js gives everything
+ *  it makes a random id: the sky's first light map, made on its first frame, takes eight numbers. Whether that had
+ *  happened before the dice were seeded or inside the battle depended on how busy the machine was, and it moved every
+ *  die after it (the same seed ended "broke" on 49.8 s alone and 58.1 s beside three other pages). */
+const settle = () => d.run(0.5);
 const drawn = () => { for (let i = 0; i < 3; i++) g.draw(); return { calls: g.drawn.calls, ktris: Math.round(g.drawn.tris / 1000) }; };
 
 /** Start one chapter the way the Acts menu does, let it run a little, and say how it stands. */
@@ -75,6 +81,7 @@ async function party() {
  *  the two ways of playing do to the line; it does not show that the fight is fair. The dice are seeded, so a run
  *  gives the same answer every time. */
 async function wall(quest, step, how = 'brace', maxSec = 300, seed = 7, linger = 6) { // linger: seconds a man who has broken through is left to fight him
+  await settle();
   const real = Math.random; Math.random = seeded(seed); Wall.seed = seed; Wall.built = 0; // the game's dice, and the wall's own (see systems/shieldwall.js)
   try {
     try { d.jump(quest, step); } catch (e) { return { quest, step, how, crash: e.message }; }
@@ -120,6 +127,7 @@ const FIGHTER = {
   good: { rt: 0.22, rtSd: 0.05, miss: 0.04, cut: 0.7, stam: 20, horn: 0.4 },
 };
 async function wallFight(quest, step, prof = 'average', maxSec = 360, seed = 11) {
+  await settle();
   const real = Math.random; Math.random = seeded(seed); Wall.seed = seed; Wall.built = 0; // the game's dice, and the wall's own (see systems/shieldwall.js)
   const P = FIGHTER[prof], me = seeded(seed ^ 0x5bd1e995), inp = g.input, held = new Set();
   const set = (code, on) => { if (on && !held.has(code)) { inp.simulate(code, true); held.add(code); } else if (!on && held.has(code)) { inp.simulate(code, false); held.delete(code); } };
